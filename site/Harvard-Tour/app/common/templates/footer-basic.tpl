@@ -9,7 +9,7 @@
     </p>
   {/if}
   
-  {if $page != 'index')}
+  {if $page != 'index'}
     {html_access_key_reset index=0 force=true}
     <p class="bottomnav">
       <a href="#top">Back to top</a>

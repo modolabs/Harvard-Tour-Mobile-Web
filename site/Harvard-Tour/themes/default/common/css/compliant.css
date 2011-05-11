@@ -1,7 +1,11 @@
 /* Overall font and colors */
+html, body {
+	margin: 0;
+	background: 0;
+}
 
 body {
-	background-color: #dcdddf;
+	background: #f0f0ee url(/modules/tour/images/bodyback.jpg) repeat;
 	font: 17px/1.33em 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	/* background: url(/common/images/background-tile.jpg) top right repeat-x, url(/common/images/background-tile-2.jpg) bottom left repeat; */
 }
@@ -120,8 +124,13 @@ dt, .label, .legend, .legend.nonfocal, .legend h2, .legend h3, .searchlegend, .s
 /* Footer */
 
 #footer {
-	font-size: 12px;
-	line-height: 14px;
+	margin: 40px 0 20px 0;
+	font-size: 11px;
+}
+
+#footer a {
+	text-decoration: none;
+	color: #505050
 }
 
 #footer .copyright {
