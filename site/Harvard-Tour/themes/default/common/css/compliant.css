@@ -113,6 +113,9 @@ dt, .label, .legend, .legend.nonfocal, .legend h2, .legend h3, .searchlegend, .s
 .breadcrumbs, .breadcrumbs a, .breadcrumbs a:visited {
  	/* All breadcrumb links in nav bar */
 	color: #036;
+	background: none;
+	margin: 0;
+  padding: 0px 10px 0px 0px;
 }
 
 .pagetitle {
