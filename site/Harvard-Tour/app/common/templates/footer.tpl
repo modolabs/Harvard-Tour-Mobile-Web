@@ -7,3 +7,5 @@
     </div>
   {/if}
 {/block}
+
+{block name="footerKurogo"}{/block}
