@@ -1,0 +1,65 @@
+#navbar {
+    height: 34px;
+    padding: 3px 4px;
+    margin: 0;
+    background: #f9f9f3 url(/common/images/navback.jpg) bottom repeat-x;
+    font-family: serif;
+    font-size: 16px;
+}
+#homelink {
+    display: block;
+    line-height: 34px;
+    height: 34px;
+    float: left;
+    text-decoration: none;
+    color: #000;
+    text-shadow: rgba(0,0,0,0.13) -1px -1px 1px,rgba(255,255,255,0.85) 1px 1px 1px;
+}
+#homelink img {
+    float: left;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+#helplinks {
+    list-style-type: none;
+    float: right;
+    line-height: 34px;
+    margin: 0;
+    padding: 0;
+}
+#helplinks li {
+    display: inline;
+    margin-left: 6px;
+}
+#helplinks a {
+    text-decoration: none;
+    color: #4c6680;
+    text-shadow: rgba(0,0,0,0.13) -1px -1px 1px,rgba(255,255,255,0.85) 1px 1px 1px;
+    padding: 0 10px;
+}
+#pagehead {
+    position: relative;
+    height: 108px;
+    background: #7c8893 url(/common/images/headback.jpg) repeat-x;
+    overflow: hidden;
+}
+#pagetitle {
+    display: table;
+    width: 100%;
+}
+#pagetitle h1 {
+    margin: 0 auto;
+    height: 56px;
+    width: 200px;
+    display: table-cell;
+    vertical-align: middle;
+    padding: 0 60px;
+    font: 24px/1em serif;
+    text-align: center;
+    color: #fff;
+    text-shadow: rgba(0,0,0,0.7) 0 1px 4px;
+}
+
+#container {
+  margin: 0;
+}

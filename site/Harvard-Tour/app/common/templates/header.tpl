@@ -1,24 +1,19 @@
 {extends file="findExtends:common/templates/header.tpl"}
 
 {block name="navbar"}
+  <a name="top"> </a>
   <div id="navbar"{if $hasHelp} class="helpon"{/if}>
-    <div class="breadcrumbs homepage">
-      <a name="top" href="/">
-        <img src="/common/images/title-{$navImageID|default:$configModule}.png" width="28" height="28" alt="" class="moduleicon" />
-      </a>
-      <span class="pagetitle">
-        {$pageTitle}
-      </span>
-    </div>
-    {if $hasHelp}
-      <div class="help">
-        <a href="help.php"><img src="/common/images/help.png" width="42" height="45" alt="Help" /></a>
-      </div>
-    {/if}
-    {if $hasMap}
-      <div class="map">
-        <a href="map.php"><img src="/common/images/map.png" width="42" height="45" alt="Map" /></a>
-      </div>
-    {/if}
+    <a id="homelink" href="/">
+      <img src="/common/images/homelink@2x.png" width="27" height="33" border="0" alt="" />
+      harvard yard tour
+    </a>
+		<ul id="helplinks">
+      {if $showHelpLink}
+			  <li><a href="mockup-map.html">map</a></li>
+      {/if}
+      {if $showMapLink}
+			  <li><a href="mockup-help.html">help</a></li>
+			{/if}
+		</ul>
   </div>
 {/block}
