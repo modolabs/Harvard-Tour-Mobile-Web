@@ -46,6 +46,9 @@ class TourWebModule extends WebModule {
     $this->addOnLoad('showMap(tourStops, selfIconSrc);');
   }
   
+  protected function hasTabForKey($tabKey, &$tabJavascripts) {
+    return true;
+  }
   
   protected function initializeForPage() {
     switch ($this->page) {
@@ -66,6 +69,19 @@ class TourWebModule extends WebModule {
         break;
         
       case 'detail':
+        $detailConfig = $this->loadPageConfigFile('detail', 'detailConfig');        
+        $tabKeys = array();
+        $tabJavascripts = array();
+
+        $possibleTabs = $detailConfig['tabs']['tabkeys'];
+        foreach ($possibleTabs as $tabKey) {
+          if ($this->hasTabForKey($tabKey, $tabJavascripts)) {
+            $tabKeys[] = $tabKey;
+          }
+        }
+
+        $this->assign('tabKeys', $tabKeys);
+        $this->enableTabs($tabKeys, null, $tabJavascripts);
         break;
         
       case 'photo':

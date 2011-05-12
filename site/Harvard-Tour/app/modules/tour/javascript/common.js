@@ -55,3 +55,20 @@ function showMap(center, stops, selfIcon) {
     }, 0);
   }
 }
+
+function confirmStop() {
+  return confirm("Are you sure you want to end your Tour and return to the welcome screen?");
+}
+
+function zoomUpDown(strID) {
+  var objZoomup = document.getElementById(strID);
+  if(objZoomup) {
+    var strZoomupClass = objZoomup.className;
+    if(strZoomupClass.indexOf("zoomed")>-1) {
+      strZoomupClass = strZoomupClass.replace(" zoomed", "");
+      objZoomup.className = strZoomupClass;
+    } else {
+      objZoomup.className+=" zoomed";
+    }
+  }
+}

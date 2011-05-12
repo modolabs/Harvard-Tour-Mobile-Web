@@ -283,38 +283,31 @@ dt, .label, .legend, .legend.nonfocal, .legend h2, .legend h3, .searchlegend, .s
 /* Tabs */
 
 #tabs li {
-	border: 1px solid #bbb;	/* Should match #tabbodies border-color */
-	background-color: #bbb;	/* Should match #tabbodies border-color */
 }
 
 #tabs li.active {
-	border-bottom: 1px solid #fff;	/* Should match #tabbodies background-color */
-	background-color: #fff;	/* Should match #tabbodies background-color */
+  margin-top: 0;
 }
 
 #tabs li a {
 	/* Text label of unselected tab */
-	color: #404040;
 }
 
 #tabs li.active a {
 	/* Text label of currently selected tab */
-	color: #000;
 }
 
 #tabs li.greyedout {
 	/* Text label of disabled tab */
-  	color: #666;
 }
 
 #tabbodies {
-	border-color: #bbb;
-	background-color: #fff;
+  border: none;
+  border-radius: 0px;
 }
 
 .tabbody .nested {
 	/* Navigation list inside a tab body needs a bit of background color to contrast from tab body background */
-	background-color: #ecedef;
 }
 
 
