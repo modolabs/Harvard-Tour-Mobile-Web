@@ -51,6 +51,8 @@ class TourWebModule extends WebModule {
   }
   
   protected function initializeForPage() {
+    $tour = new Tour();
+  
     switch ($this->page) {
       case 'index':
         // Just static content
