@@ -252,7 +252,9 @@ class ArcGISParser extends DataParser implements MapFolder
             }
 
             $this->serviceDescription = $data['serviceDescription'];
-            $this->supportedImageFormats = explode(',', $data['supportedImageFormatTypes']);
+            if (isset($data['supportedImageFormatTypes'])) {
+                $this->supportedImageFormats = explode(',', $data['supportedImageFormatTypes']);
+            }
             $this->units = $data['units'];
             $this->mapName = $data['mapName'];
 
@@ -415,7 +417,11 @@ class ArcGISLayer implements MapFolder, MapListElement {
     private $extent;
     private $minScale;
     private $maxScale;
+
+    private $idField;
+    private $geometryField;
     private $displayField;
+
     private $spatialRef;
     private $geometryType;
     private $isInitialized = false;
@@ -490,12 +496,23 @@ class ArcGISLayer implements MapFolder, MapListElement {
             $this->spatialRef = $data['extent']['spatialReference']['wkid'];
 
             foreach ($data['fields'] as $fieldInfo) {
+                if ($fieldInfo['type'] == 'esriFieldTypeOID') {
+                    $this->idField = $fieldInfo['name'];
+                    continue;
+                } else if ($fieldInfo['type'] == 'esriFieldTypeGeometry') {
+                    $this->geometryField = $fieldInfo['name'];
+                    continue;
+                }
+
                 // often the field names will be full paths to SQL tables,
                 // as in database.table or server.scheme.database.table
                 //$nameRefParts = explode('.', $fieldInfo['name']);
                 //var_dump($fieldInfo);
                 //$name = end($nameRefParts);
                 $name = $fieldInfo['name'];
+                if (strtoupper($name) == strtoupper($this->displayField)) {
+                    $name = $this->displayField;
+                }
                 $this->fieldNames[$name] = $fieldInfo['alias'];
             }
     
@@ -528,6 +545,9 @@ class ArcGISLayer implements MapFolder, MapListElement {
         $displayAttribs = array();
         // use human-readable field alias to construct feature details
         foreach ($attribs as $name => $value) {
+            if (strtoupper($name) == strtoupper($displayField)) {
+                $index = $value;
+            }
             if ($value !== null && trim($value) !== '') {
                 if (isset($this->fieldNames[$name]))
                     $name = $this->fieldNames[$name];
@@ -544,9 +564,6 @@ class ArcGISLayer implements MapFolder, MapListElement {
             return NULL;
         }
         
-        // doing this assumes the display names for buildings are unique
-        // this is because we have no way of figuring out the object's actual ID
-        $index = $attribs[$displayField];
         $feature = new ArcGISFeature($displayAttribs, $geometry, $index, $this->getCategory());
         if ($this->geometryType) {
             $feature->setGeometryType($this->geometryType);
@@ -576,7 +593,7 @@ class ArcGISLayer implements MapFolder, MapListElement {
             'where'          => '',
             'returnGeometry' => 'true',
             'outSR'          => '',
-            //'outFields'      => implode(',', array_keys($this->fieldNames)),
+            'outFields'      => implode(',', array_keys($this->fieldNames)),
             'f'              => 'json',
         );
         

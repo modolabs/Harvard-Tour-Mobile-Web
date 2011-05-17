@@ -12,6 +12,7 @@ class MapWebModule extends WebModule {
     protected $feedGroups = null;
     protected $numGroups = 1;
     protected $feeds;
+    protected $featureIndex;
     
     private function getDataForGroup($group) {
         if (!$this->feedGroups) {
@@ -26,10 +27,18 @@ class MapWebModule extends WebModule {
     
     private function getCategoriesAsArray() {
         $category = $this->getArg('category', null);
+        // this is not robust, but we need to figure out what happens
+        // for each instance of MAP_CATEGORY_DELIMITER that we change
+        // to BOOKMARK_COOKIE_DELIMITER
+        $result = array();
         if ($category !== null) {
-            return explode(MAP_CATEGORY_DELIMITER, $category);
+            if (strpos($category, BOOKMARK_COOKIE_DELIMITER) !== false) {
+                $result = explode(BOOKMARK_COOKIE_DELIMITER, $category);
+            } else {
+                $result = explode(MAP_CATEGORY_DELIMITER, $category);
+            }
         }
-        return array();
+        return $result;
     }
     
     // overrides function in Module.php
@@ -445,8 +454,8 @@ JS;
             {
                 $geometry = $feature->getGeometry();
                 $center = $geometry->getCenterCoordinate();
-                
-                $mapSearch = $this->getSearchClass();
+
+                $mapSearch = $this->getSearchClass();              
                 $searchResults = $mapSearch->searchByProximity($center, 1000, 10);
                 $places = array();
                 if ($searchResults) {
@@ -458,7 +467,9 @@ JS;
                             'subtitle' => $result->getSubtitle(),
                             'url' => $this->detailURLForResult($urlArgs, false),
                             );
-                        $places[] = $place;
+
+                        if ($feature->getTitle() != $result->getTitle())
+                            $places[] = $place;
                     }
                     $this->assign('nearbyResults', $places);
                 }
@@ -544,27 +555,8 @@ JS;
       return $distInKm;
     }
 
-    // TODO: move this to the common.js file
-    protected function getJavascriptStringForLocationRedirection() {
-        return 'if (typeof navigator.geolocation == \'undefined\') {'.
-                            'document.location.replace(\'index?redirected=yes\') }' .
-                            'else {' .
-                            'navigator.geolocation.getCurrentPosition(foundLocation, noLocation);
-                             }' .
-
-
-                    'function foundLocation(location) {' .
-                             'var curLat = location.coords.latitude;' .
-                             'var curLon = location.coords.longitude;' .
-                              'document.location.replace(\'index?redirected=yes&' .
-                                  'lon=\' + escape(curLon) + \'&lat=\' + escape(curLat))};' .
-
-                    'function noLocation() {' .
-                        'document.location.replace(\'index?redirected=yes\');
-                    }';
-    }
-
     protected function initializeForPage() {
+        $this->featureIndex = $this->getArg('featureindex', null);
 
         switch ($this->page) {
             case 'help':
@@ -595,17 +587,24 @@ JS;
                             'loc' => explode("," ,$groupData['center'])
                             );
                     }
+                    
+                    //don't do device detection on older devices
+                    if (!in_array($this->pagetype, array('compliant','tablet'))) {
+                        $_COOKIE['map_lat']='na';
+                        $_COOKIE['map_long']='na';
+                    }
 
                     // only display categories in a list if the current location attempt has been made
                     // and a redirection has occured.
-                    if ($redirectedWithLocation) {
+                    if (isset($_COOKIE['map_lat'], $_COOKIE['map_long'])) {
                         $groupAlias = $this->getOptionalModuleVar('GROUP_ALIAS', 'Campus');
                         $this->assign('browseHint', "Select a $groupAlias");
                         $this->assign('categories', $categories);
                         $this->assign('searchTip', NULL);
-                            
-                        $latitude = $this->getArg('lat');
-                        $longitude = $this->getArg('lon');
+                        
+                        
+                        $latitude = $_COOKIE['map_lat'];
+                        $longitude = $_COOKIE['map_long'];
     
                         // if current lat/lon were found and valid, sort the categories based on that.
                         if (is_numeric($latitude) && is_numeric($longitude)) {
@@ -616,10 +615,8 @@ JS;
                         if ($this->getOptionalModuleVar('BOOKMARKS_ENABLED', 1)) {
                             $this->generateBookmarkLink();
                         }
-                    } else{
-
-                       $js = $this->getJavascriptStringForLocationRedirection();
-                       $this->addInlineJavascript($js);
+                    } else {
+                        $this->assign('gettingLocation', true);
                     }
                     
                 } else {
@@ -687,6 +684,7 @@ JS;
             case 'search':
           
                 if (isset($this->args['filter'])) {
+                    $this->feedGroup = null;
                     $searchTerms = $this->args['filter'];
                     $mapSearch = $this->getSearchClass();
                     $searchResults = $mapSearch->searchCampusMap($searchTerms);
@@ -725,9 +723,9 @@ JS;
                     // build the drill-down list
                     $dataController = $this->getDataController($categoryPath, $listItemPath);
                     $listItems = $dataController->getListItems($listItemPath);
-                    if (count($listItems) == 1 && $listItems[0] instanceof MapFeature) {
+                    if (count($listItems) == 1 && current($listItems) instanceof MapFeature) {
                         $args = $this->args;
-                        $args['featureindex'] = $listItems[0]->getIndex();
+                        $args['featureindex'] = current($listItems)->getIndex();
                         $this->redirectTo('detail', $args, true);
                     }
 
@@ -748,6 +746,19 @@ JS;
                     }
                     $this->assign('title',  $dataController->getTitle());
                     $this->assign('places', $places);          
+                    
+                    if ($this->numGroups > 1) {
+                        $categories = $this->assignCategories();
+                        if (count($categories)==1) {
+                            $groupAlias = $this->getOptionalModuleVar('GROUP_ALIAS_PLURAL', 'Campuses');
+                            $clearLink = array(array(
+                                'title' => "All $groupAlias",
+                                'url' => $this->groupURL(''),
+                                ));
+                            $this->assign('clearLink', $clearLink);
+                        }
+                    }
+                    
                   
                 } else {
                       $this->redirectTo('index');
@@ -766,7 +777,7 @@ JS;
                     if (isset($this->args['featureindex'])) { // this is a regular place
                         $cookieParams = array(
                             'category' => $this->args['category'],
-                            'featureindex' => $this->args['featureindex'],
+                            'featureindex' => $this->featureIndex,
                             );
                         $cookieID = http_build_query($cookieParams);
                         $this->generateBookmarkOptions($cookieID);
@@ -803,14 +814,14 @@ JS;
     }
     
     private function getDataControllerForMap(&$listItemPath=array()) {
-        if (isset($this->args['featureindex'])) { // this is a regular place
+        if (isset($this->featureIndex)) { // this is a regular place
             $topCategory = NULL;
             $categoryPath = $this->getCategoriesAsArray();
             if (count($categoryPath)) {
                 $topCategory = $categoryPath[0];
             }
             $dataController = $this->getDataController($categoryPath, $listItemPath);
-                    
+
         } else {
             $dataController = $this->getDataController(NULL, $listItemPath);
         }
@@ -818,8 +829,8 @@ JS;
     }
         
     private function getFeatureForMap($dataController, $categoryPath=array()) {
-        if (isset($this->args['featureindex'])) { // this is a regular place
-            $index = $this->args['featureindex'];
+        if (isset($this->featureIndex)) { // this is a regular place
+            $index = $this->featureIndex;
             $feature = $dataController->getFeature($index, $categoryPath);
                     
         } elseif (isset($this->args['group'])) { // this is a campus
