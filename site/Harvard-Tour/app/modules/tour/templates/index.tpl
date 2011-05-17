@@ -1,6 +1,6 @@
 {capture name="customHeader" assign="customHeader"}
   <div id="welcomehead">
-    <a id="startlink" href="detail">
+    <a id="startlink" href="overview">
       <img id="logo" src="/modules/tour/images/logo-hdpi.png" alt="harvard yard tour" width="231" height="33" border="0" />
       <br/>
       <img id="begin" src="/modules/tour/images/begin@2x.png" alt="begin your tour" width="131" height="30" border="0" />

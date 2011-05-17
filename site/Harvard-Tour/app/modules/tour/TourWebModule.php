@@ -16,7 +16,7 @@ class TourWebModule extends WebModule {
         'chld' => 'pin||DD0000|DD0000',
       )),
       'visited' => 'http://chart.apis.google.com/chart?'.http_build_query(array(
-        'chst' => 'd_map_pin_icon_withshadow',
+        'chst' => 'd_map_xpin_icon_withshadow',
         'chld' => 'pin|glyphish_todo|CCCCCC',
       )),
       'other' => 'http://chart.apis.google.com/chart?'.http_build_query(array(
@@ -29,29 +29,29 @@ class TourWebModule extends WebModule {
   protected function initializeMap($stops) {
     $tourStops = array();
     
-    $stopIds = array_keys($stops);
-    $currentStopIndex = array_search($this->stop->getId(), $stopIds);
-    
-    foreach ($stops as $stopIndex => $stop) {
+    foreach ($stops as $stop) {
       $coords = $stop->getCoords();
       
       $tourStops[] = array(
         'id'        => $stop->getId(),
-        'url'       => $this->buildBreadcrumbUrl('map', array('id' => $stop->getId())),
+        'url'       => $this->buildBreadcrumbUrl('approach', array('id' => $stop->getId())),
         'title'     => $stop->getTitle(),
         'subtitle'  => $stop->getSubtitle(),
         'photo'     => $stop->getPhotoSrc(),
         'thumbnail' => $stop->getThumbnailSrc(),
         'lat'       => $coords['lat'],
         'lon'       => $coords['lon'],
-        'visited'   => $currentStopIndex > $stopIndex,
-        'current'   => $currentStopIndex == $stopIndex,
+        'visited'   => $stop->wasVisited(),
+        'current'   => $stop->isCurrent(),
       );
     }
+    
     $center = array(
       'lat' => 42.374464, 
       'lon' => -71.117232,
     );
+    
+    $stopOverviewMode = $this->page != 'approach' ? 'true' : 'false';
     
     $scriptText = "\n".
       'var centerCoords = '.json_encode($center)."\n".
@@ -60,7 +60,7 @@ class TourWebModule extends WebModule {
 
     $this->addExternalJavascript('http://maps.google.com/maps/api/js?sensor=true');
     $this->addInlineJavascript($scriptText);
-    $this->addOnLoad('showMap(centerCoords, tourStops, tourIcons);');
+    $this->addOnLoad('showMap(centerCoords, tourStops, tourIcons, '.$stopOverviewMode.');');
   }
   
   protected function hasTabForKey($tabKey, &$tabJavascripts) {
@@ -70,8 +70,21 @@ class TourWebModule extends WebModule {
   protected function initializeForPage() {
     $this->tour = new Tour();
     
-    $stopId = $this->getArg('id', $this->tour->getFirstStop()->getId());
-    $this->stop = $this->tour->getStop($stopId);
+    $this->tour->setStop($this->getArg('id', $this->tour->getFirstStop()->getId()));
+    $this->stop = $this->tour->getStop();
+    
+    $stopInfo = array(
+      'id'        => $this->stop->getId(),
+      'title'     => $this->stop->getTitle(),
+      'subtitle'  => $this->stop->getSubtitle(),
+      'photo'     => $this->stop->getPhotoSrc(),
+      'thumbnail' => $this->stop->getThumbnailSrc(),
+      'lenses'    => array(),
+    );
+    $lenses = $this->stop->getAvailableLenses();
+    foreach ($lenses as $lens) {
+      $stopInfo['lenses'][$lens] = $this->stop->getLensContents($lens);
+    }
     
     switch ($this->page) {
       case 'index':
@@ -82,6 +95,19 @@ class TourWebModule extends WebModule {
         break;
         
       case 'finish':
+        $prevURL = false;
+        $prevStop = $this->tour->getLastStop();
+        if ($prevStop) {
+          $prevURL = $this->buildBreadcrumbURL('detail', array(
+            'id' => $prevStop->getId(),
+          ));
+        } else {
+          $prevURL = $this->buildBreadcrumbURL('overview', array());          
+        }
+        $nextURL = false;
+        
+        $this->assign('prevURL', $prevURL);
+        $this->assign('nextURL', $nextURL);
         break;
         
       case 'overview':
@@ -95,22 +121,35 @@ class TourWebModule extends WebModule {
         $args['view'] = 'list';
         $listViewURL = $this->buildBreadcrumbURL($this->page, $args, false);
         
+        $stopInfo['url'] = $this->buildBreadcrumbUrl('approach', array(
+          'id' => $this->stop->getId()
+        ));
+        
         $this->assign('mapViewURL',  $mapViewURL);
         $this->assign('listViewURL', $listViewURL);
         $this->assign('view',        $view);
-        $this->assign('stop',        array(
-          'id'        => $this->stop->getId(),
-          'url'       => $this->buildBreadcrumbUrl('map', array(
-            'id' => $this->stop->getId())
-          ),
-          'title'     => $this->stop->getTitle(),
-          'subtitle'  => $this->stop->getSubtitle(),
-          'photo'     => $this->stop->getPhotoSrc(),
-          'thumbnail' => $this->stop->getThumbnailSrc(),
-        ));
+        $this->assign('stop',        $stopInfo);
         break;
         
       case 'approach':
+        $this->initializeMap($this->tour->getAllStops());
+      
+        $prevURL = false;
+        $prevStop = $this->tour->getPreviousStop();
+        if ($prevStop) {
+          $prevURL = $this->buildBreadcrumbURL('detail', array(
+            'id' => $prevStop->getId(),
+          ));
+        } else {
+          $prevURL = $this->buildBreadcrumbURL('overview', array());          
+        }
+        $nextURL = $this->buildBreadcrumbURL('detail', array(
+          'id' => $this->stop->getId(),
+        ));
+        
+        $this->assign('prevURL', $prevURL);
+        $this->assign('nextURL', $nextURL);
+        $this->assign('stop',    $stopInfo);
         break;
         
       case 'detail':
@@ -125,8 +164,24 @@ class TourWebModule extends WebModule {
           }
         }
 
+        $prevURL = $this->buildBreadcrumbURL('approach', array(
+          'id' => $this->stop->getId(),
+        ));
+        $nextURL = false;
+        $nextStop = $this->tour->getNextStop();
+        if ($nextStop) {
+          $nextURL = $this->buildBreadcrumbURL('approach', array(
+            'id' => $nextStop->getId(),
+          ));
+        } else {
+          $nextURL = $this->buildBreadcrumbURL('finish', array());          
+        }
+        
+        $this->assign('prevURL', $prevURL);
+        $this->assign('nextURL', $nextURL);
         $this->assign('tabKeys', $tabKeys);
         $this->enableTabs($tabKeys, null, $tabJavascripts);
+        $this->assign('stop',    $stopInfo);
         break;
         
     }

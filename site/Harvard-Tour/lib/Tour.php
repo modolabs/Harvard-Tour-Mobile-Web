@@ -4,24 +4,72 @@ require_once('TourData.php');
 
 class Tour {
   private $stops = array();
+  private $currentStopId = '';
 
   function __construct() {
     foreach (_getTourStops() as $id => $stopData) {
       $this->stops[$id] = new TourStop($id, $stopData);
     }
-    error_log(print_r($this->stops, true));
+    $this->currentStopId = reset(array_keys($this->stops));
+    //error_log(print_r($this->stops, true));
   }
   
   function getAllStops() {
     return array_values($this->stops);
   }
   
-  function getStop($stopId) {
-    return isset($this->stops[$stopId]) ? $this->stops[$stopId] : false;
+  function setStop($stopId) {
+    $pastCurrentStop = true;
+    if (isset($this->stops[$stopId])) {
+      $this->currentStopId = $stopId;
+      $pastCurrentStop = false;
+    }
+    foreach ($this->stops as $id => $stop) {
+      $visited = false;
+      
+      if (!$pastCurrentStop) {
+        if ($id == $this->currentStopId) {
+          $pastCurrentStop = true;
+        } else {
+          $visited = true;
+        }
+      }
+      $stop->setWasVisited($visited);
+      $stop->setIsCurrent($id == $this->currentStopId);
+    }
+  }
+  
+  function getStop() {
+    return isset($this->stops[$this->currentStopId]) ? 
+      $this->stops[$this->currentStopId] : false;
+  }
+  
+  function getPreviousStop() {
+    $stopIds = array_keys($this->stops);
+    $stopIndex = array_search($this->currentStopId, $stopIds);
+    
+    if ($stopIndex > 0) {
+      return $this->stops[$stopIds[$stopIndex-1]];
+    }
+    return false;
+  }
+  
+  function getNextStop() {
+    $stopIds = array_keys($this->stops);
+    $stopIndex = array_search($this->currentStopId, $stopIds);
+    
+    if ($stopIndex < count($stopIds)-1) {
+      return $this->stops[$stopIds[$stopIndex+1]];
+    }
+    return false;
   }
   
   function getFirstStop() {
     return reset($this->stops);
+  }
+  
+  function getLastStop() {
+    return end($this->stops);
   }
 }
 
@@ -33,6 +81,8 @@ class TourStop {
   private $buildingId = '';
   private $photo      = null;
   private $lenses     = array();
+  private $isCurrent  = false;
+  private $wasVisited = false;
 
   function __construct($id, $data) {
     $this->id = $id;
@@ -100,8 +150,22 @@ class TourStop {
     return array_keys($this->lenses);
   }
   
-  function getLensContent($lens) {
+  function getLensContents($lens) {
     return isset($this->lenses[$lens]) ? $this->lenses[$lens] : false;
+  }
+
+  function isCurrent() {
+    return $this->isCurrent;
+  }
+  function setIsCurrent($isCurrent) {
+    $this->isCurrent = $isCurrent;
+  }
+  
+  function wasVisited() {
+    return $this->wasVisited;
+  }
+  function setWasVisited($wasVisited) {
+    $this->wasVisited = $wasVisited;
   }
 }
 

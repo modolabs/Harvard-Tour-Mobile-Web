@@ -1,4 +1,4 @@
-function showMap(center, stops, tourIcons) {
+function showMap(center, stops, tourIcons, stopOverviewMode) {
   var stopElems = [
     {
       'key'  : 'title',
@@ -39,8 +39,8 @@ function showMap(center, stops, tourIcons) {
           google.maps.MapTypeId.ROADMAP,
           google.maps.MapTypeId.SATELLITE
         ],
-        'position' : google.maps.ControlPosition.TOP_RIGHT,
-        'style'    : google.maps.MapTypeControlStyle.DROPDOWN_MENU
+        'position' : google.maps.ControlPosition.TOP_LEFT,
+        'style'    : google.maps.MapTypeControlStyle.HORIZONTAL_BAR
       },
       'panControl' : false,
       'streetViewControl' : false,
@@ -57,10 +57,12 @@ function showMap(center, stops, tourIcons) {
       var stop = stops[i];
     
       var stopLatLng = new google.maps.LatLng(stop['lat'], stop['lon']);
-      bounds.extend(stopLatLng);
+      if (stop['current'] || stopOverviewMode) {
+        bounds.extend(stopLatLng);
+      }
       
       var icon = tourIcons['other'];
-      if (stop['']) {
+      if (stop['visited']) {
         icon = tourIcons['visited'];
       }
       stop['defaultIcon'] = icon; // remember non-current icon state
@@ -78,37 +80,39 @@ function showMap(center, stops, tourIcons) {
       stops[i]['marker'].tourStop = stop;
       stops[i]['marker'].tourStopIndex = i;
       
-      google.maps.event.addListener(stops[i]['marker'], 'click', function() {
-        var stop = this.tourStop;
-        
-        for (var i = 0; i < stopElems.length; i++) {
-          var element = stopElems[i]['elem'];
+      if (stopOverviewMode) {
+        google.maps.event.addListener(stops[i]['marker'], 'click', function() {
+          var stop = this.tourStop;
           
-          if (element) {
-            var attr = stopElems[i]['attr'];
-            var value = stop[stopElems[i]['key']];
+          for (var i = 0; i < stopElems.length; i++) {
+            var element = stopElems[i]['elem'];
             
-            if (attr == 'innerHTML') {
-              element.innerHTML = value;
-            } else if (attr == 'src') {
-              element.src = value;
-            } else if (attr == 'href') {
-              element.href = value;
+            if (element) {
+              var attr = stopElems[i]['attr'];
+              var value = stop[stopElems[i]['key']];
+              
+              if (attr == 'innerHTML') {
+                element.innerHTML = value;
+              } else if (attr == 'src') {
+                element.src = value;
+              } else if (attr == 'href') {
+                element.href = value;
+              }
+            }
+            
+            // select marker
+            for (var j = 0; j < stops.length; j++) {
+              var icon = stops[j]['defaultIcon'];
+              if (j == this.tourStopIndex) {
+                icon = tourIcons['current'];
+              }
+              stops[j]['marker'].setIcon(new google.maps.MarkerImage(icon));
             }
           }
-          
-          // select marker
-          for (var j = 0; j < stops.length; j++) {
-            var icon = stops[j]['defaultIcon'];
-            if (j == this.tourStopIndex) {
-              icon = tourIcons['current'];
-            }
-            stops[j]['marker'].setIcon(new google.maps.MarkerImage(icon));
-          }
-        }
-      });
+        });
+      }
     }
-    map.fitBounds(bounds);
+    map.panToBounds(bounds);
     
     navigator.geolocation.getCurrentPosition(function(position) {
       var location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
@@ -119,6 +123,9 @@ function showMap(center, stops, tourIcons) {
         'position'  : location,
         'icon'      : new google.maps.MarkerImage(tourIcons['self'])
       });
+      
+      bounds.extend(location);
+      map.panToBounds(bounds);
     });
     
     var elem = document.getElementById('map_canvas');

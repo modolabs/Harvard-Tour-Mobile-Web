@@ -43,6 +43,9 @@
 	background: #7c8893 url(/common/images/headback.jpg) repeat-x;
 	overflow: hidden;
 }
+#pagehead.brief {
+  height: 56px;
+}
 #pagetitle {
 	display: table;
 	width: 100%;
@@ -154,6 +157,10 @@
 	font: 15px/20px sans-serif;
 	color: #464640;
 }
+#pagehead.brief + #content {
+  top: 96px;
+}
+
 #content p, #content ul, #content ol,
 #tabbodies p, #tabbodies ul, #tabbodies ol {
 	margin: 15px 5px;
@@ -267,6 +274,24 @@
 #content.mapcontent {
   margin: 0;
   padding: 0;
+}
+
+#content.overview {
+  margin: 0;
+  padding: 0 0 1.5em; 0;
+  font-size: 70%;
+}
+
+#content.overview #helptext {
+  width: 100%;
+  height: 1.5em;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background: #485761 url(/common/images/tabback.jpg) repeat-x;
+  color: #fff;
+  text-align: center;
+  line-height: 1.5em;
 }
 
 #map_container,

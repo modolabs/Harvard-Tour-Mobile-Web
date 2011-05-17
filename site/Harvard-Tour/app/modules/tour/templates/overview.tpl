@@ -21,8 +21,9 @@
     </div>
   </div>
 </div>
-<div id="content" class="mapcontent">
+<div id="content" class="overview">
   <img id="zoomup" src="{$stop['photo']['src']}" onclick="zoomUpDown('zoomup')" />
   {include file="findInclude:modules/tour/templates/include/map.tpl"}
+  <div id="helptext">Tap any pin to select it as your starting point</div>
 </div>
 {include file="findInclude:common/templates/footer.tpl"}
