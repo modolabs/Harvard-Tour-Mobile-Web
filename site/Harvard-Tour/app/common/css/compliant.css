@@ -80,6 +80,22 @@
 #pagehead #sidenav #next {
 	right: 0;
 }
+#pagetitle.overview h1 {
+  text-align: left;
+  padding: 0px 20px;
+}
+#pagehead #viewtoggle {
+	position: absolute;
+	top: 0;
+	right: 0;
+  padding-right: 20px;
+	height: 56px;
+	line-height: 56px;
+	color: #eee;
+}
+#pagehead #viewtoggle a, #pagehead #viewtoggle a:visited {
+	color: #fff;
+}
 #tabs {
 	position: absolute;
 	width: 100%;
@@ -190,6 +206,24 @@
 	color: rgba(255,255,255,1.0);
 	text-shadow: rgba(0,0,0,0.6) 0px 0px 2px;
 }
+#nextstop #starthere {
+  text-align: right;
+}
+#nextstop #starthere a, #nextstop #starthere a:visited {
+	display: inline-block;
+	vertical-align: middle;
+	line-height: 25px;
+	position: relative;
+  color: #fff;
+  text-decoration: none;
+  padding-right: 29px;
+}
+#nextstop #starthere img {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
 #mapimage {
 	position: absolute;
 	top: 0;
@@ -226,4 +260,41 @@
 
 #tabbodies {
   margin:0;
+}
+
+/* Map */
+
+#content.mapcontent {
+  margin: 0;
+  padding: 0;
+}
+
+#map_container,
+#map_canvas {
+  width: 100%;
+  height: 100%;
+}
+
+#map_loading {
+  position: absolute;
+  top: 3em;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  height: 40px;
+  line-height: 40px;
+}
+
+#map_loading img {
+  vertical-align: middle;
+}
+
+.map_infowindow {
+}
+.map_name {
+  font-weight: bold;
+}
+.map_address {
+  font-size: 70%;
+  line-height: normal;
 }

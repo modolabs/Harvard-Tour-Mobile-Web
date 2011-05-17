@@ -1,58 +1,130 @@
-function showMap(center, stops, selfIcon) {
+function showMap(center, stops, tourIcons) {
+  var stopElems = [
+    {
+      'key'  : 'title',
+      'elem' : document.getElementById('stoptitle'),
+      'attr' : 'innerHTML'
+    },
+    {
+      'key'  : 'subtitle',
+      'elem' : document.getElementById('stopsubtitle'),
+      'attr' : 'innerHTML'
+    },
+    {
+      'key'  : 'thumbnail',
+      'elem' : document.getElementById('zoomthumb'),
+      'attr' : 'src'
+    },
+    {
+      'key'  : 'photo',
+      'elem' : document.getElementById('zoomup'),
+      'attr' : 'src'
+    },
+    {
+      'key'  : 'url',
+      'elem' : document.getElementById('stoplink'),
+      'attr' : 'href'
+    }
+  ];
+
+
   var mapElement = document.getElementById('map_canvas');
   if (mapElement) {
-    setTimeout(function () {
-      var options = {
-        'zoom'      : 10,
-        'center'    : new google.maps.LatLng(center['lat'], center['lon']),
-        'mapTypeId' : google.maps.MapTypeId.ROADMAP
-      };
-      
-      var map    = new google.maps.Map(mapElement, options);  
-      var bounds = new google.maps.LatLngBounds();
-  
-      for (var i = 0; i < stops.length; i++) {
-        var stop = stops[i];
-      
-        var stopLatLng = new google.maps.LatLng(stop['lat'], stop['lon']);
-        bounds.extend(stopLatLng);
-        
-        var markerImage = new google.maps.MarkerImage(stop['icon']);
-        var marker = new google.maps.Marker({
-          'map'      : map, 
-          'position' : stopLatLng,
-          'title'    : stop['title'],
-          'icon'     : markerImage
-        });
-        marker.infoWindow = new google.maps.InfoWindow({
-          'content'  : '<div class="map_infowindow"><div class="map_name">'+stop['title']+'</div><div class="map_address">'+stop['subtitle']+'</div></div>'
-        });
-        google.maps.event.addListener(marker, 'click', function() {
-          marker.infoWindow.open(map, marker);
-        });
+    var options = {
+      'zoom'      : 17,
+      'center'    : new google.maps.LatLng(center['lat'], center['lon']),
+      'mapTypeId' : google.maps.MapTypeId.ROADMAP,
+      'mapTypeControlOptions' : { 
+        'mapTypeIds' : [
+          google.maps.MapTypeId.ROADMAP,
+          google.maps.MapTypeId.SATELLITE
+        ],
+        'position' : google.maps.ControlPosition.TOP_RIGHT,
+        'style'    : google.maps.MapTypeControlStyle.DROPDOWN_MENU
+      },
+      'panControl' : false,
+      'streetViewControl' : false,
+      'zoomControlOptions' : { 
+        'position' : google.maps.ControlPosition.RIGHT_BOTTOM,
+        'style'    : google.maps.ZoomControlStyle.SMALL
       }
-      map.fitBounds(bounds);
-      
-      navigator.geolocation.getCurrentPosition(function(position) {
-        var location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-        bounds.extend(location);
+    };
+    
+    var map    = new google.maps.Map(mapElement, options);  
+    var bounds = new google.maps.LatLngBounds();
 
-        var markerImage = new google.maps.MarkerImage(selfIcon);
-        var marker = new google.maps.Marker({
-          'clickable' : false,
-          'map'       : map, 
-          'position'  : location,
-          'icon'      : markerImage
-        });
-        map.fitBounds(bounds);
+    for (var i = 0; i < stops.length; i++) {
+      var stop = stops[i];
+    
+      var stopLatLng = new google.maps.LatLng(stop['lat'], stop['lon']);
+      bounds.extend(stopLatLng);
+      
+      var icon = tourIcons['other'];
+      if (stop['']) {
+        icon = tourIcons['visited'];
+      }
+      stop['defaultIcon'] = icon; // remember non-current icon state
+      
+      if (stop['current']) {
+        icon = tourIcons['current'];
+      }
+      
+      stops[i]['marker'] = new google.maps.Marker({
+        'map'      : map, 
+        'position' : stopLatLng,
+        'title'    : stop['title'],
+        'icon'     : new google.maps.MarkerImage(icon)
       });
+      stops[i]['marker'].tourStop = stop;
+      stops[i]['marker'].tourStopIndex = i;
       
-      var elem = document.getElementById('map_canvas');
-      elem.style.visibility = 'visible';
-      var elem = document.getElementById('map_loading');
-      elem.style.display = 'none';
-      
-    }, 0);
+      google.maps.event.addListener(stops[i]['marker'], 'click', function() {
+        var stop = this.tourStop;
+        
+        for (var i = 0; i < stopElems.length; i++) {
+          var element = stopElems[i]['elem'];
+          
+          if (element) {
+            var attr = stopElems[i]['attr'];
+            var value = stop[stopElems[i]['key']];
+            
+            if (attr == 'innerHTML') {
+              element.innerHTML = value;
+            } else if (attr == 'src') {
+              element.src = value;
+            } else if (attr == 'href') {
+              element.href = value;
+            }
+          }
+          
+          // select marker
+          for (var j = 0; j < stops.length; j++) {
+            var icon = stops[j]['defaultIcon'];
+            if (j == this.tourStopIndex) {
+              icon = tourIcons['current'];
+            }
+            stops[j]['marker'].setIcon(new google.maps.MarkerImage(icon));
+          }
+        }
+      });
+    }
+    map.fitBounds(bounds);
+    
+    navigator.geolocation.getCurrentPosition(function(position) {
+      var location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+
+      var marker = new google.maps.Marker({
+        'clickable' : false,
+        'map'       : map, 
+        'position'  : location,
+        'icon'      : new google.maps.MarkerImage(tourIcons['self'])
+      });
+    });
+    
+    var elem = document.getElementById('map_canvas');
+    elem.style.visibility = 'visible';
+    var elem = document.getElementById('map_loading');
+    elem.style.display = 'none';
   }
 }
 
