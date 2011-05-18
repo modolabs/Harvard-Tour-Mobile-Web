@@ -6,8 +6,12 @@ function _getTourStops() {
       'title' => 'Wadsworth House',
       'subtitle' => 'The only wooden building in Harvard Yard, c. 1727',
       'photo' => array(
-        'url' => '',
-        'title' => 'Wadsworth House- Merlin #1366',
+        'url' => '/media/wadsworth_house-est.jpg',
+        'title' => '',
+      ),
+      'thumbnail' => array(
+        'url' => '/media/wadsworth_house-thumb.jpg',
+        'title' => '',
       ),
       'coords' => array(
         'lat' => 42.373294,
@@ -68,8 +72,12 @@ function _getTourStops() {
       'title' => 'Indian College',
       'subtitle' => 'A plaque denotes the school established for Native American students',
       'photo' => array(
-        'url' => '',
-        'title' => 'Indian College Plaque- Merlin #183653',
+        'url' => '/media/indian_college-est.jpg',
+        'title' => '',
+      ),
+      'thumbnail' => array(
+        'url' => '/media/indian_college-thumb.jpg',
+        'title' => '',
       ),
       'coords' => array(
         'lat' => 42.373905,
@@ -120,8 +128,12 @@ function _getTourStops() {
       'title' => 'Massachusetts Hall',
       'subtitle' => 'Older than the U.S. by 56 years, c. 1720',
       'photo' => array(
-        'url' => '',
-        'title' => 'Massachusetts Hall- Merlin #166683',
+        'url' => '/media/massachusetts_hall-est.jpg',
+        'title' => '',
+      ),
+      'thumbnail' => array(
+        'url' => '/media/massachusetts_hall-thumb.jpg',
+        'title' => '',
       ),
       'coords' => array(
         'lat' => 42.37443060908891,
@@ -190,8 +202,12 @@ function _getTourStops() {
       'title' => 'Johnston Gate',
       'subtitle' => 'There is no large Harvard sign but this is considered the official entrance',
       'photo' => array(
-        'url' => '',
-        'title' => 'Johnston Gate- Merlin #111251',
+        'url' => '/media/johnston_gate-est.jpg',
+        'title' => '',
+      ),
+      'thumbnail' => array(
+        'url' => '/media/johnston_gate-thumb.jpg',
+        'title' => '',
       ),
       'coords' => array(
         'lat' => 42.374714,
@@ -257,8 +273,12 @@ function _getTourStops() {
       'title' => 'Harvard Hall',
       'subtitle' => 'Site of the nation\'s first physics lab, c. in 1766',
       'photo' => array(
-        'url' => '',
-        'title' => 'Harvard Hall- Merlin #166361',
+        'url' => '/media/harvard_hall-est.jpg',
+        'title' => '',
+      ),
+      'thumbnail' => array(
+        'url' => '/media/harvard_hall-thumb.jpg',
+        'title' => '',
       ),
       'coords' => array(
         'lat' => 42.37469018485697,
@@ -319,8 +339,12 @@ function _getTourStops() {
       'title' => 'University Hall/John Harvard Statue',
       'subtitle' => 'Now houses administration. The statue is a relatively new addition',
       'photo' => array(
-        'url' => '',
-        'title' => 'University Hall- Merlin #92786 --John Harvard Statue -Merlin #52360',
+        'url' => '/media/university_hall-est.jpg',
+        'title' => '',
+      ),
+      'thumbnail' => array(
+        'url' => '/media/university_hall-thumb.jpg',
+        'title' => '',
       ),
       'coords' => array(
         'lat' => 42.374464,
@@ -413,8 +437,12 @@ function _getTourStops() {
       'title' => 'Freshman Dorms and College Pump',
       'subtitle' => 'Most Harvard freshmen live in the dorms in Harvard Yard',
       'photo' => array(
-        'url' => '',
-        'title' => 'Freshman Dorms- Merlin #37842',
+        'url' => '/media/freshman_dorms-est.jpg',
+        'title' => '',
+      ),
+      'thumbnail' => array(
+        'url' => '/media/freshman_dorms-thumb.jpg',
+        'title' => '',
       ),
       'coords' => array(
         'lat' => 42.375071,
@@ -473,8 +501,12 @@ function _getTourStops() {
       'title' => 'Holden Chapel',
       'subtitle' => 'The Chapel was first site of the Medical School, c. 1744',
       'photo' => array(
-        'url' => '',
-        'title' => 'Holden Chapel- Merlin #108655',
+        'url' => '/media/holden_chapel-est.jpg',
+        'title' => '',
+      ),
+      'thumbnail' => array(
+        'url' => '/media/holden_chapel-thumb.jpg',
+        'title' => '',
       ),
       'coords' => array(
         'lat' => 42.375230138647304,
@@ -549,12 +581,12 @@ function _getTourStops() {
       'title' => 'Phillips Brooks House',
       'subtitle' => 'Home to student groups for social justice, c. 1904',
       'photo' => array(
-        'url' => '',
-        'title' => 'Phillips Brooks House- Merlin #97822',
+        'url' => '/media/phillips_brook_house-est.jpg',
+        'title' => '',
       ),
-      'coords' => array(
-        'lat' => 42.375606,
-        'lon' => -71.117919,
+      'thumbnail' => array(
+        'url' => '/media/phillips_brook_house-thumb.jpg',
+        'title' => '',
       ),
       'building' => '225',
       'lenses' => array(
@@ -630,8 +662,12 @@ function _getTourStops() {
       'title' => 'Science Center',
       'subtitle' => 'Designed for science, this building houses many academic departments, c. 1973',
       'photo' => array(
-        'url' => '',
-        'title' => 'Science Center- Merlin #159613',
+        'url' => '/media/science_center-est.jpg',
+        'title' => '',
+      ),
+      'thumbnail' => array(
+        'url' => '/media/science_center-thumb.jpg',
+        'title' => '',
       ),
       'coords' => array(
         'lat' => 42.3758661883496,
@@ -706,8 +742,12 @@ function _getTourStops() {
       'title' => 'Memorial Hall',
       'subtitle' => 'Includes a dining hall and Sanders Theatre for classes and performances, c. 1878',
       'photo' => array(
-        'url' => '',
-        'title' => 'Memorial Hall- Merlin #17344',
+        'url' => '/media/memorial_hall-est.jpg',
+        'title' => '',
+      ),
+      'thumbnail' => array(
+        'url' => '/media/memorial_hall-thumb.jpg',
+        'title' => '',
       ),
       'coords' => array(
         'lat' => 42.375831,
@@ -796,8 +836,12 @@ function _getTourStops() {
       'title' => 'Memorial Church',
       'subtitle' => 'Built by President Lowell to remember Harvard\'s war dead, c. 1932',
       'photo' => array(
-        'url' => '',
-        'title' => 'Memorial Church- Merlin #69954',
+        'url' => '/media/memorial_church-est.jpg',
+        'title' => '',
+      ),
+      'thumbnail' => array(
+        'url' => '/media/memorial_church-thumb.jpg',
+        'title' => '',
       ),
       'coords' => array(
         'lat' => 42.37514196302438, 
@@ -873,7 +917,11 @@ function _getTourStops() {
       'title' => 'Sever Hall Quad',
       'subtitle' => 'Sever, Robinson, and Emerson Hall are home to humanities and social sciences',
       'photo' => array(
-        'url' => '',
+        'url' => '/media/sever_hall_quad-est.jpg',
+        'title' => '',
+      ),
+      'thumbnail' => array(
+        'url' => '/media/sever_hall_quad-thumb.jpg',
         'title' => '',
       ),
       'coords' => array(
@@ -945,8 +993,12 @@ function _getTourStops() {
       'title' => 'Loeb House',
       'subtitle' => 'Several prominent Harvard presidents called Loeb House home',
       'photo' => array(
-        'url' => '',
-        'title' => 'Loeb House- Merlin #163809',
+        'url' => '/media/loeb_house-est.jpg',
+        'title' => '',
+      ),
+      'thumbnail' => array(
+        'url' => '/media/loeb_house-thumb.jpg',
+        'title' => '',
       ),
       'coords' => array(
         'lat' => 42.373371489206335, 
@@ -1021,8 +1073,12 @@ function _getTourStops() {
       'title' => 'Tercentenary Theatre',
       'subtitle' => 'This was the site of Harvard\'s 300th anniversary celebration in 1936',
       'photo' => array(
-        'url' => '',
-        'title' => 'Tercentenary Theatre- Merlin #142761',
+        'url' => '/media/tercentenary_theatre-est.jpg',
+        'title' => '',
+      ),
+      'thumbnail' => array(
+        'url' => '/media/tercentenary_theatre-thumb.jpg',
+        'title' => '',
       ),
       'coords' => array(
         'lat' => 42.37384903658428, 
@@ -1093,8 +1149,12 @@ function _getTourStops() {
       'title' => 'Widener Library',
       'subtitle' => 'Second in size only to the Library of Congress, c. 1914',
       'photo' => array(
-        'url' => '',
-        'title' => 'Widener Library- Merlin #94633',
+        'url' => '/media/widner_library-est.jpg',
+        'title' => '',
+      ),
+      'thumbnail' => array(
+        'url' => '/media/widner_library-thumb.jpg',
+        'title' => '',
       ),
       'coords' => array(
         'lat' => 42.37404916946791, 
