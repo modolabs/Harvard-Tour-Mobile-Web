@@ -6,7 +6,7 @@ function _getTourStops() {
       'title' => 'Wadsworth House',
       'subtitle' => 'The only wooden building in Harvard Yard, c. 1727',
       'photo' => array(
-        'url' => '/media/wadsworth_house-est.jpg',
+        'url' => '/media/wadsworth_house-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -72,7 +72,7 @@ function _getTourStops() {
       'title' => 'Indian College',
       'subtitle' => 'A plaque denotes the school established for Native American students',
       'photo' => array(
-        'url' => '/media/indian_college-est.jpg',
+        'url' => '/media/indian_college-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -128,7 +128,7 @@ function _getTourStops() {
       'title' => 'Massachusetts Hall',
       'subtitle' => 'Older than the U.S. by 56 years, c. 1720',
       'photo' => array(
-        'url' => '/media/massachusetts_hall-est.jpg',
+        'url' => '/media/massachusetts_hall-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -202,7 +202,7 @@ function _getTourStops() {
       'title' => 'Johnston Gate',
       'subtitle' => 'There is no large Harvard sign but this is considered the official entrance',
       'photo' => array(
-        'url' => '/media/johnston_gate-est.jpg',
+        'url' => '/media/johnston_gate-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -273,7 +273,7 @@ function _getTourStops() {
       'title' => 'Harvard Hall',
       'subtitle' => 'Site of the nation\'s first physics lab, c. in 1766',
       'photo' => array(
-        'url' => '/media/harvard_hall-est.jpg',
+        'url' => '/media/harvard_hall-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -339,7 +339,7 @@ function _getTourStops() {
       'title' => 'University Hall/John Harvard Statue',
       'subtitle' => 'Now houses administration. The statue is a relatively new addition',
       'photo' => array(
-        'url' => '/media/university_hall-est.jpg',
+        'url' => '/media/university_hall-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -437,7 +437,7 @@ function _getTourStops() {
       'title' => 'Freshman Dorms and College Pump',
       'subtitle' => 'Most Harvard freshmen live in the dorms in Harvard Yard',
       'photo' => array(
-        'url' => '/media/freshman_dorms-est.jpg',
+        'url' => '/media/freshman_dorms-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -501,7 +501,7 @@ function _getTourStops() {
       'title' => 'Holden Chapel',
       'subtitle' => 'The Chapel was first site of the Medical School, c. 1744',
       'photo' => array(
-        'url' => '/media/holden_chapel-est.jpg',
+        'url' => '/media/holden_chapel-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -581,7 +581,7 @@ function _getTourStops() {
       'title' => 'Phillips Brooks House',
       'subtitle' => 'Home to student groups for social justice, c. 1904',
       'photo' => array(
-        'url' => '/media/phillips_brook_house-est.jpg',
+        'url' => '/media/phillips_brook_house-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -666,7 +666,7 @@ function _getTourStops() {
       'title' => 'Science Center',
       'subtitle' => 'Designed for science, this building houses many academic departments, c. 1973',
       'photo' => array(
-        'url' => '/media/science_center-est.jpg',
+        'url' => '/media/science_center-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -746,7 +746,7 @@ function _getTourStops() {
       'title' => 'Memorial Hall',
       'subtitle' => 'Includes a dining hall and Sanders Theatre for classes and performances, c. 1878',
       'photo' => array(
-        'url' => '/media/memorial_hall-est.jpg',
+        'url' => '/media/memorial_hall-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -840,7 +840,7 @@ function _getTourStops() {
       'title' => 'Memorial Church',
       'subtitle' => 'Built by President Lowell to remember Harvard\'s war dead, c. 1932',
       'photo' => array(
-        'url' => '/media/memorial_church-est.jpg',
+        'url' => '/media/memorial_church-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -921,7 +921,7 @@ function _getTourStops() {
       'title' => 'Sever Hall Quad',
       'subtitle' => 'Sever, Robinson, and Emerson Hall are home to humanities and social sciences',
       'photo' => array(
-        'url' => '/media/sever_hall_quad-est.jpg',
+        'url' => '/media/sever_hall_quad-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -997,7 +997,7 @@ function _getTourStops() {
       'title' => 'Loeb House',
       'subtitle' => 'Several prominent Harvard presidents called Loeb House home',
       'photo' => array(
-        'url' => '/media/loeb_house-est.jpg',
+        'url' => '/media/loeb_house-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -1077,7 +1077,7 @@ function _getTourStops() {
       'title' => 'Tercentenary Theatre',
       'subtitle' => 'This was the site of Harvard\'s 300th anniversary celebration in 1936',
       'photo' => array(
-        'url' => '/media/tercentenary_theatre-est.jpg',
+        'url' => '/media/tercentenary_theatre-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -1153,7 +1153,7 @@ function _getTourStops() {
       'title' => 'Widener Library',
       'subtitle' => 'Second in size only to the Library of Congress, c. 1914',
       'photo' => array(
-        'url' => '/media/widner_library-est.jpg',
+        'url' => '/media/widner_library-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
