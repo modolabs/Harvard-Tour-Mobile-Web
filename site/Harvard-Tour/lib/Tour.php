@@ -95,25 +95,24 @@ class TourStop {
     $this->photo     = new TourPhoto($data['photo']['url'], $data['photo']['title']);
     $this->thumbnail = new TourPhoto($data['thumbnail']['url'], $data['thumbnail']['title']);
     
-    foreach ($data['lenses'] as $type => $contents) {
+    foreach ($data['lenses'] as $lens => $contents) {
       if (!$contents) { continue; }
     
-      if (!isset($this->lenses[$type])) {
-        $this->lenses[$type] = array();
+      if (!isset($this->lenses[$lens])) {
+        $this->lenses[$lens] = array();
       }
       
       foreach ($contents as $content) {
-      
         switch ($content['type']) {
           case 'photo':
           case 'video':
           case 'audio':
             $class = 'Tour'.ucfirst($content['type']);
-            $this->lenses[$type][] = new $class($content['url'], $content['title']);
+            $this->lenses[$lens][] = new $class($content['url'], $content['title']);
             break;
           
           case 'text':
-            $this->lenses[$type][] = new TourText($content['text']);
+            $this->lenses[$lens][] = new TourText($content['text']);
             break;
           
           default: 
@@ -179,11 +178,15 @@ class TourText {
   }
   
   function getContent() {
-    return $this->html;
+    return '<p>'.$this->html.'</p>';
   }
 }
 
 class TourPhoto extends TourAsset {
+  function getContent() {
+    return '<img class="photo" src="'.$this->src.'" width="100%"/>'.
+      ($this->title ? '<p class="caption">'.$this->title.'</p>' : '');
+  }
 }
 
 class TourVideo extends TourAsset {
@@ -193,8 +196,8 @@ class TourAudio extends TourAsset {
 }
 
 abstract class TourAsset {
-  private $src = '';
-  private $title = '';
+  protected $src = '';
+  protected $title = '';
   
   function __construct($src, $title) {
     $this->src = $src;
@@ -202,10 +205,14 @@ abstract class TourAsset {
   }
   
   function getSrc() {
-    return $this->src;
+    return FULL_URL_PREFIX.ltrim($this->src, '/');
   }
   
   function getTitle() {
     return $this->title;
+  }
+  
+  function getContent() {
+    return 'Error: no formatting for content type';
   }
 }

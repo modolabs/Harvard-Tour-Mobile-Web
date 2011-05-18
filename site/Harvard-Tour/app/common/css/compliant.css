@@ -202,6 +202,11 @@
 	height: 100%;
 	margin: -1px -1px -1px 7px;
 }
+.thumbicons {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+}
 #nextstop {
 	border-top: 1px solid rgba(0,0,0,0.15);
 	height: 100%;
@@ -322,4 +327,48 @@
 .map_address {
   font-size: 70%;
   line-height: normal;
+}
+
+#content .results {
+  margin: 0;
+  padding: 0;
+}
+
+#content .results li {
+  margin: 0;
+  padding: 0;
+  clear: both;
+}
+#content .results li a {
+  margin: 0;
+  padding: 0 25px 0 0;
+  height: 52px;
+  position: relative;
+}
+#content .results li a .listthumb {
+  padding: 1px;
+  margin: 0;
+  height: 50px;
+}
+#content .results li a .listpin {
+  float: left;
+  height: 48px;
+  width: 20px;
+  padding: 2px;
+}
+#content .results li a .listpin .current {
+  padding-top: 6px;
+}
+#content .results li a .listpin .visited {
+  padding-left: 4px;
+  padding-top: 14px;
+}
+
+#content .results li a .ellipsis {
+  height: 43px;
+  overflow: hidden;
+  padding: 4px 4px;
+}
+#content .results li a .ellipsis h2 {
+  padding-bottom: 2px;
 }

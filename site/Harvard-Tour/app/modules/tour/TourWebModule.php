@@ -26,26 +26,21 @@ class TourWebModule extends WebModule {
     );
   }
   
-  protected function initializeMap($stops) {
-    $tourStops = array();
-    
-    foreach ($stops as $stop) {
-      $coords = $stop->getCoords();
-      
-      $tourStops[] = array(
-        'id'        => $stop->getId(),
-        'url'       => $this->buildBreadcrumbUrl('approach', array('id' => $stop->getId())),
-        'title'     => $stop->getTitle(),
-        'subtitle'  => $stop->getSubtitle(),
-        'photo'     => $stop->getPhotoSrc(),
-        'thumbnail' => $stop->getThumbnailSrc(),
-        'lat'       => $coords['lat'],
-        'lon'       => $coords['lon'],
-        'visited'   => $stop->wasVisited(),
-        'current'   => $stop->isCurrent(),
-      );
-    }
-    
+  protected function currentIcon() {
+    return 'http://chart.apis.google.com/chart?'.http_build_query(array(
+      'chst' => 'd_map_xpin_letter',
+      'chld' => 'pin||DD0000|DD0000',
+    ));
+  }
+  
+  protected function visitedIcon() {
+    return 'http://chart.apis.google.com/chart?'.http_build_query(array(
+      'chst' => 'd_simple_text_icon_left',
+      'chld' => ' |9|555555|glyphish_todo|16|555555',
+    ));
+  }
+  
+  protected function initializeMap() {
     $center = array(
       'lat' => 42.374464, 
       'lon' => -71.117232,
@@ -55,7 +50,7 @@ class TourWebModule extends WebModule {
     
     $scriptText = "\n".
       'var centerCoords = '.json_encode($center)."\n".
-      'var tourStops = '.json_encode($tourStops).";\n".
+      'var tourStops = '.json_encode($this->getAllStopsDetails()).";\n".
       'var tourIcons = '.json_encode($this->markerImages()).";\n";
 
     $this->addExternalJavascript('http://maps.google.com/maps/api/js?sensor=true');
@@ -67,123 +62,177 @@ class TourWebModule extends WebModule {
     return true;
   }
   
+  protected function getBriefStopDetails($stop) {
+    $coords = $stop->getCoords();
+    
+    return array(
+      'id'        => $stop->getId(),
+      'title'     => $stop->getTitle(),
+      'subtitle'  => $stop->getSubtitle(),
+      'url'       => $this->buildTourURL('approach', array('id' => $stop->getId())),
+      'photo'     => $stop->getPhotoSrc(),
+      'thumbnail' => $stop->getThumbnailSrc(),
+      'lat'       => $coords['lat'],
+      'lon'       => $coords['lon'],
+      'visited'   => $stop->wasVisited(),
+      'current'   => $stop->isCurrent(),
+      'lenses'    => array_fill_keys($stop->getAvailableLenses(), array()),
+    );
+  }
+  
+  protected function getStopDetails($stop) {
+    $stopDetails = $this->getBriefStopDetails($stop);
+    
+    $lenses = $stop->getAvailableLenses();
+    foreach ($stopDetails['lenses'] as $lens => $contents) {
+      foreach ($stop->getLensContents($lens) as $lensContent) {
+        $stopDetails['lenses'][$lens][] = $lensContent->getContent();
+      }
+    }
+    
+    return $stopDetails;
+  }
+  
+  protected function getAllStopsDetails() {
+    $stopsDetails = array();
+    
+    foreach ($this->tour->getAllStops() as $stop) {
+      $stopsDetails[] = $this->getBriefStopDetails($stop);
+    }
+    return $stopsDetails;
+  }
+  
+  protected function buildTourURL($page, $args=array()) {
+    if (!isset($args['id'])) {
+      $args['id'] = $this->stop->getId();
+    }
+    return $this->buildBreadcrumbURL($page, $args, false);
+  }
+  
   protected function initializeForPage() {
     $this->tour = new Tour();
     
     $this->tour->setStop($this->getArg('id', $this->tour->getFirstStop()->getId()));
     $this->stop = $this->tour->getStop();
     
-    $stopInfo = array(
-      'id'        => $this->stop->getId(),
-      'title'     => $this->stop->getTitle(),
-      'subtitle'  => $this->stop->getSubtitle(),
-      'photo'     => $this->stop->getPhotoSrc(),
-      'thumbnail' => $this->stop->getThumbnailSrc(),
-      'lenses'    => array(),
-    );
-    $lenses = $this->stop->getAvailableLenses();
-    foreach ($lenses as $lens) {
-      $stopInfo['lenses'][$lens] = $this->stop->getLensContents($lens);
-    }
+    $stopInfo = $this->getStopDetails($this->stop);
+    
+    $showMapLink = true;
+    $showHelpLink = true;
     
     switch ($this->page) {
       case 'index':
         // Just static content
+        $this->assign('startURL', $this->buildTourURL('overview', array('start' => 1)));
         break;
-        
-      case 'start':
+      
+      case 'tourhelp':
+        $showHelpLink = false;
+        $this->assign('doneURL', $this->getArg('doneURL', $this->buildTourURL('index')));
         break;
-        
+      
       case 'finish':
+        $showMapLink = false;
+        $showHelpLink = false;
+
         $prevURL = false;
         $prevStop = $this->tour->getLastStop();
         if ($prevStop) {
-          $prevURL = $this->buildBreadcrumbURL('detail', array(
+          $prevURL = $this->buildTourURL('detail', array(
             'id' => $prevStop->getId(),
           ));
         } else {
-          $prevURL = $this->buildBreadcrumbURL('overview', array());          
+          $prevURL = $this->buildTourURL('overview');
         }
         $nextURL = false;
         
         $this->assign('prevURL', $prevURL);
         $this->assign('nextURL', $nextURL);
         break;
-        
+      
       case 'overview':
         $view = $this->getArg('view', 'map');
+        $showMapLink = false;
         
-        $this->initializeMap($this->tour->getAllStops());
+        if ($view == 'map') {
+          $this->initializeMap();
+        } else {
+          $this->assign('stops', $this->getAllStopsDetails());
+          $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
+          $this->addOnLoad('setupStopList();');
+        }
         
         $args = $this->args;
         $args['view'] = 'map';
-        $mapViewURL = $this->buildBreadcrumbURL($this->page, $args, false);
+        $mapViewURL = $this->buildTourURL($this->page, $args);
         $args['view'] = 'list';
-        $listViewURL = $this->buildBreadcrumbURL($this->page, $args, false);
+        $listViewURL = $this->buildTourURL($this->page, $args);
         
-        $stopInfo['url'] = $this->buildBreadcrumbUrl('approach', array(
-          'id' => $this->stop->getId()
-        ));
+        $stopInfo['url'] = $this->buildTourURL('approach');
         
         $this->assign('mapViewURL',  $mapViewURL);
         $this->assign('listViewURL', $listViewURL);
         $this->assign('view',        $view);
-        $this->assign('stop',        $stopInfo);
+        $this->assign('start',       $this->getArg('start', false));
+        $this->assign('doneURL',     $this->getArg('doneURL', $this->buildTourURL('index')));
+        $this->assign('currentIcon', $this->currentIcon());
+        $this->assign('visitedIcon', $this->visitedIcon());
         break;
         
       case 'approach':
-        $this->initializeMap($this->tour->getAllStops());
+        $this->initializeMap();
       
         $prevURL = false;
         $prevStop = $this->tour->getPreviousStop();
         if ($prevStop) {
-          $prevURL = $this->buildBreadcrumbURL('detail', array(
+          $prevURL = $this->buildTourURL('detail', array(
             'id' => $prevStop->getId(),
           ));
         } else {
-          $prevURL = $this->buildBreadcrumbURL('overview', array());          
+          $prevURL = $this->buildTourURL('overview');          
         }
-        $nextURL = $this->buildBreadcrumbURL('detail', array(
-          'id' => $this->stop->getId(),
-        ));
+        $nextURL = $this->buildTourURL('detail');
         
         $this->assign('prevURL', $prevURL);
         $this->assign('nextURL', $nextURL);
-        $this->assign('stop',    $stopInfo);
         break;
         
       case 'detail':
         $detailConfig = $this->loadPageConfigFile('detail', 'detailConfig');        
-        $tabKeys = array();
+        $tabKeys = array_keys($stopInfo['lenses']);
         $tabJavascripts = array();
-
-        $possibleTabs = $detailConfig['tabs']['tabkeys'];
-        foreach ($possibleTabs as $tabKey) {
-          if ($this->hasTabForKey($tabKey, $tabJavascripts)) {
-            $tabKeys[] = $tabKey;
-          }
-        }
-
-        $prevURL = $this->buildBreadcrumbURL('approach', array(
-          'id' => $this->stop->getId(),
-        ));
+        
+        $prevURL = $this->buildTourURL('approach');
         $nextURL = false;
         $nextStop = $this->tour->getNextStop();
         if ($nextStop) {
-          $nextURL = $this->buildBreadcrumbURL('approach', array(
+          $nextURL = $this->buildTourURL('approach', array(
             'id' => $nextStop->getId(),
           ));
         } else {
-          $nextURL = $this->buildBreadcrumbURL('finish', array());          
+          $nextURL = $this->buildTourURL('finish');
         }
-        
+        $this->enableTabs($tabKeys, null, $tabJavascripts);
+
+        $this->assign('tabKeys', $tabKeys);
         $this->assign('prevURL', $prevURL);
         $this->assign('nextURL', $nextURL);
-        $this->assign('tabKeys', $tabKeys);
-        $this->enableTabs($tabKeys, null, $tabJavascripts);
-        $this->assign('stop',    $stopInfo);
         break;
         
     }
+    
+    $this->assign('stop', $stopInfo);
+    
+    if ($showMapLink) {
+      $this->assign('mapLink', $this->buildTourURL('overview', array(
+        'doneURL' => $this->buildTourURL($this->page, $this->args),
+      )));
+    }
+    if ($showHelpLink) {
+      $this->assign('helpLink', $this->buildTourURL('tourhelp', array(
+        'doneURL' => $this->buildTourURL($this->page, $this->args),
+      )));
+    }
+
   }
 }

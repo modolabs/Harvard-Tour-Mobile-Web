@@ -982,7 +982,7 @@ function _getTourStops() {
         'history' => array(
           array(
             'type' => 'text',
-            'text' => '" President Charles William Eliot, Class of 1853, promoted diversity in design, and no building demonstrates that principle as well as Sever Hall. It is made up of more than 1.3 million bricks of 60 different types. The decorative panels were carved by the bricklayers themselves, and include images of owls, griffins, and elephants.<br/>Joseph Hudnut, Class of 1909, dean of the Graduate School of Design <br/>"Sever Hall is the most American of our buildings – and our most important one ... a turning point in the course of American architecture."'
+            'text' => 'President Charles William Eliot, Class of 1853, promoted diversity in design, and no building demonstrates that principle as well as Sever Hall. It is made up of more than 1.3 million bricks of 60 different types. The decorative panels were carved by the bricklayers themselves, and include images of owls, griffins, and elephants.<br/>Joseph Hudnut, Class of 1909, dean of the Graduate School of Design <br/>"Sever Hall is the most American of our buildings – and our most important one ... a turning point in the course of American architecture."'
           ),
           array(
             'type' => 'audio',

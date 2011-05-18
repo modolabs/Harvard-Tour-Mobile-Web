@@ -123,9 +123,6 @@ function showMap(center, stops, tourIcons, stopOverviewMode) {
         'position'  : location,
         'icon'      : new google.maps.MarkerImage(tourIcons['self'])
       });
-      
-      bounds.extend(location);
-      map.panToBounds(bounds);
     });
     
     var elem = document.getElementById('map_canvas');
@@ -150,4 +147,16 @@ function zoomUpDown(strID) {
       objZoomup.className+=" zoomed";
     }
   }
+}
+
+// Initalize the ellipsis event handlers
+function setupStopList() {
+    var stopEllipsizer = new ellipsizer();
+    
+    // cap at 100 divs to avoid overloading phone
+    for (var i = 0; i < 100; i++) {
+        var elem = document.getElementById('ellipsis_'+i);
+        if (!elem) { break; }
+        stopEllipsizer.addElement(elem);
+    }
 }

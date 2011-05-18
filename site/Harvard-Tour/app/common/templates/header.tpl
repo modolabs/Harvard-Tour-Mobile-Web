@@ -8,11 +8,11 @@
       harvard yard tour
     </a>
 		<ul id="helplinks">
-      {if $showHelpLink}
-			  <li><a href="mockup-map.html">map</a></li>
+      {if $mapLink}
+			  <li><a href="{$mapLink}">map</a></li>
       {/if}
-      {if $showMapLink}
-			  <li><a href="mockup-help.html">help</a></li>
+      {if $helpLink}
+			  <li><a href="{$helpLink}">help</a></li>
 			{/if}
 		</ul>
   </div>

@@ -6,20 +6,21 @@
   <div id="nextstop" class="listrow">
     <div class="listthumb">
       <img src="/common/images/zoomicon-in@2x.png" alt="" border="0" class="zoomicon" />
-      <img src="{$stop['thumbnail']['src']}" onclick="zoomUpDown('zoomup')" alt="Approach photo" width="75" height="50" border="0" class="listphoto" />
+      <img src="{$stop['thumbnail']}" onclick="zoomUpDown('zoomup')" alt="Approach photo" width="75" height="50" border="0" class="listphoto" />
     </div>
     <div class="listicons">
-      <img src="/modules/tour/images/lens-insideout.png" width="20" height="20" alt="" />
-      <img src="/modules/tour/images/lens-fastfacts.png" width="20" h	eight="20" alt="" />
-      <img src="/modules/tour/images/lens-innovation.png" width="20" height="20" alt="" />
-      <img src="/modules/tour/images/lens-history.png" width="20" height="20" alt="" />
+      {foreach $stop['lenses'] as $lens => $lensContents}
+        {if $lens != 'info'}
+          <img src="/modules/tour/images/lens-{$lens}.png" width="20" height="20" alt="" />
+        {/if}
+      {/foreach}
     </div>
     <h2>{$stop['title']}</h2>
     <p>{$stop['subtitle']}</p>
   </div>
 </div>
 <div id="content" class="mapcontent">
-  <img id="zoomup" src="{$stop['photo']['src']}" onclick="zoomUpDown('zoomup')" />
+  <img id="zoomup" src="{$stop['photo']}" onclick="zoomUpDown('zoomup')" />
   {include file="findInclude:modules/tour/templates/include/map.tpl"}
 </div>
 
