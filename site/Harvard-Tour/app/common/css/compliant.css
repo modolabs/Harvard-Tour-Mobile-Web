@@ -57,7 +57,7 @@
 	display: table-cell;
 	vertical-align: middle;
 	padding: 0 60px;
-	font: 24px/1em serif;
+	font: 22px/1em serif;
 	text-align: center;
 	color: #fff;
 	text-shadow: rgba(0,0,0,0.7) 0 1px 4px;
@@ -200,7 +200,13 @@
 	float: right;
 	width: 44px;
 	height: 100%;
-	margin: -1px -1px -1px 7px;
+	margin: -1px -100px -1px 7px;
+}
+.listicons2 img {
+	width: 18px;
+	height: 18px;
+	margin: -2px 0;
+	vertical-align: baseline;
 }
 #nextstop {
 	border-top: 1px solid rgba(0,0,0,0.15);

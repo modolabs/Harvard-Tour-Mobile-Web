@@ -577,7 +577,7 @@ function _getTourStops() {
       ),
     ),
     // -----------------------------------------------------------------------
-    'phillips_brook_house' => array(
+    'phillips_brooks_house' => array(
       'title' => 'Phillips Brooks House',
       'subtitle' => 'Home to student groups for social justice, c. 1904',
       'photo' => array(
@@ -1145,7 +1145,7 @@ function _getTourStops() {
       ),
     ),
     // -----------------------------------------------------------------------
-    'widner_library' => array(
+    'widener_library' => array(
       'title' => 'Widener Library',
       'subtitle' => 'Second in size only to the Library of Congress, c. 1914',
       'photo' => array(
