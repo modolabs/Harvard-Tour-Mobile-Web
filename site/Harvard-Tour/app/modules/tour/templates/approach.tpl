@@ -8,17 +8,17 @@
       <img src="/common/images/zoomicon-in@2x.png" alt="" border="0" class="zoomicon" />
       <img src="{$stop['thumbnail']['src']}" onclick="zoomUpDown('zoomup')" alt="Approach photo" width="75" height="50" border="0" class="listphoto" />
     </div>
-<!--
+	<!--
     <div class="listicons">
       <img src="/modules/tour/images/lens-insideout.png" width="20" height="20" alt="" />
       <img src="/modules/tour/images/lens-fastfacts.png" width="20" height="20" alt="" />
       <img src="/modules/tour/images/lens-innovation.png" width="20" height="20" alt="" />
       <img src="/modules/tour/images/lens-history.png" width="20" height="20" alt="" />
     </div>
--->
+	-->
     <h2>{$stop['title']}</h2>
-    <p>{$stop['subtitle']} <img src="/modules/tour/images/lens-insideout.png" width="14" height="14" alt="" />
-    <span class="listicons2"><img src="/modules/tour/images/lens-fastfacts.png" width="14" height="14" alt="" />
+    <p>{$stop['subtitle']} 
+    <span class="listicons2"><img src="/modules/tour/images/lens-insideout.png" width="14" height="14" alt="" /><img src="/modules/tour/images/lens-fastfacts.png" width="14" height="14" alt="" />
     <img src="/modules/tour/images/lens-innovation.png" width="14" height="14" alt="" />
     <img src="/modules/tour/images/lens-history.png" width="14" height="14" alt="" /></span>
     </p>
