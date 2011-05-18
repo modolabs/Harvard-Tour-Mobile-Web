@@ -57,7 +57,7 @@
 	display: table-cell;
 	vertical-align: middle;
 	padding: 0 60px;
-	font: 22px/1em serif;
+	font: 20px/1em serif;
 	text-align: center;
 	color: #fff;
 	text-shadow: rgba(0,0,0,0.7) 0 1px 4px;
@@ -85,18 +85,23 @@
 }
 #pagetitle.overview h1 {
   text-align: left;
-  padding: 0px 20px;
+  padding: 0px 10px;
 }
 #pagehead #viewtoggle {
 	position: absolute;
 	top: 0;
 	right: 0;
-  padding-right: 20px;
+	padding-right: 2px;
 	height: 56px;
-	line-height: 56px;
-	color: #eee;
+	font: 15px/56px serif;
+	color: #cbe1f3;
 }
 #pagehead #viewtoggle a, #pagehead #viewtoggle a:visited {
+	color: #cbe1f3;
+	padding: 0 8px;
+	text-decoration: none;
+}
+#pagehead #viewtoggle a.active {
 	color: #fff;
 }
 #tabs {

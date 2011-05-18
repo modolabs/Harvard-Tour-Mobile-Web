@@ -3,9 +3,10 @@
 <div id="pagehead">
   <div id="pagetitle" class="overview"><h1>Starting Point</h1></div>
   <div id="viewtoggle">
-    {if $view != 'map'}<a href="{$mapViewURL}">{/if}map{if $view != 'map'}</a>{/if}
-    &nbsp;|&nbsp;
-    {if $view != 'list'}<a href="{$listViewURL}">{/if}list{if $view != 'list'}</a>{/if}
+    view as:
+	<a href="{$mapViewURL}" {if $view == 'map'}class="active"{/if}>map</a>
+	|
+	<a href="{$listViewURL}" {if $view == 'list'}class="active"{/if}>list</a>
   </div>
 
   <div id="nextstop" class="listrow">
