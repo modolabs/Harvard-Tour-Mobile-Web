@@ -96,13 +96,18 @@
 	font: 15px/56px serif;
 	color: #cbe1f3;
 }
-#pagehead #viewtoggle a, #pagehead #viewtoggle a:visited {
+#pagehead #viewtoggle a, 
+#pagehead #viewtoggle a:visited,
+#pagehead #viewtoggle span {
 	color: #cbe1f3;
 	padding: 0 8px;
 	text-decoration: none;
 }
 #pagehead #viewtoggle a.active {
 	color: #fff;
+}
+#pagehead #viewtoggle .spacer {
+  padding: 0;
 }
 #tabs {
 	position: absolute;
@@ -153,7 +158,7 @@
 #tabbodies {
 	position: absolute;
 	min-height: 262px;
-	top: 146px;
+	top: 148px;
 	right: 0;
 	left: 0;
 	bottom: 0;
@@ -180,6 +185,7 @@
 }
 .tabbody {
   padding: 0;
+  height: 100%;
 }
 .listrow {
 	padding: 3px 4px;
@@ -385,4 +391,50 @@
 }
 #content .results li a .ellipsis h2 {
   padding-bottom: 2px;
+}
+
+.slideshow {
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.slideshow .slides {
+  position: relative;
+}
+.slideshow .slides .slide {
+  display: none;
+}
+.slideshow .slides .active {
+  display: block;
+}
+
+.slideshow .slidenav {
+  width: 100%;
+  height: 38px;
+  text-align: center;
+  position: relative;
+}
+.slideshow .slidenav .slidedot {
+  display: inline-block;
+  height: 38px;
+  width: 12px;
+  margin: 0 6px 0;
+  background: transparent url(/common/images/page-dot.png) no-repeat center left;
+}
+.slideshow .slidenav .slidedot.active {
+  background-image: url(/common/images/page-dot-current.png);
+}
+.slideshow .slidenav a {
+	display: block;
+	width: 47px;
+  height: 38px;
+	position: absolute;
+	top: 0
+}
+.slideshow .slidenav .previous {
+	left: 0;
+}
+.slideshow .slidenav .next {
+	right: 0;
 }

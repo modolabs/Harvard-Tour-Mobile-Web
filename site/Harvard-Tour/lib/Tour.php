@@ -115,6 +115,10 @@ class TourStop {
             $this->lenses[$lens][] = new TourText($content['text']);
             break;
           
+          case 'slideshow':
+            $this->lenses[$lens][] = new TourSlideshow($content['slides']);
+            break;
+          
           default: 
             error_log("Unknown content type {$content['type']}");
             break;
@@ -182,6 +186,41 @@ class TourText {
   }
 }
 
+class TourSlideshow {
+  private $slides = array();
+  
+  function __construct($data) {
+    foreach ($data as $content) {
+      switch ($content['type']) {
+        case 'photo':
+        case 'video':
+        case 'audio':
+          $class = 'Tour'.ucfirst($content['type']);
+          $this->slides[] = new $class($content['url'], $content['title']);
+          break;
+        
+        case 'text':
+          $this->slides[] = new TourText($content['text']);
+          break;
+        
+        default: 
+          error_log("Unknown content type {$content['type']}");
+          break;
+      }
+    }
+  }
+  
+  function getContent() {
+    $content = array();
+  
+    foreach ($this->slides as $slide) {
+      $content[] = $slide->getContent();
+    }
+    
+    return $content;
+  }
+}
+
 class TourPhoto extends TourAsset {
   function getContent() {
     return '<img class="photo" src="'.$this->src.'" width="100%"/>'.
@@ -190,6 +229,11 @@ class TourPhoto extends TourAsset {
 }
 
 class TourVideo extends TourAsset {
+  function getContent() {
+    return '<video src="'.$this->src.'" width="100%" controls>Video format not supported by this device</video>'.
+      ($this->title ? '<p class="caption">'.$this->title.'</p>' : '');
+  }
+
 }
 
 class TourAudio extends TourAsset {
@@ -210,9 +254,5 @@ abstract class TourAsset {
   
   function getTitle() {
     return $this->title;
-  }
-  
-  function getContent() {
-    return 'Error: no formatting for content type';
   }
 }

@@ -77,10 +77,11 @@ function showMap(center, stops, tourIcons, stopOverviewMode) {
       }
       
       stops[i]['marker'] = new google.maps.Marker({
-        'map'      : map, 
-        'position' : stopLatLng,
-        'title'    : stop['title'],
-        'icon'     : new google.maps.MarkerImage(icon)
+        'clickable' : stopOverviewMode,
+        'map'       : map, 
+        'position'  : stopLatLng,
+        'title'     : stop['title'],
+        'icon'      : new google.maps.MarkerImage(icon)
       });
       stops[i]['marker'].tourStop = stop;
       stops[i]['marker'].tourStopIndex = i;
@@ -165,3 +166,62 @@ function setupStopList() {
         stopEllipsizer.addElement(elem);
     }
 }
+
+function changeSlide(tab, dir) {
+  var selectedIndex = 0;
+  var count = 0;
+
+  for (var i = 0; i < 100; i++) {
+    var dot = document.getElementById('slidedot_'+tab+'_'+i);
+    var slide = document.getElementById('slide_'+tab+'_'+i);
+    if (!dot || !slide) { break; }
+    
+    if (hasClass(dot, 'active')) {
+      selectedIndex = i;
+    }
+    count++;
+  }
+  
+  if (dir == 'prev' && selectedIndex > 0) {
+    selectedIndex--;
+  } else if (dir == 'next' && selectedIndex < count-1) {
+    selectedIndex++;
+  } else {
+    return;
+  }
+  
+  for (var i = 0; i < count; i++) {
+    var dot = document.getElementById('slidedot_'+tab+'_'+i);
+    var slide = document.getElementById('slide_'+tab+'_'+i);
+    
+    if (i == selectedIndex) {
+      addClass(dot, 'active');
+      addClass(slide, 'active');
+    } else {
+      removeClass(dot, 'active');
+      removeClass(slide, 'active');
+    }    
+  }
+
+  var next = document.getElementById('slidenext_'+tab);
+  var prev = document.getElementById('slideprev_'+tab);
+  if (selectedIndex <= 0) {
+    removeClass(prev, 'active');
+  } else {
+    addClass(prev, 'active');
+  }
+  if (selectedIndex >= count-1) {
+    removeClass(next, 'active');
+  } else {
+    addClass(next, 'active');
+  }
+}
+
+function nextSlide(tab) {
+  changeSlide(tab, 'next');
+}
+
+function previousSlide(tab) {
+  changeSlide(tab, 'prev');
+}
+

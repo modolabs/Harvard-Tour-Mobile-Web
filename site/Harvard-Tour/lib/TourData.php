@@ -36,14 +36,19 @@ function _getTourStops() {
         ),
         'insideout' => array(
           array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #183865 (Washington)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #183867 (hallway)',
+            'type' => 'slideshow',
+            'slides' => array(
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #183865 (Washington)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #183867 (hallway)',
+              ),
+            ),
           ),
         ),
         'fastfacts' => array(
@@ -61,13 +66,13 @@ function _getTourStops() {
         ),
         'history' => array(
           array(
-            'type' => 'text',
-            'text' => 'On Massachusetts Avenue (near where the carriage appears in the picture), glance down to notice the brass markers labeled "Goffe" and "Eaton" found in the pavement. These plaques commemorate the College\'s first and second buildings: Peyntree House and Goffe College. Nathaniel Eaton, the first House master of the College, lived in Peyntree House. A further explanation is revealed on Wadsworth Gate.',
+            'type' => 'photo',
+            'url' => '',
+            'title' => 'wadsworth-sideview-history.jpg',
           ),
           array(
-            'type' => 'photo',
-            'url' => 'wadsworth-sideview-history.jpg',
-            'title' => '',
+            'type' => 'text',
+            'text' => 'On Massachusetts Avenue (near where the carriage appears in the picture), glance down to notice the brass markers labeled "Goffe" and "Eaton" found in the pavement. These plaques commemorate the College\'s first and second buildings: Peyntree House and Goffe College. Nathaniel Eaton, the first House master of the College, lived in Peyntree House. A further explanation is revealed on Wadsworth Gate.',
           ),
         ),
       ),
@@ -114,8 +119,8 @@ function _getTourStops() {
         'fastfacts' => array(
           array(
             'type' => 'photo',
-            'url' => 'indian-college-digging-veritas.pdf',
-            'title' => '',
+            'url' => '',
+            'title' => 'indian-college-digging-veritas.pdf',
           ),
         ),
         'innovation' => array(
@@ -127,8 +132,8 @@ function _getTourStops() {
         'history' => array(
           array(
             'type' => 'video',
-            'url' => 'indian-college-digging-yard.mov',
-            'title' => '',
+            'url' => '',
+            'title' => 'indian-college-digging-yard.mov',
           ),
         ),
       ),
@@ -172,25 +177,30 @@ function _getTourStops() {
         ),
         'insideout' => array(
           array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Interior 1- Merlin #168521 (admiral signs in)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Interior 2- Merlin #123367 (Faust office)',
+            'type' => 'slideshow',
+            'slides' => array(
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Interior 1- Merlin #168521 (admiral signs in)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Interior 2- Merlin #123367 (Faust office)',
+              ),
+            ),
           ),
         ),
         'fastfacts' => array(
           array(
-            'type' => 'text',
-            'text' => 'Massachusetts Hall was built as a dormitory, and even today freshmen occupy the top floor. They are rumored to be some of the most quiet and well-behaved students of the entire freshman class. ',
+            'type' => 'video',
+            'url'  => '',
+            'title' => 'mass-hall-facts.mp3',
           ),
           array(
-            'type' => 'audio',
-            'url'  => 'mass-hall-facts.mp3',
-            'title' => '',
+            'type' => 'text',
+            'text' => 'Massachusetts Hall was built as a dormitory, and even today freshmen occupy the top floor. They are rumored to be some of the most quiet and well-behaved students of the entire freshman class. ',
           ),
         ),
         'innovation' => array(
@@ -201,13 +211,13 @@ function _getTourStops() {
         ),
         'history' => array(
           array(
-            'type' => 'text',
-            'text' => 'Harvard successfully petitioned the Continental Congress for payments to cover damages incurred while the University housed rowdy Colonial troops in Massachusetts Hall (as well as Harvard and Hollis Hall). Reimbursements included the cost of replacing 27 brass doorknobs and 62 rolls of paper. We wonder if future U.S. President John Adams, Class of 1755 and a resident of Mass Hall, had any say in the matter.',
+            'type' => 'photo',
+            'url' => '',
+            'title' => 'mass-hall-history.jpg',
           ),
           array(
-            'type' => 'photo',
-            'url' => 'mass-hall-history.jpg',
-            'title' => '',
+            'type' => 'text',
+            'text' => 'Harvard successfully petitioned the Continental Congress for payments to cover damages incurred while the University housed rowdy Colonial troops in Massachusetts Hall (as well as Harvard and Hollis Hall). Reimbursements included the cost of replacing 27 brass doorknobs and 62 rolls of paper. We wonder if future U.S. President John Adams, Class of 1755 and a resident of Mass Hall, had any say in the matter.',
           ),
         ),
       ),
@@ -243,25 +253,30 @@ function _getTourStops() {
         ),
         'insideout' => array(
           array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #78167',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #168305',
+            'type' => 'slideshow',
+            'slides' => array(
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #78167',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #168305',
+              ),
+            ),
           ),
         ),
         'fastfacts' => array(
           array(
-            'type' => 'text',
-            'text' => 'You may not see many students walking through Johnston Gate. An old saying holds that a Harvard student may pass through the gate only twice: once upon entrance to the University and once upon graduation. If a student walks through the gate at any other time, the myth continues, he or she will not graduate. We\'re not sure whether this is true, but take a look and see how many students you see walking through the main gate...',
+            'type' => 'video',
+            'url'  => '',
+            'title' => 'johnston-gate-facts.mp3',
           ),
           array(
-            'type' => 'audio',
-            'url'  => 'johnston-gate-facts.mp3',
-            'title' => '',
+            'type' => 'text',
+            'text' => 'You may not see many students walking through Johnston Gate. An old saying holds that a Harvard student may pass through the gate only twice: once upon entrance to the University and once upon graduation. If a student walks through the gate at any other time, the myth continues, he or she will not graduate. We\'re not sure whether this is true, but take a look and see how many students you see walking through the main gate...',
           ),
         ),
         'innovation' => array(
@@ -272,18 +287,13 @@ function _getTourStops() {
         ),
         'history' => array(
           array(
+            'type' => 'video',
+            'url'  => '',
+            'title' => 'johnston-gate-history',
+          ),
+          array(
             'type' => 'text',
             'text' => 'Unlike some colleges, Harvard does not have a large sign declaring Harvard Yard. Instead, it trusts that it provides a welcoming environment to all who step through its gates. Nobel laureate and former Harvard professor Seamus Heaney said on the occasion of Harvard’s 350th anniversary:<br>"Begin again where frosts and tests were hard. Find yourself or founder. Here, imagine<br/>A spirit moves, John Harvard walks the yard,<br/>The books stand open and the gates unbarred."<br/>This quote is also emblazoned on the folder that admitted students receive along with word of their acceptance.'
-          ),
-          array(
-            'type' => 'photo',
-            'url'  => 'johnston-gate-history.jpg',
-            'title' => '',
-          ),
-          array(
-            'type' => 'audio',
-            'url'  => 'johnston-gate-facts.mp3',
-            'title' => '',
           ),
         ),
       ),
@@ -327,25 +337,30 @@ function _getTourStops() {
         ),
         'insideout' => array(
           array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #183657 (foyer)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #183659 (upstairs)',
+            'type' => 'slideshow',
+            'slides' => array(
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #183657 (foyer)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #183659 (upstairs)',
+              ),
+            ),
           ),
         ),
         'fastfacts' => array(
           array(
-            'type' => 'text',
-            'text' => 'Harvard Hall once possessed a bell that rang at 6:20 every morning. Nicknamed the &lquot;hell-banger,&rquot; generations of students attempted to quiet it. For 50 years, starting in 1858, custodian Austin Kingsley Jones was responsible for ringing the bell. Affectionately known as “Old Jones,” he managed to outwit students every time the bell was in danger. Once, when the hallway to the bell was blocked, he cut a hole in the ceiling to sound it on time. The bell continued to ring until 1933, when, in one of his first acts as University president, James Conant, Class of 1914; Ph.D. 1916, ordered it silenced. Students are now awakened by the 8:40 bell of the Memorial Church. With their extra two hours and 20 minutes of sleep, students are finally able to catch up on well-deserved rest.'
+            'type' => 'photo',
+            'url' => '',
+            'title' => 'harvard-hall-facts.jpg',
           ),
           array(
-            'type' => 'photo',
-            'url' => 'harvard-hall-facts.jpg',
-            'title' => '',
+            'type' => 'text',
+            'text' => 'Harvard Hall once possessed a bell that rang at 6:20 every morning. Nicknamed the &lquot;hell-banger,&rquot; generations of students attempted to quiet it. For 50 years, starting in 1858, custodian Austin Kingsley Jones was responsible for ringing the bell. Affectionately known as “Old Jones,” he managed to outwit students every time the bell was in danger. Once, when the hallway to the bell was blocked, he cut a hole in the ceiling to sound it on time. The bell continued to ring until 1933, when, in one of his first acts as University president, James Conant, Class of 1914; Ph.D. 1916, ordered it silenced. Students are now awakened by the 8:40 bell of the Memorial Church. With their extra two hours and 20 minutes of sleep, students are finally able to catch up on well-deserved rest.'
           ),
         ),
         'innovation' => array(
@@ -380,7 +395,7 @@ function _getTourStops() {
         'info' => array(
           array(
             'type' => 'photo',
-            'url' => '/media/john_harvard_statue-main.jpg)',
+            'url' => '/media/john_harvard_statue-main.jpg',
             'title' => 'John Harvard Statue - Merlin #52360 (REPLACEMENT)',
           ),
           array(
@@ -398,45 +413,50 @@ function _getTourStops() {
         ),
         'insideout' => array(
           array(
-            'type' => 'photo',
-            'url' => 'john_harvard_statue-insideout.jpg)',
-            'title' => '',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #109263 (Ellison/table)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #155637 (busts)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #100599 (round window)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #73840 (undergrads)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #45608 (rubbed toe)',
+            'type' => 'slideshow',
+            'slides' => array(
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'john_harvard_statue-insideout.jpg',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #109263 (Ellison/table)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #155637 (busts)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #100599 (round window)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #73840 (undergrads)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #45608 (rubbed toe)',
+              ),
+            ),
           ),
         ),
         'fastfacts' => array(
           array(
-            'type' => 'text',
-            'text' => 'Though students often call this statue “The Statue of Three Lies,” it may be more accurately labeled “The Statue of Three Half-Truths.” Although John Harvard did not found the College as proclaimed on the base, he has been considered the founder since President Henry Dunster praised him for allowing scholarship to flourish. The date of 1638 is also misleading. While the college was formally created in 1636, it was Harvard’s benefaction two years later that made its success possible. Finally, the sculpture’s physical likeness is not that of John Harvard. The model for this statue was Harvard student Sherman Hoar, Class of 1882; J.D. 1884. Sculptor Daniel Chester French explained that his intention was not to create a physical portrait of John Harvard, but rather a portrait of the type of man he imagined John Harvard was. The Reverend George Ellis, Class of 1833; M.Div. 1836, explained this at the unveiling of the statue: "We have enlisted one of the noblest of the arts to embody a conception of what [John] Harvard might have been in body and lineament, from what we know that he was in mind and in soul."',
+            'type' => 'photo',
+            'url' => '',
+            'title' => 'university-hall-facts.jpg',
           ),
           array(
-            'type' => 'photo',
-            'url' => 'university-hall-facts.jpg',
-            'title' => '',
+            'type' => 'text',
+            'text' => 'Though students often call this statue “The Statue of Three Lies,” it may be more accurately labeled “The Statue of Three Half-Truths.” Although John Harvard did not found the College as proclaimed on the base, he has been considered the founder since President Henry Dunster praised him for allowing scholarship to flourish. The date of 1638 is also misleading. While the college was formally created in 1636, it was Harvard’s benefaction two years later that made its success possible. Finally, the sculpture’s physical likeness is not that of John Harvard. The model for this statue was Harvard student Sherman Hoar, Class of 1882; J.D. 1884. Sculptor Daniel Chester French explained that his intention was not to create a physical portrait of John Harvard, but rather a portrait of the type of man he imagined John Harvard was. The Reverend George Ellis, Class of 1833; M.Div. 1836, explained this at the unveiling of the statue: "We have enlisted one of the noblest of the arts to embody a conception of what [John] Harvard might have been in body and lineament, from what we know that he was in mind and in soul."',
           ),
         ),
         'innovation' => array(
@@ -446,18 +466,18 @@ function _getTourStops() {
           ),
           array(
             'type' => 'text',
-            'text' => '<ul><li>The first Intercollegiate athletic event.<li></li>The creation of the first automatic digital computer.<li></li>The first Urban Superintendents Program.<li></li>The first introduction of insulin in the U.S.<li></li>The first university law school in the United States.<li></li>Some of the first breakthroughs in the understanding of AIDS.<li></li>The first iron lung.<li></li>The first MBA.<li></li>The first external pacemaker.<li></li>The first “Designated Driver” campaign in the U.S.<li></li>The first artificial skin.<li></li>The first successful kidney transplant.<li></li>The first to discover that deer ticks carry Lyme disease. <li></li>The first use of case method. <li></li>The first university school of dentistry.</li></ul>',
+            'text' => '<ul><li>The first Intercollegiate athletic event.</li><li>The creation of the first automatic digital computer.</li><li>The first Urban Superintendents Program.</li><li>The first introduction of insulin in the U.S.</li><li>The first university law school in the United States.</li><li>Some of the first breakthroughs in the understanding of AIDS.</li><li>The first iron lung.</li><li>The first MBA.</li><li>The first external pacemaker.</li><li>The first “Designated Driver” campaign in the U.S.</li><li>The first artificial skin.</li><li>The first successful kidney transplant.</li><li>The first to discover that deer ticks carry Lyme disease. </li><li>The first use of case method. </li><li>The first university school of dentistry.</li></ul>',
           ),
         ),
         'history' => array(
           array(
-            'type' => 'text',
-            'text' => 'Established in 1636, Harvard was known as the “Colledge of Newtowne." After his death in 1638, John Harvard left his library and half of his estate to the school, which was renamed in his honor. Although many early graduates became ministers, the College was never formally affiliated with a religious denomination. The College’s mission according to its 1650 Charter, was &lquot;The advancement of all good literature, artes and Sciences.&rquot;',
-          ),
-          array(
-            'type' => 'photo',
+            'type' => 'video',
             'url' => '',
             'title' => 'needs to be rerecorded',
+          ),
+          array(
+            'type' => 'text',
+            'text' => 'Established in 1636, Harvard was known as the “Colledge of Newtowne." After his death in 1638, John Harvard left his library and half of his estate to the school, which was renamed in his honor. Although many early graduates became ministers, the College was never formally affiliated with a religious denomination. The College’s mission according to its 1650 Charter, was &lquot;The advancement of all good literature, artes and Sciences.&rquot;',
           ),
         ),
       ),
@@ -483,7 +503,7 @@ function _getTourStops() {
         'info' => array(
           array(
             'type' => 'photo',
-            'url' => '/media/freshman_dorms-main.jpg)',
+            'url' => '/media/freshman_dorms-main.jpg',
             'title' => 'Freshman Dorms -  Merlin #37842',
           ),
           array(
@@ -503,24 +523,19 @@ function _getTourStops() {
         ),
         'fastfacts' => array(
           array(
+            'type' => 'video',
+            'url' => '',
+            'title' => 'Merlin #17972 (Pump)',
+          ),
+          array(
             'type' => 'text',
             'text' => 'Until the late 19th century, dorms lacked indoor plumbing, and Harvard students used pumps like this one to get water for bathing and drinking. The original pump that stood on this site was destroyed in a prank, but was rebuilt on the occasion of Harvard\'s 350th celebration as a symbol of Harvard’s past.',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Pump- Merlin #17972',
-          ),
-          array(
-            'type' => 'audio',
-            'url' => 'freshman-dorms-facts.mp3',
-            'title' => '',
           ),
         ),
         'innovation' => array(
           array(
             'type' => 'text',
-            'text' => '"In 1928, Edward Harkness, a Yale alumnus, proposed a system of upperclassman houses similar to Princeton’s. Thus, with Yale money, a Princeton idea was put into place at Harvard.',
+            'text' => 'In 1928, Edward Harkness, a Yale alumnus, proposed a system of upperclassman houses similar to Princeton’s. Thus, with Yale money, a Princeton idea was put into place at Harvard.',
           ),
           array(
             'type' => 'text',
@@ -552,7 +567,7 @@ function _getTourStops() {
         'info' => array(
           array(
             'type' => 'photo',
-            'url' => '/media/holden_chapel-main.jpg)',
+            'url' => '/media/holden_chapel-main.jpg',
             'title' => 'Holden Chapel - from "New Establishing Shots" (REPLACEMENT)',
           ),
           array(
@@ -574,14 +589,19 @@ function _getTourStops() {
         ),
         'insideout' => array(
           array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #183805 (large room)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #4870 (glee club)',
+            'type' => 'slideshow',
+            'slides' => array(
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #183805 (large room)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #4870 (glee club)',
+              ),
+            ),
           ),
         ),
         'fastfacts' => array(
@@ -594,24 +614,29 @@ function _getTourStops() {
         ),
         'history' => array(
           array(
-            'type' => 'photo',
-            'url' => 'holden-chapel-history-blueprint.jpeg',
-            'title' => '',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => ' Merlin: Image of bones',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #4584 (human remains)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #180297 (ROTC guarding)',
+            'type' => 'slideshow',
+            'slides' => array(
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'holden-chapel-history-blueprint.jpeg',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin (Image of bones)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #4584 (human remains)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #180297 (ROTC guarding)',
+              ),
+            ),
           ),
         ),
       ),
@@ -637,7 +662,7 @@ function _getTourStops() {
         'info' => array(
           array(
             'type' => 'photo',
-            'url' => '/media/phillips_brooks_house-main.jpg)',
+            'url' => '/media/phillips_brooks_house-main.jpg',
             'title' => 'Phillips Brooks House - Merlin #97822',
           ),
           array(
@@ -655,19 +680,24 @@ function _getTourStops() {
         ),
         'insideout' => array(
           array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #75193 (Faust &amp; students)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #183863 (stairwell)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #183849 (common)',
+            'type' => 'slideshow',
+            'slides' => array(
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #75193 (Faust &amp; students)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #183863 (stairwell)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #183849 (common)',
+              ),
+            ),
           ),
         ),
         'fastfacts' => array(
@@ -684,24 +714,19 @@ function _getTourStops() {
         'innovation' => array(
           array(
             'type' => 'video',
-            'url' => 'phillips-brooks-innovation.jpg',
-            'title' => '',
+            'url' => '',
+            'title' => 'phillips-brooks-innovation',
           ),
         ),
         'history' => array(
           array(
+            'type' => 'video',
+            'url' => '',
+            'title' => 'phillips-brooks-history',
+          ),
+          array(
             'type' => 'text',
             'text' => 'In 1886, Phillips Brooks, who later became the Episcopal bishop of Massachusetts, was invited to speak at Harvard’s 250th anniversary celebration, where he said:<br/>"Science and religion, faith and reason, individuality and society, conservatism and radicalism, poverty and wealth, the past and future, – these must join hands and walk in peace with one another in a city of scholars, where … the essential unity of all good things shall be made manifest and clear."',
-          ),
-          array(
-            'type' => 'audio',
-            'url' => 'phillips-brooks-history',
-            'title' => '',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => 'phillips-brooks-history.jpg',
-            'title' => '',
           ),
         ),
       ),
@@ -727,7 +752,7 @@ function _getTourStops() {
         'info' => array(
           array(
             'type' => 'photo',
-            'url' => '/media/science_center-main.jpg)',
+            'url' => '/media/science_center-main.jpg',
             'title' => 'Science Center - PLACEHOLDER REPLACEMENT FROM WIKIPEDIA',
           ),
           array(
@@ -745,24 +770,29 @@ function _getTourStops() {
         ),
         'insideout' => array(
           array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #151797 (stairs/glass)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #151811 (mural)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #102403 (Lecture hall)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => 'science-center-insideout.jpg',
-            'title' => '',
+            'type' => 'slideshow',
+            'slides' => array(
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #151797 (stairs/glass)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #151811 (mural)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #102403 (Lecture hall)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'science-center-insideout.jpg',
+              ),
+            ),
           ),
         ),
         'fastfacts' => array(
@@ -774,19 +804,19 @@ function _getTourStops() {
         'innovation' => array(
           array(
             'type' => 'video',
-            'url' => 'science-center-innovation.mp4',
-            'title' => '',
+            'url' => '',
+            'title' => 'science-center-innovation.mp4',
           ),
         ),
         'history' => array(
           array(
-            'type' => 'text',
-            'text' => 'Bradstreet Gate is the Yard\'s newest gate. The gate was dedicated on October 4, 1997, to commemorate the 25th anniversary of women living in Yard dormitories. It honors Anne Bradstreet, the first published writer in British North America. Radcliffe College formally began in 1879, as a women\'s college. Over time, Radcliffe women, who had long been taught by Harvard professors, won the battle to be called Harvard students.',
+            'type' => 'photo',
+            'url' => '',
+            'title' => 'science-center-innovation.jpg',
           ),
           array(
-            'type' => 'photo',
-            'url' => 'science-center-innovation.jpg',
-            'title' => '',
+            'type' => 'text',
+            'text' => 'Bradstreet Gate is the Yard\'s newest gate. The gate was dedicated on October 4, 1997, to commemorate the 25th anniversary of women living in Yard dormitories. It honors Anne Bradstreet, the first published writer in British North America. Radcliffe College formally began in 1879, as a women\'s college. Over time, Radcliffe women, who had long been taught by Harvard professors, won the battle to be called Harvard students.',
           ),
         ),
       ),
@@ -812,7 +842,7 @@ function _getTourStops() {
         'info' => array(
           array(
             'type' => 'photo',
-            'url' => '/media/memorial_hall-main.jpg)',
+            'url' => '/media/memorial_hall-main.jpg',
             'title' => 'Memorial Hall - Merlin #17344',
           ),
           array(
@@ -834,58 +864,58 @@ function _getTourStops() {
         ),
         'insideout' => array(
           array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #20288 (long hall)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #25631 (Sanders audit.)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #158061 (stairs/glass)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #163689 (stained glass)',
+            'type' => 'slideshow',
+            'slides' => array(
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #20288 (long hall)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #25631 (Sanders audit.)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #158061 (stairs/glass)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #163689 (stained glass)',
+              ),
+            ),
           ),
         ),
         'fastfacts' => array(
           array(
+            'type' => 'video',
+            'url' => '',
+            'title' => 'memorial-hall-facts',
+          ),
+          array(
             'type' => 'text',
             'text' => 'A typical Memorial Hall dinner menu from 1900 included 14 soups, six fish, 12 broiled meats, six game meats, two cold meats, six vegetables, and 10 desserts. After the residential Houses opened their own dining halls, the dining area of Memorial Hall sat largely unused until 1994, when a gift from Walter Annenberg and the Annenberg Corporation, in memory of his son Roger, Class of 1962, allowed it to be restored to its original purpose. Today, Annenberg Hall serves thousands of meals a day. but only first-year students are allowed to eat here at lunch and dinner, which helps them forge friendships to last for the remainder of their time at Harvard.',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => 'memorial-hall-facts.jpg',
-            'title' => '',
-          ),
-          array(
-            'type' => 'audio',
-            'url' => 'memorial-hall-facts.mp3',
-            'title' => '',
           ),
         ),
         'innovation' => array(
           array(
             'type' => 'video',
-            'url' => 'memorial-hall-innovation.mp4',
-            'title' => '',
+            'url' => '',
+            'title' => 'memorial-hall-innovation.mp4',
           ),
         ),
         'history' => array(
           array(
-            'type' => 'text',
-            'text' => 'Sanders Theatre is made entirely of wood from its pillars to its benches. Named for Charles Sanders, Harvard Class of 1802, it was completed in time to hold the 1876 Commencement, and, for many years, its capacity of 1,200 was sufficient. Yet when President Theodore Roosevelt, Class of 1880, arrived to speak to the Harvard Alumni Association in 1905, the entire audience could not be seated, and, by 1922, Commencement had been moved outdoors. Today, Sanders Theatre is still widely used in other ways. During the school day, some of Harvard’s largest classes meet here, including Ec 10, the introductory economics class, and "Justice," a class on morality that regularly attracts more than 800 students. Performances include those from student groups as well as world renowned speakers and musicians.',
+            'type' => 'photo',
+            'url' => '',
+            'title' => 'memorial-hall-history.jpg',
           ),
           array(
-            'type' => 'photo',
-            'url' => 'memorial-hall-history.jpg',
-            'title' => '',
+            'type' => 'text',
+            'text' => 'Sanders Theatre is made entirely of wood from its pillars to its benches. Named for Charles Sanders, Harvard Class of 1802, it was completed in time to hold the 1876 Commencement, and, for many years, its capacity of 1,200 was sufficient. Yet when President Theodore Roosevelt, Class of 1880, arrived to speak to the Harvard Alumni Association in 1905, the entire audience could not be seated, and, by 1922, Commencement had been moved outdoors. Today, Sanders Theatre is still widely used in other ways. During the school day, some of Harvard’s largest classes meet here, including Ec 10, the introductory economics class, and "Justice," a class on morality that regularly attracts more than 800 students. Performances include those from student groups as well as world renowned speakers and musicians.',
           ),
         ),
       ),
@@ -911,7 +941,7 @@ function _getTourStops() {
         'info' => array(
           array(
             'type' => 'photo',
-            'url' => '/media/memorial_church-main.jpg)',
+            'url' => '/media/memorial_church-main.jpg',
             'title' => 'Memorial Church - from "New Establishing Photos" (REPLACEMENT)',
           ),
           array(
@@ -925,27 +955,37 @@ function _getTourStops() {
         ),
         'insideout' => array(
           array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #95816 (Faust on stairs)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #167951 (carved doors)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #173369 (ceiling/alter)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #112081 (war vets statue)',
+            'type' => 'slideshow',
+            'slides' => array(
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #95816 (Faust on stairs)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #167951 (carved doors)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #173369 (ceiling/alter)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #112081 (war vets statue)',
+              ),
+            ),
           ),
         ),
         'fastfacts' => array(
+          array(
+            'type' => 'video',
+            'url' => '',
+            'title' => 'memorial-church-facts',
+          ),
           array(
             'type' => 'text',
             'text' => 'Among the students who died in the line of duty during WWI was Lionel de Jersey Harvard, Class of 1915, the only relative of John Harvard to attend the University. Similar to efforts after the Civil War, Harvard sought a way to honor its brave men and women, and in 1926, Dean Le Baron Russell Briggs, Class of 1875; A.M. 1882, suggested a solution:',
@@ -954,24 +994,14 @@ function _getTourStops() {
             'type' => 'text',
             'text' => '"The University … would make their memorial a church – a church controlled by no sect; a church in which the purest and highest life of the University shall find expression; a church in which the names and the records of these Harvard soldiers may be to all who enter it a memory constant and ennobling."',
           ),
-          array(
-            'type' => 'photo',
-            'url' => 'memorial-church-facts.jpg',
-            'title' => '',
-          ),
-          array(
-            'type' => 'audio',
-            'url' => 'memorial-church-facts.mp3',
-            'title' => '',
-          ),
         ),
         'innovation' => array(
         ),
         'history' => array(
           array(
             'type' => 'video',
-            'url' => 'memorial-church-history.mp4',
-            'title' => '',
+            'url' => '',
+            'title' => 'memorial-church-history.mp4',
           ),
         ),
       ),
@@ -997,7 +1027,7 @@ function _getTourStops() {
         'info' => array(
           array(
             'type' => 'photo',
-            'url' => '/media/sever_hall_quad-main.jpg)',
+            'url' => '/media/sever_hall_quad-main.jpg',
             'title' => 'Sever Hall - Merlin #98795',
           ),
           array(
@@ -1015,44 +1045,49 @@ function _getTourStops() {
         ),
         'insideout' => array(
           array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #118797 (stairway)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #24908 (renovated 5th floor)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #183813 (entryway)',
+            'type' => 'slideshow',
+            'slides' => array(
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #118797 (stairway)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #24908 (renovated 5th floor)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #183813 (entryway)',
+              ),
+            ),
           ),
         ),
         'fastfacts' => array(
           array(
             'type' => 'video',
-            'url' => 'sever-hall-facts.mp4',
-            'title' => '',
+            'url' => '',
+            'title' => 'sever-hall-facts.mp4',
           ),
         ),
         'innovation' => array(
           array(
             'type' => 'video',
-            'url' => 'sever-hall-innovation.mp4',
-            'title' => '',
+            'url' => '',
+            'title' => 'sever-hall-innovation.mp4',
           ),
         ),
         'history' => array(
           array(
-            'type' => 'text',
-            'text' => 'President Charles William Eliot, Class of 1853, promoted diversity in design, and no building demonstrates that principle as well as Sever Hall. It is made up of more than 1.3 million bricks of 60 different types. The decorative panels were carved by the bricklayers themselves, and include images of owls, griffins, and elephants.<br/>Joseph Hudnut, Class of 1909, dean of the Graduate School of Design <br/>"Sever Hall is the most American of our buildings – and our most important one ... a turning point in the course of American architecture."'
+            'type' => 'video',
+            'url' => '',
+            'title' => 'sever-hall-history',
           ),
           array(
-            'type' => 'audio',
-            'url' => 'sever-hall-history.mp3',
-            'title' => '',
+            'type' => 'text',
+            'text' => 'President Charles William Eliot, Class of 1853, promoted diversity in design, and no building demonstrates that principle as well as Sever Hall. It is made up of more than 1.3 million bricks of 60 different types. The decorative panels were carved by the bricklayers themselves, and include images of owls, griffins, and elephants.<br/>Joseph Hudnut, Class of 1909, dean of the Graduate School of Design <br/>"Sever Hall is the most American of our buildings – and our most important one ... a turning point in the course of American architecture."'
           ),
         ),
       ),
@@ -1078,7 +1113,7 @@ function _getTourStops() {
         'info' => array(
           array(
             'type' => 'photo',
-            'url' => '/media/loeb_house-main.jpg)',
+            'url' => '/media/loeb_house-main.jpg',
             'title' => 'Loeb House - Merlin #163809',
           ),
           array(
@@ -1092,30 +1127,35 @@ function _getTourStops() {
         ),
         'insideout' => array(
           array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #183831 (entryway)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #183827 (fireplace)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #183837 (curtains)',
+            'type' => 'slideshow',
+            'slides' => array(
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #183831 (entryway)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #183827 (fireplace)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #183837 (curtains)',
+              ),
+            ),
           ),
         ),
         'fastfacts' => array(
           array(
             'type' => 'text',
-            'text' => 'Lamont Library, located close to Loeb House, was the first university library building in the United States specifically planned for undergraduates. Lamont was the idea of Keyes D. Metcalf, librarian of Harvard College and director of the Harvard University Library from 1937 to 1955. Metcalf actively participated in planning the building with the Boston architect Henry Shepley as early as 1938. At the end of World War II, through the generosity of the major donor, Thomas W. Lamont, Class of 1892, the Harvard undergraduate library became a reality. Lamont Library opened in January 1949. Today, you will find undergraduates here at all hours, as during the week the library is open 24 hours a day. (IMAGE: loeb-house-facts.jpg)',
+            'text' => 'Lamont Library, located close to Loeb House, was the first university library building in the United States specifically planned for undergraduates. Lamont was the idea of Keyes D. Metcalf, librarian of Harvard College and director of the Harvard University Library from 1937 to 1955. Metcalf actively participated in planning the building with the Boston architect Henry Shepley as early as 1938. At the end of World War II, through the generosity of the major donor, Thomas W. Lamont, Class of 1892, the Harvard undergraduate library became a reality. Lamont Library opened in January 1949. Today, you will find undergraduates here at all hours, as during the week the library is open 24 hours a day.',
           ),
           array(
             'type' => 'photo',
-            'url' => 'loeb-house-facts.jpg',
-            'title' => '',
+            'url' => '',
+            'title' => 'loeb-house-facts.jpg',
           ),
         ),
         'innovation' => array(
@@ -1136,8 +1176,8 @@ function _getTourStops() {
           ),
           array(
             'type' => 'video',
-            'url' => 'loeb-house-history.mov',
-            'title' => '',
+            'url' => '',
+            'title' => 'loeb-house-history.mov',
           ),
         ),
       ),
@@ -1163,7 +1203,7 @@ function _getTourStops() {
         'info' => array(
           array(
             'type' => 'photo',
-            'url' => '/media/tercentenary_theatre-main.jpg)',
+            'url' => '/media/tercentenary_theatre-main.jpg',
             'title' => 'Tercentenary Theatre - Merlin #142761',
           ),
           array(
@@ -1181,33 +1221,38 @@ function _getTourStops() {
         ),
         'insideout' => array(
           array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #153431 (Freshman conv.)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #142531 (banners)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Archive photo of pre-Tercentenary Theatre in 1905, with Gore Hall and Appleton Chapel',
+            'type' => 'slideshow',
+            'slides' => array(
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #153431 (Freshman conv.)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #142531 (banners)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Archive photo of pre-Tercentenary Theatre in 1905, with Gore Hall and Appleton Chapel',
+              ),
+            ),
           ),
         ),
         'fastfacts' => array(
           array(
             'type' => 'video',
-            'url' => 'tercentenary-theatre-facts.mov',
-            'title' => '',
+            'url' => '',
+            'title' => 'tercentenary-theatre-facts.mov',
           ),
         ),
         'innovation' => array(
           array(
             'type' => 'photo',
-            'url' => 'tercentenary-theatre-innovation.jpg',
-            'title' => '',
+            'url' => '',
+            'title' => 'tercentenary-theatre-innovation.jpg',
           ),
           array(
             'type' => 'text',
@@ -1217,8 +1262,8 @@ function _getTourStops() {
         'history' => array(
           array(
             'type' => 'video',
-            'url' => 'tercentenary-theatre-history.mov',
-            'title' => '',
+            'url' => '',
+            'title' => 'tercentenary-theatre-history.mov',
           ),
         ),
       ),
@@ -1244,7 +1289,7 @@ function _getTourStops() {
         'info' => array(
           array(
             'type' => 'photo',
-            'url' => '/media/widener_library-main.jpg)',
+            'url' => '/media/widener_library-main.jpg',
             'title' => 'Widener Library - Merlin #94633',
           ),
           array(
@@ -1258,27 +1303,37 @@ function _getTourStops() {
         ),
         'insideout' => array(
           array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #76122',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #107873 (under dome)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #15223 (arches)',
-          ),
-          array(
-            'type' => 'photo',
-            'url' => '',
-            'title' => 'Archive Image--Widener Reading Room in 1955',
+            'type' => 'slideshow',
+            'slides' => array(
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #76122',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #107873 (under dome)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Merlin #15223 (arches)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '',
+                'title' => 'Archive Image--Widener Reading Room in 1955',
+              ),
+            ),
           ),
         ),
         'fastfacts' => array(
+          array(
+            'type' => 'video',
+            'url' => '',
+            'title' => 'needs to be rerecorded',
+          ),
           array(
             'type' => 'text',
             'text' => 'Harry Elkins Widener was a student in the first decade of the 20th century, and while at Harvard, Widener would have studied in Gore Hall, which originally stood on this site.'
@@ -1286,11 +1341,6 @@ function _getTourStops() {
           array(
             'type' => 'text',
             'text' => 'Widener, a rare book collector, was returning from a trip to England in 1912, and arranged passage for his family on the most luxurious ship in existence, the RMS Titanic. Harry and his father died when the ship sank, but his mother, Eleanor Elkins Widener, survived. In his will, Harry Elkins Widener provided for the care of his books: &lquot;I give and bequeath to my mother, absolutely, all my property. ... It is however my desire … that whenever in her judgment Harvard University will make arrangements for properly caring for my collection of books, she shall give them to said University to be known as the \'Harry Elkins Widener Collection.\'&rquot;',
-          ),
-          array(
-            'type' => 'audio',
-            'url' => '',
-            'title' => 'needs to be rerecorded',
           ),
         ),
         'innovation' => array(
@@ -1307,8 +1357,8 @@ function _getTourStops() {
         'history' => array(
           array(
             'type' => 'video',
-            'url' => 'widener-history.mp4',
-            'title' => '',
+            'url' => '',
+            'title' => 'widener-history.mp4',
           ),
         ),
       ),
