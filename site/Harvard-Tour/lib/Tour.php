@@ -80,6 +80,7 @@ class TourStop {
   private $coords     = array('lat' => 0, 'lon' => 0);
   private $buildingId = '';
   private $photo      = null;
+  private $thumbnail  = null;
   private $lenses     = array();
   private $isCurrent  = false;
   private $wasVisited = false;
@@ -91,7 +92,8 @@ class TourStop {
     $this->subtitle = $data['subtitle'];
     $this->coords   = $data['coords'];
     $this->building = $data['building'];
-    $this->photo    = new TourPhoto($data['photo']['url'], $data['photo']['title']);
+    $this->photo     = new TourPhoto($data['photo']['url'], $data['photo']['title']);
+    $this->thumbnail = new TourPhoto($data['thumbnail']['url'], $data['thumbnail']['title']);
     
     foreach ($data['lenses'] as $type => $contents) {
       if (!$contents) { continue; }
@@ -143,7 +145,7 @@ class TourStop {
   }
 
   function getThumbnailSrc() {
-    return $this->photo->getSrc();
+    return $this->thumbnail->getSrc();
   }
 
   function getAvailableLenses() {

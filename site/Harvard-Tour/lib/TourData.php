@@ -588,6 +588,10 @@ function _getTourStops() {
         'url' => '/media/phillips_brook_house-thumb.jpg',
         'title' => '',
       ),
+     'coords' => array(
+        'lat' => 42.375606,
+        'lon' => -71.117919,
+      ),
       'building' => '225',
       'lenses' => array(
         'info' => array(
