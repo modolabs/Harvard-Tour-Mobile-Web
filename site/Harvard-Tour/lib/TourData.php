@@ -59,7 +59,7 @@ function _getTourStops() {
           ),
           array(
             'type' => 'text',
-            'text' => 'Early in Cambridge’s history, most of Harvard Yard was a grazing space. In Harvard lore, it is often said that university professorships have provided for grazing rights upon acceptance of the position. In 2009, claiming this "right", outgoing Hollis Professor of Divinity Harvey Cox exercised his right to have an animal graze in the Yard, and brought a cow to his retirement party.',
+            'text' => 'Early in Cambridge’s history, most of Harvard Yard was a grazing space. In Harvard lore, it is often said that university professorships have provided for grazing rights upon acceptance of the position. In 2009, claiming this &ldquo;right&rdquo;, outgoing Hollis Professor of Divinity Harvey Cox exercised his right to have an animal graze in the Yard, and brought a cow to his retirement party.',
           ),
         ),
         'innovation' => array(
@@ -72,7 +72,7 @@ function _getTourStops() {
           ),
           array(
             'type' => 'text',
-            'text' => 'On Massachusetts Avenue (near where the carriage appears in the picture), glance down to notice the brass markers labeled "Goffe" and "Eaton" found in the pavement. These plaques commemorate the College\'s first and second buildings: Peyntree House and Goffe College. Nathaniel Eaton, the first House master of the College, lived in Peyntree House. A further explanation is revealed on Wadsworth Gate.',
+            'text' => 'On Massachusetts Avenue (near where the carriage appears in the picture), glance down to notice the brass markers labeled &ldquo;Goffe&rdquo; and &ldquo;Eaton&rdquo; found in the pavement. These plaques commemorate the College\'s first and second buildings: Peyntree House and Goffe College. Nathaniel Eaton, the first House master of the College, lived in Peyntree House. A further explanation is revealed on Wadsworth Gate.',
           ),
         ),
       ),
@@ -248,7 +248,7 @@ function _getTourStops() {
           ),
           array(
             'type' => 'text',
-            'text' => 'Harvard has traditionally welcomed its guests through the Johnston Gate, which was completed in 1889 and is Harvard\'s Yard\'s first gate. The gate is the most prominent of a series of gates that enclose Harvard Yard. Each of the gates around the Yard was either donated by a graduating class, conveys a special note of wisdom, or serves as a memorial to a member the Harvard community. The brick walls of the Yard are a ""recent"" appearance, completed only in 1901.',
+            'text' => 'Harvard has traditionally welcomed its guests through the Johnston Gate, which was completed in 1889 and is Harvard\'s first gate. The gate is the most prominent of a series of gates that enclose Harvard Yard. Each of the gates around the Yard was either donated by a graduating class, conveys a special note of wisdom, or serves as a memorial to a member the Harvard community. The brick walls of the Yard are a &ldquo;recent&rdquo; appearance, completed only in 1901.',
           ),
         ),
         'insideout' => array(
@@ -282,7 +282,15 @@ function _getTourStops() {
         'innovation' => array(
           array(
             'type' => 'text',
-            'text' => 'As the official entrance to Harvard Yard, Johnston Gate welcomes all who step onto the Harvard campus. Similarly, Harvard University welcomes students from all backgrounds. <ul><li>Harvard undergraduates come from all 50 states and from more than 80 countries; from public, private, and parochial schools; from every ethnic, religious, and economic background.</li><li>70 percent of Harvard students receive some form of financial aid.</li><li>The need-based financial aid policy meets 100 percent of a family\'s demonstrated need.</li><li>Harvard’s financial aid policies apply equally to international students and to U.S. citizens.</li></ul> Harvard Admissions is now located at Agassiz Theatre in Radcliffe Yard.'
+            'text' => 'As the official entrance to Harvard Yard, Johnston Gate welcomes all who step onto the Harvard campus. Similarly, Harvard University welcomes students from all backgrounds.'
+          ),
+          array(
+            'type' => 'text',
+            'text' => '<ul><li>Harvard undergraduates come from all 50 states and from more than 80 countries; from public, private, and parochial schools; from every ethnic, religious, and economic background.</li><li>70 percent of Harvard students receive some form of financial aid.</li><li>The need-based financial aid policy meets 100 percent of a family\'s demonstrated need.</li><li>Harvard’s financial aid policies apply equally to international students and to U.S. citizens.</li></ul>'
+          ),
+          array(
+            'type' => 'text',
+            'text' => 'Harvard Admissions is now located at Agassiz Theatre in Radcliffe Yard.'
           ),
         ),
         'history' => array(
@@ -293,7 +301,15 @@ function _getTourStops() {
           ),
           array(
             'type' => 'text',
-            'text' => 'Unlike some colleges, Harvard does not have a large sign declaring Harvard Yard. Instead, it trusts that it provides a welcoming environment to all who step through its gates. Nobel laureate and former Harvard professor Seamus Heaney said on the occasion of Harvard’s 350th anniversary:<br>"Begin again where frosts and tests were hard. Find yourself or founder. Here, imagine<br/>A spirit moves, John Harvard walks the yard,<br/>The books stand open and the gates unbarred."<br/>This quote is also emblazoned on the folder that admitted students receive along with word of their acceptance.'
+            'text' => 'Unlike some colleges, Harvard does not have a large sign declaring Harvard Yard. Instead, it trusts that it provides a welcoming environment to all who step through its gates. Nobel laureate and former Harvard professor Seamus Heaney said on the occasion of Harvard’s 350th anniversary:'
+          ),
+          array(
+            'type' => 'text',
+            'text' => '&ldquo;Begin again where frosts and tests were hard. Find yourself or founder. Here, imagine<br/>A spirit moves, John Harvard walks the yard,<br/>The books stand open and the gates unbarred.&rdquo;'
+          ),
+          array(
+            'type' => 'text',
+            'text' => 'This quote is also emblazoned on the folder that admitted students receive along with word of their acceptance.'
           ),
         ),
       ),
@@ -360,7 +376,7 @@ function _getTourStops() {
           ),
           array(
             'type' => 'text',
-            'text' => 'Harvard Hall once possessed a bell that rang at 6:20 every morning. Nicknamed the &lquot;hell-banger,&rquot; generations of students attempted to quiet it. For 50 years, starting in 1858, custodian Austin Kingsley Jones was responsible for ringing the bell. Affectionately known as “Old Jones,” he managed to outwit students every time the bell was in danger. Once, when the hallway to the bell was blocked, he cut a hole in the ceiling to sound it on time. The bell continued to ring until 1933, when, in one of his first acts as University president, James Conant, Class of 1914; Ph.D. 1916, ordered it silenced. Students are now awakened by the 8:40 bell of the Memorial Church. With their extra two hours and 20 minutes of sleep, students are finally able to catch up on well-deserved rest.'
+            'text' => 'Harvard Hall once possessed a bell that rang at 6:20 every morning. Nicknamed the &ldquo;hell-banger,&rdquo; generations of students attempted to quiet it. For 50 years, starting in 1858, custodian Austin Kingsley Jones was responsible for ringing the bell. Affectionately known as &ldquo;Old Jones,&rdquo; he managed to outwit students every time the bell was in danger. Once, when the hallway to the bell was blocked, he cut a hole in the ceiling to sound it on time. The bell continued to ring until 1933, when, in one of his first acts as University president, James Conant, Class of 1914; Ph.D. 1916, ordered it silenced. Students are now awakened by the 8:40 bell of the Memorial Church. With their extra two hours and 20 minutes of sleep, students are finally able to catch up on well-deserved rest.'
           ),
         ),
         'innovation' => array(
@@ -456,7 +472,7 @@ function _getTourStops() {
           ),
           array(
             'type' => 'text',
-            'text' => 'Though students often call this statue “The Statue of Three Lies,” it may be more accurately labeled “The Statue of Three Half-Truths.” Although John Harvard did not found the College as proclaimed on the base, he has been considered the founder since President Henry Dunster praised him for allowing scholarship to flourish. The date of 1638 is also misleading. While the college was formally created in 1636, it was Harvard’s benefaction two years later that made its success possible. Finally, the sculpture’s physical likeness is not that of John Harvard. The model for this statue was Harvard student Sherman Hoar, Class of 1882; J.D. 1884. Sculptor Daniel Chester French explained that his intention was not to create a physical portrait of John Harvard, but rather a portrait of the type of man he imagined John Harvard was. The Reverend George Ellis, Class of 1833; M.Div. 1836, explained this at the unveiling of the statue: "We have enlisted one of the noblest of the arts to embody a conception of what [John] Harvard might have been in body and lineament, from what we know that he was in mind and in soul."',
+            'text' => 'Though students often call this statue “The Statue of Three Lies,” it may be more accurately labeled “The Statue of Three Half-Truths.” Although John Harvard did not found the College as proclaimed on the base, he has been considered the founder since President Henry Dunster praised him for allowing scholarship to flourish. The date of 1638 is also misleading. While the college was formally created in 1636, it was Harvard’s benefaction two years later that made its success possible. Finally, the sculpture’s physical likeness is not that of John Harvard. The model for this statue was Harvard student Sherman Hoar, Class of 1882; J.D. 1884. Sculptor Daniel Chester French explained that his intention was not to create a physical portrait of John Harvard, but rather a portrait of the type of man he imagined John Harvard was. The Reverend George Ellis, Class of 1833; M.Div. 1836, explained this at the unveiling of the statue: &ldquo;We have enlisted one of the noblest of the arts to embody a conception of what [John] Harvard might have been in body and lineament, from what we know that he was in mind and in soul.&rdquo;',
           ),
         ),
         'innovation' => array(
@@ -477,7 +493,7 @@ function _getTourStops() {
           ),
           array(
             'type' => 'text',
-            'text' => 'Established in 1636, Harvard was known as the “Colledge of Newtowne." After his death in 1638, John Harvard left his library and half of his estate to the school, which was renamed in his honor. Although many early graduates became ministers, the College was never formally affiliated with a religious denomination. The College’s mission according to its 1650 Charter, was &lquot;The advancement of all good literature, artes and Sciences.&rquot;',
+            'text' => 'Established in 1636, Harvard was known as the &ldquo;Colledge of Newtowne.&rdquo; After his death in 1638, John Harvard left his library and half of his estate to the school, which was renamed in his honor. Although many early graduates became ministers, the College was never formally affiliated with a religious denomination. The College’s mission according to its 1650 Charter, was &ldquo;The advancement of all good literature, artes and Sciences.&rdquo;',
           ),
         ),
       ),
@@ -512,7 +528,7 @@ function _getTourStops() {
           ),
           array(
             'type' => 'text',
-            'text' => 'Today, when students arrive at Harvard, they are placed into a dorm in or near Harvard Yard. During their second term, they are randomly assigned to one of the 12 Houses, either as an individual or in a group of friends known as a ""blocking group."" Each House features a dining hall, exercise rooms, art studios, musical practice rooms, and libraries. House masters oversee the atmosphere of the House and make sure students feel welcome, while a staff of residential tutors provides assistance in academic matters. For many students and alumni, House life becomes a treasured memory of time spent at Harvard.',
+            'text' => 'Today, when students arrive at Harvard, they are placed into a dorm in or near Harvard Yard. During their second term, they are randomly assigned to one of the 12 Houses, either as an individual or in a group of friends known as a &ldquo;blocking group.&rdquo; Each House features a dining hall, exercise rooms, art studios, musical practice rooms, and libraries. House masters oversee the atmosphere of the House and make sure students feel welcome, while a staff of residential tutors provides assistance in academic matters. For many students and alumni, House life becomes a treasured memory of time spent at Harvard.',
           ),
           array(
             'type' => 'text',
@@ -726,7 +742,7 @@ function _getTourStops() {
           ),
           array(
             'type' => 'text',
-            'text' => 'In 1886, Phillips Brooks, who later became the Episcopal bishop of Massachusetts, was invited to speak at Harvard’s 250th anniversary celebration, where he said:<br/>"Science and religion, faith and reason, individuality and society, conservatism and radicalism, poverty and wealth, the past and future, – these must join hands and walk in peace with one another in a city of scholars, where … the essential unity of all good things shall be made manifest and clear."',
+            'text' => 'In 1886, Phillips Brooks, who later became the Episcopal bishop of Massachusetts, was invited to speak at Harvard’s 250th anniversary celebration, where he said:<br/>&ldquo;Science and religion, faith and reason, individuality and society, conservatism and radicalism, poverty and wealth, the past and future, – these must join hands and walk in peace with one another in a city of scholars, where … the essential unity of all good things shall be made manifest and clear.&rdquo;',
           ),
         ),
       ),
@@ -757,7 +773,7 @@ function _getTourStops() {
           ),
           array(
             'type' => 'text',
-            'text' => 'Harvard has promoted science and research since the 17th century, but the technological breakthroughs of the 20th century created the need for a new facility to house the University\'s scientific endeavors. In 1973, the gift of an anonymous donor allowed for the construction of this massive structure, the Science Center. Rumored to resemble a camera, the building is the masterpiece of architect Josep Lluis Sert, who also designed Harvard’s Holyoke Center. Using prefabricated concrete slabs held together by epoxy glue, Sert designed the Science Center to be a ""city of science,"" with pedestrian streets connecting different labs and classrooms.',
+            'text' => 'Harvard has promoted science and research since the 17th century, but the technological breakthroughs of the 20th century created the need for a new facility to house the University\'s scientific endeavors. In 1973, the gift of an anonymous donor allowed for the construction of this massive structure, the Science Center. Rumored to resemble a camera, the building is the masterpiece of architect Josep Lluis Sert, who also designed Harvard’s Holyoke Center. Using prefabricated concrete slabs held together by epoxy glue, Sert designed the Science Center to be a &ldquo;city of science,&rdquo; with pedestrian streets connecting different labs and classrooms.',
           ),
           array(
             'type' => 'text',
@@ -915,7 +931,7 @@ function _getTourStops() {
           ),
           array(
             'type' => 'text',
-            'text' => 'Sanders Theatre is made entirely of wood from its pillars to its benches. Named for Charles Sanders, Harvard Class of 1802, it was completed in time to hold the 1876 Commencement, and, for many years, its capacity of 1,200 was sufficient. Yet when President Theodore Roosevelt, Class of 1880, arrived to speak to the Harvard Alumni Association in 1905, the entire audience could not be seated, and, by 1922, Commencement had been moved outdoors. Today, Sanders Theatre is still widely used in other ways. During the school day, some of Harvard’s largest classes meet here, including Ec 10, the introductory economics class, and "Justice," a class on morality that regularly attracts more than 800 students. Performances include those from student groups as well as world renowned speakers and musicians.',
+            'text' => 'Sanders Theatre is made entirely of wood from its pillars to its benches. Named for Charles Sanders, Harvard Class of 1802, it was completed in time to hold the 1876 Commencement, and, for many years, its capacity of 1,200 was sufficient. Yet when President Theodore Roosevelt, Class of 1880, arrived to speak to the Harvard Alumni Association in 1905, the entire audience could not be seated, and, by 1922, Commencement had been moved outdoors. Today, Sanders Theatre is still widely used in other ways. During the school day, some of Harvard’s largest classes meet here, including Ec 10, the introductory economics class, and &ldquo;Justice,&rdquo; a class on morality that regularly attracts more than 800 students. Performances include those from student groups as well as world renowned speakers and musicians.',
           ),
         ),
       ),
@@ -988,11 +1004,7 @@ function _getTourStops() {
           ),
           array(
             'type' => 'text',
-            'text' => 'Among the students who died in the line of duty during WWI was Lionel de Jersey Harvard, Class of 1915, the only relative of John Harvard to attend the University. Similar to efforts after the Civil War, Harvard sought a way to honor its brave men and women, and in 1926, Dean Le Baron Russell Briggs, Class of 1875; A.M. 1882, suggested a solution:',
-          ),
-          array(
-            'type' => 'text',
-            'text' => '"The University … would make their memorial a church – a church controlled by no sect; a church in which the purest and highest life of the University shall find expression; a church in which the names and the records of these Harvard soldiers may be to all who enter it a memory constant and ennobling."',
+            'text' => 'Among the students who died in the line of duty during WWI was Lionel de Jersey Harvard, Class of 1915, the only relative of John Harvard to attend the University. Similar to efforts after the Civil War, Harvard sought a way to honor its brave men and women, and in 1926, Dean Le Baron Russell Briggs, Class of 1875; A.M. 1882, suggested a solution:<br/>&ldquo;The University … would make their memorial a church – a church controlled by no sect; a church in which the purest and highest life of the University shall find expression; a church in which the names and the records of these Harvard soldiers may be to all who enter it a memory constant and ennobling.&rdquo;',
           ),
         ),
         'innovation' => array(
@@ -1036,7 +1048,7 @@ function _getTourStops() {
           ),
           array(
             'type' => 'text',
-            'text' => '&lquot;Architecture&rquot; is written on the side of Robinson Hall; this inscription dates from 1904 when Nelson Robinson Jr. Hall was home to the departments of architecture and landscape architecture. Those programs now make up part of the Graduate School of Design located nearby, in Gund Hall. Currently, Robinson Hall is home to the History Department.',
+            'text' => '&ldquo;Architecture&rdquo; is written on the side of Robinson Hall; this inscription dates from 1904 when Nelson Robinson Jr. Hall was home to the departments of architecture and landscape architecture. Those programs now make up part of the Graduate School of Design located nearby, in Gund Hall. Currently, Robinson Hall is home to the History Department.',
           ),
           array(
             'type' => 'text',
@@ -1087,7 +1099,7 @@ function _getTourStops() {
           ),
           array(
             'type' => 'text',
-            'text' => 'President Charles William Eliot, Class of 1853, promoted diversity in design, and no building demonstrates that principle as well as Sever Hall. It is made up of more than 1.3 million bricks of 60 different types. The decorative panels were carved by the bricklayers themselves, and include images of owls, griffins, and elephants.<br/>Joseph Hudnut, Class of 1909, dean of the Graduate School of Design <br/>"Sever Hall is the most American of our buildings – and our most important one ... a turning point in the course of American architecture."'
+            'text' => 'President Charles William Eliot, Class of 1853, promoted diversity in design, and no building demonstrates that principle as well as Sever Hall. It is made up of more than 1.3 million bricks of 60 different types. The decorative panels were carved by the bricklayers themselves, and include images of owls, griffins, and elephants.  Joseph Hudnut, Class of 1909, dean of the Graduate School of Design:<br/>&ldquo;Sever Hall is the most American of our buildings – and our most important one ... a turning point in the course of American architecture.&rdquo;'
           ),
         ),
       ),
@@ -1149,13 +1161,13 @@ function _getTourStops() {
         ),
         'fastfacts' => array(
           array(
-            'type' => 'text',
-            'text' => 'Lamont Library, located close to Loeb House, was the first university library building in the United States specifically planned for undergraduates. Lamont was the idea of Keyes D. Metcalf, librarian of Harvard College and director of the Harvard University Library from 1937 to 1955. Metcalf actively participated in planning the building with the Boston architect Henry Shepley as early as 1938. At the end of World War II, through the generosity of the major donor, Thomas W. Lamont, Class of 1892, the Harvard undergraduate library became a reality. Lamont Library opened in January 1949. Today, you will find undergraduates here at all hours, as during the week the library is open 24 hours a day.',
-          ),
-          array(
             'type' => 'photo',
             'url' => '',
             'title' => 'loeb-house-facts.jpg',
+          ),
+          array(
+            'type' => 'text',
+            'text' => 'Lamont Library, located close to Loeb House, was the first university library building in the United States specifically planned for undergraduates. Lamont was the idea of Keyes D. Metcalf, librarian of Harvard College and director of the Harvard University Library from 1937 to 1955. Metcalf actively participated in planning the building with the Boston architect Henry Shepley as early as 1938. At the end of World War II, through the generosity of the major donor, Thomas W. Lamont, Class of 1892, the Harvard undergraduate library became a reality. Lamont Library opened in January 1949. Today, you will find undergraduates here at all hours, as during the week the library is open 24 hours a day.',
           ),
         ),
         'innovation' => array(
@@ -1171,13 +1183,13 @@ function _getTourStops() {
         ),
         'history' => array(
           array(
-            'type' => 'text',
-            'text' => 'When Harvard welcomed ROTC back to campus in March 2011, the agreement was celebrated in a ceremony at Loeb House. During World War II, Loeb House was the site of the V-12 Navy College Training Program, designed to supplement standard programs for new naval officers at 131 U.S. colleges and universities.',
-          ),
-          array(
             'type' => 'video',
             'url' => '',
             'title' => 'loeb-house-history.mov',
+          ),
+          array(
+            'type' => 'text',
+            'text' => 'When Harvard welcomed ROTC back to campus in March 2011, the agreement was celebrated in a ceremony at Loeb House. During World War II, Loeb House was the site of the V-12 Navy College Training Program, designed to supplement standard programs for new naval officers at 131 U.S. colleges and universities.',
           ),
         ),
       ),
@@ -1340,7 +1352,7 @@ function _getTourStops() {
           ),
           array(
             'type' => 'text',
-            'text' => 'Widener, a rare book collector, was returning from a trip to England in 1912, and arranged passage for his family on the most luxurious ship in existence, the RMS Titanic. Harry and his father died when the ship sank, but his mother, Eleanor Elkins Widener, survived. In his will, Harry Elkins Widener provided for the care of his books: &lquot;I give and bequeath to my mother, absolutely, all my property. ... It is however my desire … that whenever in her judgment Harvard University will make arrangements for properly caring for my collection of books, she shall give them to said University to be known as the \'Harry Elkins Widener Collection.\'&rquot;',
+            'text' => 'Widener, a rare book collector, was returning from a trip to England in 1912, and arranged passage for his family on the most luxurious ship in existence, the RMS Titanic. Harry and his father died when the ship sank, but his mother, Eleanor Elkins Widener, survived. In his will, Harry Elkins Widener provided for the care of his books: &ldquo;I give and bequeath to my mother, absolutely, all my property. ... It is however my desire … that whenever in her judgment Harvard University will make arrangements for properly caring for my collection of books, she shall give them to said University to be known as the \'Harry Elkins Widener Collection.\'&rdquo;',
           ),
         ),
         'innovation' => array(
