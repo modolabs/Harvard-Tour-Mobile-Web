@@ -6,7 +6,7 @@ function _getTourStops() {
       'title' => 'Wadsworth House',
       'subtitle' => 'The only wooden building in Harvard Yard, c. 1727',
       'photo' => array(
-        'url' => '/media/wadsworth_house-est.jpg',
+        'url' => '/media/wadsworth_house-approach.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -20,6 +20,11 @@ function _getTourStops() {
       'building' => '106',
       'lenses' => array(
         'info' => array(
+          array(
+            'type' => 'photo',
+            'url' => '/media/wadsworth_house-main.jpg',
+            'title' => 'Wadsworth House-Merlin #1366',
+          ),
           array(
             'type' => 'text',
             'text' => 'Wadsworth House is an architectural landmark, the second-oldest building still standing at Harvard and the only remaining wooden structure in the Yard. Like many buildings in the Yard, its use has changed over time. The building served as the University president’s house from 1726 through 1849, housing President Benjamin Wadsworth, Class of 1690; A.M. 1693, through President Edward Everett, Class of 1811. When it was no longer home to presidents, Wadsworth was used as a boardinghouse for students and professors. Administrative offices and a printing press were added later, and a study for use by preachers was created.',
@@ -72,7 +77,7 @@ function _getTourStops() {
       'title' => 'Indian College',
       'subtitle' => 'A plaque denotes the school established for Native American students',
       'photo' => array(
-        'url' => '/media/indian_college-est.jpg',
+        'url' => '/media/indian_college-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -86,6 +91,11 @@ function _getTourStops() {
       'building' => '952',
       'lenses' => array(
         'info' => array(
+          array(
+            'type' => 'photo',
+            'url' => '/media/indian_college-main.jpg',
+            'title' => 'Indian College Plaque - Merlin #183653',
+          ),
           array(
             'type' => 'text',
             'text' => 'In 2009, archaeology students digging near the grassy area adjacent to Matthews Hall uncovered traces of a brick wall five feet below the surface. When two pieces of printing type were also found, the University announced that the site of the Indian College had been unearthed.',
@@ -128,7 +138,7 @@ function _getTourStops() {
       'title' => 'Massachusetts Hall',
       'subtitle' => 'Older than the U.S. by 56 years, c. 1720',
       'photo' => array(
-        'url' => '/media/massachusetts_hall-est.jpg',
+        'url' => '/media/massachusetts_hall-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -142,6 +152,11 @@ function _getTourStops() {
       'building' => '951',
       'lenses' => array(
         'info' => array(
+          array(
+            'type' => 'photo',
+            'url' => '/media/massachusetts_hall-main.jpg',
+            'title' => 'Massachusetts Hall - Merlin #166683',
+          ),
           array(
             'type' => 'text',
             'text' => 'Massachusetts Hall is the oldest building at Harvard and the second-oldest academic building in America (the Christopher Wren building at William and Mary in Virginia is the oldest).',
@@ -202,7 +217,7 @@ function _getTourStops() {
       'title' => 'Johnston Gate',
       'subtitle' => 'There is no large Harvard sign but this is considered the official entrance',
       'photo' => array(
-        'url' => '/media/johnston_gate-est.jpg',
+        'url' => '/media/johnston_gate-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -216,6 +231,11 @@ function _getTourStops() {
       'building' => '107',
       'lenses' => array(
         'info' => array(
+          array(
+            'type' => 'photo',
+            'url' => '/media/johnston_gate-main.jpg',
+            'title' => 'Johnston Gate - Merlin #78167 (REPLACEMENT)',
+          ),
           array(
             'type' => 'text',
             'text' => 'Harvard has traditionally welcomed its guests through the Johnston Gate, which was completed in 1889 and is Harvard\'s Yard\'s first gate. The gate is the most prominent of a series of gates that enclose Harvard Yard. Each of the gates around the Yard was either donated by a graduating class, conveys a special note of wisdom, or serves as a memorial to a member the Harvard community. The brick walls of the Yard are a ""recent"" appearance, completed only in 1901.',
@@ -273,7 +293,7 @@ function _getTourStops() {
       'title' => 'Harvard Hall',
       'subtitle' => 'Site of the nation\'s first physics lab, c. in 1766',
       'photo' => array(
-        'url' => '/media/harvard_hall-est.jpg',
+        'url' => '/media/harvard_hall-approach.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -287,6 +307,11 @@ function _getTourStops() {
       'building' => '324',
       'lenses' => array(
         'info' => array(
+          array(
+            'type' => 'photo',
+            'url' => '/media/harvard_hall-main.jpg',
+            'title' => 'Harvard Hall - Merlin #166361',
+          ),
           array(
             'type' => 'text',
             'text' => 'Harvard Hall is the second building on this spot to bear that name. The first was built in 1677, but burned down in the great fire of 1764. During the its construction, British merchant Thomas Hollis took notice of the school and became its second great patron.',
@@ -335,15 +360,15 @@ function _getTourStops() {
       ),
     ),
     // -----------------------------------------------------------------------
-    'university_hall' => array(
-      'title' => 'University Hall/John Harvard Statue',
+    'john_harvard_statue' => array(
+      'title' => 'John Harvard Statue',
       'subtitle' => 'Now houses administration. The statue is a relatively new addition',
       'photo' => array(
-        'url' => '/media/university_hall-est.jpg',
+        'url' => '/media/john_harvard_statue-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
-        'url' => '/media/university_hall-thumb.jpg',
+        'url' => '/media/john_harvard_statue-thumb.jpg',
         'title' => '',
       ),
       'coords' => array(
@@ -354,8 +379,9 @@ function _getTourStops() {
       'lenses' => array(
         'info' => array(
           array(
-            'type' => 'text',
-            'text' => 'University Hall, this grand granite structure, is home to the Faculty of Arts and Sciences, which comprises over 700 professors of Harvard College and the Graduate School of Arts and Sciences. Built in 1814, it originally contained four dining halls, one for each class, until they were removed following a string of food fights. It has often been a focal point for student protests, including bonfires on the steps and graffiti on its walls. On April 9, 1969, during the unrest surrounding the Vietnam War, University Hall was taken over by a radical student group. The demonstrators evicted the staff, going so far as to carry out the deans on their own desk chairs. ',
+            'type' => 'photo',
+            'url' => '/media/john_harvard_statue-main.jpg)',
+            'title' => 'John Harvard Statue - Merlin #52360 (REPLACEMENT)',
           ),
           array(
             'type' => 'text',
@@ -365,11 +391,15 @@ function _getTourStops() {
             'type' => 'text',
             'text' => 'A recent tradition holds that rubbing John Harvard’s foot will bring good luck. Feel free to try it out for yourself.',
           ),
+          array(
+            'type' => 'text',
+            'text' => 'University Hall, this grand granite structure, is home to the Faculty of Arts and Sciences, which comprises over 700 professors of Harvard College and the Graduate School of Arts and Sciences. Built in 1814, it originally contained four dining halls, one for each class, until they were removed following a string of food fights. It has often been a focal point for student protests, including bonfires on the steps and graffiti on its walls. On April 9, 1969, during the unrest surrounding the Vietnam War, University Hall was taken over by a radical student group. The demonstrators evicted the staff, going so far as to carry out the deans on their own desk chairs. ',
+          ),
         ),
         'insideout' => array(
           array(
             'type' => 'photo',
-            'url' => 'university-hall-insideout.jpg)',
+            'url' => 'john_harvard_statue-insideout.jpg)',
             'title' => '',
           ),
           array(
@@ -434,10 +464,10 @@ function _getTourStops() {
     ),
     // -----------------------------------------------------------------------
     'freshman_dorms' => array(
-      'title' => 'Freshman Dorms and College Pump',
+      'title' => 'Freshman Dorms',
       'subtitle' => 'Most Harvard freshmen live in the dorms in Harvard Yard',
       'photo' => array(
-        'url' => '/media/freshman_dorms-est.jpg',
+        'url' => '/media/freshman_dorms-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -451,6 +481,11 @@ function _getTourStops() {
       'building' => '',
       'lenses' => array(
         'info' => array(
+          array(
+            'type' => 'photo',
+            'url' => '/media/freshman_dorms-main.jpg)',
+            'title' => 'Freshman Dorms -  Merlin #37842',
+          ),
           array(
             'type' => 'text',
             'text' => 'Over the past 200 years, these red brick structures have served as dormitories. Hollis Hall, Stoughton Hall, and Holworthy Hall, as well as Thayer Hall directly opposite them, are among the 17 freshman dormitories, which house more than 1,600 students in total. Thirteen of these dormitories, housing about 80 percent of the freshman class, are found in Harvard Yard itself. ',
@@ -501,7 +536,7 @@ function _getTourStops() {
       'title' => 'Holden Chapel',
       'subtitle' => 'The Chapel was first site of the Medical School, c. 1744',
       'photo' => array(
-        'url' => '/media/holden_chapel-est.jpg',
+        'url' => '/media/holden_chapel-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -515,6 +550,11 @@ function _getTourStops() {
       'building' => '325',
       'lenses' => array(
         'info' => array(
+          array(
+            'type' => 'photo',
+            'url' => '/media/holden_chapel-main.jpg)',
+            'title' => 'Holden Chapel - from "New Establishing Shots" (REPLACEMENT)',
+          ),
           array(
             'type' => 'text',
             'text' => 'When built in 1744, Holden Chapel housed Harvard’s services of daily prayer. Poor heating made it uncomfortable in the winter, and services were soon moved to Harvard Hall. ',
@@ -577,15 +617,15 @@ function _getTourStops() {
       ),
     ),
     // -----------------------------------------------------------------------
-    'phillips_brook_house' => array(
+    'phillips_brooks_house' => array(
       'title' => 'Phillips Brooks House',
       'subtitle' => 'Home to student groups for social justice, c. 1904',
       'photo' => array(
-        'url' => '/media/phillips_brook_house-est.jpg',
+        'url' => '/media/phillips_brooks_house-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
-        'url' => '/media/phillips_brook_house-thumb.jpg',
+        'url' => '/media/phillips_brooks_house-thumb.jpg',
         'title' => '',
       ),
      'coords' => array(
@@ -595,6 +635,11 @@ function _getTourStops() {
       'building' => '225',
       'lenses' => array(
         'info' => array(
+          array(
+            'type' => 'photo',
+            'url' => '/media/phillips_brooks_house-main.jpg)',
+            'title' => 'Phillips Brooks House - Merlin #97822',
+          ),
           array(
             'type' => 'text',
             'text' => 'Although within Harvard Yard, Phillips Brooks House has a mission to reach beyond the University\'s walls. It is named for Phillips Brooks, Class of 1855 and a beloved preacher both at the University and at Trinity Church, Boston, where he is commemorated with a statue.',
@@ -666,7 +711,7 @@ function _getTourStops() {
       'title' => 'Science Center',
       'subtitle' => 'Designed for science, this building houses many academic departments, c. 1973',
       'photo' => array(
-        'url' => '/media/science_center-est.jpg',
+        'url' => '/media/science_center-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -680,6 +725,11 @@ function _getTourStops() {
       'building' => '357',
       'lenses' => array(
         'info' => array(
+          array(
+            'type' => 'photo',
+            'url' => '/media/science_center-main.jpg)',
+            'title' => 'Science Center - PLACEHOLDER REPLACEMENT FROM WIKIPEDIA',
+          ),
           array(
             'type' => 'text',
             'text' => 'Harvard has promoted science and research since the 17th century, but the technological breakthroughs of the 20th century created the need for a new facility to house the University\'s scientific endeavors. In 1973, the gift of an anonymous donor allowed for the construction of this massive structure, the Science Center. Rumored to resemble a camera, the building is the masterpiece of architect Josep Lluis Sert, who also designed Harvard’s Holyoke Center. Using prefabricated concrete slabs held together by epoxy glue, Sert designed the Science Center to be a ""city of science,"" with pedestrian streets connecting different labs and classrooms.',
@@ -746,7 +796,7 @@ function _getTourStops() {
       'title' => 'Memorial Hall',
       'subtitle' => 'Includes a dining hall and Sanders Theatre for classes and performances, c. 1878',
       'photo' => array(
-        'url' => '/media/memorial_hall-est.jpg',
+        'url' => '/media/memorial_hall-approach.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -760,6 +810,11 @@ function _getTourStops() {
       'building' => '105',
       'lenses' => array(
         'info' => array(
+          array(
+            'type' => 'photo',
+            'url' => '/media/memorial_hall-main.jpg)',
+            'title' => 'Memorial Hall - Merlin #17344',
+          ),
           array(
             'type' => 'text',
             'text' => 'Formally presented to the University in 1878, is divided into four main areas: Annenberg Dining Hall, the Memorial Transept, Loker Commons, and Sanders Theatre.',
@@ -840,7 +895,7 @@ function _getTourStops() {
       'title' => 'Memorial Church',
       'subtitle' => 'Built by President Lowell to remember Harvard\'s war dead, c. 1932',
       'photo' => array(
-        'url' => '/media/memorial_church-est.jpg',
+        'url' => '/media/memorial_church-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -854,6 +909,11 @@ function _getTourStops() {
       'building' => '305',
       'lenses' => array(
         'info' => array(
+          array(
+            'type' => 'photo',
+            'url' => '/media/memorial_church-main.jpg)',
+            'title' => 'Memorial Church - from "New Establishing Photos" (REPLACEMENT)',
+          ),
           array(
             'type' => 'text',
             'text' => 'After 250 years, mandatory daily chapel attendance was made voluntary in 1886, prompting Rev. Phillips Brooks to express concern that Harvard might become godless. Yet religion was still important to many students, and Appleton Chapel, built to seat 700, continued to turn students away for lack of space. In the 20th century, President Abbott Lawrence Lowell, Class of 1877; J.D. 1880, was determined to build a new church, not only for the sake of current students, but also in memory of Harvard’s war dead.',
@@ -921,7 +981,7 @@ function _getTourStops() {
       'title' => 'Sever Hall Quad',
       'subtitle' => 'Sever, Robinson, and Emerson Hall are home to humanities and social sciences',
       'photo' => array(
-        'url' => '/media/sever_hall_quad-est.jpg',
+        'url' => '/media/sever_hall_quad-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -935,6 +995,11 @@ function _getTourStops() {
       'building' => '336',
       'lenses' => array(
         'info' => array(
+          array(
+            'type' => 'photo',
+            'url' => '/media/sever_hall_quad-main.jpg)',
+            'title' => 'Sever Hall - Merlin #98795',
+          ),
           array(
             'type' => 'text',
             'text' => 'These three buildings – Robinson Hall, Sever Hall, and Emerson Hall – form Sever Quad and are home to humanities and social sciences at Harvard.',
@@ -997,7 +1062,7 @@ function _getTourStops() {
       'title' => 'Loeb House',
       'subtitle' => 'Several prominent Harvard presidents called Loeb House home',
       'photo' => array(
-        'url' => '/media/loeb_house-est.jpg',
+        'url' => '/media/loeb_house-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -1011,6 +1076,11 @@ function _getTourStops() {
       'building' => '103',
       'lenses' => array(
         'info' => array(
+          array(
+            'type' => 'photo',
+            'url' => '/media/loeb_house-main.jpg)',
+            'title' => 'Loeb House - Merlin #163809',
+          ),
           array(
             'type' => 'text',
             'text' => 'Loeb House, which was home to several prominent University presidents, was built and donated to the University by Harvard President A. Lawrence Lowell, Class of 1877. The House stands on the site where three of Mr. Lowell\'s 19th century predecessors, President Cornelius Conway Felton, Class of 1827, AM 1830; President Thomas Hill, Class of 1843, AM 1846; D.Div. 1845, and President Charles William Eliot, Class of 1853, had lived. Two of Mr. Lowell\'s successors resided here at 17 Quincy Street: James B. Conant, Class of 1914, Ph.D. 1916, and Nathan M. Pusey, Class of 1928, AM 1932, Ph.D. 1937.',
@@ -1077,7 +1147,7 @@ function _getTourStops() {
       'title' => 'Tercentenary Theatre',
       'subtitle' => 'This was the site of Harvard\'s 300th anniversary celebration in 1936',
       'photo' => array(
-        'url' => '/media/tercentenary_theatre-est.jpg',
+        'url' => '/media/tercentenary_theatre-main.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
@@ -1091,6 +1161,11 @@ function _getTourStops() {
       'building' => '',
       'lenses' => array(
         'info' => array(
+          array(
+            'type' => 'photo',
+            'url' => '/media/tercentenary_theatre-main.jpg)',
+            'title' => 'Tercentenary Theatre - Merlin #142761',
+          ),
           array(
             'type' => 'text',
             'text' => 'The eastern half of Harvard Yard’s outdoor space has been named Tercentenary Theatre since 1936, when it was the site of Harvard’s tercentenary, or 300th, anniversary celebrations. Battling pouring rain, the three-day celebration took place on the steps of the Memorial Church, its headline speaker President Franklin Delano Roosevelt, Class of 1904.',
@@ -1149,15 +1224,15 @@ function _getTourStops() {
       ),
     ),
     // -----------------------------------------------------------------------
-    'widner_library' => array(
+    'widener_library' => array(
       'title' => 'Widener Library',
       'subtitle' => 'Second in size only to the Library of Congress, c. 1914',
       'photo' => array(
-        'url' => '/media/widner_library-est.jpg',
+        'url' => '/media/widener_library-approach.jpg',
         'title' => '',
       ),
       'thumbnail' => array(
-        'url' => '/media/widner_library-thumb.jpg',
+        'url' => '/media/widener_library-thumb.jpg',
         'title' => '',
       ),
       'coords' => array(
@@ -1167,6 +1242,11 @@ function _getTourStops() {
       'building' => '585',
       'lenses' => array(
         'info' => array(
+          array(
+            'type' => 'photo',
+            'url' => '/media/widener_library-main.jpg)',
+            'title' => 'Widener Library - Merlin #94633',
+          ),
           array(
             'type' => 'text',
             'text' => '"Mrs. Eleanor Elkins Widener funded the Harry Elkins Widener Memorial Library to honor her son, Class of 1907, who perished on the Titanic. The library was built in less than 18 months, and on June 24, 1915, Archibald Coolidge ceremonially placed the first book inside, John Downame’s Christian Warfare Against the Devil, which is regarded as the only surviving book from John Harvard’s bequest. The Widener Memorial Rotunda houses 3,300 of Harry Widener\'s most prized books, including a Gutenberg Bible and a first folio edition of Shakespeare.',

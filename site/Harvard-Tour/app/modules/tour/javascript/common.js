@@ -24,6 +24,11 @@ function showMap(center, stops, tourIcons, stopOverviewMode) {
       'key'  : 'url',
       'elem' : document.getElementById('stoplink'),
       'attr' : 'href'
+    },
+    {
+      'key'  : 'url',
+      'elem' : document.getElementById('doneURL'),
+      'attr' : 'href'
     }
   ];
 

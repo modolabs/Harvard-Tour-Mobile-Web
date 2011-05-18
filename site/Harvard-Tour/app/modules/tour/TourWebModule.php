@@ -48,9 +48,15 @@ class TourWebModule extends WebModule {
     
     $stopOverviewMode = $this->page != 'approach' ? 'true' : 'false';
     
+    // Add prefix to urls which will be set via Javascript
+    $tourStops = $this->getAllStopsDetails();
+    foreach ($tourStops as $i => $tourStop) {
+      $tourStops[$i]['url'] = URL_PREFIX.ltrim($tourStop['url'], '/');
+    }
+    
     $scriptText = "\n".
       'var centerCoords = '.json_encode($center)."\n".
-      'var tourStops = '.json_encode($this->getAllStopsDetails()).";\n".
+      'var tourStops = '.json_encode($tourStops).";\n".
       'var tourIcons = '.json_encode($this->markerImages()).";\n";
 
     $this->addExternalJavascript('http://maps.google.com/maps/api/js?sensor=true');
@@ -106,7 +112,7 @@ class TourWebModule extends WebModule {
     if (!isset($args['id'])) {
       $args['id'] = $this->stop->getId();
     }
-    return $this->buildBreadcrumbURL($page, $args, false);
+    return $this->buildURL($page, $args);
   }
   
   protected function initializeForPage() {
