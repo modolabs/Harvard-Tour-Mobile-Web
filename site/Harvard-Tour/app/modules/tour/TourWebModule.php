@@ -160,11 +160,12 @@ class TourWebModule extends WebModule {
         $view = $this->getArg('view', 'map');
         $showMapLink = false;
         
+        $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
         if ($view == 'map') {
           $this->initializeMap();
+          $this->addOnLoad('setupSubtitleEllipsis();');
         } else {
           $this->assign('stops', $this->getAllStopsDetails());
-          $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
           $this->addOnLoad('setupStopList();');
         }
         
@@ -187,6 +188,8 @@ class TourWebModule extends WebModule {
         
       case 'approach':
         $this->initializeMap();
+        $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
+        $this->addOnLoad('setupSubtitleEllipsis();');
       
         $prevURL = false;
         $prevStop = $this->tour->getPreviousStop();
@@ -195,7 +198,7 @@ class TourWebModule extends WebModule {
             'id' => $prevStop->getId(),
           ));
         } else {
-          $prevURL = $this->buildTourURL('overview');          
+          $prevURL = $this->buildTourURL('overview', array('start' => 1));          
         }
         $nextURL = $this->buildTourURL('detail');
         

@@ -16,12 +16,10 @@
       {/foreach}
     </div>
     <h2>{$stop['title']}</h2>
-    <p>{$stop['subtitle']}</p>
+    <p id="subtitleEllipsis">{$stop['subtitle']}</p>
   </div>
 </div>
-<div id="content" class="mapcontent">
-  <img id="zoomup" src="{$stop['photo']}" onclick="zoomUpDown('zoomup')" />
-  {include file="findInclude:modules/tour/templates/include/map.tpl"}
-</div>
+<img id="zoomup" src="{$stop['photo']}" onclick="zoomUpDown('zoomup')" />
+{include file="findInclude:modules/tour/templates/include/map.tpl" tappable=true}
 
 {include file="findInclude:common/templates/footer.tpl"}
