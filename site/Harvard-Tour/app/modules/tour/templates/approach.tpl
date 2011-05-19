@@ -20,6 +20,6 @@
   </div>
 </div>
 <img id="zoomup" src="{$stop['photo']}" onclick="zoomUpDown('zoomup')" />
-{include file="findInclude:modules/tour/templates/include/map.tpl" tappable=true}
+{include file="findInclude:modules/tour/templates/include/map.tpl" tappable=false}
 
 {include file="findInclude:common/templates/footer.tpl"}

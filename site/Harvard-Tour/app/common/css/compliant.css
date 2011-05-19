@@ -313,8 +313,11 @@ html, body, #nonfooternav {
 }
 
 #map_container {
-  height: 250px; /* will be fixed with javascript */
+  height: 268px;
   position: relative;
+}
+#helptext + #map_container {
+  height: 248px;
 }
 #map_container + #footer {
   display: none;
