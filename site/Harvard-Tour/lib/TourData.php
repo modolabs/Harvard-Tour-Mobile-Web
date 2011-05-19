@@ -23,7 +23,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/wadsworth_house-main.jpg',
-            'title' => 'Wadsworth House-Merlin #1366',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -275,7 +275,7 @@ function _getTourStops() {
         ),
         'fastfacts' => array(
           array(
-            'type' => 'audio',
+            'type' => 'video',
             'url'  => '/media/johnston_gate-facts.mp3',
             'title' => 'johnston_gate-facts.mp3',
           ),
@@ -305,7 +305,7 @@ function _getTourStops() {
             'title' => 'johnston_gate-history.jpg',
           ),
           array(
-            'type' => 'audio',
+            'type' => 'video',
             'url'  => '/media/johnston_gate-history.mp3',
             'title' => 'johnston_gate-history.mp3',
           ),
@@ -574,7 +574,7 @@ function _getTourStops() {
             'title' => 'Merlin #17972 (Pump)',
           ),
           array(
-            'type' => 'audio',
+            'type' => 'video',
             'url' => '',
             'title' => '',
           ),
@@ -771,7 +771,7 @@ function _getTourStops() {
         ),
         'history' => array(
           array(
-            'type' => 'audio',
+            'type' => 'video',
             'url' => '',
             'title' => 'phillips-brooks-history',
           ),
@@ -962,7 +962,7 @@ function _getTourStops() {
             'title' => '',
           ),
           array(
-            'type' => 'audio',
+            'type' => 'video',
             'url' => '/media/memorial_hall-facts.mp3',
             'title' => 'memorial_hall-facts.mp3',
           ),
@@ -1058,7 +1058,7 @@ function _getTourStops() {
             'title' => '',
           ),
           array(
-            'type' => 'audio',
+            'type' => 'video',
             'url' => '/media/memorial_church-facts.mp3',
             'title' => 'memorial_church-facts.mp3',
           ),
@@ -1158,7 +1158,7 @@ function _getTourStops() {
 			'title' => 'Merlin #167927 (arch)',
 		  ),
           array(
-            'type' => 'audio',
+            'type' => 'video',
             'url' => '/media/sever_hall_quad-history.mp3',
             'title' => 'sever_hall_quad-history.mp3',
           ),
@@ -1402,7 +1402,7 @@ function _getTourStops() {
         ),
         'fastfacts' => array(
           array(
-            'type' => 'audio',
+            'type' => 'video',
             'url' => '/media/widener_library-facts.mp3',
             'title' => 'widener_library-facts.mp3',
           ),
