@@ -32,18 +32,15 @@
           </a>
         </div>
       {else}
-        <p>{$stop['subtitle']}</p>
+        <p id="subtitleEllipsis">{$stop['subtitle']}</p>
       {/if}
     </div>
   </div>
-  <div id="content" class="overview">
-    <img id="zoomup" src="{$stop['photo']}" onclick="zoomUpDown('zoomup')" />
-    {include file="findInclude:modules/tour/templates/include/map.tpl"}
-    <div id="helptext">Tap any pin to select it as your starting point</div>
-  </div>
+  <img id="zoomup" src="{$stop['photo']}" onclick="zoomUpDown('zoomup')" />
+  {include file="findInclude:modules/tour/templates/include/map.tpl" tappable=true}
 {else}
   </div>
-  <div id="content" class="overview">
+  <div id="content">
     {include file="findInclude:modules/tour/templates/include/list.tpl" stops=$stops}
   </div>
 {/if}

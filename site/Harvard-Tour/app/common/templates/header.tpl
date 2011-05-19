@@ -1,7 +1,11 @@
 {extends file="findExtends:common/templates/header.tpl"}
 
+{block name="viewportHeadTag"}
+  {$scalable = false}
+  {$smarty.block.parent}
+{/block}
+
 {block name="navbar"}
-  <a name="top"> </a>
   <div id="navbar"{if $hasHelp} class="helpon"{/if}>
     <a id="homelink" href="/">
       <img src="/common/images/homelink@2x.png" width="27" height="33" border="0" alt="" />

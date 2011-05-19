@@ -31,22 +31,23 @@ function showMap(center, stops, tourIcons, stopOverviewMode) {
       'attr' : 'href'
     }
   ];
-
-
+  
   var mapElement = document.getElementById('map_canvas');
   if (mapElement) {
+    var centerLatLng = new google.maps.LatLng(center['lat'], center['lon']);
     var options = {
       'zoom'      : 17,
-      'center'    : new google.maps.LatLng(center['lat'], center['lon']),
+      'center'    : centerLatLng,
       'mapTypeId' : google.maps.MapTypeId.ROADMAP,
-      'mapTypeControlOptions' : { 
+      'mapTypeControl' : false,
+      /*'mapTypeControlOptions' : { 
         'mapTypeIds' : [
           google.maps.MapTypeId.ROADMAP,
           google.maps.MapTypeId.SATELLITE
         ],
         'position' : google.maps.ControlPosition.TOP_LEFT,
         'style'    : google.maps.MapTypeControlStyle.HORIZONTAL_BAR
-      },
+      },*/
       'panControl' : false,
       'streetViewControl' : false,
       'zoomControlOptions' : { 
@@ -57,6 +58,7 @@ function showMap(center, stops, tourIcons, stopOverviewMode) {
     
     var map    = new google.maps.Map(mapElement, options);  
     var bounds = new google.maps.LatLngBounds();
+    bounds.extend(centerLatLng);
 
     for (var i = 0; i < stops.length; i++) {
       var stop = stops[i];
@@ -118,7 +120,11 @@ function showMap(center, stops, tourIcons, stopOverviewMode) {
         });
       }
     }
-    map.panToBounds(bounds);
+    if (stopOverviewMode) {
+      map.fitBounds(bounds);
+    } else {
+      map.panTo(bounds.getCenter());
+    }
     
     navigator.geolocation.getCurrentPosition(function(position) {
       var location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
@@ -157,14 +163,21 @@ function zoomUpDown(strID) {
 
 // Initalize the ellipsis event handlers
 function setupStopList() {
-    var stopEllipsizer = new ellipsizer();
-    
-    // cap at 100 divs to avoid overloading phone
-    for (var i = 0; i < 100; i++) {
-        var elem = document.getElementById('ellipsis_'+i);
-        if (!elem) { break; }
-        stopEllipsizer.addElement(elem);
-    }
+  var stopEllipsizer = new ellipsizer();
+  
+  // cap at 100 divs to avoid overloading phone
+  for (var i = 0; i < 100; i++) {
+    var elem = document.getElementById('ellipsis_'+i);
+    if (!elem) { break; }
+    stopEllipsizer.addElement(elem);
+  }
+}
+function setupSubtitleEllipsis() {
+  var elem = document.getElementById('subtitleEllipsis');
+  if (elem) {
+    var subtitleEllipsizer = new ellipsizer();
+    subtitleEllipsizer.addElement(elem);
+  }
 }
 
 function changeSlide(tab, dir) {
