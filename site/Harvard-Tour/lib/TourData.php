@@ -55,7 +55,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/wadsworth_house-grazing.jpg',
-            'title' => 'Merlin # 101894',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -68,7 +68,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/wadsworth_house-sideview-history.jpg',
-            'title' => 'wadsworth-sideview-history.jpg',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -99,7 +99,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/indian_college-main.jpg',
-            'title' => 'Indian College Plaque - Merlin #183653',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -132,8 +132,8 @@ function _getTourStops() {
         'history' => array(
           array(
             'type' => 'video',
-            'url' => '',
-            'title' => 'indian-college-digging-yard.mov',
+            'url' => '/media/indian_college-history.m4v',
+            'title' => 'indian_college-history.m4v',
           ),
         ),
       ),
@@ -160,7 +160,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/massachusetts_hall-main.jpg',
-            'title' => 'Massachusetts Hall - Merlin #166683',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -195,8 +195,8 @@ function _getTourStops() {
         'fastfacts' => array(
           array(
             'type' => 'video',
-            'url'  => '',
-            'title' => 'mass-hall-facts.mp3',
+            'url'  => '/media/massachusetts_hall-facts.mp3',
+            'title' => 'massachusetts_hall-facts.mp3',
           ),
           array(
             'type' => 'text',
@@ -218,7 +218,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/massachusetts_hall-history.jpg',
-            'title' => 'massachusetts_hall-history.jpg',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -249,7 +249,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/johnston_gate-main.jpg',
-            'title' => 'Johnston Gate - Merlin #78167 (REPLACEMENT)',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -262,12 +262,12 @@ function _getTourStops() {
             'slides' => array(
               array(
                 'type' => 'photo',
-                'url' => '',
-                'title' => 'Merlin #78167',
+                'url' => 'johnston_gate-vertical.jpg',
+                'title' => 'Merlin #111251',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => 'johnston_gate-closed.jpg',
                 'title' => 'Merlin #168305',
               ),
             ),
@@ -275,9 +275,9 @@ function _getTourStops() {
         ),
         'fastfacts' => array(
           array(
-            'type' => 'video',
-            'url'  => '',
-            'title' => 'johnston-gate-facts.mp3',
+            'type' => 'audio',
+            'url'  => '/media/johnston_gate-facts.mp3',
+            'title' => 'johnston_gate-facts.mp3',
           ),
           array(
             'type' => 'text',
@@ -300,9 +300,14 @@ function _getTourStops() {
         ),
         'history' => array(
           array(
-            'type' => 'video',
-            'url'  => '',
-            'title' => 'johnston-gate-history',
+            'type' => 'photo',
+            'url'  => '/media/johnston_gate-history.jpg',
+            'title' => 'johnston_gate-history.jpg',
+          ),
+          array(
+            'type' => 'audio',
+            'url'  => '/media/johnston_gate-history.mp3',
+            'title' => 'johnston_gate-history.mp3',
           ),
           array(
             'type' => 'text',
@@ -362,12 +367,12 @@ function _getTourStops() {
             'slides' => array(
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/harvard_hall-foyer.jpg',
                 'title' => 'Merlin #183657 (foyer)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/harvard_hall-upstairs.jpg',
                 'title' => 'Merlin #183659 (upstairs)',
               ),
             ),
@@ -376,8 +381,8 @@ function _getTourStops() {
         'fastfacts' => array(
           array(
             'type' => 'photo',
-            'url' => '',
-            'title' => 'harvard-hall-facts.jpg',
+            'url' => '/media/harvard_hall-facts.jpg',
+            'title' => 'harvard_hall-facts.jpg',
           ),
           array(
             'type' => 'text',
@@ -389,7 +394,7 @@ function _getTourStops() {
         'history' => array(
           array(
             'type' => 'photo',
-            'url' => 'harvard-hall-history.jpg',
+            'url' => '/media/harvard_hall-history.jpg',
             'title' => 'The Burgis 1726 prospect of Harvard',
           ),
         ),
@@ -438,32 +443,37 @@ function _getTourStops() {
             'slides' => array(
               array(
                 'type' => 'photo',
-                'url' => '',
-                'title' => 'john_harvard_statue-insideout.jpg',
+                'url' => '/media/university_hall-tercentenary.jpg',
+                'title' => 'university_hall-tercentenary.jpg (Merlin #92786)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/university_hall-insideout.jpg',
+                'title' => 'university_hall-insideout.jpg',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '/media/university_hall-ellison-table.jpg',
                 'title' => 'Merlin #109263 (Ellison/table)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/university_hall-busts.jpg',
                 'title' => 'Merlin #155637 (busts)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/university_hall-round-window.jpg',
                 'title' => 'Merlin #100599 (round window)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/john_harvard_statue-undergrads.jpg',
                 'title' => 'Merlin #73840 (undergrads)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/john_harvard_statue-rubbed-toe.jpg',
                 'title' => 'Merlin #45608 (rubbed toe)',
               ),
             ),
@@ -472,8 +482,8 @@ function _getTourStops() {
         'fastfacts' => array(
           array(
             'type' => 'photo',
-            'url' => '',
-            'title' => 'university-hall-facts.jpg',
+            'url' => '/media/john_harvard_statue-facts.jpg',
+            'title' => 'john_harvard_statue-facts.jpg',
           ),
           array(
             'type' => 'text',
@@ -541,12 +551,32 @@ function _getTourStops() {
           ),
         ),
         'insideout' => array(
+          array(
+            'type' => 'slideshow',
+            'slides' => array(
+              array(
+                'type' => 'photo',
+                'url' => '/media/freshman_dorms-insideout-1.jpg',
+                'title' => 'freshman_dorms-insideout-1',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '/media/freshman_dorms-insideout-2.jpg',
+                'title' => 'freshman_dorms-insideout-2',
+              ),
+            ),
+          ),
         ),
         'fastfacts' => array(
           array(
-            'type' => 'video',
-            'url' => '',
+            'type' => 'photo',
+            'url' => '/media/freshman_dorms-pump.jpg',
             'title' => 'Merlin #17972 (Pump)',
+          ),
+          array(
+            'type' => 'audio',
+            'url' => '',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -614,12 +644,12 @@ function _getTourStops() {
             'slides' => array(
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/holden_chapel-large-room.jpg',
                 'title' => 'Merlin #183805 (large room)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/holden_chapel-glee-club.jpg',
                 'title' => 'Merlin #4870 (glee club)',
               ),
             ),
@@ -639,7 +669,7 @@ function _getTourStops() {
             'slides' => array(
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/holden_chapel-blueprints.jpg',
                 'title' => 'holden-chapel-history-blueprint.jpeg',
               ),
               array(
@@ -649,12 +679,12 @@ function _getTourStops() {
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/holden_chapel-remains.jpg',
                 'title' => 'Merlin #4584 (human remains)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/holden_chapel-rotc.jpg',
                 'title' => 'Merlin #180297 (ROTC guarding)',
               ),
             ),
@@ -705,17 +735,17 @@ function _getTourStops() {
             'slides' => array(
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/phillips_brooks_house-faust-students.jpg',
                 'title' => 'Merlin #75193 (Faust &amp; students)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/phillips_brooks_house-stairwell.jpg',
                 'title' => 'Merlin #183863 (stairwell)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/phillips_brooks_house-common.jpg',
                 'title' => 'Merlin #183849 (common)',
               ),
             ),
@@ -724,7 +754,7 @@ function _getTourStops() {
         'fastfacts' => array(
           array(
             'type' => 'photo',
-            'url' => '',
+            'url' => '/media/phillips_brooks_house-students-drywall.jpg',
             'title' => 'Merlin #127693 (students/drywall)',
           ),
           array(
@@ -735,14 +765,19 @@ function _getTourStops() {
         'innovation' => array(
           array(
             'type' => 'video',
-            'url' => '',
-            'title' => 'phillips-brooks-innovation',
+            'url' => 'phillips_brooks_house-innovation.mov',
+            'title' => 'phillips_brooks_house-innovation.mov',
           ),
         ),
         'history' => array(
           array(
-            'type' => 'video',
+            'type' => 'audio',
             'url' => '',
+            'title' => 'phillips-brooks-history',
+          ),
+          array(
+            'type' => 'photo',
+            'url' => '/media/phillips_brooks_house-history.jpg',
             'title' => 'phillips-brooks-history',
           ),
           array(
@@ -795,28 +830,33 @@ function _getTourStops() {
             'slides' => array(
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/science_center-stairs-glass.jpg',
                 'title' => 'Merlin #151797 (stairs/glass)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/science_center-mural.jpg',
                 'title' => 'Merlin #151811 (mural)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/science_center-lecture.jpg',
                 'title' => 'Merlin #102403 (Lecture hall)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/science_center-insideout.jpg',
                 'title' => 'science-center-insideout.jpg',
               ),
             ),
           ),
         ),
         'fastfacts' => array(
+		  array(
+			'type' => 'photo',
+			'url' => '/media/science_center-mark-i.jpg',
+			'title' => 'Merlin #151797 (stairs/glass)',
+		  ),
           array(
             'type' => 'text',
             'text' => 'The Science Center is also home to the Collection of Historic Scientific Instruments, a gallery of 20,000 objects representing 600 years of science. Also on display in the building is part of the Harvard Mark I, a 51-foot-long series of gears and punch card readers considered to be one of the first computers ever built.',
@@ -832,8 +872,8 @@ function _getTourStops() {
         'history' => array(
           array(
             'type' => 'photo',
-            'url' => '',
-            'title' => 'science-center-innovation.jpg',
+            'url' => '/media/science_center-history.jpg',
+            'title' => 'science_center-history.jpg',
           ),
           array(
             'type' => 'text',
@@ -889,32 +929,42 @@ function _getTourStops() {
             'slides' => array(
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/memorial_hall-long-hall.jpg',
                 'title' => 'Merlin #20288 (long hall)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/memorial_hall-sanders-audit.jpg',
                 'title' => 'Merlin #25631 (Sanders audit.)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/memorial_hall-stairs-glass.jpg',
                 'title' => 'Merlin #158061 (stairs/glass)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/memorial_hall-stained-glass.jpg',
                 'title' => 'Merlin #163689 (stained glass)',
+              ),
+              array(
+                'type' => 'photo',
+                'url' => '/media/memorial_hall-queens-head.jpg',
+                'title' => 'Merlin #183607 (Queens Head Pub)',
               ),
             ),
           ),
         ),
         'fastfacts' => array(
           array(
-            'type' => 'video',
-            'url' => '',
-            'title' => 'memorial-hall-facts',
+            'type' => 'photo',
+            'url' => '/memorial_hall-facts.jpg',
+            'title' => '',
+          ),
+          array(
+            'type' => 'audio',
+            'url' => '/media/memorial_hall-facts.mp3',
+            'title' => 'memorial_hall-facts.mp3',
           ),
           array(
             'type' => 'text',
@@ -924,15 +974,15 @@ function _getTourStops() {
         'innovation' => array(
           array(
             'type' => 'video',
-            'url' => '',
-            'title' => 'memorial-hall-innovation.mp4',
+            'url' => '/media/memorial_hall-innovation.mp4',
+            'title' => 'memorial_hall-innovation.mp4',
           ),
         ),
         'history' => array(
           array(
             'type' => 'photo',
-            'url' => '',
-            'title' => 'memorial-hall-history.jpg',
+            'url' => '/media/memorial_hall-history.jpg',
+            'title' => 'memorial_hall-history.jpg',
           ),
           array(
             'type' => 'text',
@@ -980,22 +1030,22 @@ function _getTourStops() {
             'slides' => array(
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/memorial_church-faust-stairs.jpg',
                 'title' => 'Merlin #95816 (Faust on stairs)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/memorial_church-carved-doors.jpg',
                 'title' => 'Merlin #167951 (carved doors)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/memorial_church-ceiling-altar.jpg',
                 'title' => 'Merlin #173369 (ceiling/alter)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/memorial_church-war-vets-statue.jpg',
                 'title' => 'Merlin #112081 (war vets statue)',
               ),
             ),
@@ -1003,9 +1053,14 @@ function _getTourStops() {
         ),
         'fastfacts' => array(
           array(
-            'type' => 'video',
-            'url' => '',
-            'title' => 'memorial-church-facts',
+            'type' => 'photo',
+            'url' => '/media/memorial_church-facts.jpg',
+            'title' => '',
+          ),
+          array(
+            'type' => 'audio',
+            'url' => '/media/memorial_church-facts.mp3',
+            'title' => 'memorial_church-facts.mp3',
           ),
           array(
             'type' => 'text',
@@ -1017,8 +1072,8 @@ function _getTourStops() {
         'history' => array(
           array(
             'type' => 'video',
-            'url' => '',
-            'title' => 'memorial-church-history.mp4',
+            'url' => '/media/memorial_church-history.mp4',
+            'title' => 'memorial_church-history.mp4',
           ),
         ),
       ),
@@ -1066,17 +1121,17 @@ function _getTourStops() {
             'slides' => array(
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => 'sever_hall_quad-stairway.jpg',
                 'title' => 'Merlin #118797 (stairway)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/sever_hall_quad-5th-floor.jpg',
                 'title' => 'Merlin #24908 (renovated 5th floor)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/sever_hall_quad-entry.jpg',
                 'title' => 'Merlin #183813 (entryway)',
               ),
             ),
@@ -1085,22 +1140,27 @@ function _getTourStops() {
         'fastfacts' => array(
           array(
             'type' => 'video',
-            'url' => '',
-            'title' => 'sever-hall-facts.mp4',
+            'url' => '/media/sever_hall_quad-facts.mp4',
+            'title' => 'sever_hall_quad-facts.mp4',
           ),
         ),
         'innovation' => array(
           array(
             'type' => 'video',
-            'url' => '',
-            'title' => 'sever-hall-innovation.mp4',
+            'url' => '/media/sever_hall_quad-innovation.mp4',
+            'title' => 'sever_hall_quad-innovation.mp4',
           ),
         ),
         'history' => array(
+		  array(
+			'type' => 'photo',
+			'url' => '/media/sever_hall_quad-arch.jpg',
+			'title' => 'Merlin #167927 (arch)',
+		  ),
           array(
-            'type' => 'video',
-            'url' => '',
-            'title' => 'sever-hall-history',
+            'type' => 'audio',
+            'url' => '/media/sever_hall_quad-history.mp3',
+            'title' => 'sever_hall_quad-history.mp3',
           ),
           array(
             'type' => 'text',
@@ -1148,17 +1208,17 @@ function _getTourStops() {
             'slides' => array(
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/loeb_house-entryway.jpg',
                 'title' => 'Merlin #183831 (entryway)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/loeb_house-fireplace.jpg',
                 'title' => 'Merlin #183827 (fireplace)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/loeb_house-curtains.jpg',
                 'title' => 'Merlin #183837 (curtains)',
               ),
             ),
@@ -1167,7 +1227,7 @@ function _getTourStops() {
         'fastfacts' => array(
           array(
             'type' => 'photo',
-            'url' => '',
+            'url' => '/media/loeb_house-facts.jpg',
             'title' => 'loeb-house-facts.jpg',
           ),
           array(
@@ -1178,8 +1238,8 @@ function _getTourStops() {
         'innovation' => array(
           array(
             'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #117507',
+            'url' => '/media/loeb_house-innovation.jpg',
+            'title' => 'Merlin #117507 (MISSING)',
           ),
           array(
             'type' => 'text',
@@ -1189,8 +1249,8 @@ function _getTourStops() {
         'history' => array(
           array(
             'type' => 'video',
-            'url' => '',
-            'title' => 'loeb-house-history.mov',
+            'url' => '/media/loeb_house-history.m4v',
+            'title' => 'loeb_house-history.m4v',
           ),
           array(
             'type' => 'text',
@@ -1242,18 +1302,13 @@ function _getTourStops() {
             'slides' => array(
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/tercentenary_theatre-convocation.jpg',
                 'title' => 'Merlin #153431 (Freshman conv.)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/tercentenary_theatre-banners.jpg',
                 'title' => 'Merlin #142531 (banners)',
-              ),
-              array(
-                'type' => 'photo',
-                'url' => '',
-                'title' => 'Archive photo of pre-Tercentenary Theatre in 1905, with Gore Hall and Appleton Chapel',
               ),
             ),
           ),
@@ -1261,15 +1316,15 @@ function _getTourStops() {
         'fastfacts' => array(
           array(
             'type' => 'video',
-            'url' => '',
-            'title' => 'tercentenary-theatre-facts.mov',
+            'url' => '/media/tercentenary_theatre-facts.m4v',
+            'title' => 'tercentenary_theatre-facts.m4v',
           ),
         ),
         'innovation' => array(
           array(
             'type' => 'photo',
-            'url' => '',
-            'title' => 'tercentenary-theatre-innovation.jpg',
+            'url' => '/media/tercentenary_theatre-gore.jpg',
+            'title' => 'tercentenary-theatre-gore.jpg',
           ),
           array(
             'type' => 'text',
@@ -1279,8 +1334,8 @@ function _getTourStops() {
         'history' => array(
           array(
             'type' => 'video',
-            'url' => '',
-            'title' => 'tercentenary-theatre-history.mov',
+            'url' => '/media/tercentenary_theatre-history.mp4',
+            'title' => 'tercentenary_theatre-history.mp4',
           ),
         ),
       ),
@@ -1324,17 +1379,17 @@ function _getTourStops() {
             'slides' => array(
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/widener_library-reading-room.jpg',
                 'title' => 'Merlin #76122',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/widener_library-under-dome.jpg',
                 'title' => 'Merlin #107873 (under dome)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/widener_library-arches.jpg',
                 'title' => 'Merlin #15223 (arches)',
               ),
               array(
@@ -1347,9 +1402,9 @@ function _getTourStops() {
         ),
         'fastfacts' => array(
           array(
-            'type' => 'video',
-            'url' => '',
-            'title' => 'needs to be rerecorded',
+            'type' => 'audio',
+            'url' => '/media/widener_library-facts.mp3',
+            'title' => 'widener_library-facts.mp3',
           ),
           array(
             'type' => 'text',
@@ -1363,8 +1418,8 @@ function _getTourStops() {
         'innovation' => array(
           array(
             'type' => 'photo',
-            'url' => '',
-            'title' => 'Merlin #171607 (image scan)',
+            'url' => '/media/widener_library-image-scan.jpg',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -1374,8 +1429,8 @@ function _getTourStops() {
         'history' => array(
           array(
             'type' => 'video',
-            'url' => '',
-            'title' => 'widener-history.mp4',
+            'url' => '/media/widener_library-history.mov',
+            'title' => 'widener_library-history.mov',
           ),
         ),
       ),
