@@ -382,7 +382,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/harvard_hall-facts.jpg',
-            'title' => 'harvard_hall-facts.jpg',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -483,7 +483,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/john_harvard_statue-facts.jpg',
-            'title' => 'john_harvard_statue-facts.jpg',
+            'title' => 'The John Harvard statue in its original location in front of Memorial Hall',
           ),
           array(
             'type' => 'text',
@@ -535,7 +535,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/freshman_dorms-main.jpg',
-            'title' => 'Freshman Dorms -  Merlin #37842',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -571,7 +571,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/freshman_dorms-pump.jpg',
-            'title' => 'Merlin #17972 (Pump)',
+            'title' => '',
           ),
           array(
             'type' => 'video',
@@ -619,7 +619,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/holden_chapel-main.jpg',
-            'title' => 'Holden Chapel - from "New Establishing Shots" (REPLACEMENT)',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -714,7 +714,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/phillips_brooks_house-main.jpg',
-            'title' => 'Phillips Brooks House - Merlin #97822',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -755,7 +755,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/phillips_brooks_house-students-drywall.jpg',
-            'title' => 'Merlin #127693 (students/drywall)',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -772,7 +772,7 @@ function _getTourStops() {
         'history' => array(
           array(
             'type' => 'video',
-            'url' => '',
+            'url' => '/media/phillips_brooks_house-history.mp3',
             'title' => 'phillips-brooks-history',
           ),
           array(
@@ -855,7 +855,7 @@ function _getTourStops() {
 		  array(
 			'type' => 'photo',
 			'url' => '/media/science_center-mark-i.jpg',
-			'title' => 'Merlin #151797 (stairs/glass)',
+			'title' => '',
 		  ),
           array(
             'type' => 'text',
@@ -873,7 +873,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/science_center-history.jpg',
-            'title' => 'science_center-history.jpg',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -904,7 +904,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/memorial_hall-main.jpg',
-            'title' => 'Memorial Hall - Merlin #17344',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -958,7 +958,7 @@ function _getTourStops() {
         'fastfacts' => array(
           array(
             'type' => 'photo',
-            'url' => '/memorial_hall-facts.jpg',
+            'url' => '/media/memorial_hall-facts.jpg',
             'title' => '',
           ),
           array(
@@ -982,7 +982,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/memorial_hall-history.jpg',
-            'title' => 'memorial_hall-history.jpg',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -1100,7 +1100,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/sever_hall_quad-main.jpg',
-            'title' => 'Sever Hall - Merlin #98795',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -1121,7 +1121,7 @@ function _getTourStops() {
             'slides' => array(
               array(
                 'type' => 'photo',
-                'url' => 'sever_hall_quad-stairway.jpg',
+                'url' => '/media/sever_hall_quad-stairway.jpg',
                 'title' => 'Merlin #118797 (stairway)',
               ),
               array(
@@ -1155,7 +1155,7 @@ function _getTourStops() {
 		  array(
 			'type' => 'photo',
 			'url' => '/media/sever_hall_quad-arch.jpg',
-			'title' => 'Merlin #167927 (arch)',
+			'title' => '',
 		  ),
           array(
             'type' => 'video',
@@ -1191,7 +1191,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/loeb_house-main.jpg',
-            'title' => 'Loeb House - Merlin #163809',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -1228,7 +1228,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/loeb_house-facts.jpg',
-            'title' => 'loeb-house-facts.jpg',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -1281,7 +1281,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/tercentenary_theatre-main.jpg',
-            'title' => 'Tercentenary Theatre - Merlin #142761',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -1324,7 +1324,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/tercentenary_theatre-gore.jpg',
-            'title' => 'tercentenary-theatre-gore.jpg',
+            'title' => 'Al Gore speaking at Tercentenary Theatre',
           ),
           array(
             'type' => 'text',
@@ -1362,7 +1362,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/widener_library-main.jpg',
-            'title' => 'Widener Library - Merlin #94633',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -1394,7 +1394,7 @@ function _getTourStops() {
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/widener_library-reading-room-archive.jpg',
                 'title' => 'Archive Image--Widener Reading Room in 1955',
               ),
             ),
