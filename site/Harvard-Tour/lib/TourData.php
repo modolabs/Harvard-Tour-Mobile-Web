@@ -765,8 +765,8 @@ function _getTourStops() {
         'innovation' => array(
           array(
             'type' => 'video',
-            'url' => 'phillips_brooks_house-innovation.mov',
-            'title' => 'phillips_brooks_house-innovation.mov',
+            'url' => 'phillips_brooks_house-innovation.m4v',
+            'title' => 'phillips_brooks_house-innovation.m4v',
           ),
         ),
         'history' => array(
