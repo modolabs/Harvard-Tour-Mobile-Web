@@ -40,12 +40,12 @@ function _getTourStops() {
             'slides' => array(
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/wadsworth_house-washington.jpg',
                 'title' => 'Merlin #183865 (Washington)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/wadsworth_house-hallway.jpg',
                 'title' => 'Merlin #183867 (hallway)',
               ),
             ),
@@ -54,7 +54,7 @@ function _getTourStops() {
         'fastfacts' => array(
           array(
             'type' => 'photo',
-            'url' => '',
+            'url' => '/media/wadsworth_house-grazing.jpg',
             'title' => 'Merlin # 101894',
           ),
           array(
@@ -67,7 +67,7 @@ function _getTourStops() {
         'history' => array(
           array(
             'type' => 'photo',
-            'url' => '',
+            'url' => '/media/wadsworth_house-sideview-history.jpg',
             'title' => 'wadsworth-sideview-history.jpg',
           ),
           array(
@@ -119,7 +119,7 @@ function _getTourStops() {
         'fastfacts' => array(
           array(
             'type' => 'photo',
-            'url' => '',
+            'url' => '/media/indian_college-digging-veritas.jpg',
             'title' => 'indian-college-digging-veritas.pdf',
           ),
         ),
@@ -181,12 +181,12 @@ function _getTourStops() {
             'slides' => array(
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/massachusetts_hall-admiral.jpg',
                 'title' => 'Interior 1- Merlin #168521 (admiral signs in)',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/massachusetts_hall-faust.jpg',
                 'title' => 'Interior 2- Merlin #123367 (Faust office)',
               ),
             ),
@@ -205,6 +205,11 @@ function _getTourStops() {
         ),
         'innovation' => array(
           array(
+            'type' => 'photo',
+            'url' => '/media/massachusetts_hall-telescope.jpg',
+            'title' => 'Photo and caption needed for massachusetts_hall-telescope',
+          ),
+          array(
             'type' => 'text',
             'text' => 'In 1722, Thomas Hollis donated a 24-foot telescope that was used atop this building. Today, the Harvard College Observatory in conjunction with the Smithsonian Center for Astrophysics has a large observatory located off of Garden Street.',
           ),
@@ -212,8 +217,8 @@ function _getTourStops() {
         'history' => array(
           array(
             'type' => 'photo',
-            'url' => '',
-            'title' => 'mass-hall-history.jpg',
+            'url' => '/media/massachusetts_hall-history.jpg',
+            'title' => 'massachusetts_hall-history.jpg',
           ),
           array(
             'type' => 'text',
