@@ -194,9 +194,9 @@ function _getTourStops() {
         ),
         'fastfacts' => array(
           array(
-            'type' => 'video',
-            'url'  => '/media/massachusetts_hall-facts.mp3',
-            'title' => 'massachusetts_hall-facts.mp3',
+            'type' => 'photo',
+            'url'  => '/media/massachusetts_hall-facts-placeholder.jpg',
+            'title' => 'Still photo needed to accompany audio file massachusetts_hall-facts.mp3',
           ),
           array(
             'type' => 'text',
@@ -275,9 +275,9 @@ function _getTourStops() {
         ),
         'fastfacts' => array(
           array(
-            'type' => 'video',
-            'url'  => '/media/johnston_gate-facts.mp3',
-            'title' => 'johnston_gate-facts.mp3',
+            'type' => 'photo',
+            'url'  => '/media/johnston_gate-facts-placeholder.jpg',
+            'title' => 'Still photo needed to accompany johnston_gate-facts.mp3',
           ),
           array(
             'type' => 'text',
@@ -302,12 +302,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url'  => '/media/johnston_gate-history.jpg',
-            'title' => 'johnston_gate-history.jpg',
-          ),
-          array(
-            'type' => 'video',
-            'url'  => '/media/johnston_gate-history.mp3',
-            'title' => 'johnston_gate-history.mp3',
+            'title' => 'This still photo needs to be combined with johnston_gate-history.mp3',
           ),
           array(
             'type' => 'text',
@@ -346,7 +341,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/harvard_hall-main.jpg',
-            'title' => 'Harvard Hall - Merlin #166361',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -422,7 +417,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/john_harvard_statue-main.jpg',
-            'title' => 'John Harvard Statue - Merlin #52360 (REPLACEMENT)',
+            'title' => '',
           ),
           array(
             'type' => 'text',
@@ -445,11 +440,6 @@ function _getTourStops() {
                 'type' => 'photo',
                 'url' => '/media/university_hall-tercentenary.jpg',
                 'title' => 'university_hall-tercentenary.jpg (Merlin #92786)',
-              ),
-              array(
-                'type' => 'photo',
-                'url' => '/media/university_hall-insideout.jpg',
-                'title' => 'university_hall-insideout.jpg',
               ),
               array(
                 'type' => 'photo',
@@ -502,9 +492,9 @@ function _getTourStops() {
         ),
         'history' => array(
           array(
-            'type' => 'video',
-            'url' => '',
-            'title' => 'needs to be rerecorded',
+            'type' => 'photo',
+            'url' => '/media/university_hall-insideout.jpg',
+            'title' => 'This still photo needs to accompany university_hall-history.mp3',
           ),
           array(
             'type' => 'text',
@@ -571,12 +561,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/freshman_dorms-pump.jpg',
-            'title' => '',
-          ),
-          array(
-            'type' => 'video',
-            'url' => '',
-            'title' => '',
+            'title' => 'This still photo needs to accompany the audio from freshman_dorms-facts.mp3',
           ),
           array(
             'type' => 'text',
@@ -670,11 +655,11 @@ function _getTourStops() {
               array(
                 'type' => 'photo',
                 'url' => '/media/holden_chapel-blueprints.jpg',
-                'title' => 'holden-chapel-history-blueprint.jpeg',
+                'title' => 'holden-chapel-history-blueprint.jpg',
               ),
               array(
                 'type' => 'photo',
-                'url' => '',
+                'url' => '/media/holden_chapel-bones.jpg',
                 'title' => 'Merlin (Image of bones)',
               ),
               array(
@@ -771,14 +756,9 @@ function _getTourStops() {
         ),
         'history' => array(
           array(
-            'type' => 'video',
-            'url' => '/media/phillips_brooks_house-history.mp3',
-            'title' => 'phillips-brooks-history',
-          ),
-          array(
             'type' => 'photo',
             'url' => '/media/phillips_brooks_house-history.jpg',
-            'title' => 'phillips-brooks-history',
+            'title' => 'This still photo needs to accompany phillips-brooks-history.mp3',
           ),
           array(
             'type' => 'text',
@@ -959,12 +939,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/memorial_hall-facts.jpg',
-            'title' => '',
-          ),
-          array(
-            'type' => 'video',
-            'url' => '/media/memorial_hall-facts.mp3',
-            'title' => 'memorial_hall-facts.mp3',
+            'title' => 'This still photo needs to accompany memorial_hall-facts.mp3',
           ),
           array(
             'type' => 'text',
@@ -1055,12 +1030,7 @@ function _getTourStops() {
           array(
             'type' => 'photo',
             'url' => '/media/memorial_church-facts.jpg',
-            'title' => '',
-          ),
-          array(
-            'type' => 'video',
-            'url' => '/media/memorial_church-facts.mp3',
-            'title' => 'memorial_church-facts.mp3',
+            'title' => 'This still photo needs to accompany memorial_church-facts.mp3',
           ),
           array(
             'type' => 'text',
@@ -1155,12 +1125,7 @@ function _getTourStops() {
 		  array(
 			'type' => 'photo',
 			'url' => '/media/sever_hall_quad-arch.jpg',
-			'title' => '',
-		  ),
-          array(
-            'type' => 'video',
-            'url' => '/media/sever_hall_quad-history.mp3',
-            'title' => 'sever_hall_quad-history.mp3',
+            'title' => 'This still photo needs to accompany sever_hall_quad-history.mp3',
           ),
           array(
             'type' => 'text',
@@ -1402,9 +1367,9 @@ function _getTourStops() {
         ),
         'fastfacts' => array(
           array(
-            'type' => 'video',
-            'url' => '/media/widener_library-facts.mp3',
-            'title' => 'widener_library-facts.mp3',
+            'type' => 'photo',
+            'url' => '/media/widener_library-facts-placeholder.jpg',
+            'title' => 'Still photo needed to accompany widener_library-facts.mp3',
           ),
           array(
             'type' => 'text',
