@@ -262,12 +262,12 @@ function _getTourStops() {
             'slides' => array(
               array(
                 'type' => 'photo',
-                'url' => 'johnston_gate-vertical.jpg',
+                'url' => '/media/johnston_gate-vertical.jpg',
                 'title' => 'Merlin #111251',
               ),
               array(
                 'type' => 'photo',
-                'url' => 'johnston_gate-closed.jpg',
+                'url' => '/media/johnston_gate-closed.jpg',
                 'title' => 'Merlin #168305',
               ),
             ),
