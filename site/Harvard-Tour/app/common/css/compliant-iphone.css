@@ -2,8 +2,8 @@
 	font-size: 22px;
 }
 #map_container {
-  height: 268px;
+  /* height: 268px; */
 }
 #helptext + #map_container {
-  height: 248px;
+  /* height: 248px; */
 }

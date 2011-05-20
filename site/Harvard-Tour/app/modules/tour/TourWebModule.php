@@ -9,7 +9,7 @@ class TourWebModule extends WebModule {
     return array(
       'self' => 'http://chart.apis.google.com/chart?'.http_build_query(array(
         'chst' => 'd_simple_text_icon_left',
-        'chld' => ' |9|000000|glyphish_walk|16|000000',
+        'chld' => ' |9|000000|glyphish_walk|24|000000',
       )),
       'current' => 'http://chart.apis.google.com/chart?'.http_build_query(array(
         'chst' => 'd_map_xpin_letter_withshadow',
@@ -62,6 +62,7 @@ class TourWebModule extends WebModule {
     $this->addExternalJavascript('http://maps.google.com/maps/api/js?sensor=true');
     $this->addInlineJavascript($scriptText);
     $this->addOnLoad('showMap(centerCoords, tourStops, tourIcons, '.$stopOverviewMode.');');
+    $this->addOnOrientationChange('resizeMapOnChange();');
   }
   
   protected function hasTabForKey($tabKey, &$tabJavascripts) {

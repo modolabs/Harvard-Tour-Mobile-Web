@@ -1,5 +1,11 @@
 html, body, #nonfooternav {
   height: 100%;
+	margin: 0;
+	padding: 0;
+	min-height: 600px;
+}
+#container {
+  min-height: 0px;
 }
 
 #navbar {
@@ -9,9 +15,6 @@ html, body, #nonfooternav {
 	font-family: serif;
 	font-size: 16px;
   margin: 0;
-}
-#container {
-  position: relative;
 }
 #homelink {
 	display: block;
@@ -74,15 +77,15 @@ html, body, #nonfooternav {
 	top: 0;
 	left: 0;
 	width: 100%;
-	height: 60px;
+	height: 56px;
 }
 #pagehead #sidenav a {
 	display: block;
 	width: 50px;
 	height: 50px;
 	position: absolute;
-	padding: 5px 2px;
-	top: 0
+	padding: 3px 2px;
+	top: 0;
 }
 #pagehead #sidenav #previous {
 	left: 0;
@@ -236,7 +239,7 @@ html, body, #nonfooternav {
 }
 #nextstop {
 	border-top: 1px solid rgba(0,0,0,0.15);
-	height: 45px;
+	height: 44px;
 	color: rgba(255,255,255,0.85);
 	text-shadow: rgba(0,0,0,0.6) 0px 0px 1px;
 	background-color: rgba(0,0,0,0.1);
@@ -313,11 +316,15 @@ html, body, #nonfooternav {
 }
 
 #map_container {
-  height: 268px;
-  position: relative;
+  position: absolute;
+  top: 148px;
+  left: 0;
+  width: 100%;
+  height: 270px;
 }
-#helptext + #map_container {
-  height: 248px;
+#map_container.tappable {
+  top: 169px;
+  height: 250px;
 }
 #map_container + #footer {
   display: none;
