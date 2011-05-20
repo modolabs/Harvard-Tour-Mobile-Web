@@ -1,4 +1,47 @@
+function resizeMap() {
+  var nonfooternav = document.getElementById('nonfooternav');
+  var navbar = document.getElementById('navbar');
+  var pagehead = document.getElementById('pagehead');
+  var mapcontainer = document.getElementById('map_container');
+  
+  
+  //nonfooternav.style.overflow = 'hidden';
+  
+}
+
+// resizing counterpart for dynamic maps
+function resizeMapOnChange() {
+  if (resizeMapOnChange.resizeMapTimeout !== undefined) {
+    window.clearTimeout(resizeMapOnChange.resizeMapTimeout); 
+  }
+  resizeMapOnChange.resizeMapTimeout = window.setTimeout(resizeMap, 500);
+}
+
+function resizeMap() {
+    var nonfooternav = document.getElementById('nonfooternav');
+    var navbar = document.getElementById('navbar');
+    var pagehead = document.getElementById('pagehead');
+    var helptext = document.getElementById('helptext');
+    var mapcontainer = document.getElementById('map_container');
+    
+    var headerHeight = navbar.offsetHeight + pagehead.offsetHeight;
+    if (helptext) {
+      headerHeight += helptext.offsetHeight;
+    }
+    
+    var windowHeight = 0;
+    if (window.innerHeight !== undefined) {
+      windowHeight = window.innerHeight;
+    } else {
+      windowHeight = document.documentElement.clientHeight; // ie7
+    }
+    
+    mapcontainer.style.height = (windowHeight - headerHeight)+'px';
+}
+
 function showMap(center, stops, tourIcons, stopOverviewMode) {
+  resizeMap();
+  
   var stopElems = [
     {
       'key'  : 'title',
