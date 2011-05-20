@@ -22,22 +22,22 @@
 {include file="findInclude:common/templates/header.tpl" customHeader=$customHeader}
 
 <h1>Welcome to Harvard University.</h1>
-<p>This self-paced tour gives you an insider’s view of Harvard Yard &ndash; the school's historic heart. Each tour stop includes information on one or more of the following topics:</p>
+<p>Today, you will explore Harvard Yard, home of America&rsquo;s oldest institution of higher education, and learn about Harvard&rsquo;s impact today on education, and on the world. Each tour stop includes one or more of the following topics:</p>
 <dl>
   <dt>
     <img src="/modules/tour/images/lens-insideout-hdpi.png" alt="Inside/Out" width="24" height="24" border="0" />
     Inside/out:
   </dt>
-  <dd>A look behind closed doors</dd>
+  <dd>An insider&rsquo;s view of Harvard</dd>
   <dt>
     <img src="/modules/tour/images/lens-fastfacts-hdpi.png" alt="Fast Facts" width="24" height="24" border="0" />
     Fast facts:</dt>
-  <dd>Interesting facts and tidbits</dd>
+  <dd>Interesting facts and trivia</dd>
   <dt>
     <img src="/modules/tour/images/lens-innovation-hdpi.png" alt="Innovation" width="24" height="24" border="0" />
     Innovation:
   </dt>
-  <dd>Groundbreaking firsts</dd>
+  <dd>Groundbreaking moments</dd>
   <dt>
     <img src="/modules/tour/images/lens-history-hdpi.png" alt="History" width="24" height="24" border="0" />
     History:

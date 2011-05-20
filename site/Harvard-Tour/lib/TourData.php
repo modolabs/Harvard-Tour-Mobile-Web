@@ -1203,8 +1203,8 @@ function _getTourStops() {
         'innovation' => array(
           array(
             'type' => 'photo',
-            'url' => '/media/loeb_house-innovation.jpg',
-            'title' => 'Merlin #117507 (MISSING)',
+            'url' => '/media/carpenter_center-main.jpg',
+            'title' => '',
           ),
           array(
             'type' => 'text',
