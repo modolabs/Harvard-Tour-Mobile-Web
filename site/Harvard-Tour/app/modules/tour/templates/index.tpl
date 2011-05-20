@@ -1,10 +1,25 @@
 {capture name="customHeader" assign="customHeader"}
   <div id="welcomehead">
-    <a id="startlink" href="{$startURL}">
-      <img id="logo" src="/modules/tour/images/logo-hdpi.png" alt="harvard yard tour" width="231" height="33" border="0" />
-      <br/>
-      <img id="begin" src="/modules/tour/images/begin@2x.png" alt="begin your tour" width="131" height="30" border="0" />
-    </a>
+    {if $resumeURL}
+      <div id="header">
+        <img src="/modules/tour/images/logo-hdpi.png" alt="harvard yard tour" width="231" height="33" border="0" />
+        <br/>
+        You have a tour in progress!
+      </div>
+      <a id="resumelink" href="{$resumeURL}">
+          Resume Tour >
+      </a>
+      <a id="startoverlink" href="{$startURL}">
+          Start Over >
+      </a>
+      
+    {else}
+      <a id="startlink" href="{$startURL}">
+        <img id="logo" src="/modules/tour/images/logo-hdpi.png" alt="harvard yard tour" width="231" height="33" border="0" />
+        <br/>
+        <img id="begin" src="/modules/tour/images/begin@2x.png" alt="begin your tour" width="131" height="30" border="0" />
+      </a>
+    {/if}
   </div>
   <div id="hero">
     <img src="/modules/tour/images/hero-hdpi.jpg" alt="Photo of Harvard" width="100%" border="0" />

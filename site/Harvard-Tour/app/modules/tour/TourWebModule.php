@@ -4,6 +4,48 @@ class TourWebModule extends WebModule {
   protected $id = 'tour';
   private $tour = null;
   private $stop = '';
+  const CURRENT_STOP_COOKIE = 'currentStop';
+  const VISITED_STOPS_COOKIE = 'visitedStops';
+  const COOKIE_DURATION = 31536000;  // 1 year
+  const NEW_TOUR_PARAM = 'new';
+  
+  protected function initialize() {
+    $stopId = false;
+    $seenStopIds = array();
+    
+    $newTour = $this->getArg(self::NEW_TOUR_PARAM, false);
+    if (isset($this->args['id'])) {
+      $stopId = $this->args['id']; // user came from a page that set the stop
+    }
+    
+    if (!$newTour) {
+      if (!$stopId && isset($_COOKIE[self::CURRENT_STOP_COOKIE]) && $_COOKIE[self::CURRENT_STOP_COOKIE]) {
+        $stopId = $_COOKIE[self::CURRENT_STOP_COOKIE]; // cookie is set
+      }
+    
+      if (isset($_COOKIE[self::VISITED_STOPS_COOKIE])) {
+        $seenStopIds = explode(',', $_COOKIE[self::VISITED_STOPS_COOKIE]);
+      }
+      if (isset($this->args['fromId'])) {
+        $seenStopIds[] = $this->args['fromId'];
+      }
+    }
+    
+    $this->tour = new Tour($stopId, $seenStopIds);
+    $this->stop = $this->tour->getStop();
+      
+    if ($newTour) {
+      $expires = time() - 3600; // drop cookies on new tour
+      setcookie(self::CURRENT_STOP_COOKIE,  '', $expires, COOKIE_PATH);
+      setcookie(self::VISITED_STOPS_COOKIE, '', $expires, COOKIE_PATH);
+    
+    } else {
+      // store new state
+      $expires = time() + self::COOKIE_DURATION;
+      setcookie(self::CURRENT_STOP_COOKIE,  $this->stop->getId(),       $expires, COOKIE_PATH);
+      setcookie(self::VISITED_STOPS_COOKIE, implode(',', $seenStopIds), $expires, COOKIE_PATH);
+    }
+  }
   
   protected function markerImages() {
     return array(
@@ -117,11 +159,6 @@ class TourWebModule extends WebModule {
   }
   
   protected function initializeForPage() {
-    $this->tour = new Tour();
-    
-    $this->tour->setStop($this->getArg('id', $this->tour->getFirstStop()->getId()));
-    $this->stop = $this->tour->getStop();
-    
     $stopInfo = $this->getStopDetails($this->stop);
     
     $showMapLink = true;
@@ -129,8 +166,11 @@ class TourWebModule extends WebModule {
     
     switch ($this->page) {
       case 'index':
-        // Just static content
-        $this->assign('startURL', $this->buildTourURL('overview', array('start' => 1)));
+        if ($this->tour->isInProgress()) {
+          $this->assign('resumeURL', $this->buildTourURL('approach', array('stop' => $this->stop->getId())));
+        }
+        
+        $this->assign('startURL', $this->buildTourURL('overview', array(self::NEW_TOUR_PARAM => 1)));
         break;
       
       case 'tourhelp':
@@ -181,7 +221,7 @@ class TourWebModule extends WebModule {
         $this->assign('mapViewURL',  $mapViewURL);
         $this->assign('listViewURL', $listViewURL);
         $this->assign('view',        $view);
-        $this->assign('start',       $this->getArg('start', false));
+        $this->assign('newTour',     $this->getArg(self::NEW_TOUR_PARAM, false));
         $this->assign('doneURL',     $this->getArg('doneURL', $this->buildTourURL('index')));
         $this->assign('currentIcon', $this->currentIcon());
         $this->assign('visitedIcon', $this->visitedIcon());
@@ -199,7 +239,7 @@ class TourWebModule extends WebModule {
             'id' => $prevStop->getId(),
           ));
         } else {
-          $prevURL = $this->buildTourURL('overview', array('start' => 1));          
+          $prevURL = $this->buildTourURL('overview', array(self::NEW_TOUR_PARAM => 1));
         }
         $nextURL = $this->buildTourURL('detail');
         
@@ -217,7 +257,8 @@ class TourWebModule extends WebModule {
         $nextStop = $this->tour->getNextStop();
         if ($nextStop) {
           $nextURL = $this->buildTourURL('approach', array(
-            'id' => $nextStop->getId(),
+            'id'     => $nextStop->getId(),
+            'fromId' => $this->stop->getId(),
           ));
         } else {
           $nextURL = $this->buildTourURL('finish');

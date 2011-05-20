@@ -1,20 +1,35 @@
 #welcomehead {
-	height: 78px;
-	background: #f0f0ee url(/modules/tour/images/headback.jpg) repeat-x;
+  overflow: hidden;
+	background: #f0f0ee url(/common/images/bodyback2.jpg) repeat-x;
 }
 a#startlink {
 	text-decoration: none;
 	display: block;
 	height: 68px;
 	padding: 10px 10px 0 10px;
-
+}
+div#header {
+	padding: 10px;
+}
+#startoverlink, #resumelink {
+	font: 19px/20px serif;
+	color: #000;
+	background: transparent url(/common/images/action-link.png) no-repeat center right;
+	text-decoration: none;
+	display: block;
+	height: 30px;
+	line-height: 30px;
+  padding: 10px 0;
+	text-align: right;
+	clear: left;
+	vertical-align: middle;
+}
+#begin, #startoverlink img, #resumelink img {
+	clear: left;
+  float: right;
 }
 #logo {
 	float: left;
-}
-#begin {
-	clear: left;
-	float: right;
 }
 #hero {
 	position: relative;
