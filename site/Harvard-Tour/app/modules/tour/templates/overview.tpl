@@ -12,7 +12,7 @@
 {if $view == 'map'}
     <div id="nextstop" class="listrow">
       <div class="listthumb">
-        <img src="/common/images/zoomicon-in@2x.png" alt="" border="0" class="zoomicon" />
+        <img src="/common/images/zoomicon-in@2x.png" alt="" border="0" class="zoomicon" onclick="zoomUpDown('zoomup')" />
         <img id="zoomthumb" src="{$stop['thumbnail']}" onclick="zoomUpDown('zoomup')" alt="Approach photo" width="75" height="50" border="0" class="listphoto" />
       </div>
       {if !$newTour}

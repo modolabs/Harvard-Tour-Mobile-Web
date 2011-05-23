@@ -287,6 +287,10 @@ class TourSlideshow {
     
     return $content;
   }
+  
+  function getSlides() {
+    return $this->slides;
+  }
 }
 
 class TourPhoto extends TourAsset {
