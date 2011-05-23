@@ -2,7 +2,7 @@
   <div id="welcomehead">
     {if $resumeURL}
       <div id="header">
-        <img src="/modules/tour/images/logo-hdpi.png" alt="harvard yard tour" width="231" height="33" border="0" />
+        <img src="/modules/tour/images/logo@2x.png" alt="harvard yard tour" width="233" height="33" border="0" />
         <br/>
         You have a tour in progress!
       </div>
@@ -15,7 +15,7 @@
       
     {else}
       <a id="startlink" href="{$startURL}">
-        <img id="logo" src="/modules/tour/images/logo-hdpi.png" alt="harvard yard tour" width="231" height="33" border="0" />
+        <img id="logo" src="/modules/tour/images/logo@2x.png" alt="harvard yard tour" width="233" height="33" border="0" />
         <br/>
         <img id="begin" src="/modules/tour/images/begin@2x.png" alt="begin your tour" width="131" height="30" border="0" />
       </a>
