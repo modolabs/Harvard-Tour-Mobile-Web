@@ -9,6 +9,8 @@ class Tour {
   private $seenStopIds = array();
 
   function __construct($stopId = false, $seenStopIds = array()) {
+    //$tourData = $this->loadTourData();
+  
     foreach (_getTourStops() as $id => $stopData) {
       $this->stops[$id] = new TourStop($id, $stopData);
     }
@@ -138,6 +140,32 @@ class Tour {
       $stop->setIsCurrent($id == $this->currentStopId);
       $stop->setWasVisited(false);
     }
+  }
+  
+  private function getNodeData($nid) {
+     $content = file_get_contents(Kurogo::getSiteVar('TOUR_SERVICE_URL')."$nid.json");
+     
+     return json_decode($content, true);
+  }
+  
+  private function loadTourData() {
+    $tour = $this->getNodeData(Kurogo::getSiteVar('TOUR_NODE_ID'));
+    
+    $stopNids = array();
+    
+    if (isset($tour['language'], $tour['field_stops'], $tour['field_stops'][$tour['language']])) {
+      foreach ($tour['field_stops'][$tour['language']] as $stopNid) {
+        $stopNids[] = $stopNid['nid'];
+      }
+    }
+    
+    $tourData = array();
+    foreach ($stopNids as $nid) {
+      $stop = $this->getNodeData($nid);
+      error_log(print_r($stop, true));
+    }
+    
+    
   }
 }
 
