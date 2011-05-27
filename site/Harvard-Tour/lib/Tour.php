@@ -9,9 +9,7 @@ class Tour {
   private $seenStopIds = array();
 
   function __construct($stopId = false, $seenStopIds = array()) {
-    //$tourData = $this->loadTourData();
-  
-    foreach (_getTourStops() as $id => $stopData) {
+    foreach ($this->loadTourData() as $id => $stopData) {
       $this->stops[$id] = new TourStop($id, $stopData);
     }
     
@@ -149,23 +147,196 @@ class Tour {
   }
   
   private function loadTourData() {
-    $tour = $this->getNodeData(Kurogo::getSiteVar('TOUR_NODE_ID'));
+    $tourNode = $this->getNodeData(Kurogo::getSiteVar('TOUR_NODE_ID'));
+    $stopsNodes = $this->getNodeField($tourNode, 'field_stops', array());
     
     $stopNids = array();
-    
-    if (isset($tour['language'], $tour['field_stops'], $tour['field_stops'][$tour['language']])) {
-      foreach ($tour['field_stops'][$tour['language']] as $stopNid) {
-        $stopNids[] = $stopNid['nid'];
+    foreach ($stopsNodes as $stopNode) {
+      if (isset($stopNode['nid'])) {
+        $stopNids[] = $stopNode['nid'];
       }
     }
     
     $tourData = array();
     foreach ($stopNids as $nid) {
-      $stop = $this->getNodeData($nid);
-      error_log(print_r($stop, true));
+      $stopNode = $this->getNodeData($nid);
+      //error_log(print_r($stopNode, true));
+      
+      $location = $this->getNodeField($stopNode, 'field_location', array());
+      if (count($location)) {
+        $location = reset($location); // grab first location (only 1 location allowed)
+      }
+      
+      $stopData = array(
+        'title'     => $this->getNodeField($stopNode, 'title'),
+        'subtitle'  => $this->getNodeHTML($stopNode, 'field_subtitle'),
+        'building'  => $this->getNodeHTML($stopNode, 'field_building'),
+        'photo'     => $this->getNodePhoto($stopNode, 'field_approach_photo'),
+        'thumbnail' => $this->getNodePhoto($stopNode, 'field_approach_thumbnail'),
+        'coords'    => array(
+          'lat' => $this->argVal($location, 'lat', 0),
+          'lon' => $this->argVal($location, 'lng', 0),
+        ),
+        'lenses'    => array(),
+      );
+      
+      // Info Pane
+      $stopData['lenses']['info'] = array_merge(
+        array($this->getNodePhoto($stopNode, 'field_photo')),
+        $this->getNodeHTMLArray($stopNode, 'field_text')
+      );
+      
+      // Other Lenses
+      $lensKeyMapping = array(
+          'insideout'  => 'field_insideout',
+          'fastfacts'  => 'field_fastfacts',
+          'innovation' => 'field_innovation',
+          'history'    => 'field_history',
+        );
+      
+      foreach ($lensKeyMapping as $lensKey => $nodeKey) {
+        $lensNodes = $this->getNodeField($stopNode, $nodeKey, array());
+        if (count($lensNodes) && isset($lensNodes[0], $lensNodes[0]['nid'])) {
+          $lensNode = $this->getNodeData($lensNodes[0]['nid']);
+          if (!isset($lensNode['type'])) { continue; }
+          
+          $lensData = array();
+          switch ($lensNode['type']) {
+            case 'lens_content_photo_text':
+              $stopData['lenses'][$lensKey] = array_merge(
+                array($this->getNodePhoto($lensNode, 'field_photo')),
+                $this->getNodeHTMLArray($lensNode, 'field_text')
+              );
+              break;
+              
+            case 'lens_content_slideshow':
+              $stopData['lenses'][$lensKey] = array(
+                array(
+                  'type'   => 'slideshow',
+                  'slides' => $this->getNodePhotos($lensNode, 'field_photos'),
+                ),
+              );
+              break;
+              
+            case 'lens_content_video':
+              $stopData['lenses'][$lensKey] = array_merge(
+                array($this->getNodeVideo($lensNode)),
+                $this->getNodeHTMLArray($lensNode, 'field_text')
+              );
+              break;
+              
+          }
+          
+          //error_log(print_r($lensNode, true));
+        }
+      }
+      
+      
+      $tourData[] = $stopData;
     }
     
+    //error_log(print_r($tourData, true));
+    return $tourData;
+  }
+  
+  protected function getURLForNodeFileURI($node) {
+    if (isset($node['uri'])) {
+      if (preg_match(';^public://(.+)$;', $node['uri'], $matches)) {
+        return Kurogo::getSiteVar('TOUR_SERVICE_FILE_PREFIX').$matches[1];
+      }
+    }
+    return '';
+  }
+  
+  
+  protected function getNodePhoto($node, $fieldName) {
+    $photos = $this->getNodePhotos($node, $fieldName);
+    if (count($photos)) {
+      return reset($photos);
+    } else {
+      return array(
+        'type'  => 'photo', 
+        'url'   => '', 
+        'title' => ''
+      );
+    }
+  }
+  
+  protected function getNodePhotos($node, $fieldName) {
+    $photos = array();
     
+    $nodePhotos = $this->getNodeField($node, $fieldName, array());
+    
+    foreach ($nodePhotos as $nodePhoto) {
+      $photoURL = $this->getURLForNodeFileURI($nodePhoto);
+      if (!$photoURL) { continue; }
+      
+      $photos[] = array(
+        'type'  => 'photo',
+        'url'   => $photoURL,
+        'title' => $this->argVal($nodePhoto, 'title', ''),
+      );
+    }
+    
+    return $photos;
+  }
+  
+  protected function getNodeVideo($node) {
+    $stillPhoto = $this->getNodePhoto($node, 'field_still');
+    
+    return array(
+      'type' => 'video',
+      'title' => $stillPhoto['title'],
+      'still' => $stillPhoto['url'],
+      'mpeg4' => $this->getURLForNodeFileURI($node, 'field_mpeg4'),
+      '3gpp' => $this->getURLForNodeFileURI($node, 'field_3gpp'),
+    );
+  }
+  
+  protected function getNodeHTML($node, $fieldName) {
+    $htmlArray = $this->getNodeHTMLArray($node, $fieldName);
+    if (count($htmlArray)) {
+      $firstHTML = reset($htmlArray);
+      return $firstHTML['text'];
+    } else { 
+      return '';
+    }
+  }
+  
+  protected function getNodeHTMLArray($node, $fieldName) {
+    $htmlArray = array();
+    
+    $nodeHTMLs = $this->getNodeField($node, $fieldName, array());
+    foreach ($nodeHTMLs as $nodeHTML) {
+      $safeValue = $this->argVal($nodeHTML, 'safe_value', '');
+      
+      if (!substr_compare($safeValue, '<p>',  0,                      3) && 
+          !substr_compare($safeValue, '</p>', strlen($safeValue) - 5, 4)) {
+        $safeValue = substr($safeValue, 3, strlen($safeValue) - 8);
+      }
+    
+      $htmlArray[] = array(
+        'type' => 'text',
+        'text' => $safeValue,
+      );
+    }
+    
+    return $htmlArray;
+  }
+  
+  protected function getNodeField($node, $fieldName, $default='') {
+    if (isset($node[$fieldName])) {
+      if (is_array($node[$fieldName]) && isset($node['language'], $node[$fieldName][$node['language']])) {
+        return $node[$fieldName][$node['language']];
+      } else {
+        return $node[$fieldName];
+      }
+    }
+    return $default;
+  }
+  
+  private function argVal($array, $key, $default='') {
+    return isset($array[$key]) ? $array[$key] : $default;
   }
 }
 
@@ -200,11 +371,13 @@ class TourStop {
       
       foreach ($contents as $content) {
         switch ($content['type']) {
-          case 'photo':
           case 'video':
-          case 'audio':
-            $class = 'Tour'.ucfirst($content['type']);
-            $this->lenses[$lens][] = new $class($content['url'], $content['title']);
+            $this->lenses[$lens][] = new TourVideo(
+              $content['still'], $content['mpeg4'], $content['3gpp'], $content['title']);
+            break;
+            
+          case 'photo':
+            $this->lenses[$lens][] = new TourPhoto($content['url'], $content['title']);
             break;
           
           case 'text':
@@ -290,7 +463,6 @@ class TourSlideshow {
       switch ($content['type']) {
         case 'photo':
         case 'video':
-        case 'audio':
           $class = 'Tour'.ucfirst($content['type']);
           $this->slides[] = new $class($content['url'], $content['title']);
           break;
@@ -321,25 +493,7 @@ class TourSlideshow {
   }
 }
 
-class TourPhoto extends TourAsset {
-  function getContent() {
-    return '<img class="photo" src="'.$this->src.'" width="100%"/>'.
-      ($this->title ? '<p class="caption">'.$this->title.'</p>' : '');
-  }
-}
-
-class TourVideo extends TourAsset {
-  function getContent() {
-    return '<video src="'.$this->src.'" width="100%" controls>Video format not supported by this device</video>'.
-      ($this->title ? '<p class="caption">'.$this->title.'</p>' : '');
-  }
-
-}
-
-class TourAudio extends TourAsset {
-}
-
-abstract class TourAsset {
+class TourPhoto {
   protected $src = '';
   protected $title = '';
   
@@ -349,10 +503,44 @@ abstract class TourAsset {
   }
   
   function getSrc() {
-    return FULL_URL_PREFIX.ltrim($this->src, '/');
+    return $this->src;
   }
   
   function getTitle() {
     return $this->title;
   }
+
+  function getContent() {
+    return '<img class="photo" src="'.$this->src.'" width="100%"/>'.
+      ($this->title ? '<p class="caption">'.$this->title.'</p>' : '');
+  }
+}
+
+class TourVideo {
+  protected $title = '';
+  protected $srcStill = '';
+  protected $srcMPEG4 = '';
+  protected $src3GPP = '';
+  
+  function __construct($srcStill, $srcMPEG4, $src3GPP, $title) {
+    $this->srcStill = $srcStill;
+    $this->srcMPEG4 = $srcMPEG4;
+    $this->src3GPP = $src3GPP;
+    $this->title = $title;
+  }
+  
+  function getSrc() {
+    return $this->srcMPEG4;
+  }
+  
+  function getTitle() {
+    return $this->title;
+  }
+
+  function getContent() {
+    return '<video src="'.$this->srcMPEG4.'" width="100%" controls><a href="'.
+      $this->src3GPP.'"><img src="'.$this->srcStill.'" /></a></video>'.
+      ($this->title ? '<p class="caption">'.$this->title.'</p>' : '');
+  }
+
 }
