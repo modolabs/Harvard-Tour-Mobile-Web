@@ -9,7 +9,7 @@ class Tour {
   private $seenStopIds = array();
 
   function __construct($stopId = false, $seenStopIds = array()) {
-    foreach ($this->loadTourData() as $id => $stopData) {
+    foreach (_getTourStops()/*$this->loadTourData()*/ as $id => $stopData) {
       $this->stops[$id] = new TourStop($id, $stopData);
     }
     
@@ -529,18 +529,41 @@ class TourVideo {
     $this->title = $title;
   }
   
-  function getSrc() {
+  public function getSrc() {
     return $this->srcMPEG4;
   }
   
-  function getTitle() {
+  public function getTitle() {
     return $this->title;
   }
 
-  function getContent() {
-    return '<video src="'.$this->srcMPEG4.'" width="100%" controls><a href="'.
-      $this->src3GPP.'"><img src="'.$this->srcStill.'" /></a></video>'.
+  public function getContent() {
+    return '<video src="'.$this->srcMPEG4.'" width="100%" controls>'.
+      '<a class="videoLink" href="'.$this->src3GPP.'">'.
+      '<div class="playButton"><div></div></div>'.
+      '<img src="'.$this->srcStill.'" /></a></video>'.
       ($this->title ? '<p class="caption">'.$this->title.'</p>' : '');
   }
-
+  
+  /*protected function getYouTubeData($id) {
+    $cache = $this->getCacheForQuery('youtube');
+    $cacheName = $id;
+    
+    if ($cache->isFresh($cacheName)) {
+      $results = $cache->read($cacheName);
+    } else {
+      $url = 'http://gdata.youtube.com/feeds/mobile/videos/'.$id.'?'.http_build_query(array(
+        'v'      => 2,
+        'format' => 6, // RTSP streaming URL for mobile video playback
+        'alt'    => 'jsonc',
+      ));
+      
+      $results = json_decode(file_get_contents($url), true);
+      if (isset($results['data'])) {
+        $cache->write($results, $cacheName);
+      }
+    }
+    
+    return $results;
+  }*/
 }
