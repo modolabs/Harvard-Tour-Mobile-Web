@@ -134,6 +134,7 @@ function _getTourStops() {
             'type' => 'video',
             'url' => '/media/indian_college-history.mp4',
             'title' => 'indian_college-history.mp4',
+            'still' => '',
           ),
         ),
       ),
@@ -197,6 +198,7 @@ function _getTourStops() {
             'type' => 'video',
             'url'  => '/media/massachusetts_hall-facts.mp4',
             'title' => 'massachusetts_hall-facts.mp4',
+            'still' => '',
           ),
           array(
             'type' => 'text',
@@ -278,6 +280,7 @@ function _getTourStops() {
             'type' => 'video',
             'url'  => '/media/johnston_gate-facts.mp4',
             'title' => 'johnston_gate-facts.mp4',
+            'still' => '',
           ),
           array(
             'type' => 'text',
@@ -303,6 +306,7 @@ function _getTourStops() {
             'type' => 'video',
             'url'  => '/media/johnston_gate-history.mp4',
             'title' => 'johnston_gate-history.mp4',
+            'still' => '',
           ),
           array(
             'type' => 'text',
@@ -495,6 +499,7 @@ function _getTourStops() {
             'type' => 'video',
             'url' => '/media/university_hall-history.mp4',
             'title' => 'university_hall-history.mp4',
+            'still' => '',
           ),
           array(
             'type' => 'text',
@@ -562,6 +567,7 @@ function _getTourStops() {
             'type' => 'video',
             'url' => '/media/freshman_dorms-facts.mp4',
             'title' => 'freshman_dorms-facts.mp4',
+            'still' => '',
           ),
           array(
             'type' => 'text',
@@ -752,6 +758,7 @@ function _getTourStops() {
             'type' => 'video',
             'url' => '/media/phillips_brooks_house-innovation.mp4',
             'title' => 'phillips_brooks_house-innovation.mp4',
+            'still' => '',
           ),
         ),
         'history' => array(
@@ -759,6 +766,7 @@ function _getTourStops() {
             'type' => 'video',
             'url' => '/media/phillips_brooks_house-history.mp4',
             'title' => 'phillips-brooks-history.mp4',
+            'still' => '',
           ),
           array(
             'type' => 'text',
@@ -847,6 +855,7 @@ function _getTourStops() {
             'type' => 'video',
             'url' => '',
             'title' => 'science-center-innovation.mp4',
+            'still' => '',
           ),
         ),
         'history' => array(
@@ -940,6 +949,7 @@ function _getTourStops() {
             'type' => 'video',
             'url' => '/media/memorial_hall-facts.mp4',
             'title' => 'memorial_hall-facts.mp4',
+            'still' => '',
           ),
           array(
             'type' => 'text',
@@ -951,6 +961,7 @@ function _getTourStops() {
             'type' => 'video',
             'url' => '/media/memorial_hall-innovation.mp4',
             'title' => 'memorial_hall-innovation.mp4',
+            'still' => '',
           ),
         ),
         'history' => array(
@@ -1031,6 +1042,7 @@ function _getTourStops() {
             'type' => 'video',
             'url' => '/media/memorial_church-facts.mp4',
             'title' => 'memorial_church-facts.mp4',
+            'still' => '',
           ),
           array(
             'type' => 'text',
@@ -1044,6 +1056,7 @@ function _getTourStops() {
             'type' => 'video',
             'url' => '/media/memorial_church-history.mp4',
             'title' => 'memorial_church-history.mp4',
+            'still' => '',
           ),
         ),
       ),
@@ -1112,6 +1125,7 @@ function _getTourStops() {
             'type' => 'video',
             'url' => '/media/sever_hall_quad-facts.mp4',
             'title' => 'sever_hall_quad-facts.mp4',
+            'still' => '',
           ),
         ),
         'innovation' => array(
@@ -1119,13 +1133,15 @@ function _getTourStops() {
             'type' => 'video',
             'url' => '/media/sever_hall_quad-innovation.mp4',
             'title' => 'sever_hall_quad-innovation.mp4',
+            'still' => '',
           ),
         ),
         'history' => array(
-		  array(
-			'type' => 'video',
-			'url' => '/media/sever_hall_quad-history.mp4',
+          array(
+            'type' => 'video',
+            'url' => '/media/sever_hall_quad-history.mp4',
             'title' => 'sever_hall_quad-history.mp4',
+            'still' => '',
           ),
           array(
             'type' => 'text',
@@ -1216,6 +1232,7 @@ function _getTourStops() {
             'type' => 'video',
             'url' => '/media/loeb_house-history.mp4',
             'title' => 'loeb_house-history.mp4',
+            'still' => '',
           ),
           array(
             'type' => 'text',
@@ -1283,6 +1300,7 @@ function _getTourStops() {
             'type' => 'video',
             'url' => '/media/tercentenary_theatre-facts.mp4',
             'title' => 'tercentenary_theatre-facts.mp4',
+            'still' => '',
           ),
         ),
         'innovation' => array(
@@ -1301,6 +1319,7 @@ function _getTourStops() {
             'type' => 'video',
             'url' => '/media/tercentenary_theatre-history.mp4',
             'title' => 'tercentenary_theatre-history.mp4',
+            'still' => '',
           ),
         ),
       ),
@@ -1370,6 +1389,7 @@ function _getTourStops() {
             'type' => 'video',
             'url' => '/media/widener_library-facts.mp4',
             'title' => 'widener_library-facts.mp4',
+            'still' => '',
           ),
           array(
             'type' => 'text',
@@ -1396,6 +1416,7 @@ function _getTourStops() {
             'type' => 'video',
             'url' => '/media/widener_library-history.mp4',
             'title' => 'widener_library-history.mp4',
+            'still' => '',
           ),
         ),
       ),

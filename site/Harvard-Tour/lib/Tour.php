@@ -373,7 +373,7 @@ class TourStop {
         switch ($content['type']) {
           case 'video':
             $this->lenses[$lens][] = new TourVideo(
-              $content['still'], $content['mpeg4'], $content['3gpp'], $content['title']);
+              $content['still'], $content['url'], $content['url'], $content['title']);
             break;
             
           case 'photo':
