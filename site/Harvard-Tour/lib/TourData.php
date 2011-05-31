@@ -132,8 +132,8 @@ function _getTourStops() {
         'history' => array(
           array(
             'type' => 'video',
-            'url' => '/media/indian_college-history.m4v',
-            'title' => 'indian_college-history.m4v',
+            'url' => '/media/indian_college-history.mp4',
+            'title' => 'indian_college-history.mp4',
           ),
         ),
       ),
@@ -194,9 +194,9 @@ function _getTourStops() {
         ),
         'fastfacts' => array(
           array(
-            'type' => 'photo',
-            'url'  => '/media/massachusetts_hall-facts-placeholder.jpg',
-            'title' => 'Still photo needed to accompany audio file massachusetts_hall-facts.mp3',
+            'type' => 'video',
+            'url'  => '/media/massachusetts_hall-facts.mp4',
+            'title' => 'massachusetts_hall-facts.mp4',
           ),
           array(
             'type' => 'text',
@@ -275,9 +275,9 @@ function _getTourStops() {
         ),
         'fastfacts' => array(
           array(
-            'type' => 'photo',
-            'url'  => '/media/johnston_gate-facts-placeholder.jpg',
-            'title' => 'Still photo needed to accompany johnston_gate-facts.mp3',
+            'type' => 'video',
+            'url'  => '/media/johnston_gate-facts.mp4',
+            'title' => 'johnston_gate-facts.mp4',
           ),
           array(
             'type' => 'text',
@@ -300,9 +300,9 @@ function _getTourStops() {
         ),
         'history' => array(
           array(
-            'type' => 'photo',
-            'url'  => '/media/johnston_gate-history.jpg',
-            'title' => 'This still photo needs to be combined with johnston_gate-history.mp3',
+            'type' => 'video',
+            'url'  => '/media/johnston_gate-history.mp4',
+            'title' => 'johnston_gate-history.mp4',
           ),
           array(
             'type' => 'text',
@@ -492,9 +492,9 @@ function _getTourStops() {
         ),
         'history' => array(
           array(
-            'type' => 'photo',
-            'url' => '/media/university_hall-insideout.jpg',
-            'title' => 'This still photo needs to accompany university_hall-history.mp3',
+            'type' => 'video',
+            'url' => '/media/university_hall-history.mp4',
+            'title' => 'university_hall-history.mp4',
           ),
           array(
             'type' => 'text',
@@ -559,9 +559,9 @@ function _getTourStops() {
         ),
         'fastfacts' => array(
           array(
-            'type' => 'photo',
-            'url' => '/media/freshman_dorms-pump.jpg',
-            'title' => 'This still photo needs to accompany the audio from freshman_dorms-facts.mp3',
+            'type' => 'video',
+            'url' => '/media/freshman_dorms-facts.mp4',
+            'title' => 'freshman_dorms-facts.mp4',
           ),
           array(
             'type' => 'text',
@@ -750,15 +750,15 @@ function _getTourStops() {
         'innovation' => array(
           array(
             'type' => 'video',
-            'url' => '/media/phillips_brooks_house-innovation.m4v',
-            'title' => 'phillips_brooks_house-innovation.m4v',
+            'url' => '/media/phillips_brooks_house-innovation.mp4',
+            'title' => 'phillips_brooks_house-innovation.mp4',
           ),
         ),
         'history' => array(
           array(
-            'type' => 'photo',
-            'url' => '/media/phillips_brooks_house-history.jpg',
-            'title' => 'This still photo needs to accompany phillips-brooks-history.mp3',
+            'type' => 'video',
+            'url' => '/media/phillips_brooks_house-history.mp4',
+            'title' => 'phillips-brooks-history.mp4',
           ),
           array(
             'type' => 'text',
@@ -937,9 +937,9 @@ function _getTourStops() {
         ),
         'fastfacts' => array(
           array(
-            'type' => 'photo',
-            'url' => '/media/memorial_hall-facts.jpg',
-            'title' => 'This still photo needs to accompany memorial_hall-facts.mp3',
+            'type' => 'video',
+            'url' => '/media/memorial_hall-facts.mp4',
+            'title' => 'memorial_hall-facts.mp4',
           ),
           array(
             'type' => 'text',
@@ -1028,9 +1028,9 @@ function _getTourStops() {
         ),
         'fastfacts' => array(
           array(
-            'type' => 'photo',
-            'url' => '/media/memorial_church-facts.jpg',
-            'title' => 'This still photo needs to accompany memorial_church-facts.mp3',
+            'type' => 'video',
+            'url' => '/media/memorial_church-facts.mp4',
+            'title' => 'memorial_church-facts.mp4',
           ),
           array(
             'type' => 'text',
@@ -1123,9 +1123,9 @@ function _getTourStops() {
         ),
         'history' => array(
 		  array(
-			'type' => 'photo',
-			'url' => '/media/sever_hall_quad-arch.jpg',
-            'title' => 'This still photo needs to accompany sever_hall_quad-history.mp3',
+			'type' => 'video',
+			'url' => '/media/sever_hall_quad-history.mp4',
+            'title' => 'sever_hall_quad-history.mp4',
           ),
           array(
             'type' => 'text',
@@ -1214,8 +1214,8 @@ function _getTourStops() {
         'history' => array(
           array(
             'type' => 'video',
-            'url' => '/media/loeb_house-history.m4v',
-            'title' => 'loeb_house-history.m4v',
+            'url' => '/media/loeb_house-history.mp4',
+            'title' => 'loeb_house-history.mp4',
           ),
           array(
             'type' => 'text',
@@ -1281,8 +1281,8 @@ function _getTourStops() {
         'fastfacts' => array(
           array(
             'type' => 'video',
-            'url' => '/media/tercentenary_theatre-facts.m4v',
-            'title' => 'tercentenary_theatre-facts.m4v',
+            'url' => '/media/tercentenary_theatre-facts.mp4',
+            'title' => 'tercentenary_theatre-facts.mp4',
           ),
         ),
         'innovation' => array(
@@ -1367,9 +1367,9 @@ function _getTourStops() {
         ),
         'fastfacts' => array(
           array(
-            'type' => 'photo',
-            'url' => '/media/widener_library-facts-placeholder.jpg',
-            'title' => 'Still photo needed to accompany widener_library-facts.mp3',
+            'type' => 'video',
+            'url' => '/media/widener_library-facts.mp4',
+            'title' => 'widener_library-facts.mp4',
           ),
           array(
             'type' => 'text',
@@ -1394,8 +1394,8 @@ function _getTourStops() {
         'history' => array(
           array(
             'type' => 'video',
-            'url' => '/media/widener_library-history.mov',
-            'title' => 'widener_library-history.mov',
+            'url' => '/media/widener_library-history.mp4',
+            'title' => 'widener_library-history.mp4',
           ),
         ),
       ),
