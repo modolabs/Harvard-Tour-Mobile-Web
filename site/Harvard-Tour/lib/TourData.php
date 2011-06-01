@@ -207,11 +207,6 @@ function _getTourStops() {
         ),
         'innovation' => array(
           array(
-            'type' => 'photo',
-            'url' => '/media/massachusetts_hall-telescope.jpg',
-            'title' => 'Photo and caption needed for massachusetts_hall-telescope',
-          ),
-          array(
             'type' => 'text',
             'text' => 'In 1722, Thomas Hollis donated a 24-foot telescope that was used atop this building. Today, the Harvard College Observatory in conjunction with the Smithsonian Center for Astrophysics has a large observatory located off of Garden Street.',
           ),
@@ -497,8 +492,8 @@ function _getTourStops() {
         'history' => array(
           array(
             'type' => 'video',
-            'url' => '/media/university_hall-history.mp4',
-            'title' => 'university_hall-history.mp4',
+            'url' => '/media/john_harvard_statue-history.mp4',
+            'title' => 'john_harvard_statue-history.mp4',
             'still' => '',
           ),
           array(
@@ -662,11 +657,6 @@ function _getTourStops() {
                 'type' => 'photo',
                 'url' => '/media/holden_chapel-blueprints.jpg',
                 'title' => 'holden-chapel-history-blueprint.jpg',
-              ),
-              array(
-                'type' => 'photo',
-                'url' => '/media/holden_chapel-bones.jpg',
-                'title' => 'Merlin (Image of bones)',
               ),
               array(
                 'type' => 'photo',
