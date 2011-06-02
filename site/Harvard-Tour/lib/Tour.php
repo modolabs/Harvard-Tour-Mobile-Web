@@ -7,9 +7,11 @@ class Tour {
   private $inProgress = false;
   private $currentStopId = '';
   private $seenStopIds = array();
+  private $cache = null;
+  private $cacheLifetime = 3600;
 
   function __construct($stopId = false, $seenStopIds = array()) {
-    foreach (_getTourStops()/*$this->loadTourData()*/ as $id => $stopData) {
+    foreach (/*_getTourStops()*/$this->loadTourData() as $id => $stopData) {
       $this->stops[$id] = new TourStop($id, $stopData);
     }
     
@@ -141,9 +143,29 @@ class Tour {
   }
   
   private function getNodeData($nid) {
-     $content = file_get_contents(Kurogo::getSiteVar('TOUR_SERVICE_URL')."$nid.json");
-     
-     return json_decode($content, true);
+    $cacheName = "node_$nid";
+
+    if (!$this->cache) {
+      $this->cache = new DiskCache(CACHE_DIR."/tour", $this->cacheLifetime, TRUE);
+    }
+
+    if ($this->cache->isFresh($cacheName)) {
+      $results = $this->cache->read($cacheName);
+      
+    } else {
+      $content = file_get_contents(Kurogo::getSiteVar('TOUR_SERVICE_URL')."$nid.json");
+      $results = json_decode($content, true);
+      
+      if ($results) {
+        $this->cache->write($results, $cacheName);
+        
+      } else {
+        error_log("Error while making foursquare API request: '$content'");
+        $results = $this->cache->read($cacheName);
+      }
+    }
+    
+    return $results;
   }
   
   private function loadTourData() {
@@ -181,10 +203,16 @@ class Tour {
       );
       
       // Info Pane
-      $stopData['lenses']['info'] = array_merge(
-        array($this->getNodePhoto($stopNode, 'field_photo')),
-        $this->getNodeHTMLArray($stopNode, 'field_text')
-      );
+      $photo = $this->getNodePhoto($stopNode, 'field_photo');
+      $text = $this->getNodeHTMLArray($stopNode, 'field_text');
+      
+      $stopData['lenses']['info'] = array();
+      if ($photo) { 
+        $stopData['lenses']['info'][] = $photo; 
+      }
+      if ($text) { 
+        $stopData['lenses']['info'] = array_merge($stopData['lenses']['info'], $text); 
+      }
       
       // Other Lenses
       $lensKeyMapping = array(
@@ -200,13 +228,18 @@ class Tour {
           $lensNode = $this->getNodeData($lensNodes[0]['nid']);
           if (!isset($lensNode['type'])) { continue; }
           
-          $lensData = array();
           switch ($lensNode['type']) {
             case 'lens_content_photo_text':
-              $stopData['lenses'][$lensKey] = array_merge(
-                array($this->getNodePhoto($lensNode, 'field_photo')),
-                $this->getNodeHTMLArray($lensNode, 'field_text')
-              );
+              $photo = $this->getNodePhoto($lensNode, 'field_photo');
+              $text = $this->getNodeHTMLArray($lensNode, 'field_text');
+              
+              $stopData['lenses'][$lensKey] = array();
+              if ($photo) { 
+                $stopData['lenses'][$lensKey][] = $photo; 
+              }
+              if ($text) { 
+                $stopData['lenses'][$lensKey] = array_merge($stopData['lenses'][$lensKey], $text); 
+              }
               break;
               
             case 'lens_content_slideshow':
@@ -219,10 +252,12 @@ class Tour {
               break;
               
             case 'lens_content_video':
-              $stopData['lenses'][$lensKey] = array_merge(
-                array($this->getNodeVideo($lensNode)),
-                $this->getNodeHTMLArray($lensNode, 'field_text')
-              );
+              $stopData['lenses'][$lensKey] = array($this->getNodeVideo($lensNode));
+
+              $text = $this->getNodeHTMLArray($lensNode, 'field_text');
+              if ($text) {
+                $stopData['lenses'][$lensKey] = array_merge($stopData['lenses'][$lensKey], $text); 
+              }
               break;
               
           }
@@ -230,7 +265,6 @@ class Tour {
           //error_log(print_r($lensNode, true));
         }
       }
-      
       
       $tourData[] = $stopData;
     }
@@ -248,17 +282,12 @@ class Tour {
     return '';
   }
   
-  
   protected function getNodePhoto($node, $fieldName) {
     $photos = $this->getNodePhotos($node, $fieldName);
     if (count($photos)) {
       return reset($photos);
     } else {
-      return array(
-        'type'  => 'photo', 
-        'url'   => '', 
-        'title' => ''
-      );
+      return array();
     }
   }
   
@@ -282,14 +311,13 @@ class Tour {
   }
   
   protected function getNodeVideo($node) {
-    $stillPhoto = $this->getNodePhoto($node, 'field_still');
+    $nodeMPEG4 = reset($this->getNodeField($node, 'field_mpeg4', array()));
     
     return array(
-      'type' => 'video',
-      'title' => $stillPhoto['title'],
-      'still' => $stillPhoto['url'],
-      'mpeg4' => $this->getURLForNodeFileURI($node, 'field_mpeg4'),
-      '3gpp' => $this->getURLForNodeFileURI($node, 'field_3gpp'),
+      'type'    => 'video',
+      'title'   => $this->getNodeHTML($node, 'field_caption'),
+      'url'     => $this->getURLForNodeFileURI($nodeMPEG4),
+      'youtube' => $this->getNodeHTML($node, 'field_youtube'),
     );
   }
   
@@ -373,7 +401,7 @@ class TourStop {
         switch ($content['type']) {
           case 'video':
             $this->lenses[$lens][] = new TourVideo(
-              $content['still'], $content['url'], $content['url'], $content['title']);
+              $content['url'], $content['youtube'], $content['title']);
             break;
             
           case 'photo':
@@ -518,19 +546,17 @@ class TourPhoto {
 
 class TourVideo {
   protected $title = '';
-  protected $srcStill = '';
-  protected $srcMPEG4 = '';
-  protected $src3GPP = '';
+  protected $youTubeId = '';
+  protected $src = '';
   
-  function __construct($srcStill, $srcMPEG4, $src3GPP, $title) {
-    $this->srcStill = $srcStill;
-    $this->srcMPEG4 = $srcMPEG4;
-    $this->src3GPP = $src3GPP;
+  function __construct($src, $youTubeId, $title) {
+    $this->src = $src;
+    $this->youTubeId = $youTubeId;
     $this->title = $title;
   }
   
   public function getSrc() {
-    return $this->srcMPEG4;
+    return $this->src;
   }
   
   public function getTitle() {
@@ -538,14 +564,16 @@ class TourVideo {
   }
 
   public function getContent() {
-    return '<video src="'.$this->srcMPEG4.'" width="100%" controls>'.
-      '<a class="videoLink" href="'.$this->src3GPP.'">'.
-      '<div class="playButton"><div></div></div>'.
-      '<img src="'.$this->srcStill.'" /></a></video>'.
+    return '<video src="'.$this->src.'" width="100%" controls></video>'.
       ($this->title ? '<p class="caption">'.$this->title.'</p>' : '');
   }
   
-  /*protected function getYouTubeData($id) {
+  /*
+      '<a class="videoLink" href="'.$this->src.'">'.
+      '<div class="playButton"><div></div></div>'.
+      '<img src="'.$this->srcStill.'" /></a>'
+      
+  protected function getYouTubeData($id) {
     $cache = $this->getCacheForQuery('youtube');
     $cacheName = $id;
     

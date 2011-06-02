@@ -18,3 +18,10 @@
     {$smarty.block.parent}
   </div>{* pagehead *}
 {/block}
+
+{block name="tabBodies"}
+  {if count($tabBodies) <= 1}
+    <div id="pagehead" class="brief">{$pageHeader}</div>
+  {/if}
+  {$smarty.block.parent}
+{/block}
