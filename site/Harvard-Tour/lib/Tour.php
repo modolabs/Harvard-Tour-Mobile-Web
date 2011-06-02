@@ -196,8 +196,8 @@ class Tour {
         'photo'     => $this->getNodePhoto($stopNode, 'field_approach_photo'),
         'thumbnail' => $this->getNodePhoto($stopNode, 'field_approach_thumbnail'),
         'coords'    => array(
-          'lat' => $this->argVal($location, 'lat', 0),
-          'lon' => $this->argVal($location, 'lng', 0),
+          'lat' => floatval($this->argVal($location, 'lat', 0)),
+          'lon' => floatval($this->argVal($location, 'lng', 0)),
         ),
         'lenses'    => array(),
       );
@@ -425,7 +425,7 @@ class TourStop {
   }
   
   function getId() {
-    return $this->id;
+    return strval($this->id);
   }
   
   function getTitle() {
