@@ -4,13 +4,6 @@
   {$result = array()}
   {capture name="title" assign="title"}
     <div class="listthumb">
-      <div class="thumbicons">
-        {foreach $stop['lenses'] as $lens => $lensContents}
-          {if $lens != 'info'}
-            <img src="/modules/tour/images/lens-{$lens}.png" width="15" height="15" alt="" />
-          {/if}
-        {/foreach}
-      </div>
       <img src="{$stop['thumbnail']}" alt="Approach photo" width="75" height="50" border="0" class="listphoto" />
     </div>
     <div class="listpin">

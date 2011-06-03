@@ -30,7 +30,9 @@
 #main-menu-links li {
   margin-right: 2px;
 }
-
+#main-menu-links a {
+  padding: 2px 1em;
+}
 #content .tabs ul.primary {
   margin: 0px -30px;
   padding: 0px 33px;
@@ -52,7 +54,10 @@ div.horizontal-tabs {
 .horizontal-tabs ul.horizontal-tabs-list li {
   border-top: 1px solid #CCC;
 }
-
+.horizontal-tabs ul.horizontal-tabs-list li a,
+.horizontal-tabs ul.horizontal-tabs-list li.selected a {
+  padding: 0.5em 1em;
+}
 .horizontal-tabs ul.horizontal-tabs-list li.selected {
   border-bottom: 1px solid white;
   margin-bottom: -1px;
@@ -63,6 +68,143 @@ div.horizontal-tabs {
   outline: none;
   background-color: white;
 }
+
+/* ------------------ Table Styles ------------------ */
+
+table {
+  border-spacing: 1px 1px;
+  margin: 0 0 10px;
+  border: 1px solid #bebfb9;
+}
+table td,
+table th {
+  vertical-align: middle;
+  padding: 8px 10px;
+  border: 0;
+  color: #000;
+}
+table tr th {
+  text-transform: uppercase;
+  background: #e1e2dc;
+  font-weight: normal;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #bebfb9;
+  padding: 3px 10px;
+}
+table tr th {
+  color: #000;
+}
+table tr th a,
+table tr th a:hover {
+  color: #7d0303;
+  font-weight: normal;
+}
+table th a {
+  display: block;
+  position: relative;
+}
+table th.active a {
+  padding: 0 25px 0 0; /* LTR */
+}
+table th.active img {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+}
+table tbody tr th {
+  vertical-align: middle;
+}
+tr td,
+tr th {
+  padding: 8px 10px;
+}
+#footer-wrapper tr td,
+#footer-wrapper tr th {
+  border-color: #555;
+  border-color: rgba(255, 255, 255, 0.18);
+}
+tr {
+  background: none;
+}
+tr.odd,
+tr.even {
+  border-width: 0 1px 0 1px;
+  border-style: solid;
+  border-color: #bebfb9;
+  background: #f3f4ee;
+}
+tr.odd {
+  background: #fff;
+}
+tr.drag {
+  background: #fe7;
+}
+tr.drag-previous {
+  background: #ffb;
+}
+table ul.links {
+  margin: 0;
+  padding: 0;
+  font-size: 1em;
+}
+table ul.links li {
+  padding: 0 1em 0 0;
+}
+table th.active {
+  background: #bdbeb9;
+}
+table th a {
+  display: block;
+  position: relative;
+}
+
+table th.active a {
+  padding: 0 25px 0 0; /* LTR */
+}
+table th.active img {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+}
+table td.active {
+  background: #e9e9dd;
+}
+table tr.odd td.active {
+  background: #f3f4ee;
+}
+table tr.selected td.active,
+table tr.selected td {
+  background: #ffc;
+  border-color: #eeb;
+}
+table.system-status-report tr {
+  border-bottom: 1px solid #ccc;
+}
+table.system-status-report tr.ok {
+  color: #255b1e;
+  background-color: #e5ffe2;
+}
+table.system-status-report tr.info {
+  color: #040f37;
+  background-color: #bdf;
+}
+table.system-status-report tr.warning {
+  color: #840;
+  background-color: #fffce5;
+}
+table.system-status-report tr.error {
+  color: #8c2e0b;
+  background-color: #fef5f1;
+}
+/**
+ * Exception for webkit bug with the right border of the last cell
+ * in some tables, since it's webkit only, we can use :last-child
+ */
+tr td:last-child {
+  border-right: 1px solid #BEBFB9;
+}
+
 
 sub {
   vertical-align: sub;
@@ -137,7 +279,7 @@ select.form-select {
 }
 
 .field-slideshow {
-  padding-bottom: 41px !important;
+  padding-bottom: 35px !important;
 }
 .field-type-image .field-slideshow img {
   margin: 0;  
@@ -149,8 +291,44 @@ select.form-select {
   margin-bottom: 1em;
 }
 
-.field-type-file {
+.field-type-file,
+.field-type-node-reference,
+.view-mode-full .field-type-link-field, 
+.view-mode-full .field-type-geolocation-latlng, 
+.view-mode-full .field-type-text, 
+.view-mode-full .field-type-text-long {
   margin-bottom: 1em;
+}
+
+.view-mode-full .field-inline-label,
+.view-mode-full .field-inline-value,
+.view-mode-full .field-name-field-youtube {
+  margin-bottom: 0;
+}
+.view-mode-full .field-type-link-field {
+  border: 1px solid #CCC;
+  border-radius: 9px;
+  -webkit-border-radius: 9px;  
+  background-color: #FFF;
+}
+.view-mode-full .field-type-link-field .field-item {
+  border-top: 1px solid #BBB;
+  padding: 11px;
+  position: relative;
+}
+.view-mode-full .field-type-link-field .field-item:first-child {
+  border-top: 0;
+}
+.view-mode-full .field-type-link-field .field-item a {
+  color: #333;
+  display: block;
+  margin: -8px;
+  padding: 8px 36px 10px 8px;
+  border-radius: 5px;
+  -webkit-border-radius: 5px;
+  text-decoration: none;
+  background: transparent url(../images/action-external.png) no-repeat right 50%; 
+  font-size: 120%;
 }
 
 /* fonts */
@@ -160,6 +338,7 @@ body {
 }
 .field-type-text,
 .field-type-text input,
+.field-type-text-long,
 .field-type-text-long textarea,
 body#tinymce {
   font-family: Georgia, "Times New Roman", Times, serif;
@@ -208,10 +387,13 @@ code var {
   font-size: 100%;
 }
 table {
-  font-size: 100%;
+  font-size: 0.923em;
 }
 table table {
-  font-size: 100%;
+  font-size: 0.923em;
+}
+table .description {
+  font-size: 90%;
 }
 #footer-wrapper table {
   font-size: 100%;

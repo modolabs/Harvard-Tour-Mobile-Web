@@ -7,6 +7,8 @@ class TourWebModule extends WebModule {
   const CURRENT_STOP_COOKIE = 'currentStop';
   const VISITED_STOPS_COOKIE = 'visitedStops';
   const COOKIE_DURATION = 31536000;  // 1 year
+  const MAP_VIEW_OVERVIEW = 'overview';
+  const MAP_VIEW_APPROACH = 'approach';
   const NEW_TOUR_PARAM = 'new';
   
   protected function initialize() {
@@ -82,13 +84,13 @@ class TourWebModule extends WebModule {
     ));
   }
   
-  protected function initializeMap() {
+  protected function initializeMap($view) {
     $center = array(
       'lat' => 42.374464, 
       'lon' => -71.117232,
     );
-    
-    $stopOverviewMode = $this->page != 'approach' ? 'true' : 'false';
+        
+    $stopOverviewMode = $view == self::MAP_VIEW_OVERVIEW ? 'true' : 'false';
     
     // Add prefix to urls which will be set via Javascript
     $tourStops = $this->getAllStopsDetails();
@@ -118,7 +120,10 @@ class TourWebModule extends WebModule {
       'id'        => $stop->getId(),
       'title'     => $stop->getTitle(),
       'subtitle'  => $stop->getSubtitle(),
-      'url'       => $this->buildTourURL('approach', array('id' => $stop->getId())),
+      'url'       => $this->buildTourURL('map', array(
+        'view' => self::MAP_VIEW_APPROACH, 
+        'id'   => $stop->getId()
+      )),
       'photo'     => $stop->getPhotoSrc(),
       'thumbnail' => $stop->getThumbnailSrc(),
       'lat'       => $coords['lat'],
@@ -151,7 +156,7 @@ class TourWebModule extends WebModule {
     return $stopsDetails;
   }
   
-  protected function buildTourURL($page, $args=array()) {
+  protected function buildTourURL($page, $args=array(), $newTour=false) {
     if (!isset($args['id'])) {
       $args['id'] = $this->stop->getId();
     }
@@ -167,10 +172,15 @@ class TourWebModule extends WebModule {
     switch ($this->page) {
       case 'index':
         if ($this->tour->isInProgress()) {
-          $this->assign('resumeURL', $this->buildTourURL('approach', array('stop' => $this->stop->getId())));
+          $this->assign('resumeURL', $this->buildTourURL('map', array(
+            'view' => self::MAP_VIEW_APPROACH,
+          )));
         }
         
-        $this->assign('startURL', $this->buildTourURL('overview', array(self::NEW_TOUR_PARAM => 1)));
+        $this->assign('startURL', $this->buildTourURL('map', array(
+          'view' => self::MAP_VIEW_OVERVIEW,
+          self::NEW_TOUR_PARAM  => 1,
+        )));
         break;
       
       case 'tourhelp':
@@ -189,7 +199,9 @@ class TourWebModule extends WebModule {
             'id' => $prevStop->getId(),
           ));
         } else {
-          $prevURL = $this->buildTourURL('overview');
+          $prevURL = $this->buildTourURL('map', array(
+            'view' => self::MAP_VIEW_OVERVIEW_PARAM,
+          ));
         }
         $nextURL = false;
         
@@ -197,54 +209,69 @@ class TourWebModule extends WebModule {
         $this->assign('nextURL', $nextURL);
         break;
       
-      case 'overview':
-        $view = $this->getArg('view', 'map');
-        $showMapLink = false;
-        
-        $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
-        if ($view == 'map') {
-          $this->initializeMap();
-          $this->addOnLoad('setupSubtitleEllipsis();');
-        } else {
-          $this->assign('stops', $this->getAllStopsDetails());
-          $this->addOnLoad('setupStopList();');
-        }
+      case 'list':
+        $newTour = $this->getArg(self::NEW_TOUR_PARAM, false);
         
         $args = $this->args;
-        $args['view'] = 'map';
-        $mapViewURL = $this->buildTourURL($this->page, $args);
-        $args['view'] = 'list';
-        $listViewURL = $this->buildTourURL($this->page, $args);
+        $args['view'] = self::MAP_VIEW_OVERVIEW;
+        if ($newTour) {
+          $args[self::NEW_TOUR_PARAM] = 1;
+        }
+        $mapViewURL = $this->buildTourURL('map', $args);
+
+        $showMapLink = false;
         
-        $stopInfo['url'] = $this->buildTourURL('approach');
-        
+        $this->addOnLoad('setupStopList();');
+
+        $this->assign('stops',       $this->getAllStopsDetails());
         $this->assign('mapViewURL',  $mapViewURL);
-        $this->assign('listViewURL', $listViewURL);
-        $this->assign('view',        $view);
-        $this->assign('newTour',     $this->getArg(self::NEW_TOUR_PARAM, false));
+        $this->assign('newTour',     $newTour);
         $this->assign('doneURL',     $this->getArg('doneURL', $this->buildTourURL('index')));
         $this->assign('currentIcon', $this->currentIcon());
         $this->assign('visitedIcon', $this->visitedIcon());
         break;
+      
+      case 'map':
+        $view = $this->getArg('view', self::MAP_VIEW_OVERVIEW);
         
-      case 'approach':
-        $this->initializeMap();
+        $this->initializeMap($view);
+        
         $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
         $this->addOnLoad('setupSubtitleEllipsis();');
-      
-        $prevURL = false;
-        $prevStop = $this->tour->getPreviousStop();
-        if ($prevStop) {
-          $prevURL = $this->buildTourURL('detail', array(
-            'id' => $prevStop->getId(),
+
+        if ($view == self::MAP_VIEW_OVERVIEW) {
+          $stopInfo['url'] = $this->buildTourURL('map', array(
+            'view' => self::MAP_VIEW_APPROACH
           ));
+
+          $showMapLink = false;
+          
+          $this->assign('listViewURL', $this->buildTourURL('list', $this->args));
+          $this->assign('newTour',     $this->getArg(self::NEW_TOUR_PARAM, false));
+          $this->assign('doneURL',     $this->getArg('doneURL', $this->buildTourURL('index')));
+          
         } else {
-          $prevURL = $this->buildTourURL('overview', array(self::NEW_TOUR_PARAM => 1));
+          // Approach
+          $prevURL = false;
+          $prevStop = $this->tour->getPreviousStop();
+          if ($prevStop) {
+            $prevURL = $this->buildTourURL('detail', array(
+              'id' => $prevStop->getId(),
+            ));
+          } else {
+            $prevURL = $this->buildTourURL('map', array(
+              'view' => self::MAP_VIEW_OVERVIEW,
+              self::NEW_TOUR_PARAM  => 1,
+            ));
+          }
+          $nextURL = $this->buildTourURL('detail');
+          
+          $this->assign('prevURL', $prevURL);
+          $this->assign('nextURL', $nextURL);          
         }
-        $nextURL = $this->buildTourURL('detail');
-        
-        $this->assign('prevURL', $prevURL);
-        $this->assign('nextURL', $nextURL);
+
+        $this->assign('view', $view);
+        $this->assign('tappable', $view == self::MAP_VIEW_OVERVIEW);
         break;
         
       case 'detail':
@@ -252,11 +279,14 @@ class TourWebModule extends WebModule {
         $tabKeys = array_keys($stopInfo['lenses']);
         $tabJavascripts = array();
         
-        $prevURL = $this->buildTourURL('approach');
+        $prevURL = $this->buildTourURL('map', array(
+          'view' => self::MAP_VIEW_APPROACH
+        ));
         $nextURL = false;
         $nextStop = $this->tour->getNextStop();
         if ($nextStop) {
-          $nextURL = $this->buildTourURL('approach', array(
+          $nextURL = $this->buildTourURL('map', array(
+            'view'   => self::MAP_VIEW_APPROACH,
             'id'     => $nextStop->getId(),
             'fromId' => $this->stop->getId(),
           ));
@@ -275,7 +305,8 @@ class TourWebModule extends WebModule {
     $this->assign('stop', $stopInfo);
     
     if ($showMapLink) {
-      $this->assign('mapLink', $this->buildTourURL('overview', array(
+      $this->assign('mapLink', $this->buildTourURL('map', array(
+        'view'    => self::MAP_VIEW_OVERVIEW,
         'doneURL' => $this->buildTourURL($this->page, $this->args),
       )));
     }
