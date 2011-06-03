@@ -1,0 +1,382 @@
+#main-wrapper {
+  min-height: 500px;
+}
+
+#name-and-slogan {
+  padding-top: 34px;
+  margin: 0 0 20px 8px;
+}
+#logo,
+#header .region-header {
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+#header div.section,
+#featured div.section,
+#messages div.section,
+#main,
+#triptych,
+#footer-columns,
+#footer {
+  width: auto;
+  margin-left: 15px;
+  margin-right: 15px;
+}
+
+#main-menu-links {
+  padding: 0px 0px 0px 82px;
+}
+#main-menu-links li {
+  margin-right: 2px;
+}
+
+#content .tabs ul.primary {
+  margin: 0px -30px;
+  padding: 0px 33px;
+}
+
+/* horizontal tabs */
+div.horizontal-tabs {
+  border-top-width: 0;
+  background: none;
+}
+
+.horizontal-tabs ul.horizontal-tabs-list {
+  border-bottom: 1px solid #CCC;
+  border-right: 1px solid white;
+  margin-right: -1px;
+  background: none;
+}
+
+.horizontal-tabs ul.horizontal-tabs-list li {
+  border-top: 1px solid #CCC;
+}
+
+.horizontal-tabs ul.horizontal-tabs-list li.selected {
+  border-bottom: 1px solid white;
+  margin-bottom: -1px;
+}
+.horizontal-tabs ul.horizontal-tabs-list li.selected a:hover,
+.horizontal-tabs ul.horizontal-tabs-list li.selected:hover,
+.horizontal-tabs ul.horizontal-tabs-list li.selected:focus {
+  outline: none;
+  background-color: white;
+}
+
+sub {
+  vertical-align: sub;
+  font-size: smaller;
+  line-height: normal;
+}
+sup {
+  vertical-align: super;
+  font-size: smaller;
+  line-height: normal;
+}
+
+html.js input.form-autocomplete {
+  background-position: 100% 6px; /* LTR */
+}
+html.js input.throbbing {
+  background-position: 100% -14px; /* LTR */
+}
+
+form .field-multiple-table th.field-label {
+  padding-left: 9px;
+}
+body#tinymce {
+  padding: 0 10px;
+}
+body#tinymce > *:first-child {
+  padding-top: 5px;
+}
+.wysiwyg-toggle-wrapper {
+  padding-left: 10px;
+  border-left: 1px solid #CCC;
+  border-right: 1px solid #CCC;
+}
+.field-widget-text-textarea .filter-wrapper .fieldset-wrapper {
+  margin-top: 0px;
+}
+
+.form-item label {
+  margin-top: 1.5em;
+}
+
+#overlay {
+  width: 90%;
+}
+#overlay-tabs li {
+  margin-left: -1px;
+}
+#overlay-content,
+.overlay #page {
+  padding: 0;
+  overflow: hidden;
+}
+
+.field-inline-label, 
+.field-inline-value {
+  display: inline-block;
+}
+.field-inline-label {
+  font-weight: bold;
+  padding-right: 0.5em;
+}
+.field-inline-label .field-item:after {
+  content:": ";
+}
+
+input.form-autocomplete,
+input.form-text,
+input.form-file,
+textarea.form-textarea,
+select.form-select {
+  padding: 4px;
+}
+
+.field-slideshow {
+  padding-bottom: 41px !important;
+}
+.field-type-image .field-slideshow img {
+  margin: 0;  
+}
+
+.field-name-field-caption,
+.field-slideshow-caption {
+  font-size: 90%;
+  margin-bottom: 1em;
+}
+
+.field-type-file {
+  margin-bottom: 1em;
+}
+
+/* fonts */
+
+body {
+  font: normal 87.5%/1.538em "Lucida Grande", "Lucida Sans Unicode", sans-serif;
+}
+.field-type-text,
+.field-type-text input,
+.field-type-text-long textarea,
+body#tinymce {
+  font-family: Georgia, "Times New Roman", Times, serif;
+}
+.field-label {
+  font-family: "Lucida Grande", "Lucida Sans Unicode", sans-serif;
+}
+
+h1 {
+  font-size: 1.538em;
+}
+h2 {
+  font-size: 1.385em;
+}
+h3 {
+  font-size: 1.231em;
+}
+h4 {
+  font-size: 1.154em;
+}
+h5,
+h6 {
+  font-size: 1.077em;
+}
+big {
+  font-size: larger;
+}
+small {
+  font-size: smaller;
+}
+code,
+pre,
+kbd,
+samp,
+var {
+  font-size: 1.231em;
+  font-family: Menlo, Consolas, "Andale Mono", "Lucida Console", "Nimbus Mono L", "DejaVu Sans Mono", monospace, "Courier New";
+}
+pre code,
+pre kbd,
+pre samp,
+pre var,
+kbd kbd,
+kbd samp,
+code var {
+  font-size: 100%;
+}
+table {
+  font-size: 100%;
+}
+table table {
+  font-size: 100%;
+}
+#footer-wrapper table {
+  font-size: 100%;
+}
+table ul.links {
+  font-size: 100%;
+}
+.contextual-links-wrapper {
+  font-size: smaller !important;
+}
+ul.contextual-links {
+  font-size: 100%;
+}
+.item-list .pager {
+  font-size: 100%;
+}
+#skip-link a,
+#skip-link a:link,
+#skip-link a:visited {
+  font-size: 100%;
+}
+#site-name {
+  font-size: 1.821em;
+}
+#site-slogan {
+  font-size: 100%;
+}
+.region-header .block {
+  font-size: 100%;
+}
+.region-header .block {
+  font-size: 100%;
+}
+.region-header #block-user-login div.item-list,
+.region-header #block-user-login div.description {
+  font-size: 100%;
+}
+#main-menu-links {
+  font-size: 100%;
+}
+#secondary-menu-links {
+  font-size: 100%;
+}
+#featured {
+  font-size: 1.643em;
+}
+#featured h2 {
+  font-size: 100%;
+}
+#highlighted {
+  font-size: 120%;
+}
+h1#page-title {
+  font-size: 2em;
+}
+#content h2 {
+  font-size: 1.429em;
+}
+.node .content {
+  font-size: 100%;
+}
+.node-teaser .content {
+  font-size: 100%;
+}
+#content h2 {
+  font-size: 1.429em;
+}
+.node .content {
+  font-size: 100%;
+}
+.node-teaser .content {
+  font-size: 100%;
+}
+.meta {
+  font-size: 100%;
+}
+.field-type-taxonomy-term-reference .field-label,
+.field-type-taxonomy-term-reference ul.links {
+  font-size: 100%;
+}
+.node-teaser .field-type-taxonomy-term-reference .field-label,
+.node-teaser .field-type-taxonomy-term-reference ul.links {
+  font-size: 100%;
+}
+ul.links {
+  font-size: 100%;
+}
+.comment .submitted p {
+  font-size: 100%;
+}
+.comment .submitted .comment-time {
+  font-size: 100%;
+}
+.comment .submitted .comment-permalink {
+  font-size: 100%;
+}
+.comment .content {
+  font-size: 100%;
+}
+.sidebar h2 {
+  font-size: 100%;
+}
+.sidebar .block .content {
+  font-size: 100%;
+}
+#triptych h2 {
+  font-size: 1.714em;
+}
+#footer-wrapper {
+  font-size: 100%;
+}
+#footer-columns h2 {
+  font-size: 100%;
+}
+.tabs ul.primary li a {
+  font-size: 100%;
+}
+.breadcrumb {
+  font-size: 100%;
+}
+.password-strength-text,
+.password-strength-title,
+div.password-confirm {
+  font-size: 100%;
+}
+input.form-submit,
+a.button {
+  font-size: 100%;
+}
+.filter-help a {
+  font-size: 100%;
+}
+select,
+input,
+textarea {
+  font-size: 100%;
+}
+.form-item label {
+  font-size: 100%;
+}
+.comment-form label {
+  font-size: 100%;
+}
+.comment-form .form-item .description {
+  font-size: 80%;
+}
+.comment-form fieldset.filter-wrapper .tips {
+  font-size: 80%;
+}
+#forum .name {
+  font-size: 100%;
+}
+#forum .description {
+  font-size: 100%;
+}
+#search-form input#edit-keys,
+#block-search-form .form-item-search-block-form input {
+  font-size: 100%;
+}
+.page-admin-structure-block-demo #featured .block-region {
+  font-size: 70%;
+}
+.poll .percent {
+  font-size: 100%;
+}
+.poll .total {
+  font-size: 100%;
+}
