@@ -1,0 +1,36 @@
+
+div.field-type-navlist-field {
+  border: 1px solid #CCC;
+  border-radius: 9px;
+  -webkit-border-radius: 9px;
+  background-color: #FFFEFD;
+  margin: 1em 0;
+  width: 300px; /* iPhone width */
+}
+div.field-type-navlist-field div.field-item {
+  border-top: 1px solid #BBB;
+  padding: 11px;
+  position: relative;
+}
+div.field-type-navlist-field div.field-item:first-child {
+  border-top: 0;
+}
+div.field-type-navlist-field div.field-item a {
+  color: #333;
+  display: block;
+  margin: -8px;
+  padding: 8px 36px 10px 8px;
+  border-radius: 5px;
+  -webkit-border-radius: 5px;
+  text-decoration: none;
+  background: transparent url(images/action-external.png) no-repeat right 50%; 
+  font: 17px/1.33em 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  line-height: 1.2em;
+}
+div.field-type-navlist-field div.field-item div.navlist-subtitle {
+  font-size: 82.353%;
+  font-weight: normal;
+  line-height: 1.214em;
+  padding-top: 2px;
+  color: #554C41;
+}

@@ -1,0 +1,8 @@
+name = Navigation List Field
+description = Defines a nav list item field type with a title and subtitle for use by Kurogo feeds.
+core = 7.x
+package = Kurogo
+
+version = "7.x-1.0"
+core = "7.x"
+project = "navlist"

@@ -1,0 +1,553 @@
+<?php
+
+/**
+ * @file
+ * Defines simple navlist field types.
+ */
+
+define('NAVLIST_EXTERNAL', 'external');
+define('NAVLIST_INTERNAL', 'internal');
+define('NAVLIST_FRONT', 'front');
+define('NAVLIST_EMAIL', 'email');
+define('NAVLIST_NEWS', 'news');
+define('NAVLIST_DOMAINS', 'aero|arpa|asia|biz|com|cat|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|mobi|local');
+
+define('NAVLIST_TARGET_DEFAULT', 'default');
+define('NAVLIST_TARGET_NEW_WINDOW', '_blank');
+define('NAVLIST_TARGET_TOP', '_top');
+define('NAVLIST_TARGET_USER', 'user');
+
+/**
+ * Maximum URLs length.
+ */
+define('NAVLIST_URL_MAX_LENGTH', 2048);
+
+/**
+ * Implements hook_field_info().
+ */
+function navlist_field_info() {
+  return array(
+    'navlist_field' => array(
+      'label' => t('Nav List Item'),
+      'description' => t('A nav list item with a title, subtitle, and href, and attributes.'),
+      'settings' => array(
+        'attributes' => _navlist_default_attributes(),
+      ),
+      'instance_settings' => array(
+        'attributes' => _navlist_default_attributes(),
+      ),
+      'default_widget' => 'navlist_field',
+      'default_formatter' => 'default',
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_instance_settings_form().
+ */
+function navlist_field_instance_settings_form($field, $instance) {
+  $form = array();
+  
+  $target_options = array(
+    NAVLIST_TARGET_DEFAULT => t('Default (no target attribute)'),
+    NAVLIST_TARGET_TOP => t('Open link in window root'),
+    NAVLIST_TARGET_NEW_WINDOW => t('Open link in new window'),
+    NAVLIST_TARGET_USER => t('Allow the user to choose'),
+  );
+  $form['attributes'] = array(
+    '#tree' => TRUE,
+  );
+  $form['attributes']['target'] = array(
+    '#type' => 'radios',
+    '#title' => t('Link Target'),
+    '#default_value' => empty($instance['settings']['attributes']['target']) ? NAVLIST_TARGET_DEFAULT : $instance['settings']['attributes']['target'],
+    '#options' => $target_options,
+  );
+  $form['attributes']['class'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Additional CSS Class'),
+    '#description' => t('When output, this link will have have this class attribute. Multiple classes should be separated by spaces.'),
+    '#default_value' => empty($instance['settings']['attributes']['class']) ? '' : $instance['settings']['attributes']['class'],
+  );
+  return $form;
+}
+
+/**
+ * Implement hook_field_is_empty().
+ */
+function navlist_field_is_empty($item, $field) {
+  return empty($item['title']) && empty($item['subtitle']) && empty($item['url']);
+}
+
+/**
+ * Implements hook_field_load().
+ */
+function navlist_field_load($entity_type, $entities, $field, $instances, $langcode, &$items, $age) {
+  foreach ($entities as $id => $entity) {
+    foreach ($items[$id] as $delta => $item) {
+      $items[$id][$delta]['attributes'] = _navlist_load($field, $item, $instances[$id]);
+    }
+  }
+}
+
+/**
+ * Implements hook_field_validate().
+ */
+function navlist_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
+  $optional_field_found = FALSE;
+  foreach ($items as $delta => $value) {
+    _navlist_validate($items[$delta], $delta, $field, $entity, $instance, $optional_field_found);
+  }
+}
+
+/**
+ * Implements hook_field_presave().
+ */
+function navlist_field_presave($entity_type, $entity, $field, $instance, $langcode, &$items) {
+  foreach ($items as $delta => $value) {
+    _navlist_process($items[$delta], $delta, $field, $entity);
+  }
+}
+
+/**
+ * Implements hook_field_prepare_view().
+ */
+function navlist_field_prepare_view($entity_type, $entities, $field, $instances, $langcode, &$items) {
+  foreach ($items as $entity_id => $entity_items) {
+    foreach ($entity_items as $delta => $value) {
+      _navlist_sanitize($items[$entity_id][$delta], $delta, $field, $instances[$entity_id], $entities[$entity_id]);
+    }
+  }
+}
+
+/**
+ * Implements hook_field_widget_info().
+ */
+function navlist_field_widget_info() {
+  return array(
+    'navlist_field' => array(
+      'label' => 'Nav List Item',
+      'field types' => array('navlist_field'),
+      'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_widget_form().
+ */
+function navlist_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  $element += array(
+    '#type' => $instance['widget']['type'],
+    '#default_value' => isset($items[$delta]) ? $items[$delta] : '',
+  );
+  return $element;
+}
+
+/**
+ * Unpacks the item attributes for use.
+ */
+function _navlist_load($field, $item, $instance) {
+  if (isset($item['attributes'])) {
+    return unserialize($item['attributes']);
+  }
+  else if (isset($instance['settings']['attributes'])) {
+    return $instance['settings']['attributes'];
+  }
+  else {
+    return $field['settings']['attributes'];
+  }
+}
+
+/**
+ * Prepares the item attributes and url for storage.
+ */
+function _navlist_process(&$item, $delta = 0, $field, $entity) {
+  // Trim whitespace from URL.
+  $item['url'] = trim($item['url']);
+
+  // if no attributes are set then make sure $item['attributes'] is an empty array - this lets $field['attributes'] override it.
+  if (empty($item['attributes'])) {
+    $item['attributes'] = array();
+  }
+
+  // Serialize the attributes array.
+  $item['attributes'] = serialize($item['attributes']);
+
+  // Don't save an invalid default value (e.g. 'http://').
+  if ((isset($field['widget']['default_value'][$delta]['url']) && $item['url'] == $field['widget']['default_value'][$delta]['url'])
+      && is_object($node)) {
+    if (!navlist_validate_url($item['url'])) {
+      unset($item['url']);
+    }
+  }
+}
+
+/**
+ * Validates that the navlist field has been entered properly.
+ */
+function _navlist_validate(&$item, $delta, $field, $node, $instance, &$optional_field_found) {
+  // Validate the link.
+  if (strlen(trim($item['url'])) && navlist_validate_url(trim($item['url'])) == FALSE) {
+    form_set_error($field['field_name'] .']['. $delta .'][url', t('Not a valid URL.'));
+  }
+}
+
+/**
+ * Cleanup user-entered values for a navlist field according to field settings.
+ *
+ * @param $item
+ *   A single navlist item, usually containing url, title, subtitle, and attributes.
+ * @param $delta
+ *   The delta value if this field is one of multiple fields.
+ * @param $field
+ *   The CCK field definition.
+ * @param $node
+ *   The node containing this link.
+ */
+function _navlist_sanitize(&$item, $delta, &$field, $instance, &$node) {
+  // Don't try to process empty links.
+  if (empty($item['url']) && empty($item['title'])) {
+    return;
+  }
+
+  $type = navlist_validate_url($item['url']);
+  $url = navlist_cleanup_url($item['url']);
+
+  // Separate out the anchor if any.
+  if (strpos($url, '#') !== FALSE) {
+    $item['fragment'] = substr($url, strpos($url, '#') + 1);
+    $url = substr($url, 0, strpos($url, '#'));
+  }
+  // Separate out the query string if any.
+  if (strpos($url, '?') !== FALSE) {
+    $query = substr($url, strpos($url, '?') + 1);
+    parse_str($query, $query_array);
+    $item['query'] = $query_array;
+    $url = substr($url, 0, strpos($url, '?'));
+  }
+  
+  if (!isset($item['attributes'])) {
+    $item['attributes'] = array();
+  }
+
+  // Unserialize attributtes array if it has not been unserialized yet.
+  if (!is_array($item['attributes'])) {
+    $item['attributes'] = (array)unserialize($item['attributes']);
+  }
+
+  // Add default attributes.
+  if (!is_array($instance['settings']['attributes'])){
+    $instance['settings']['attributes'] = _navlist_default_attributes();
+  }
+  else {
+    $instance['settings']['attributes'] += _navlist_default_attributes();
+  }
+
+  // Merge item attributes with attributes defined at the field level.
+  $item['attributes'] += $instance['settings']['attributes'];
+
+  // If user is not allowed to choose target attribute, use default defined at
+  // field level.
+  if ($instance['settings']['attributes']['target'] != NAVLIST_TARGET_USER) {
+    $item['attributes']['target'] = $instance['settings']['attributes']['target'];
+  }
+
+  // Remove the target attribute if the default (no target) is selected.
+  if (empty($item['attributes']) || $item['attributes']['target'] == NAVLIST_TARGET_DEFAULT) {
+    unset($item['attributes']['target']);
+  }
+
+  // Remove empty attributes.
+  $item['attributes'] = array_filter($item['attributes']);
+}
+
+/**
+ * Implements hook_theme().
+ */
+function navlist_theme() {
+  return array(
+    'navlist_formatter_default' => array(
+      'variables' => array('element' => NULL),
+    ),
+    'navlist_formatter_plain' => array(
+      'variables' => array('element' => NULL),
+    ),
+    'navlist_formatter_url' => array(
+      'variables' => array('element' => NULL),
+    ),
+    'navlist_formatter_short' => array(
+      'variables' => array('element' => NULL),
+    ),
+    'navlist_formatter_label' => array(
+      'variables' => array('element' => NULL),
+    ),
+    'navlist_formatter_separate' => array(
+      'variables' => array('element' => NULL),
+    ),
+    'navlist_field' => array(
+      'render element' => 'element',
+    ),
+  );
+}
+
+/**
+ * FAPI theme for an individual text elements.
+ */
+function theme_navlist_field($vars) {
+  $element = $vars['element'];
+  // Prefix single value link fields with the name of the field.
+  if (empty($element['#field']['multiple'])) {
+    if (isset($element['url']) && !isset($element['title'])) {
+      unset($element['url']['#title']);
+    }
+  }
+
+  $output = '';
+  $output .= '<div class="navlist-field-subrow clearfix">';
+  $output .= '<div class="navlist-field-title navlist-field-column">'. drupal_render($element['title']) .'</div>';
+  $output .= '<div class="navlist-field-url'. (isset($element['title']) ? ' navlist-field-column' : '') .'">'. drupal_render($element['url']) .'</div>';
+  if (isset($element['subtitle'])) {
+    $output .= '<div class="navlist-field-subtitle navlist-field-column">'. drupal_render($element['subtitle']) .'</div>';
+  }
+  $output .= '</div>';
+  if (!empty($element['attributes']['target'])) {
+    $output .= '<div class="navlist-attributes">'. drupal_render($element['attributes']['target']) .'</div>';
+  }
+  return $output;
+}
+
+/**
+ * Implements hook_element_info().
+ */
+function navlist_element_info() {
+  $elements = array();
+  $elements['navlist_field'] =  array(
+    '#input' => TRUE,
+    '#process' => array('navlist_field_process'),
+    '#theme' => 'navlist_field',
+    '#theme_wrappers' => array('form_element'),
+  );
+  return $elements;
+}
+
+function _navlist_default_attributes() {
+  return array(
+    'target' => NAVLIST_TARGET_DEFAULT,
+    'class' => '',
+  );
+}
+
+/**
+ * Process the navlist type element before displaying the field.
+ *
+ * Build the form element. When creating a form using FAPI #process,
+ * note that $element['#value'] is already set.
+ *
+ * The $fields array is in $complete_form['#field_info'][$element['#field_name']].
+ */
+function navlist_field_process($element, $form_state, $complete_form) {
+  $settings = &$form_state['field'][$element['#field_name']][$element['#language']]['instance']['settings'];
+  $element['url'] = array(
+    '#type' => 'textfield',
+    '#maxlength' => NAVLIST_URL_MAX_LENGTH,
+    '#title' => t('URL'),
+    '#required' => FALSE,
+    '#default_value' => isset($element['#value']['url']) ? $element['#value']['url'] : NULL,
+  );
+  $element['title'] = array(
+    '#type' => 'textfield',
+    '#maxlength' => '255',
+    '#title' => t('Title'),
+    '#required' => FALSE,
+    '#default_value' => isset($element['#value']['title']) ? $element['#value']['title'] : NULL,
+  );
+  $element['subtitle'] = array(
+    '#type' => 'textfield',
+    '#maxlength' => '255',
+    '#title' => t('Subtitle'),
+    '#required' => FALSE,
+    '#default_value' => isset($element['#value']['subtitle']) ? $element['#value']['subtitle'] : NULL,
+  );
+
+  // Initialize field attributes as an array if it is not an array yet.
+  if (!is_array($settings['attributes'])) {
+    $settings['attributes'] = array();
+  }
+  // Add default atrributes.
+  $settings['attributes'] += _navlist_default_attributes();
+  $attributes = isset($element['#value']['attributes']) ? $element['#value']['attributes'] : $settings['attributes'];
+  if (!empty($settings['attributes']['target']) && $settings['attributes']['target'] == NAVLIST_TARGET_USER) {
+    $element['attributes']['target'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Open URL in a New Window'),
+      '#return_value' => NAVLIST_TARGET_NEW_WINDOW,
+      '#default_value' => isset($attributes['target']) ? $attributes['target'] : FALSE,
+    );
+  }
+  return $element;
+}
+
+/**
+ * Implementation of hook_field_formatter_info().
+ */
+function navlist_field_formatter_info() {
+  return array(
+    'default' => array(
+      'label' => t('Nav list item (default)'),
+      'field types' => array('navlist_field'),
+      'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function navlist_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  drupal_add_css(drupal_get_path('module', 'navlist') .'/navlist.css');
+
+  $elements = array();
+  foreach ($items as $delta => $item) {
+    $title = check_plain($item['title']);
+    if (!empty($item['subtitle'])) {
+      $title .= '<div class="navlist-subtitle">'.check_plain($item['subtitle']).'</div>';
+    }
+    
+    $elements[$delta] = array(
+      '#markup' => l($title, $item['url'], array('attributes' => $item['attributes'], 'html' => true)),
+    );
+  }
+  return $elements;
+}
+
+/**
+ * Forms a valid URL if possible from an entered address.
+ * Trims whitespace and automatically adds an http:// to addresses without a protocol specified
+ *
+ * @param string $url
+ * @param string $protocol The protocol to be prepended to the url if one is not specified
+ */
+function navlist_cleanup_url($url, $protocol = "http") {
+  $url = trim($url);
+  $type = navlist_validate_url($url);
+
+  if ($type === NAVLIST_EXTERNAL) {
+    // Check if there is no protocol specified.
+    $protocol_match = preg_match("/^([a-z0-9][a-z0-9\.\-_]*:\/\/)/i", $url);
+    if (empty($protocol_match)) {
+      // But should there be? Add an automatic http:// if it starts with a domain name.
+      $domain_match = preg_match('/^(([a-z0-9]([a-z0-9\-_]*\.)+)('. NAVLIST_DOMAINS .'|[a-z]{2}))/i', $url);
+      if (!empty($domain_match)) {
+        $url = $protocol ."://". $url;
+      }
+    }
+  }
+
+  return $url;
+}
+
+/**
+ * A lenient verification for URLs. Accepts all URLs following RFC 1738 standard
+ * for URL formation and all email addresses following the RFC 2368 standard for
+ * mailto address formation.
+ *
+ * @param string $text
+ * @return mixed Returns boolean FALSE if the URL is not valid. On success, returns an object with
+ * the following attributes: protocol, hostname, ip, and port.
+ */
+function navlist_validate_url($text) {
+  $NAVLIST_ICHARS_DOMAIN = (string) html_entity_decode(implode("", array(
+    "&#x00E6;", // æ
+    "&#x00C6;", // Æ
+    "&#x00F8;", // ø
+    "&#x00D8;", // Ø
+    "&#x00E5;", // å
+    "&#x00C5;", // Å
+    "&#x00E4;", // ä
+    "&#x00C4;", // Ä
+    "&#x00F6;", // ö
+    "&#x00D6;", // Ö
+    "&#x00FC;", // ü
+    "&#x00DC;", // Ü
+    "&#x00D1;", // Ñ
+    "&#x00F1;", // ñ
+  )), ENT_QUOTES, 'UTF-8');
+
+  $NAVLIST_ICHARS = $NAVLIST_ICHARS_DOMAIN . (string) html_entity_decode(implode("", array(
+    "&#x00DF;", // ß
+  )), ENT_QUOTES, 'UTF-8');
+  $allowed_protocols = variable_get('filter_allowed_protocols', array('http', 'https', 'ftp', 'news', 'nntp', 'telnet', 'mailto', 'irc', 'ssh', 'sftp', 'webcal'));
+
+  $protocol = '(('. implode("|", $allowed_protocols) .'):\/\/)';
+  $authentication = '(([a-z0-9%' . $NAVLIST_ICHARS . ']+(:[a-z0-9%'. $NAVLIST_ICHARS . '!]*)?)?@)';
+  $domain = '(([a-z0-9' . $NAVLIST_ICHARS_DOMAIN . ']([a-z0-9'. $NAVLIST_ICHARS_DOMAIN . '\-_\[\]])*)(\.(([a-z0-9' . $NAVLIST_ICHARS_DOMAIN . '\-_\[\]])+\.)*('. NAVLIST_DOMAINS .'|[a-z]{2}))?)';
+  $ipv4 = '([0-9]{1,3}(\.[0-9]{1,3}){3})';
+  $ipv6 = '([0-9a-fA-F]{1,4}(\:[0-9a-fA-F]{1,4}){7})';
+  $port = '(:([0-9]{1,5}))';
+
+  // Pattern specific to external links.
+  $external_pattern = '/^'. $protocol .'?'. $authentication .'?('. $domain .'|'. $ipv4 .'|'. $ipv6 .' |localhost)'. $port .'?';
+
+  // Pattern specific to internal links.
+  $internal_pattern = "/^([a-z0-9". $NAVLIST_ICHARS ."_\-+\[\]]+)";
+  $internal_pattern_file = "/^([a-z0-9". $NAVLIST_ICHARS ."_\-+\[\]\.]+)$/i";
+
+  $directories = "(\/[a-z0-9". $NAVLIST_ICHARS ."_\-\.~+%=&,$'!():;*@\[\]]*)*";
+  // Yes, four backslashes == a single backslash.
+  $query = "(\/?\?([?a-z0-9". $NAVLIST_ICHARS ."+_|\-\.\/\\\\%=&,$'():;*@\[\]{} ]*))";
+  $anchor = "(#[a-z0-9". $NAVLIST_ICHARS ."_\-\.~+%=&,$'():;*@\[\]\/\?]*)";
+
+  // The rest of the path for a standard URL.
+  $end = $directories .'?'. $query .'?'. $anchor .'?'.'$/i';
+
+  $message_id = '[^@].*@'. $domain;
+  $newsgroup_name = '([0-9a-z+-]*\.)*[0-9a-z+-]*';
+  $news_pattern = '/^news:('. $newsgroup_name .'|'. $message_id .')$/i';
+
+  $user = '[a-zA-Z0-9'. $NAVLIST_ICHARS .'_\-\.\+\^!#\$%&*+\/\=\?\`\|\{\}~\'\[\]]+';
+  $email_pattern = '/^mailto:'. $user .'@'.'('. $domain .'|'. $ipv4 .'|'. $ipv6 .'|localhost)'. $query .'?$/';
+
+  if (strpos($text, '<front>') === 0) {
+    return NAVLIST_FRONT;
+  }
+  if (in_array('mailto', $allowed_protocols) && preg_match($email_pattern, $text)) {
+    return NAVLIST_EMAIL;
+  }
+  if (in_array('news', $allowed_protocols) && preg_match($news_pattern, $text)) {
+    return NAVLIST_NEWS;
+  }
+  if (preg_match($internal_pattern . $end, $text)) {
+    return NAVLIST_INTERNAL;
+  }
+  if (preg_match($external_pattern . $end, $text)) {
+    return NAVLIST_EXTERNAL;
+  }
+  if (preg_match($internal_pattern_file, $text)) {
+    return NAVLIST_INTERNAL;
+  }
+
+  return FALSE;
+}
+
+/**
+ * Implements hook_migrate_field_alter().
+ */
+function navlist_content_migrate_field_alter(&$field_value, $instance_value) {
+  if ($field_value['type'] == 'navlist') {
+    // need to change the type:
+    $field_value['type'] = 'navlist_field';
+  }
+}
+
+/**
+ * Implements hook_migrate_instance_alter().
+ *
+ * Widget type also changed to navlist_field.
+ */
+function navlist_content_migrate_instance_alter(&$instance_value, $field_value) {
+  if ($instance_value['widget']['module'] == 'navlist'
+      && $instance_value['widget']['type'] == 'navlist') {
+    $instance_value['widget']['type'] = 'navlist_field';
+  }
+}
