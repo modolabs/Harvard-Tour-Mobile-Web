@@ -1,0 +1,52 @@
+<?php
+
+/**
+ * Implements hook_install().
+ */
+function preserve_files_install() {
+  // when we are installed we need to find all permanent files and link to them
+  $files = _preserve_files_get_files();
+  foreach ($files as $file) {
+    $is_preserved = false;
+    $is_used_by_file_module = false;
+    
+    foreach (file_usage_list($file) as $module => $usage) {
+      if ($module == 'file') {
+        $is_used_by_file_module = true;
+      
+      } else if ($module == 'preserve_files') {
+        $is_preserved = true;
+      }
+    }
+    
+    if (!$is_preserved && $is_used_by_file_module) {
+      file_usage_add($file, 'preserve_files', 'files', $file->fid);
+    }
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function preserve_files_uninstall() {
+  // when we are installed we need to find all permanent files and link to them
+  $files = _preserve_files_get_files();
+  foreach ($files as $file) {
+    foreach (file_usage_list($file) as $module => $usage) {
+      if ($module == 'preserve_files') {
+        // remove reference to clean up database but don't delete files
+        file_usage_delete($file, 'preserve_files', 'files', $file->fid);
+        break;
+      }
+    }
+  }
+}
+
+function _preserve_files_get_files() {
+  $query = new EntityFieldQuery();
+  $result = $query->entityCondition('entity_type', 'file')
+                  ->propertyCondition('status', FILE_STATUS_PERMANENT)
+                  ->propertyCondition('uri', 'public://%', 'LIKE')
+                  ->execute();
+  return $result['file'];
+}

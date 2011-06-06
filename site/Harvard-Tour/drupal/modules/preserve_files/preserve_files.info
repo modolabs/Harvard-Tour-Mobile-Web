@@ -1,0 +1,7 @@
+name = Preserve Files
+description = Hack to prevent files from being removed when modules stop referencing them.
+package = Kurogo
+core = 7.x
+version = "7.x-1.x-dev"
+project = "preserve_files"
+dependencies[] = file

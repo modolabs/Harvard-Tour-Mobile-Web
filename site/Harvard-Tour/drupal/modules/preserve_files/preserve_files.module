@@ -1,0 +1,34 @@
+<?php 
+
+/*
+ * This is a hack to prevent Drupal from deleting files.
+ * The reason we want this is because Kurogo caches the node 
+ * data and thus may still have urls to the file after deletion.
+ */
+
+/**
+ * Implements hook_file_insert().
+ */
+function preserve_files_file_insert($file) {
+  if (_preserve_files_should_preserve($file)) {
+    file_usage_add($file, 'preserve_files', 'files', $file->fid);
+  }
+}
+
+/**
+ * Implements hook_file_update().
+ */
+function preserve_files_file_update($file) {
+  if (_preserve_files_should_preserve($file)) {
+    file_usage_add($file, 'preserve_files', 'files', $file->fid);
+  }
+}
+
+function _preserve_files_should_preserve($file) {
+  $path = drupal_realpath($file->uri);
+  
+  return !is_dir($path) && 
+          is_file($path) && 
+          $file->status == FILE_STATUS_PERMANENT && 
+          file_uri_scheme($file->uri) == 'public';
+}
