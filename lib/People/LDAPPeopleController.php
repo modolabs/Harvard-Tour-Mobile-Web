@@ -72,8 +72,8 @@ class LDAPPeopleController extends PeopleController {
     }
 
     protected function nameFilter($firstName, $lastName) {
-        $givenNameFilter = new LDAPFilter($this->getField('givenname'), $firstName, LDAPFilter::FILTER_OPTION_WILDCARD_TRAILING); 
-        $snFilter = new LDAPFilter($this->getField('sn'), $lastName, LDAPFilter::FILTER_OPTION_WILDCARD_TRAILING); 
+        $givenNameFilter = new LDAPFilter($this->getField('firstname'), $firstName, LDAPFilter::FILTER_OPTION_WILDCARD_TRAILING); 
+        $snFilter = new LDAPFilter($this->getField('lastname'), $lastName, LDAPFilter::FILTER_OPTION_WILDCARD_TRAILING); 
         $filter = new LDAPCompoundFilter(LDAPCompoundFilter::JOIN_TYPE_AND, $givenNameFilter, $snFilter);
         return $filter;
     }
@@ -88,11 +88,13 @@ class LDAPPeopleController extends PeopleController {
         if (empty($searchString)) {
             $this->errorMsg = "Query was blank";
         } elseif (Validator::isValidEmail($searchString)) {
-            $filter = new LDAPFilter($this->getField('mail'), $searchString);
+            $filter = new LDAPFilter($this->getField('email'), $searchString);
         } elseif (Validator::isValidPhone($searchString, $phone_bits)) {
             array_shift($phone_bits);
             $searchString = implode("", $phone_bits); // remove any separators. This might be an issue for people with formatted numbers in their directory
             $filter = new LDAPFilter($this->getField('phone'), $searchString);
+        } elseif (preg_match('/^[0-9]+/', $searchString)) { //partial phone number
+            $filter = new LDAPFilter($this->getField('phone'), $searchString, LDAPFilter::FILTER_OPTION_WILDCARD_TRAILING);
         } elseif (preg_match('/[A-Za-z]+/', $searchString)) { // assume search by name
 
             $names = preg_split("/\s+/", $searchString);
@@ -101,9 +103,9 @@ class LDAPPeopleController extends PeopleController {
             {
                 case 1:
                     //try first name, last name and email
-                    $snFilter = new LDAPFilter($this->getField('sn'), $searchString, LDAPFilter::FILTER_OPTION_WILDCARD_TRAILING); 
-                    $givenNameFilter = new LDAPFilter($this->getField('givenname'), $searchString, LDAPFilter::FILTER_OPTION_WILDCARD_TRAILING); 
-                    $mailFilter = new LDAPFilter($this->getField('mail'), $searchString, LDAPFilter::FILTER_OPTION_WILDCARD_TRAILING); 
+                    $snFilter = new LDAPFilter($this->getField('lastname'), $searchString, LDAPFilter::FILTER_OPTION_WILDCARD_TRAILING); 
+                    $givenNameFilter = new LDAPFilter($this->getField('firstname'), $searchString, LDAPFilter::FILTER_OPTION_WILDCARD_TRAILING); 
+                    $mailFilter = new LDAPFilter($this->getField('email'), $searchString, LDAPFilter::FILTER_OPTION_WILDCARD_TRAILING); 
 
                     $filter = new LDAPCompoundFilter(LDAPCompoundFilter::JOIN_TYPE_OR, $givenNameFilter, $snFilter, $mailFilter);
                     break;
@@ -183,7 +185,7 @@ class LDAPPeopleController extends PeopleController {
         
         if (!$sr) {
             if($ds) {
-                $this->errorMsg = self::generateErrorMessage($ds);
+                $this->errorMsg = $this->generateErrorMessage($ds);
             }
             return FALSE;
         }
@@ -259,7 +261,9 @@ class LDAPPeopleController extends PeopleController {
             $sr = ldap_read($ds, $id, "(objectclass=*)", $this->attributes, 0, 0, $this->readTimelimit);
 
             if (!$sr) {
-                $this->errorMsg = ldap_error($ds);
+                if($ds) {
+                    $this->errorMsg = $this->generateErrorMessage($ds);
+                }
                 return FALSE;
             }
 
@@ -290,12 +294,13 @@ class LDAPPeopleController extends PeopleController {
             LDAP_SIZELIMIT_EXCEEDED => "There are more results than can be displayed. Please refine your search.",
             LDAP_PARTIAL_RESULTS => "There are more results than can be displayed. Please refine your search.",
             LDAP_TIMELIMIT_EXCEEDED => "The directory service is not responding. Please try again later.",
+            LDAP_INSUFFICIENT_ACCESS => "Insufficient permission to view this information.",
         );
 
         if(isset($error_codes[$error_code])) {
             return $error_codes[$error_code];
         } else { // return a generic error message
-            return "Your request cannot be processed at this time.";
+            return "Your request cannot be processed at this time. ($error_name)";
         }
     }
 
@@ -312,6 +317,14 @@ class LDAPPeopleController extends PeopleController {
         $this->adminPassword = isset($args['ADMIN_PASSWORD']) ? $args['ADMIN_PASSWORD'] : null;
         $this->searchTimelimit = isset($args['SEARCH_TIMELIMIT']) ? $args['SEARCH_TIMELIMIT'] : 30;
         $this->readTimelimit = isset($args['READ_TIMELIMIT']) ? $args['READ_TIMELIMIT'] : 30;
+
+        $this->fieldMap = array(
+            'userid'=>isset($args['LDAP_USERID_FIELD']) ? $args['LDAP_USERID_FIELD'] : 'uid',
+            'email'=>isset($args['LDAP_EMAIL_FIELD']) ? $args['LDAP_EMAIL_FIELD'] : 'mail',
+            'firstname'=>isset($args['LDAP_FIRSTNAME_FIELD']) ? $args['LDAP_FIRSTNAME_FIELD'] : 'givenname',
+            'lastname'=>isset($args['LDAP_LASTNAME_FIELD']) ? $args['LDAP_LASTNAME_FIELD'] : 'sn',
+            'phone'=>isset($args['LDAP_PHONE_FIELD']) ? $args['LDAP_PHONE_FIELD'] : 'telephonenumber'
+        );
         
         if (isset($args['SORTFIELDS']) && is_array($args['SORTFIELDS'])) {
             $this->sortFields = $args['SORTFIELDS'];
