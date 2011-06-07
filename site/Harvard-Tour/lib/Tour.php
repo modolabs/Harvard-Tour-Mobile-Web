@@ -1,17 +1,46 @@
 <?php
 
-require_once('TourData.php');
-
 class Tour {
-  private $stops = array();
-  private $inProgress = false;
-  private $currentStopId = '';
-  private $seenStopIds = array();
-  private $cache = null;
-  private $cacheLifetime = 3600;
+  protected $stops = array();
+  protected $inProgress = false;
+  protected $currentStopId = '';
+  protected $seenStopIds = array();
+  protected $lastupdate = 0;
+  protected $pages = array(
+    'welcome' => array(),
+    'finish'  => array(),
+    'help'    => array(),
+  );
 
-  function __construct($stopId = false, $seenStopIds = array()) {
-    foreach (/*_getTourStops()*/$this->loadTourData() as $id => $stopData) {
+  function __construct($stopId = false, $seenStopIds = array(), $useCache=true) {
+    $parser = new TourDataParser($useCache);
+    $tourData = $parser->getTourData();
+    
+    $this->lastupdate = $tourData['updated'];
+    
+    foreach ($tourData['pages'] as $pageKey => $pageContents) {
+      foreach ($pageContents as $content) {
+        switch ($content['type']) {
+          case 'text':
+            $this->pages[$pageKey][] = new TourText($content['text']);
+            break;
+          
+          case 'links':
+            $this->pages[$pageKey][] = new TourLinks($content['links']);
+            break;
+            
+          case 'lensinfo':
+            $this->pages[$pageKey][] = new TourLensInfo($content['lenses']);
+            break;
+
+          default: 
+            error_log("Unknown content type {$content['type']}");
+            break;
+        }
+      }
+    }
+    
+    foreach ($tourData['stops'] as $id => $stopData) {
       $this->stops[$id] = new TourStop($id, $stopData);
     }
     
@@ -142,34 +171,79 @@ class Tour {
     }
   }
   
-  private function getNodeData($nid) {
-    $cacheName = "node_$nid";
-
-    if (!$this->cache) {
-      $this->cache = new DiskCache(CACHE_DIR."/tour", $this->cacheLifetime, TRUE);
-    }
-
-    if ($this->cache->isFresh($cacheName)) {
-      $results = $this->cache->read($cacheName);
-      
-    } else {
-      $content = file_get_contents(Kurogo::getSiteVar('TOUR_SERVICE_URL')."$nid.json");
-      $results = json_decode($content, true);
-      
-      if ($results) {
-        $this->cache->write($results, $cacheName);
-        
-      } else {
-        error_log("Error while making foursquare API request: '$content'");
-        $results = $this->cache->read($cacheName);
-      }
-    }
-    
-    return $results;
+  function getWelcomePageContents() {
+    return $this->pages['welcome'];
   }
   
-  private function loadTourData() {
+  function getFinishPageContents() {
+    return $this->pages['finish'];
+  }
+  
+  function getHelpPageContents() {
+    return $this->pages['help'];
+  }
+  
+  function getLastUpdate() {
+    return $this->lastupdate;
+  }
+}
+
+class TourDataParser {
+  protected $data = array();
+  protected $useCache = true;
+  protected $cache = null;
+  protected $cacheLifetime = 3600;
+  
+  function __construct($useCache=true) {
+    $this->useCache = $useCache;
+
     $tourNode = $this->getNodeData(Kurogo::getSiteVar('TOUR_NODE_ID'));
+    //error_log(print_r($tourNode, true));
+    
+    $this->data = array(
+      'pages' => array(
+        'welcome' => array(),
+        'help'    => array(),
+        'finish'  => array(),
+      ),
+      'stops' => array(),
+      'updated' => $this->getNodeLastUpdate($tourNode),
+    );
+    
+    $pageContents = array(
+      'welcome' => array(),
+      'help'    => array(),
+      'finish'  => array(),
+    );
+    
+    // Tour Welcome Screen
+    $pageContents['welcome'][] = $this->getNodeHTMLArray($tourNode, 'field_welcome');
+    $pageContents['welcome'][] = $this->getNodeLensInfo($tourNode, 'field_welcome_lenses');
+    $pageContents['welcome'][] = $this->getNodeHTMLArray($tourNode, 'field_welcome_footer');
+    
+    // Help Page
+    $pageContents['help'][] = $this->getNodeHTMLArray($tourNode, 'field_help');
+    $pageContents['help'][] = $this->getNodeLensInfo($tourNode, 'field_help_lenses');
+    $pageContents['help'][] = $this->getNodeHTMLArray($tourNode, 'field_help_middle');
+    $pageContents['help'][] = $this->getNodeLinks($tourNode, 'field_help_links');
+    $pageContents['help'][] = $this->getNodeHTMLArray($tourNode, 'field_help_footer');
+    
+    // Finish Page
+    $pageContents['finish'][] = $this->getNodeHTMLArray($tourNode, 'field_finish');    
+    
+    foreach ($pageContents as $page => $contents) {
+      foreach ($contents as $content) {
+        if (isset($content['type'])) {
+          $this->data['pages'][$page][] = $content;
+          
+        } else if ($content) {
+          $this->data['pages'][$page] = array_merge($this->data['pages'][$page], $content);
+        }
+      }
+    }
+    //error_log(print_r($this->data['pages'], true));
+    
+    // Stops
     $stopsNodes = $this->getNodeField($tourNode, 'field_stops', array());
     
     $stopNids = array();
@@ -179,7 +253,6 @@ class Tour {
       }
     }
     
-    $tourData = array();
     foreach ($stopNids as $nid) {
       $stopNode = $this->getNodeData($nid);
       //error_log(print_r($stopNode, true));
@@ -190,6 +263,7 @@ class Tour {
       }
       
       $stopData = array(
+        'updated'   => $this->getNodeLastUpdate($stopNode),
         'title'     => $this->getNodeField($stopNode, 'title'),
         'subtitle'  => $this->getNodeHTML($stopNode, 'field_subtitle'),
         'building'  => $this->getNodeHTML($stopNode, 'field_building'),
@@ -206,21 +280,24 @@ class Tour {
       $photo = $this->getNodePhoto($stopNode, 'field_photo');
       $text = $this->getNodeHTMLArray($stopNode, 'field_text');
       
-      $stopData['lenses']['info'] = array();
+      $stopData['lenses']['info'] = array(
+        'updated'  => $this->getNodeLastUpdate($stopNode),
+        'contents' => array(),
+      );
       if ($photo) { 
-        $stopData['lenses']['info'][] = $photo; 
+        $stopData['lenses']['info']['contents'][] = $photo; 
       }
       if ($text) { 
-        $stopData['lenses']['info'] = array_merge($stopData['lenses']['info'], $text); 
+        $stopData['lenses']['info']['contents'] = array_merge($stopData['lenses']['info']['contents'], $text); 
       }
       
       // Other Lenses
       $lensKeyMapping = array(
-          'insideout'  => 'field_insideout',
-          'fastfacts'  => 'field_fastfacts',
-          'innovation' => 'field_innovation',
-          'history'    => 'field_history',
-        );
+        'insideout'  => 'field_insideout',
+        'fastfacts'  => 'field_fastfacts',
+        'innovation' => 'field_innovation',
+        'history'    => 'field_history',
+      );
       
       foreach ($lensKeyMapping as $lensKey => $nodeKey) {
         $lensNodes = $this->getNodeField($stopNode, $nodeKey, array());
@@ -228,49 +305,109 @@ class Tour {
           $lensNode = $this->getNodeData($lensNodes[0]['nid']);
           if (!isset($lensNode['type'])) { continue; }
           
+          $lensData = array(
+            'updated'  => $this->getNodeLastUpdate($lensNode),
+            'contents' => array(),
+          );
+          
           switch ($lensNode['type']) {
             case 'lens_content_photo_text':
               $photo = $this->getNodePhoto($lensNode, 'field_photo');
               $text = $this->getNodeHTMLArray($lensNode, 'field_text');
               
-              $stopData['lenses'][$lensKey] = array();
               if ($photo) { 
-                $stopData['lenses'][$lensKey][] = $photo; 
+                $lensData['contents'][] = $photo; 
               }
               if ($text) { 
-                $stopData['lenses'][$lensKey] = array_merge($stopData['lenses'][$lensKey], $text); 
+                $lensData['contents'] = array_merge($lensData['contents'], $text); 
               }
               break;
               
             case 'lens_content_slideshow':
-              $stopData['lenses'][$lensKey] = array(
-                array(
-                  'type'   => 'slideshow',
-                  'slides' => $this->getNodePhotos($lensNode, 'field_photos'),
-                ),
+              $lensData['contents'][] = array(
+                'type'   => 'slideshow',
+                'slides' => $this->getNodePhotos($lensNode, 'field_photos'),
               );
               break;
               
             case 'lens_content_video':
-              $stopData['lenses'][$lensKey] = array($this->getNodeVideo($lensNode));
+              $lensData['contents'] = array($this->getNodeVideo($lensNode));
 
               $text = $this->getNodeHTMLArray($lensNode, 'field_text');
               if ($text) {
-                $stopData['lenses'][$lensKey] = array_merge($stopData['lenses'][$lensKey], $text); 
+                $lensData['contents'] = array_merge($lensData['contents'], $text); 
               }
-              break;
-              
+              break;    
+          }
+          
+          if (count($lensData['contents'])) {
+            $stopData['lenses'][$lensKey] = $lensData;
           }
           
           //error_log(print_r($lensNode, true));
         }
       }
       
-      $tourData[] = $stopData;
+      $this->data['stops'][] = $stopData;
+    }
+
+    //error_log(print_r($this->data, true));    
+    return $this->data;
+  }
+  
+  public function getTourData() {
+    return $this->data;
+  }
+  
+  protected function getNodeLensInfo($node, $fieldName) {
+    $lensInfoNids = $this->getNodeField($node, $fieldName, array());
+    if (count($lensInfoNids)) {
+      $lensInfoNid = reset($lensInfoNids);
+      $lensInfoNode = $this->getNodeData($lensInfoNid['nid']);
+      
+      return array(
+        'type' => 'lensinfo',
+        'lenses' => array(
+          'insideout' => array(
+            'name' => $this->getNodeHTML($lensInfoNode, 'field_insideout_name'),
+            'desc' => $this->getNodeHTML($lensInfoNode, 'field_insideout_desc'),
+          ),
+          'fastfacts' => array(
+            'name' => $this->getNodeHTML($lensInfoNode, 'field_fastfacts_name'),
+            'desc' => $this->getNodeHTML($lensInfoNode, 'field_fastfacts_desc'),
+          ),
+          'innovation' => array(
+            'name' => $this->getNodeHTML($lensInfoNode, 'field_innovation_name'),
+            'desc' => $this->getNodeHTML($lensInfoNode, 'field_innovation_desc'),
+          ),
+          'history' => array(
+            'name' => $this->getNodeHTML($lensInfoNode, 'field_history_name'),
+            'desc' => $this->getNodeHTML($lensInfoNode, 'field_history_desc'),
+          ),
+        ),
+      );
+    }
+    return array();
+  }
+  
+  protected function getNodeLinks($node, $fieldName) {
+    $links = $this->getNodeField($node, $fieldName, array());
+    if (count($links)) {
+      $linkDetails = array();
+      foreach ($links as $link) {
+        $linkDetails[] = array(
+          'title'    => $this->argVal($link, 'title'),
+          'subtitle' => $this->argVal($link, 'subtitle'),
+          'url'      => $this->argVal($link, 'url'),
+        );
+      }
+      return array(
+        'type' => 'links',
+        'links' => $linkDetails,
+      );
     }
     
-    //error_log(print_r($tourData, true));
-    return $tourData;
+    return array();
   }
   
   protected function getURLForNodeFileURI($node) {
@@ -289,6 +426,10 @@ class Tour {
     } else {
       return array();
     }
+  }
+  
+  protected function getNodeLastUpdate($node) {
+    return intval($this->getNodeField($node, 'changed', time()));
   }
   
   protected function getNodePhotos($node, $fieldName) {
@@ -363,63 +504,64 @@ class Tour {
     return $default;
   }
   
-  private function argVal($array, $key, $default='') {
+  protected function getNodeData($nid) {
+    $cacheName = "node_$nid";
+
+    if ($this->useCache && !$this->cache) {
+      $this->cache = new DiskCache(CACHE_DIR."/tour", $this->cacheLifetime, TRUE);
+    }
+
+    if ($this->useCache && $this->cache->isFresh($cacheName)) {
+      $results = $this->cache->read($cacheName);
+      
+    } else {
+      $content = file_get_contents(Kurogo::getSiteVar('TOUR_SERVICE_URL')."$nid.json");
+      $results = json_decode($content, true);
+      
+      if ($results) {
+        $this->cache->write($results, $cacheName);
+        
+      } else {
+        error_log("Error while making foursquare API request: '$content'");
+        $results = $this->cache->read($cacheName);
+      }
+    }
+    
+    return $results;
+  }
+  
+  protected function argVal($array, $key, $default='') {
     return isset($array[$key]) ? $array[$key] : $default;
   }
 }
 
 class TourStop {
-  private $id         = '';
-  private $title      = '';
-  private $subtitle   = '';
-  private $coords     = array('lat' => 0, 'lon' => 0);
-  private $buildingId = '';
-  private $photo      = null;
-  private $thumbnail  = null;
-  private $lenses     = array();
-  private $isCurrent  = false;
-  private $wasVisited = false;
+  protected $lastupdate = 0;
+  protected $id         = '';
+  protected $title      = '';
+  protected $subtitle   = '';
+  protected $coords     = array('lat' => 0, 'lon' => 0);
+  protected $buildingId = '';
+  protected $photo      = null;
+  protected $thumbnail  = null;
+  protected $lenses     = array();
+  protected $isCurrent  = false;
+  protected $wasVisited = false;
 
   function __construct($id, $data) {
     $this->id = $id;
     
-    $this->title    = $data['title'];
-    $this->subtitle = $data['subtitle'];
-    $this->coords   = $data['coords'];
-    $this->building = $data['building'];
-    $this->photo     = new TourPhoto($data['photo']['url'], $data['photo']['title']);
-    $this->thumbnail = new TourPhoto($data['thumbnail']['url'], $data['thumbnail']['title']);
+    $this->lastupdate = $data['updated'];
+    $this->title      = $data['title'];
+    $this->subtitle   = $data['subtitle'];
+    $this->coords     = $data['coords'];
+    $this->building   = $data['building'];
+    $this->photo      = new TourPhoto($data['photo']['url'], $data['photo']['title']);
+    $this->thumbnail  = new TourPhoto($data['thumbnail']['url'], $data['thumbnail']['title']);
     
-    foreach ($data['lenses'] as $lens => $contents) {
-      if (!$contents) { continue; }
-    
-      if (!isset($this->lenses[$lens])) {
-        $this->lenses[$lens] = array();
-      }
-      
-      foreach ($contents as $content) {
-        switch ($content['type']) {
-          case 'video':
-            $this->lenses[$lens][] = new TourVideo(
-              $content['url'], $content['youtube'], $content['title']);
-            break;
-            
-          case 'photo':
-            $this->lenses[$lens][] = new TourPhoto($content['url'], $content['title']);
-            break;
-          
-          case 'text':
-            $this->lenses[$lens][] = new TourText($content['text']);
-            break;
-          
-          case 'slideshow':
-            $this->lenses[$lens][] = new TourSlideshow($content['slides']);
-            break;
-          
-          default: 
-            error_log("Unknown content type {$content['type']}");
-            break;
-        }
+    foreach ($data['lenses'] as $lens => $lensData) {
+      if (isset($lensData['contents']) && $lensData['contents']) {
+        $this->lenses[$lens] = new TourLens($lensData);
       }
     }
   }
@@ -447,13 +589,21 @@ class TourStop {
   function getThumbnailSrc() {
     return $this->thumbnail->getSrc();
   }
+  
+  function getLastUpdate() {
+    return $this->lastupdate;
+  }
 
   function getAvailableLenses() {
     return array_keys($this->lenses);
   }
   
+  function getLensLastUpdate($lens) {
+    return isset($this->lenses[$lens]) ? $this->lenses[$lens]->getLastUpdate() : 0;
+  }
+  
   function getLensContents($lens) {
-    return isset($this->lenses[$lens]) ? $this->lenses[$lens] : false;
+    return isset($this->lenses[$lens]) ? $this->lenses[$lens]->getContents() : false;
   }
 
   function isCurrent() {
@@ -471,8 +621,83 @@ class TourStop {
   }
 }
 
+class TourLens {
+  protected $lastupdate = 0;
+  protected $contents = array();
+
+  function __construct($data) {
+    $this->lastupdate = $data['updated'];
+    
+    foreach ($data['contents'] as $content) {
+      switch ($content['type']) {
+        case 'video':
+          $this->contents[] = new TourVideo($content['url'], $content['youtube'], $content['title']);
+          break;
+          
+        case 'photo':
+          $this->contents[] = new TourPhoto($content['url'], $content['title']);
+          break;
+        
+        case 'text':
+          $this->contents[] = new TourText($content['text']);
+          break;
+        
+        case 'slideshow':
+          $this->contents[] = new TourSlideshow($content['slides']);
+          break;
+        
+        default: 
+          error_log("Unknown content type {$content['type']}");
+          break;
+      }
+    }
+  }
+  
+  function getLastUpdate() {
+    return $this->lastupdate;
+  }
+  
+  function getContents() {
+    return $this->contents;
+  }
+}
+
+class TourLensInfo {
+  protected $lenses = array();
+  function __construct($lensInfoData) {
+    foreach ($lensInfoData as $lensKey => $lensInfo) {
+      $this->lenses[] = array(
+        'id'          => $lensKey,
+        'name'        => $lensInfo['name'],
+        'description' => $lensInfo['desc'],
+      );
+    }
+  }
+  
+  function getContent() {
+    return $this->lenses;
+  }
+}
+
+class TourLinks {
+  protected $links = array();
+  function __construct($linksData) {
+    foreach ($linksData as $linkData) {
+      $this->links[] = array(
+        'title'    => $linkData['title'],
+        'subtitle' => $linkData['subtitle'],
+        'url'      => $linkData['url'],
+      );
+    }
+  }
+  
+  function getContent() {
+    return $this->links;
+  }
+}
+
 class TourText {
-  private $html = '';
+  protected $html = '';
   
   function __construct($html) {
     $this->html = $html;
@@ -484,7 +709,7 @@ class TourText {
 }
 
 class TourSlideshow {
-  private $slides = array();
+  protected $slides = array();
   
   function __construct($data) {
     foreach ($data as $content) {

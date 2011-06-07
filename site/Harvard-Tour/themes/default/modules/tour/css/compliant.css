@@ -1,0 +1,26 @@
+h1 {
+	font: 19px/20px serif;
+	font-weight: normal;
+	padding: 0;
+	margin: 4px 0 10px 0;
+	color: #000;
+}
+p, dl, ul {
+	margin: 0 0 15px 0;
+}
+dd, dt {
+	margin: 0 0 6px 0;
+	line-height: 24px;
+}
+dt {
+	clear: both;
+	float: left;
+	font-weight: bold;
+	color: #222;
+	padding: 0 4px 0 2px;
+}
+dt img {
+	float: left;
+	padding-right: 3px;
+	vertical-align: middle;
+}

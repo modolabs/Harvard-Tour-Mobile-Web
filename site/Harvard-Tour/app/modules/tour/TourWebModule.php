@@ -156,6 +156,31 @@ class TourWebModule extends WebModule {
     return $stopsDetails;
   }
   
+  protected function getPageContents($page) {
+    $pageContents = array();
+    
+    $pageObjects = array();
+    switch ($page) {
+      case 'welcome':
+        $pageObjects = $this->tour->getWelcomePageContents();
+        break;
+        
+      case 'finish':
+        $pageObjects = $this->tour->getFinishPageContents();
+        break;
+        
+      case 'help':
+        $pageObjects = $this->tour->getHelpPageContents();
+        break;
+    }
+    
+    foreach ($pageObjects as $pageObject) {
+      $pageContents[] = $pageObject->getContent();
+    }
+    
+    return $pageContents;
+  }
+  
   protected function buildTourURL($page, $args=array(), $newTour=false) {
     if (!isset($args['id'])) {
       $args['id'] = $this->stop->getId();
@@ -179,13 +204,17 @@ class TourWebModule extends WebModule {
         
         $this->assign('startURL', $this->buildTourURL('map', array(
           'view' => self::MAP_VIEW_OVERVIEW,
+          'id'   => $this->tour->getFirstStop()->getId(),
           self::NEW_TOUR_PARAM  => 1,
         )));
+        
+        $this->assign('contents', $this->getPageContents('welcome'));
         break;
       
       case 'tourhelp':
         $showHelpLink = false;
-        $this->assign('doneURL', $this->getArg('doneURL', $this->buildTourURL('index')));
+        $this->assign('contents', $this->getPageContents('help'));
+        $this->assign('doneURL',  $this->getArg('doneURL', $this->buildTourURL('index')));
         break;
       
       case 'finish':
@@ -205,8 +234,9 @@ class TourWebModule extends WebModule {
         }
         $nextURL = false;
         
-        $this->assign('prevURL', $prevURL);
-        $this->assign('nextURL', $nextURL);
+        $this->assign('prevURL',  $prevURL);
+        $this->assign('nextURL',  $nextURL);
+        $this->assign('contents', $this->getPageContents('finish'));
         break;
       
       case 'list':

@@ -6,15 +6,25 @@ class TourAPIModule extends APIModule {
   protected function getBriefStopDetails($stop) {
     $coords = $stop->getCoords();
     
+    $lenses = array();
+    foreach ($stop->getAvailableLenses() as $lensKey) {
+      $lenses[$lensKey] = array(
+        'updated' => $stop->getLensLastUpdate($lensKey),
+      );
+    }
+    
     return array(
-      'id'        => $stop->getId(),
-      'title'     => $stop->getTitle(),
-      'subtitle'  => $stop->getSubtitle(),
-      'photo'     => $stop->getPhotoSrc(),
-      'thumbnail' => $stop->getThumbnailSrc(),
-      'lat'       => $coords['lat'],
-      'lon'       => $coords['lon'],
-      'lenses'    => array_fill_keys($stop->getAvailableLenses(), array()),
+      'details' => array(
+        'id'        => $stop->getId(),
+        'title'     => $stop->getTitle(),
+        'subtitle'  => $stop->getSubtitle(),
+        'photo'     => $stop->getPhotoSrc(),
+        'thumbnail' => $stop->getThumbnailSrc(),
+        'lat'       => $coords['lat'],
+        'lon'       => $coords['lon'],
+        'updated'   => $stop->getLastUpdate(),
+      ),
+      'lenses' => $lenses,
     );
   }
   
@@ -57,16 +67,18 @@ class TourAPIModule extends APIModule {
     $stopDetails = $this->getBriefStopDetails($stop);
     
     $lenses = $stop->getAvailableLenses();
-    foreach ($stopDetails['lenses'] as $lens => $contents) {
-      foreach ($stop->getLensContents($lens) as $lensContent) {
-        $stopDetails['lenses'][$lens][] = $this->formatLensContent($lensContent);
+    foreach ($stopDetails['lenses'] as $lensKey => $contents) {
+      $stopDetails['lenses'][$lensKey]['contents'] = array();
+      
+      foreach ($stop->getLensContents($lensKey) as $lensContent) {
+        $stopDetails['lenses'][$lensKey]['contents'][] = $this->formatLensContent($lensContent);
       }
     }
     
     return $stopDetails;
   }
   
-  protected function getAllStopsDetails($tour) {
+  protected function getAllStopsBriefDetails($tour) {
     $stopsDetails = array();
     
     foreach ($tour->getAllStops() as $stop) {
@@ -75,12 +87,47 @@ class TourAPIModule extends APIModule {
     return $stopsDetails;
   }
   
-  protected function  initializeForCommand() {
+  protected function getTourDetails($tour) {
+    $tourDetails = array(
+      'welcome' => array(),
+      'finish'  => array(),
+      'help'    => array(),
+      'updated' => $tour->getLastUpdate(),
+    );
+    
+    $pages = array('welcome', 'finish', 'help');
+    foreach (array_keys($tourDetails) as $page) {
+      switch ($page) {
+        case 'welcome':
+          $pageObjects = $this->tour->getWelcomePageContents();
+          break;
+          
+        case 'finish':
+          $pageObjects = $this->tour->getFinishPageContents();
+          break;
+          
+        case 'help':
+          $pageObjects = $this->tour->getHelpPageContents();
+          break;
+      }
+      
+      foreach ($pageObjects as $pageObject) {
+        $tourDetails['page'][] = $pageObject->getContent();
+      }
+    }
+    
+    return $tourDetails;
+  }
+  
+  protected function initializeForCommand() {
     $tour = new Tour($this->getArg('id', null));
     
     switch ($this->command) {
-      case 'stops':
-        $response = $this->getAllStopsDetails($tour);
+      case 'tour':
+        $response = array(
+          'details' => $this->getTourDetails($tour),
+          'stops'   => $this->getAllStopsBriefDetails($tour),
+        );
         
         $this->setResponse($response);
         $this->setResponseVersion(1);
