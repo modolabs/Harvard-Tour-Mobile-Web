@@ -507,7 +507,7 @@ class TourDataParser {
   protected function getNodeData($nid) {
     $cacheName = "node_$nid";
 
-    if ($this->useCache && !$this->cache) {
+    if (!$this->cache) {
       $this->cache = new DiskCache(CACHE_DIR."/tour", $this->cacheLifetime, TRUE);
     }
 

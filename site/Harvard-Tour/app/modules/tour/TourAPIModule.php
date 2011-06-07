@@ -124,7 +124,9 @@ class TourAPIModule extends APIModule {
   }
   
   protected function initializeForCommand() {
-    $tour = new Tour($this->getArg('id', null));
+    $useCache = $this->command != 'refresh';
+  
+    $tour = new Tour($this->getArg('id', null), array(), $useCache);
     
     switch ($this->command) {
       case 'tour':
@@ -143,6 +145,11 @@ class TourAPIModule extends APIModule {
         $this->setResponse($response);
         $this->setResponseVersion(1);
         break;
+        
+      case 'refresh':
+        $this->setResponse(true);
+        $this->setResponseVersion(1);
+        break;        
     }
   }
 }
