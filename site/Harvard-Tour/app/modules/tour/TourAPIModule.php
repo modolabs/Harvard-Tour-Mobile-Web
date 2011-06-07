@@ -89,30 +89,34 @@ class TourAPIModule extends APIModule {
   
   protected function getTourDetails($tour) {
     $tourDetails = array(
-      'welcome' => array(),
-      'finish'  => array(),
-      'help'    => array(),
+      'pages' => array(
+        'welcome' => array(),
+        'finish'  => array(),
+        'help'    => array(),
+      ),
       'updated' => $tour->getLastUpdate(),
     );
     
     $pages = array('welcome', 'finish', 'help');
-    foreach (array_keys($tourDetails) as $page) {
+    foreach (array_keys($tourDetails['pages']) as $page) {
+      $pageObjects = array();
+    
       switch ($page) {
         case 'welcome':
-          $pageObjects = $this->tour->getWelcomePageContents();
+          $pageObjects = $tour->getWelcomePageContents();
           break;
           
         case 'finish':
-          $pageObjects = $this->tour->getFinishPageContents();
+          $pageObjects = $tour->getFinishPageContents();
           break;
           
         case 'help':
-          $pageObjects = $this->tour->getHelpPageContents();
+          $pageObjects = $tour->getHelpPageContents();
           break;
       }
       
       foreach ($pageObjects as $pageObject) {
-        $tourDetails['page'][] = $pageObject->getContent();
+        $tourDetails['pages'][$page][] = $pageObject->getContent();
       }
     }
     
