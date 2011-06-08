@@ -229,7 +229,8 @@ class TourDataParser {
     $pageContents['help'][] = $this->getNodeHTMLArray($tourNode, 'field_help_footer');
     
     // Finish Page
-    $pageContents['finish'][] = $this->getNodeHTMLArray($tourNode, 'field_finish');    
+    $pageContents['finish'][] = $this->getNodeHTMLArray($tourNode, 'field_finish');
+    $pageContents['finish'][] = $this->getNodeLinks($tourNode, 'field_finish_links');
     
     foreach ($pageContents as $page => $contents) {
       foreach ($contents as $content) {
@@ -664,6 +665,7 @@ class TourLens {
 
 class TourLensInfo {
   protected $lenses = array();
+  
   function __construct($lensInfoData) {
     foreach ($lensInfoData as $lensKey => $lensInfo) {
       $this->lenses[] = array(
@@ -681,12 +683,15 @@ class TourLensInfo {
 
 class TourLinks {
   protected $links = array();
+  
   function __construct($linksData) {
     foreach ($linksData as $linkData) {
       $this->links[] = array(
-        'title'    => $linkData['title'],
-        'subtitle' => $linkData['subtitle'],
-        'url'      => $linkData['url'],
+        'title'      => $linkData['title'],
+        'subtitle'   => $linkData['subtitle'],
+        'url'        => $linkData['url'],
+        'linkTarget' => '_blank',
+        'class'      => 'action external',
       );
     }
   }
