@@ -137,12 +137,12 @@ class TourWebModule extends WebModule {
     }
     if ($current) {
       $staticMap .= '&'.http_build_query(array(
-        'markers' => 'shadow:false|icon:'.$markerImages['current'].$current,
+        'markers' => 'color:0xDD0000'.$current,
       ));
     }
     if ($other) {
       $staticMap .= '&'.http_build_query(array(
-        'markers' => 'shadow:false|icon:'.$markerImages['other'].$other,
+        'markers' => 'color:0xCCCCCC'.$other,
       ));
     }
     
