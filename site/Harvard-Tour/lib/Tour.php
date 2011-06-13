@@ -227,6 +227,7 @@ class TourDataParser {
     $pageContents['help'][] = $this->getNodeHTMLArray($tourNode, 'field_help_middle');
     $pageContents['help'][] = $this->getNodeLinks($tourNode, 'field_help_links');
     $pageContents['help'][] = $this->getNodeHTMLArray($tourNode, 'field_help_footer');
+    $pageContents['help'][] = $this->getNodeLinks($tourNode, 'field_help_links_2');
     
     // Finish Page
     $pageContents['finish'][] = $this->getNodeHTMLArray($tourNode, 'field_finish');
@@ -686,12 +687,22 @@ class TourLinks {
   
   function __construct($linksData) {
     foreach ($linksData as $linkData) {
+      $class = 'external';
+      $linkTarget = '_blank';
+      if (strncmp($linkData['url'], 'tel:', 4) == 0) {
+        $class = 'phone';
+        $linkTarget = '';
+      } else if (strncmp($linkData['url'], 'mailto:', 7) == 0) {
+        $class = 'email';
+        $linkTarget = '';
+      }
+    
       $this->links[] = array(
         'title'      => $linkData['title'],
         'subtitle'   => $linkData['subtitle'],
         'url'        => $linkData['url'],
-        'linkTarget' => '_blank',
-        'class'      => 'action external',
+        'linkTarget' => $linkTarget,
+        'class'      => 'action '.$class,
       );
     }
   }
@@ -778,6 +789,8 @@ class TourVideo {
   protected $title = '';
   protected $youTubeId = '';
   protected $src = '';
+  protected $cache = null;
+  protected $cacheLifetime = 3600;
   
   function __construct($src, $youTubeId, $title) {
     $this->src = $src;
@@ -794,23 +807,47 @@ class TourVideo {
   }
 
   public function getContent() {
-    return '<video src="'.$this->src.'" width="100%" controls></video>'.
-      ($this->title ? '<p class="caption">'.$this->title.'</p>' : '');
-  }
-  
-  /*
-      '<a class="videoLink" href="'.$this->src.'">'.
-      '<div class="playButton"><div></div></div>'.
-      '<img src="'.$this->srcStill.'" /></a>'
-      
-  protected function getYouTubeData($id) {
-    $cache = $this->getCacheForQuery('youtube');
-    $cacheName = $id;
+    $pagetype = $GLOBALS['deviceClassifier']->getPagetype();
+    $platform = $GLOBALS['deviceClassifier']->getPlatform();
+    if ($pagetype == 'compliant') {
+      switch ($platform) {
+        case 'iphone':
+        case 'ipad':
+        case 'android':
+        case 'computer':
+          // Supports YouTube iframe:
+          return '<iframe class="videoFrame" id="videoFrame_'.$this->youTubeId.
+            '" src="http://www.youtube.com/embed/'.$this->youTubeId.
+            '" width="240" height="195" frameborder="0"></iframe>';
+      }
+    }
     
-    if ($cache->isFresh($cacheName)) {
-      $results = $cache->read($cacheName);
+    $data = $this->getYouTubeData();
+    if (isset($data['data'], 
+              $data['data']['content'],
+              $data['data']['content'][6], 
+              $data['data']['thumbnail'],
+              $data['data']['thumbnail']['hqDefault'])) {
+      // Supports rtsp only
+      return '<a class="videoLink" href="'.$data['data']['content'][6].'">'.
+        '<div class="playButton"><div></div></div>'.
+        '<img src="'.$data['data']['thumbnail']['hqDefault'].'" /></a>';
     } else {
-      $url = 'http://gdata.youtube.com/feeds/mobile/videos/'.$id.'?'.http_build_query(array(
+      return '<p>Video not available</p>';
+    }
+  }
+      
+  protected function getYouTubeData() {
+    if (!$this->cache) {
+      $this->cache = new DiskCache(CACHE_DIR."/tour/youtube", $this->cacheLifetime, TRUE);
+    }
+
+    $cacheName = $this->youTubeId;
+    
+    if ($this->cache->isFresh($cacheName)) {
+      $results = $this->cache->read($cacheName);
+    } else {
+      $url = 'http://gdata.youtube.com/feeds/mobile/videos/'.$this->youTubeId.'?'.http_build_query(array(
         'v'      => 2,
         'format' => 6, // RTSP streaming URL for mobile video playback
         'alt'    => 'jsonc',
@@ -818,10 +855,10 @@ class TourVideo {
       
       $results = json_decode(file_get_contents($url), true);
       if (isset($results['data'])) {
-        $cache->write($results, $cacheName);
+        $this->cache->write($results, $cacheName);
       }
     }
     
     return $results;
-  }*/
+  }
 }

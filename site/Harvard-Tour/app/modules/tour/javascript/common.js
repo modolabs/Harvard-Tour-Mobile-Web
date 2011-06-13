@@ -281,3 +281,43 @@ function previousSlide(tab) {
   changeSlide(tab, 'prev');
 }
 
+var videoFrameOriginalRatios = {};
+
+function setupVideoFrames() {
+  var iframes = document.getElementsByTagName('IFRAME');
+  
+  for (var i = 0; i < iframes.length; ++i) {
+    var videoFrame = iframes[i];
+    
+    if (hasClass(videoFrame, 'videoFrame')) {
+      var id = videoFrame.id;
+    
+      if (videoFrame.width && videoFrame.height) {
+        videoFrameOriginalRatios[id] = videoFrame.height/videoFrame.width;
+      } else {
+        videoFrameOriginalRatios[id] = videoFrame.offsetHeight/videoFrame.offsetWidth;
+      }
+    }
+  }
+  
+  resizeVideoFrames();
+}
+
+function resizeVideoFrames() {
+  for (var id in videoFrameOriginalRatios) {
+    var videoFrame = document.getElementById(id);
+  
+    var newWidth = document.body.offsetWidth - 8; // 4px left and right margin
+    var newHeight = Math.round(newWidth*videoFrameOriginalRatios[id]);
+    
+    videoFrame.width = newWidth;
+    videoFrame.height = newHeight;
+    
+    // Run a second time in case the scroll bar disappeared when we resized
+    var newWidth = document.body.offsetWidth - 8; // 4px left and right margin
+    var newHeight = Math.round(newWidth*videoFrameOriginalRatios[id]);
+    
+    videoFrame.width = newWidth;
+    videoFrame.height = newHeight;
+  }
+}

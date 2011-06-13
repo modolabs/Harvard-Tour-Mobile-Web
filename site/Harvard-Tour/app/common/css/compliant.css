@@ -166,7 +166,7 @@ html, body, #nonfooternav {
 }
 #content,
 #tabbodies {
-	padding: 4px;
+	padding: 4px; /* this left/right padding is duplicated in tour module common.js */
 	background: url(/common/images/bodyback2.jpg) repeat-x;
 	font: 15px/20px sans-serif;
 	color: #464640;

@@ -309,6 +309,9 @@ class TourWebModule extends WebModule {
         $tabKeys = array_keys($stopInfo['lenses']);
         $tabJavascripts = array();
         
+        $this->addOnLoad('setupVideoFrames();');
+        $this->addOnOrientationChange('setTimeout(resizeVideoFrames, 0);');
+        
         $prevURL = $this->buildTourURL('map', array(
           'view' => self::MAP_VIEW_APPROACH
         ));
