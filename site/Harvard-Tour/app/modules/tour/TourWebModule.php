@@ -259,6 +259,10 @@ class TourWebModule extends WebModule {
     $showMapLink = true;
     $showHelpLink = true;
     
+    if ($this->pagetype != 'compliant' && $this->page != 'index') {
+      $this->redirectTo('index');
+    }
+    
     switch ($this->page) {
       case 'index':
         if ($this->tour->isInProgress()) {
