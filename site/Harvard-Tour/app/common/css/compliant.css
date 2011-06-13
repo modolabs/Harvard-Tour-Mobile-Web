@@ -357,6 +357,17 @@ html, body, #nonfooternav {
   font-size: 70%;
   line-height: normal;
 }
+#map_container + div > #footer {
+  display: none;
+}
+
+#static_map_container {
+  text-align: center;
+}
+#static_map {
+  border: solid 1px #888;
+  border-width: 0px 1px 1px 1px;
+}
 
 #content .results {
   margin: 0;

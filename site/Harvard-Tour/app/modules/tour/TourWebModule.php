@@ -85,6 +85,71 @@ class TourWebModule extends WebModule {
   }
   
   protected function initializeMap($view) {
+    switch ($this->platform) {
+      case 'blackberry':
+      case 'bbplus':
+        return $this->initializeStaticMap($view);
+        
+      default:
+        return $this->initializeDynamicMap($view);
+    }
+  }
+  
+  protected function initializeStaticMap($view) {
+    $x = 330;
+    $y = 330;
+    if ($this->platform == 'bbplus') {
+      $y = 250;
+    }
+  
+    $markerImages = $this->markerImages();
+    
+    $staticMap = 'http://maps.google.com/maps/api/staticmap?sensor=false&size='.$x.'x'.$y;
+    if ($view == self::MAP_VIEW_OVERVIEW) {
+      $staticMap .= '&center=42.374464,-71.117232';
+    } else {
+      $staticMap .= '&zoom=17';
+    }
+    
+    $visited = '';
+    $current = '';
+    $other   = '';
+    $tourStops = $this->getAllStopsDetails();
+    foreach ($tourStops as $stop) {
+      if ($stop['visited']) {
+        $visited .= '|'.$stop['lat'].','.$stop['lon'];
+        
+      } else if ($stop['current']) {
+        $current .= '|'.$stop['lat'].','.$stop['lon'];
+        if ($view != self::MAP_VIEW_OVERVIEW) {
+          $staticMap .= '&center='.$stop['lat'].','.$stop['lon'];
+        }
+        
+      } else {
+        $other .= '|'.$stop['lat'].','.$stop['lon'];
+      }
+    }
+    
+    if ($visited) {
+      $staticMap .= '&'.http_build_query(array(
+        'markers' => 'shadow:false|icon:'.$markerImages['visited'].$visited,
+      ));
+    }
+    if ($current) {
+      $staticMap .= '&'.http_build_query(array(
+        'markers' => 'shadow:false|icon:'.$markerImages['current'].$current,
+      ));
+    }
+    if ($other) {
+      $staticMap .= '&'.http_build_query(array(
+        'markers' => 'shadow:false|icon:'.$markerImages['other'].$other,
+      ));
+    }
+    
+    $this->assign('staticMap', $staticMap);
+  }
+  
+  protected function initializeDynamicMap($view) {
     $center = array(
       'lat' => 42.374464, 
       'lon' => -71.117232,

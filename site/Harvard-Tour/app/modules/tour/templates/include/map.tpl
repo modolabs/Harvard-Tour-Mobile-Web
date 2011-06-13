@@ -2,11 +2,17 @@
   <div id="helptext">Tap any pin to select it as your starting point</div>
 {/if}
 </div>{* close container *}
-<div id="map_container"{if $tappable|default: false}class="tappable"{/if}>
-  <div id="map_canvas">
+{if $staticMap}
+  <div id="static_map_container">
+    <img id="static_map" src="{$staticMap}" />
   </div>
-  <div id="map_loading">
-    <img src="/common/images/loading2.gif" />&nbsp;Loading map...
+{else}
+  <div id="map_container"{if $tappable|default: false}class="tappable"{/if}>
+    <div id="map_canvas">
+    </div>
+    <div id="map_loading">
+      <img src="/common/images/loading2.gif" />&nbsp;Loading map...
+    </div>
   </div>
-</div>
+{/if}
 <div>{* rest of container *}
