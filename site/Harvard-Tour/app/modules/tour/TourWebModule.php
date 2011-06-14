@@ -49,22 +49,22 @@ class TourWebModule extends WebModule {
     }
   }
   
-  protected function markerImages() {
+  protected function markerImages($withShadow) {
     return array(
       'self' => 'http://chart.apis.google.com/chart?'.http_build_query(array(
         'chst' => 'd_simple_text_icon_left',
         'chld' => ' |9|000000|glyphish_walk|24|000000',
       )),
       'current' => 'http://chart.apis.google.com/chart?'.http_build_query(array(
-        'chst' => 'd_map_xpin_letter_withshadow',
+        'chst' => $withShadow ? 'd_map_xpin_letter_withshadow' : 'd_map_xpin_letter',
         'chld' => 'pin||DD0000|DD0000',
       )),
       'visited' => 'http://chart.apis.google.com/chart?'.http_build_query(array(
-        'chst' => 'd_map_xpin_icon_withshadow',
+        'chst' => $withShadow ? 'd_map_xpin_icon_withshadow' : 'd_map_xpin_icon',
         'chld' => 'pin|glyphish_todo|CCCCCC',
       )),
       'other' => 'http://chart.apis.google.com/chart?'.http_build_query(array(
-        'chst' => 'd_map_xpin_letter_withshadow',
+        'chst' => $withShadow ? 'd_map_xpin_letter_withshadow' : 'd_map_xpin_letter',
         'chld' => 'pin||CCCCCC|CCCCCC',
       )),
     );
@@ -102,7 +102,7 @@ class TourWebModule extends WebModule {
       $y = 250;
     }
   
-    $markerImages = $this->markerImages();
+    $markerImages = $this->markerImages(false);
     
     $staticMap = 'http://maps.google.com/maps/api/staticmap?sensor=false&size='.$x.'x'.$y;
     if ($view == self::MAP_VIEW_OVERVIEW) {
@@ -132,17 +132,17 @@ class TourWebModule extends WebModule {
     
     if ($visited) {
       $staticMap .= '&'.http_build_query(array(
-        'markers' => 'shadow:false|icon:'.$markerImages['visited'].$visited,
+        'markers' => 'icon:'.$markerImages['visited'].$visited,
       ));
     }
     if ($current) {
       $staticMap .= '&'.http_build_query(array(
-        'markers' => 'shadow:false|icon:'.$markerImages['current'].$current,
+        'markers' => 'icon:'.$markerImages['current'].$current,
       ));
     }
     if ($other) {
       $staticMap .= '&'.http_build_query(array(
-        'markers' => 'shadow:false|icon:'.$markerImages['other'].$other,
+        'markers' => 'icon:'.$markerImages['other'].$other,
       ));
     }
     
@@ -166,7 +166,7 @@ class TourWebModule extends WebModule {
     $scriptText = "\n".
       'var centerCoords = '.json_encode($center)."\n".
       'var tourStops = '.json_encode($tourStops).";\n".
-      'var tourIcons = '.json_encode($this->markerImages()).";\n";
+      'var tourIcons = '.json_encode($this->markerImages(true)).";\n";
 
     $this->addExternalJavascript('http://maps.google.com/maps/api/js?sensor=true');
     $this->addInlineJavascript($scriptText);

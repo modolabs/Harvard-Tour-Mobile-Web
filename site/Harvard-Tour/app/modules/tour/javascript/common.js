@@ -126,7 +126,10 @@ function showMap(center, stops, tourIcons, stopOverviewMode) {
         'map'       : map, 
         'position'  : stopLatLng,
         'title'     : stop['title'],
-        'icon'      : new google.maps.MarkerImage(icon)
+        'icon'      : new google.maps.MarkerImage(icon, 
+                                                  new google.maps.Size(40, 37), 
+                                                  new google.maps.Point(0, 0),
+                                                  new google.maps.Point(10, 35))
       });
       stops[i]['marker'].tourStop = stop;
       stops[i]['marker'].tourStopIndex = i;
