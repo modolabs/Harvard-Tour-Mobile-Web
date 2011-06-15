@@ -417,6 +417,7 @@ class TourWebModule extends WebModule {
         
         $this->addOnLoad('setupVideoFrames();');
         $this->addOnOrientationChange('setTimeout(resizeVideoFrames, 0);');
+        $this->addInlineJavascript('var hideTabs = '.json_encode(array_slice($tabKeys, 1)).';');
         
         $prevURL = $this->buildTourURL('map', array(
           'view' => self::MAP_VIEW_APPROACH

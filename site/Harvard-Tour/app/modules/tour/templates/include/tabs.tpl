@@ -23,5 +23,14 @@
   {if count($tabBodies) <= 1}
     <div id="pagehead" class="brief">{$pageHeader}</div>
   {/if}
-  {$smarty.block.parent}
+  <div id="tabbodies">
+    {foreach $tabBodies as $tabKey => $tabBody}
+      {if isset($tabbedView['tabs'][$tabKey])}
+        <div class="tabbody" id="{$tabKey}Tab">
+          {$tabBody}
+        </div>
+      {/if}
+    {/foreach}
+  </div>
+  <div class="clear"></div>
 {/block}

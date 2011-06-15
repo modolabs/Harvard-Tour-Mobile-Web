@@ -324,7 +324,16 @@ function setupVideoFrames() {
     }
   }
   
-  resizeVideoFrames();
+  setTimeout(function () {
+    resizeVideoFrames();
+    if (hideTabs) {
+      // hide tabs now that youtube has had a chance to load
+      for (var i = 0; i < hideTabs.length; i++) {
+        var tab = document.getElementById(hideTabs[i]+'Tab');
+        if (tab) { tab.style.display = 'none'; }
+      }
+    }
+  }, 250);
 }
 
 function resizeVideoFrames() {
