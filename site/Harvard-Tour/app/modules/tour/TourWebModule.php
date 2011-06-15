@@ -42,8 +42,8 @@ class TourWebModule extends WebModule {
     }
     
     $this->tour = new Tour($stopId, $seenStopIds);
-    $this->stop = $this->tour->getStop();
-      
+    $this->stop = $this->tour->getCurrentStop();
+    
     if (!$newTour) {
       // store new state
       $expires = time() + self::COOKIE_DURATION;
@@ -59,18 +59,30 @@ class TourWebModule extends WebModule {
         'anchor'   => array(40, 40),
         'size'     => array(80, 80),
         'realSize' => array(80, 80),
+        'shape'    => array(
+          'coords' => array(27, 4, 53, 42),
+          'type'   => 'rect',
+        ),
       ),
       'visited' => array(
         'src' => FULL_URL_PREFIX.'modules/tour/images/map-pin-past.png',
         'anchor'   => array(40, 40),
         'size'     => array(80, 80),
         'realSize' => array(80, 80),
+        'shape'    => array(
+          'coords' => array(27, 4, 53, 42),
+          'type'   => 'rect',
+        ),
       ),
       'other'   => array(
         'src' => FULL_URL_PREFIX.'modules/tour/images/map-pin.png',
         'anchor'   => array(40, 40),
         'size'     => array(80, 80),
         'realSize' => array(80, 80),
+        'shape'    => array(
+          'coords' => array(27, 4, 53, 42),
+          'type'   => 'rect',
+        ),
       ),
     );
   }
@@ -131,37 +143,33 @@ class TourWebModule extends WebModule {
     }
     
     if ($visited) {
-      if ($_SERVER['SERVER_NAME'] != 'localhost') {
-        $staticMap .= '&'.http_build_query(array(
-          'markers' => 'shadow:false|icon:'.$markerImages['visited']['src'].$visited,
-        ));
-      } else {
-        $staticMap .= '&'.http_build_query(array(
-          'markers' => 'color:CCCCCC|label:V',
-        ));
+      $markers = 'shadow:false|icon:'.$markerImages['visited']['src'];
+      if ($_SERVER['SERVER_NAME'] == 'localhost') {
+        $markers = 'color:0xCCCCCC|label:V';
       }
+      $staticMap .= '&'.http_build_query(array(
+        'markers' => $markers.$visited,
+      ));
     }
+    
     if ($current) {
-      if ($_SERVER['SERVER_NAME'] != 'localhost') {
-        $staticMap .= '&'.http_build_query(array(
-          'markers' => 'shadow:false|icon:'.$markerImages['current']['src'].$current,
-        ));
-      } else {
-        $staticMap .= '&'.http_build_query(array(
-          'markers' => 'color:DD0000',
-        ));
+      $markers = 'shadow:false|icon:'.$markerImages['current']['src'];
+      if ($_SERVER['SERVER_NAME'] == 'localhost') {
+        $markers = 'color:0xDD0000|label:C';
       }
+      $staticMap .= '&'.http_build_query(array(
+        'markers' => $markers.$current,
+      ));
     }
+    
     if ($other) {
-      if ($_SERVER['SERVER_NAME'] != 'localhost') {
-        $staticMap .= '&'.http_build_query(array(
-          'markers' => 'shadow:false|icon:'.$markerImages['other']['src'].$other,
-        ));
-      } else {
-        $staticMap .= '&'.http_build_query(array(
-          'markers' => 'color:CCCCCC',
-        ));
+      $markers = 'shadow:false|icon:'.$markerImages['other']['src'];
+      if ($_SERVER['SERVER_NAME'] == 'localhost') {
+        $markers = 'color:0xCCCCCC';
       }
+      $staticMap .= '&'.http_build_query(array(
+        'markers' => $markers.$other,
+      ));
     }
     
     $this->assign('staticMap', $staticMap);
@@ -174,6 +182,7 @@ class TourWebModule extends WebModule {
     
     $tourStops = $this->getAllStopsDetails();
     foreach ($tourStops as $i => $tourStop) {
+      $tourStops[$i]['index'] = $i;
       if ($tourStop['current']) {
         $currentStopIndex = $i;
       } else {

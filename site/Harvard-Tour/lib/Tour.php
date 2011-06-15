@@ -116,9 +116,14 @@ class Tour {
     }
   }
   
-  function getStop() {
+  function getCurrentStop() {
     return isset($this->stops[$this->currentStopId]) ? 
-      $this->stops[$this->currentStopId] : false;
+      $this->stops[$this->currentStopId] : reset($this->stops);
+  }
+  
+  function getStopIndex($stopId) {
+    $stopIdToIndex = array_flip(array_keys($this->stops));
+    return isset($stopIdToIndex[$stopId]) ? $stopIdToIndex[$stopId] : 0;
   }
  
   function getFirstStop() {

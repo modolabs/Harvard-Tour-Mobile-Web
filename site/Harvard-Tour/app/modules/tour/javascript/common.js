@@ -70,11 +70,13 @@ function showMap() {
       }
       
       tourStops[i]['marker'] = new google.maps.Marker({
+        'flat'      : false,
         'clickable' : true,
         'map'       : map, 
         'position'  : new google.maps.LatLng(stop['lat'], stop['lon']),
         'title'     : stop['title'],
-        'icon'      : getMarkerImage(icon)
+        'icon'      : getMarkerImage(icon),
+        'shape'     : getMarkerShape(icon)
       });
       tourStops[i]['marker'].tourStopIndex = i;
       
@@ -193,9 +195,19 @@ function getMarkerImage(icon) {
     new google.maps.Size(icon['size'][0], icon['size'][1]));
 }
 
+function getMarkerShape(icon) {
+  return {
+    'type'   : icon['shape']['type'],
+    'coords' : icon['shape']['coords']
+  };
+}
+
 function confirmStopChange() {
   if (selectedStopIndex != currentStopIndex) {
-    if (!confirm("Are you sure you want to jump to a different stop in the tour?")) {
+    $direction = (selectedStopIndex < currentStopIndex) ? 'back' : 'ahead';
+    $count = Math.abs(selectedStopIndex - currentStopIndex);
+    
+    if (!confirm("Are you sure you want to jump "+$direction+" "+$count+" stop"+($count > 1 ? "s" : "")+"?")) {
       selectStop(currentStopIndex);
       return false;  // let the user try again
     }
