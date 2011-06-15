@@ -192,7 +192,7 @@ class TourDataParser {
   protected $data = array();
   protected $useCache = true;
   protected $cache = null;
-  protected $cacheLifetime = 3600;
+  protected $cacheLifetime = 86400;
   
   function __construct($useCache=true) {
     $this->useCache = $useCache;
