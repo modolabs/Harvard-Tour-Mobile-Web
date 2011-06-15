@@ -7,10 +7,15 @@
       <span>map</span>
       <span class="spacer">|</span> 
       <a class="active" href="{$listViewURL}">list</a>
-      {if !$newTour}<a id="doneURL" class="active" href="{$doneURL}">done</a>{/if}
+      {if !$newTour}
+        <a id="doneURL" class="active" href="{$doneURL}" onclick="return confirmStopChange();">done</a>
+      {/if}
     </div>
   {else}
-    {include file="findInclude:modules/tour/templates/include/navheader.tpl" navTitle="Walk to {$stop['title']}" nextURL=$nextURL prevURL=$prevURL}
+    {capture name="navTitle" assign="navTitle"}
+      Walk to <span id="navstoptitle">{$stop['title']}</span>
+    {/capture}
+    {include file="findInclude:modules/tour/templates/include/navheader.tpl" navTitle=$navTitle nextURL=$nextURL prevURL=$prevURL confirmStopChange=true}
   {/if}
   
   <div id="nextstop" class="listrow">
@@ -21,7 +26,7 @@
     <h2 id="stoptitle">{$stop['title']}</h2>
     {if $newTour}
       <div id="starthere">
-        <a  id="stoplink" href="{$stop['url']}">
+        <a id="stoplink" href="{$stop['url']}">
           Start Here <img src="/common/images/arrow-right@2x.png" alt="Next" width="25" height="25" border="0" />
         </a>
       </div>
@@ -31,5 +36,5 @@
   </div>
 </div>
 <img id="zoomup" src="{$stop['photo']}" onclick="zoomUpDown('zoomup')" />
-{include file="findInclude:modules/tour/templates/include/map.tpl" tappable=$tappable}
+{include file="findInclude:modules/tour/templates/include/map.tpl"}
 {include file="findInclude:common/templates/footer.tpl"}

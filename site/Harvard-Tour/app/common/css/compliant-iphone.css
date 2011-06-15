@@ -1,9 +1,3 @@
 #pagetitle h1 {
 	font-size: 22px;
 }
-#map_container {
-  /* height: 268px; */
-}
-#helptext + #map_container {
-  /* height: 248px; */
-}

@@ -49,39 +49,34 @@ class TourWebModule extends WebModule {
     }
   }
   
-  protected function markerImages($withShadow) {
+  protected function markerImages() {
     return array(
-      'self' => 'http://chart.apis.google.com/chart?'.http_build_query(array(
-        'chst' => 'd_simple_text_icon_left',
-        'chld' => ' |9|000000|glyphish_walk|24|000000',
-      )),
-      'current' => 'http://chart.apis.google.com/chart?'.http_build_query(array(
-        'chst' => $withShadow ? 'd_map_xpin_letter_withshadow' : 'd_map_xpin_letter',
-        'chld' => 'pin||DD0000|DD0000',
-      )),
-      'visited' => 'http://chart.apis.google.com/chart?'.http_build_query(array(
-        'chst' => $withShadow ? 'd_map_xpin_icon_withshadow' : 'd_map_xpin_icon',
-        'chld' => 'pin|glyphish_todo|CCCCCC',
-      )),
-      'other' => 'http://chart.apis.google.com/chart?'.http_build_query(array(
-        'chst' => $withShadow ? 'd_map_xpin_letter_withshadow' : 'd_map_xpin_letter',
-        'chld' => 'pin||CCCCCC|CCCCCC',
-      )),
+      'current' => array(
+        'src'      => FULL_URL_PREFIX.'modules/tour/images/map-pin-current.png',
+        'anchor'   => array(40, 40),
+        'size'     => array(80, 80),
+        'realSize' => array(80, 80),
+      ),
+      'visited' => array(
+        'src' => FULL_URL_PREFIX.'modules/tour/images/map-pin-past.png',
+        'anchor'   => array(40, 40),
+        'size'     => array(80, 80),
+        'realSize' => array(80, 80),
+      ),
+      'other'   => array(
+        'src' => FULL_URL_PREFIX.'modules/tour/images/map-pin.png',
+        'anchor'   => array(40, 40),
+        'size'     => array(80, 80),
+        'realSize' => array(80, 80),
+      ),
     );
   }
   
-  protected function currentIcon() {
-    return 'http://chart.apis.google.com/chart?'.http_build_query(array(
-      'chst' => 'd_map_xpin_letter',
-      'chld' => 'pin||DD0000|DD0000',
-    ));
-  }
-  
-  protected function visitedIcon() {
-    return 'http://chart.apis.google.com/chart?'.http_build_query(array(
-      'chst' => 'd_simple_text_icon_left',
-      'chld' => ' |9|555555|glyphish_todo|16|555555',
-    ));
+  protected function getOverviewMapCenter() {
+    return array(
+      'lat' => 42.374464, 
+      'lon' => -71.117232,
+    );
   }
   
   protected function initializeMap($view) {
@@ -102,11 +97,13 @@ class TourWebModule extends WebModule {
       $y = 250;
     }
   
-    $markerImages = $this->markerImages(false);
+    $markerImages = $this->markerImages();
     
     $staticMap = 'http://maps.google.com/maps/api/staticmap?sensor=false&size='.$x.'x'.$y;
     if ($view == self::MAP_VIEW_OVERVIEW) {
-      $staticMap .= '&center=42.374464,-71.117232';
+      $center = $this->getOverviewMapCenter();
+    
+      $staticMap .= '&center='.$center['lat'].','.$center['lon'];
     } else {
       $staticMap .= '&zoom=17';
     }
@@ -131,46 +128,76 @@ class TourWebModule extends WebModule {
     }
     
     if ($visited) {
-      $staticMap .= '&'.http_build_query(array(
-        'markers' => 'icon:'.$markerImages['visited'].$visited,
-      ));
+      if ($_SERVER['SERVER_NAME'] != 'localhost') {
+        $staticMap .= '&'.http_build_query(array(
+          'markers' => 'shadow:false|icon:'.$markerImages['visited']['src'].$visited,
+        ));
+      } else {
+        $staticMap .= '&'.http_build_query(array(
+          'markers' => 'color:CCCCCC|label:V',
+        ));
+      }
     }
     if ($current) {
-      $staticMap .= '&'.http_build_query(array(
-        'markers' => 'icon:'.$markerImages['current'].$current,
-      ));
+      if ($_SERVER['SERVER_NAME'] != 'localhost') {
+        $staticMap .= '&'.http_build_query(array(
+          'markers' => 'shadow:false|icon:'.$markerImages['current']['src'].$current,
+        ));
+      } else {
+        $staticMap .= '&'.http_build_query(array(
+          'markers' => 'color:DD0000',
+        ));
+      }
     }
     if ($other) {
-      $staticMap .= '&'.http_build_query(array(
-        'markers' => 'icon:'.$markerImages['other'].$other,
-      ));
+      if ($_SERVER['SERVER_NAME'] != 'localhost') {
+        $staticMap .= '&'.http_build_query(array(
+          'markers' => 'shadow:false|icon:'.$markerImages['other']['src'].$other,
+        ));
+      } else {
+        $staticMap .= '&'.http_build_query(array(
+          'markers' => 'color:CCCCCC',
+        ));
+      }
     }
     
     $this->assign('staticMap', $staticMap);
   }
   
   protected function initializeDynamicMap($view) {
-    $center = array(
-      'lat' => 42.374464, 
-      'lon' => -71.117232,
-    );
         
-    $stopOverviewMode = $view == self::MAP_VIEW_OVERVIEW ? 'true' : 'false';
-    
     // Add prefix to urls which will be set via Javascript
+    $fitToBounds = array($this->getOverviewMapCenter());
+    $currentStopIndex = 0;
+    
     $tourStops = $this->getAllStopsDetails();
     foreach ($tourStops as $i => $tourStop) {
-      $tourStops[$i]['url'] = URL_PREFIX.ltrim($tourStop['url'], '/');
+      if ($tourStop['current']) {
+        $currentStopIndex = $i;
+      }
+      if ($view == self::MAP_VIEW_OVERVIEW || $tourStop['current']) {
+        $fitToBounds[] = array('lat' => $tourStop['lat'], 'lon' => $tourStop['lon']);
+      }
+      if ($view == self::MAP_VIEW_OVERVIEW) {
+        $tourStops[$i]['url'] = URL_PREFIX.ltrim($tourStop['url'], '/');
+      } else {
+        $tourStops[$i]['url'] = URL_PREFIX.ltrim($this->buildTourURL('detail', array(
+          'id' => $tourStop['id'],
+        )), '/');
+      }
     }
     
     $scriptText = "\n".
-      'var centerCoords = '.json_encode($center)."\n".
+      'var centerCoords = '.json_encode($this->getOverviewMapCenter())."\n".
+      'var fitToBounds = '.json_encode($fitToBounds)."\n".
       'var tourStops = '.json_encode($tourStops).";\n".
-      'var tourIcons = '.json_encode($this->markerImages(true)).";\n";
+      'var tourIcons = '.json_encode($this->markerImages()).";\n".
+      'var currentStopIndex = '.$currentStopIndex.";\n".
+      'var selectedStopIndex = '.$currentStopIndex.";\n";
 
     $this->addExternalJavascript('http://maps.google.com/maps/api/js?sensor=true');
     $this->addInlineJavascript($scriptText);
-    $this->addOnLoad('showMap(centerCoords, tourStops, tourIcons, '.$stopOverviewMode.');');
+    $this->addOnLoad('showMap();');
     $this->addOnOrientationChange('resizeMapOnChange();');
   }
   
@@ -326,8 +353,6 @@ class TourWebModule extends WebModule {
         $this->assign('mapViewURL',  $mapViewURL);
         $this->assign('newTour',     $newTour);
         $this->assign('doneURL',     $this->getArg('doneURL', $this->buildTourURL('index')));
-        $this->assign('currentIcon', $this->currentIcon());
-        $this->assign('visitedIcon', $this->visitedIcon());
         break;
       
       case 'map':
@@ -370,7 +395,6 @@ class TourWebModule extends WebModule {
         }
 
         $this->assign('view', $view);
-        $this->assign('tappable', $view == self::MAP_VIEW_OVERVIEW);
         break;
         
       case 'detail':

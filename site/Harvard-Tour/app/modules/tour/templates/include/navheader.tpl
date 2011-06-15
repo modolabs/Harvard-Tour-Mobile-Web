@@ -6,7 +6,7 @@
     </a>
   {/if}
   {if $nextURL}
-    <a id="next" href="{$nextURL}">
+    <a id="next" href="{$nextURL}" {if $confirmStopChange}onclick="return confirmStopChange();"{/if}>
       <img src="/common/images/arrow-right@2x.png" alt="Next" width="50" height="50" border="0" />
     </a>
   {/if}

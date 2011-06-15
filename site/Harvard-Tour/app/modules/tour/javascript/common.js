@@ -1,14 +1,3 @@
-function resizeMap() {
-  var nonfooternav = document.getElementById('nonfooternav');
-  var navbar = document.getElementById('navbar');
-  var pagehead = document.getElementById('pagehead');
-  var mapcontainer = document.getElementById('map_container');
-  
-  
-  //nonfooternav.style.overflow = 'hidden';
-  
-}
-
 // resizing counterpart for dynamic maps
 function resizeMapOnChange() {
   if (resizeMapOnChange.resizeMapTimeout !== undefined) {
@@ -39,10 +28,95 @@ function resizeMap() {
     mapcontainer.style.height = (windowHeight - headerHeight)+'px';
 }
 
-function showMap(center, stops, tourIcons, stopOverviewMode) {
+function showMap() {
   resizeMap();
   
+  var mapElement = document.getElementById('map_canvas');
+  if (mapElement) {
+    var options = {
+      'zoom'      : 17,
+      'center'    : new google.maps.LatLng(centerCoords['lat'], centerCoords['lon']),
+      'mapTypeId' : google.maps.MapTypeId.ROADMAP,
+      'mapTypeControl' : false,
+      /*'mapTypeControlOptions' : { 
+        'mapTypeIds' : [
+          google.maps.MapTypeId.ROADMAP,
+          google.maps.MapTypeId.SATELLITE
+        ],
+        'position' : google.maps.ControlPosition.TOP_LEFT,
+        'style'    : google.maps.MapTypeControlStyle.HORIZONTAL_BAR
+      },*/
+      'panControl' : false,
+      'streetViewControl' : false,
+      'zoomControlOptions' : { 
+        'position' : google.maps.ControlPosition.RIGHT_BOTTOM,
+        'style'    : google.maps.ZoomControlStyle.SMALL
+      }
+    };
+    
+    var map = new google.maps.Map(mapElement, options);  
+
+    for (var i = 0; i < tourStops.length; i++) {
+      var stop = tourStops[i];
+    
+      var icon = tourIcons['other'];
+      if (stop['visited']) {
+        icon = tourIcons['visited'];
+      }
+      stop['defaultIcon'] = icon; // remember non-current icon state
+      
+      if (stop['current']) {
+        icon = tourIcons['current'];
+      }
+      
+      tourStops[i]['marker'] = new google.maps.Marker({
+        'clickable' : true,
+        'map'       : map, 
+        'position'  : new google.maps.LatLng(stop['lat'], stop['lon']),
+        'title'     : stop['title'],
+        'icon'      : getMarkerImage(icon)
+      });
+      tourStops[i]['marker'].tourStopIndex = i;
+      
+      google.maps.event.addListener(tourStops[i]['marker'], 'click', function() {
+        selectStop(this.tourStopIndex);
+      });
+    }
+    
+    var bounds = new google.maps.LatLngBounds();
+    for (var i = 0; i < fitToBounds.length; i++) {
+      bounds.extend(new google.maps.LatLng(fitToBounds[i]['lat'], fitToBounds[i]['lon']));
+    }
+    if (fitToBounds.length > 2) {
+      map.fitBounds(bounds);
+    } else {
+      map.panTo(bounds.getCenter());
+    }
+    
+    /*navigator.geolocation.getCurrentPosition(function(position) {
+      var location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+
+      var marker = new google.maps.Marker({
+        'clickable' : false,
+        'map'       : map, 
+        'position'  : location
+      });
+    });*/
+    
+    var elem = document.getElementById('map_canvas');
+    elem.style.visibility = 'visible';
+    var elem = document.getElementById('map_loading');
+    elem.style.display = 'none';
+  }
+}
+
+function selectStop(tourStopIndex) {
   var stopElems = [
+    {
+      'key'  : 'title',
+      'elem' : document.getElementById('navstoptitle'),
+      'attr' : 'innerHTML'
+    },
     {
       'key'  : 'title',
       'elem' : document.getElementById('stoptitle'),
@@ -72,126 +146,61 @@ function showMap(center, stops, tourIcons, stopOverviewMode) {
       'key'  : 'url',
       'elem' : document.getElementById('doneURL'),
       'attr' : 'href'
+    },
+    {
+      'key'  : 'url',
+      'elem' : document.getElementById('next'),
+      'attr' : 'href'
     }
   ];
   
-  var mapElement = document.getElementById('map_canvas');
-  if (mapElement) {
-    var centerLatLng = new google.maps.LatLng(center['lat'], center['lon']);
-    var options = {
-      'zoom'      : 17,
-      'center'    : centerLatLng,
-      'mapTypeId' : google.maps.MapTypeId.ROADMAP,
-      'mapTypeControl' : false,
-      /*'mapTypeControlOptions' : { 
-        'mapTypeIds' : [
-          google.maps.MapTypeId.ROADMAP,
-          google.maps.MapTypeId.SATELLITE
-        ],
-        'position' : google.maps.ControlPosition.TOP_LEFT,
-        'style'    : google.maps.MapTypeControlStyle.HORIZONTAL_BAR
-      },*/
-      'panControl' : false,
-      'streetViewControl' : false,
-      'zoomControlOptions' : { 
-        'position' : google.maps.ControlPosition.RIGHT_BOTTOM,
-        'style'    : google.maps.ZoomControlStyle.SMALL
-      }
-    };
-    
-    var map    = new google.maps.Map(mapElement, options);  
-    var bounds = new google.maps.LatLngBounds();
-    bounds.extend(centerLatLng);
+  var stop = tourStops[tourStopIndex];
 
-    for (var i = 0; i < stops.length; i++) {
-      var stop = stops[i];
+  for (var i = 0; i < stopElems.length; i++) {
+    var element = stopElems[i]['elem'];
     
-      var stopLatLng = new google.maps.LatLng(stop['lat'], stop['lon']);
-      if (stop['current'] || stopOverviewMode) {
-        bounds.extend(stopLatLng);
-      }
+    if (element) {
+      var attr = stopElems[i]['attr'];
+      var value = stop[stopElems[i]['key']];
       
-      var icon = tourIcons['other'];
-      if (stop['visited']) {
-        icon = tourIcons['visited'];
+      if (attr == 'innerHTML') {
+        element.innerHTML = value;
+      } else if (attr == 'src') {
+        element.src = value;
+      } else if (attr == 'href') {
+        element.href = value;
       }
-      stop['defaultIcon'] = icon; // remember non-current icon state
-      
-      if (stop['current']) {
+    }
+    
+    // select marker
+    for (var j = 0; j < tourStops.length; j++) {
+      var icon = tourStops[j]['defaultIcon'];
+      if (j == tourStopIndex) {
         icon = tourIcons['current'];
       }
-      
-      stops[i]['marker'] = new google.maps.Marker({
-        'clickable' : stopOverviewMode,
-        'map'       : map, 
-        'position'  : stopLatLng,
-        'title'     : stop['title'],
-        'icon'      : new google.maps.MarkerImage(icon, 
-                                                  new google.maps.Size(40, 37), 
-                                                  new google.maps.Point(0, 0),
-                                                  new google.maps.Point(10, 35))
-      });
-      stops[i]['marker'].tourStop = stop;
-      stops[i]['marker'].tourStopIndex = i;
-      
-      if (stopOverviewMode) {
-        google.maps.event.addListener(stops[i]['marker'], 'click', function() {
-          var stop = this.tourStop;
-          
-          for (var i = 0; i < stopElems.length; i++) {
-            var element = stopElems[i]['elem'];
-            
-            if (element) {
-              var attr = stopElems[i]['attr'];
-              var value = stop[stopElems[i]['key']];
-              
-              if (attr == 'innerHTML') {
-                element.innerHTML = value;
-              } else if (attr == 'src') {
-                element.src = value;
-              } else if (attr == 'href') {
-                element.href = value;
-              }
-            }
-            
-            // select marker
-            for (var j = 0; j < stops.length; j++) {
-              var icon = stops[j]['defaultIcon'];
-              if (j == this.tourStopIndex) {
-                icon = tourIcons['current'];
-              }
-              stops[j]['marker'].setIcon(new google.maps.MarkerImage(icon));
-            }
-          }
-        });
-      }
+      tourStops[j]['marker'].setIcon(getMarkerImage(icon));
     }
-    if (stopOverviewMode) {
-      map.fitBounds(bounds);
-    } else {
-      map.panTo(bounds.getCenter());
-    }
-    
-    navigator.geolocation.getCurrentPosition(function(position) {
-      var location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-
-      var marker = new google.maps.Marker({
-        'clickable' : false,
-        'map'       : map, 
-        'position'  : location,
-        'icon'      : new google.maps.MarkerImage(tourIcons['self'])
-      });
-    });
-    
-    var elem = document.getElementById('map_canvas');
-    elem.style.visibility = 'visible';
-    var elem = document.getElementById('map_loading');
-    elem.style.display = 'none';
   }
+  selectedStopIndex = tourStopIndex;
 }
 
-function confirmStop() {
-  return confirm("Are you sure you want to end your Tour and return to the welcome screen?");
+function getMarkerImage(icon) {
+  return new google.maps.MarkerImage(
+    icon['src'], 
+    new google.maps.Size(icon['realSize'][0], icon['realSize'][1]), 
+    new google.maps.Point(0, 0),
+    new google.maps.Point(icon['anchor'][0], icon['anchor'][1]),
+    new google.maps.Size(icon['size'][0], icon['size'][1]));
+}
+
+function confirmStopChange() {
+  if (selectedStopIndex != currentStopIndex) {
+    if (!confirm("Are you sure you want to jump ahead in the tour?")) {
+      selectStop(currentStopIndex);
+      return false;  // let the user try again
+    }
+  }
+  return true;
 }
 
 function zoomUpDown(strID) {
