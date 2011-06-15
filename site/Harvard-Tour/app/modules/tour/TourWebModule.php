@@ -15,33 +15,36 @@ class TourWebModule extends WebModule {
     $stopId = false;
     $seenStopIds = array();
     
-    $newTour = $this->getArg(self::NEW_TOUR_PARAM, false);
     if (isset($this->args['id'])) {
       $stopId = $this->args['id']; // user came from a page that set the stop
     }
     
-    if (!$newTour) {
-      if (!$stopId && isset($_COOKIE[self::CURRENT_STOP_COOKIE]) && $_COOKIE[self::CURRENT_STOP_COOKIE]) {
-        $stopId = $_COOKIE[self::CURRENT_STOP_COOKIE]; // cookie is set
-      }
-    
-      if (isset($_COOKIE[self::VISITED_STOPS_COOKIE])) {
-        $seenStopIds = explode(',', $_COOKIE[self::VISITED_STOPS_COOKIE]);
-      }
-      if (isset($this->args['fromId'])) {
-        $seenStopIds[] = $this->args['fromId'];
-      }
-    }
-    
-    $this->tour = new Tour($stopId, $seenStopIds);
-    $this->stop = $this->tour->getStop();
-      
+    $newTour = $this->getArg(self::NEW_TOUR_PARAM, false);
     if ($newTour) {
       $expires = time() - 3600; // drop cookies on new tour
       setcookie(self::CURRENT_STOP_COOKIE,  '', $expires, COOKIE_PATH);
       setcookie(self::VISITED_STOPS_COOKIE, '', $expires, COOKIE_PATH);
     
     } else {
+      if ($stopId === false && isset($_COOKIE[self::CURRENT_STOP_COOKIE]) && 
+                                     $_COOKIE[self::CURRENT_STOP_COOKIE]) {
+        $stopId = $_COOKIE[self::CURRENT_STOP_COOKIE]; // cookie is set
+      }
+    
+      if (isset($_COOKIE[self::VISITED_STOPS_COOKIE])) {
+        $seenStopIds = explode(',', $_COOKIE[self::VISITED_STOPS_COOKIE]);
+      }
+      
+      // Add current stop if we are viewing a detail page
+      if ($stopId !== false && $this->page == 'detail') {
+        $seenStopIds[] = $stopId;
+      }
+    }
+    
+    $this->tour = new Tour($stopId, $seenStopIds);
+    $this->stop = $this->tour->getStop();
+      
+    if (!$newTour) {
       // store new state
       $expires = time() + self::COOKIE_DURATION;
       setcookie(self::CURRENT_STOP_COOKIE,  $this->stop->getId(),       $expires, COOKIE_PATH);
@@ -165,7 +168,6 @@ class TourWebModule extends WebModule {
   }
   
   protected function initializeDynamicMap($view) {
-        
     // Add prefix to urls which will be set via Javascript
     $fitToBounds = array($this->getOverviewMapCenter());
     $currentStopIndex = 0;
@@ -174,6 +176,8 @@ class TourWebModule extends WebModule {
     foreach ($tourStops as $i => $tourStop) {
       if ($tourStop['current']) {
         $currentStopIndex = $i;
+      } else {
+        $tourStops[$i]['jumpText'] = '';
       }
       if ($view == self::MAP_VIEW_OVERVIEW || $tourStop['current']) {
         $fitToBounds[] = array('lat' => $tourStop['lat'], 'lon' => $tourStop['lon']);
@@ -300,7 +304,7 @@ class TourWebModule extends WebModule {
         
         $this->assign('startURL', $this->buildTourURL('map', array(
           'view' => self::MAP_VIEW_OVERVIEW,
-          'id'   => $this->tour->getFirstStop()->getId(),
+          'id'   => $this->tour->getFirstGuidedTourStop()->getId(),
           self::NEW_TOUR_PARAM  => 1,
         )));
         
@@ -414,7 +418,6 @@ class TourWebModule extends WebModule {
           $nextURL = $this->buildTourURL('map', array(
             'view'   => self::MAP_VIEW_APPROACH,
             'id'     => $nextStop->getId(),
-            'fromId' => $this->stop->getId(),
           ));
         } else {
           $nextURL = $this->buildTourURL('finish');

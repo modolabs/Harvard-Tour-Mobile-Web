@@ -195,7 +195,7 @@ function getMarkerImage(icon) {
 
 function confirmStopChange() {
   if (selectedStopIndex != currentStopIndex) {
-    if (!confirm("Are you sure you want to jump ahead in the tour?")) {
+    if (!confirm("Are you sure you want to jump to a different stop in the tour?")) {
       selectStop(currentStopIndex);
       return false;  // let the user try again
     }
