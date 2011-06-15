@@ -10,7 +10,7 @@
       {if !$newTour}<a id="doneURL" class="active" href="{$doneURL}">done</a>{/if}
     </div>
   {else}
-    {include file="findInclude:modules/tour/templates/include/navHeader.tpl" navTitle="Walk to {$stop['title']}" nextURL=$nextURL prevURL=$prevURL}
+    {include file="findInclude:modules/tour/templates/include/navheader.tpl" navTitle="Walk to {$stop['title']}" nextURL=$nextURL prevURL=$prevURL}
   {/if}
   
   <div id="nextstop" class="listrow">
