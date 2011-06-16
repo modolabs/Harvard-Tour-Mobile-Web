@@ -8,7 +8,7 @@
       <span class="spacer">|</span> 
       <a class="active" href="{$listViewURL}">list</a>
       {if !$newTour}
-        <a id="doneURL" class="active" href="{$doneURL}" onclick="return confirmStopChange();">done</a>
+        <a id="doneURL" class="active" href="{$doneURL}" onclick="return confirmStopChange();">return</a>
       {/if}
     </div>
   {else}

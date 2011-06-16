@@ -177,7 +177,7 @@ class TourWebModule extends WebModule {
   
   protected function initializeDynamicMap($view) {
     // Add prefix to urls which will be set via Javascript
-    $fitToBounds = array($this->getOverviewMapCenter());
+    $fitToBounds = array();
     $currentStopIndex = 0;
     
     $tourStops = $this->getAllStopsDetails();
@@ -188,7 +188,9 @@ class TourWebModule extends WebModule {
       } else {
         $tourStops[$i]['jumpText'] = '';
       }
-      if ($view == self::MAP_VIEW_OVERVIEW || $tourStop['current']) {
+      if ($view == self::MAP_VIEW_OVERVIEW || 
+          $tourStop['current'] ||
+          (isset($tourStops[$i+1]) && $tourStops[$i+1]['current'])) {
         $fitToBounds[] = array('lat' => $tourStop['lat'], 'lon' => $tourStop['lon']);
       }
       if ($view == self::MAP_VIEW_OVERVIEW) {

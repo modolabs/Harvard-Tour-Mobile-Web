@@ -1,4 +1,10 @@
-<div id="helptext">Tap any pin to select it as the next stop</div>
+<div id="helptext">
+  {if $newTour}
+    Tap any grey pin to choose a different starting point
+  {else}
+    Tap any grey pin to jump to another point in the tour
+  {/if}
+</div>
 </div>{* close container *}
 {if $staticMap}
   <div id="static_map_container">

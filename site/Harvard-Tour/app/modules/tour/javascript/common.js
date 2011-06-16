@@ -34,18 +34,10 @@ function showMap() {
   var mapElement = document.getElementById('map_canvas');
   if (mapElement) {
     var options = {
-      'zoom'      : 17,
-      'center'    : new google.maps.LatLng(centerCoords['lat'], centerCoords['lon']),
+      'zoom' : 18,
+      'center' : new google.maps.LatLng(centerCoords['lat'], centerCoords['lon']),
       'mapTypeId' : google.maps.MapTypeId.ROADMAP,
       'mapTypeControl' : false,
-      /*'mapTypeControlOptions' : { 
-        'mapTypeIds' : [
-          google.maps.MapTypeId.ROADMAP,
-          google.maps.MapTypeId.SATELLITE
-        ],
-        'position' : google.maps.ControlPosition.TOP_LEFT,
-        'style'    : google.maps.MapTypeControlStyle.HORIZONTAL_BAR
-      },*/
       'panControl' : false,
       'streetViewControl' : false,
       'zoomControlOptions' : { 
@@ -70,7 +62,6 @@ function showMap() {
       }
       
       tourStops[i]['marker'] = new google.maps.Marker({
-        'flat'      : false,
         'clickable' : true,
         'map'       : map, 
         'position'  : new google.maps.LatLng(stop['lat'], stop['lon']),
@@ -89,21 +80,26 @@ function showMap() {
     for (var i = 0; i < fitToBounds.length; i++) {
       bounds.extend(new google.maps.LatLng(fitToBounds[i]['lat'], fitToBounds[i]['lon']));
     }
-    if (fitToBounds.length > 2) {
+    
+    if (fitToBounds.length > 1) {
       map.fitBounds(bounds);
     } else {
       map.panTo(bounds.getCenter());
     }
     
-    /*navigator.geolocation.getCurrentPosition(function(position) {
-      var location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-
-      var marker = new google.maps.Marker({
-        'clickable' : false,
-        'map'       : map, 
-        'position'  : location
+    /*
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+  
+        var marker = new google.maps.Marker({
+          'clickable' : false,
+          'map'       : map, 
+          'position'  : location
+        });
       });
-    });*/
+    }
+    */
     
     var elem = document.getElementById('map_canvas');
     elem.style.visibility = 'visible';

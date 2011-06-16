@@ -1,16 +1,13 @@
 {capture name="customHeader" assign="customHeader"}
   <div id="welcomehead">
     {if $resumeURL}
-      <div id="header">
+      <a id="resumelink" href="{$resumeURL}">
         <img src="/modules/tour/images/logo@2x.png" alt="harvard yard tour" width="233" height="33" border="0" />
         <br/>
-        You have a tour in progress!
-      </div>
-      <a id="resumelink" href="{$resumeURL}">
-          Resume Tour >
+        <img id="resume" src="/modules/tour/images/resume@2x.png" alt="resume your tour" width="131" height="30" border="0" />
       </a>
       <a id="startoverlink" href="{$startURL}">
-          Start Over >
+        <img id="startover" src="/modules/tour/images/startover@2x.png" alt="start a new tour" width="131" height="30" border="0" />
       </a>
       
     {else}
