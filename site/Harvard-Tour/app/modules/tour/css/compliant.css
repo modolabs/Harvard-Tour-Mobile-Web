@@ -8,6 +8,33 @@ html, body, #nonfooternav {
   min-height: 0px;
 }
 
+h1 {
+	font: 19px/20px serif;
+	font-weight: normal;
+	padding: 0;
+	margin: 4px 0 10px 0;
+	color: #000;
+}
+p, dl, ul {
+	margin: 0 0 15px 0;
+}
+dd, dt {
+	margin: 0 0 6px 0;
+	line-height: 24px;
+}
+dt {
+	clear: both;
+	float: left;
+	font-weight: bold;
+	color: #222;
+	padding: 0 4px 0 2px;
+}
+dt img {
+	float: left;
+	padding-right: 3px;
+	vertical-align: middle;
+}
+
 #navbar {
 	height: 34px;
 	padding: 3px 4px;
@@ -317,13 +344,9 @@ html, body, #nonfooternav {
 
 #map_container {
   position: absolute;
-  top: 148px;
+  top: 169px;
   left: 0;
   width: 100%;
-  height: 270px;
-}
-#map_container.tappable {
-  top: 169px;
   height: 250px;
 }
 #map_container + #footer {
@@ -393,15 +416,11 @@ html, body, #nonfooternav {
 #content .results li a .listpin {
   float: left;
   height: 48px;
-  width: 20px;
-  padding: 2px;
+  width: 28px;
+  padding: 2px 0;
 }
-#content .results li a .listpin .current {
-  padding-top: 6px;
-}
-#content .results li a .listpin .visited {
-  padding-left: 4px;
-  padding-top: 14px;
+#content .results li a .listpin img {
+  margin-top: 4px;
 }
 
 #content .results li a .ellipsis {

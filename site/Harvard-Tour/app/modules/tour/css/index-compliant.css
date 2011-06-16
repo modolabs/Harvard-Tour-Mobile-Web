@@ -2,29 +2,20 @@
   overflow: hidden;
 	background: #f0f0ee url(/common/images/bodyback2.jpg) repeat-x;
 }
-a#startlink {
+a#startlink,
+a#resumelink {
 	text-decoration: none;
 	display: block;
 	height: 68px;
 	padding: 10px 10px 0 10px;
 }
-div#header {
-	padding: 10px;
-}
-#startoverlink, #resumelink {
-	font: 19px/20px serif;
-	color: #000;
-	background: transparent url(/common/images/action-link.png) no-repeat center right;
+a#startoverlink {
 	text-decoration: none;
 	display: block;
-	height: 30px;
-	line-height: 30px;
-  padding: 10px 0;
-	text-align: right;
-	clear: left;
-	vertical-align: middle;
+	height: 40px;
+	padding: 10px 10px 0 10px;  
 }
-#begin, #startoverlink img, #resumelink img {
+#begin, #startover, #resume {
 	clear: left;
   float: right;
 }

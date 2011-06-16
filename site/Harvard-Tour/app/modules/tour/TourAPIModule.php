@@ -140,7 +140,7 @@ class TourAPIModule extends APIModule {
         break;
         
       case 'stop':
-        $response = $this->getStopDetails($tour->getStop());
+        $response = $this->getStopDetails($tour->getCurrentStop());
         
         $this->setResponse($response);
         $this->setResponseVersion(1);

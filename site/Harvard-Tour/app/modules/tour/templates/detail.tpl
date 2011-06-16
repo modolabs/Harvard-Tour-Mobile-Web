@@ -1,7 +1,7 @@
 {include file="findInclude:common/templates/header.tpl"}
 
 {capture name="pageHeader" assign="pageHeader"}
-  {include file="findInclude:modules/tour/templates/include/navHeader.tpl" navTitle=$stop['title'] nextURL=$nextURL prevURL=$prevURL}
+  {include file="findInclude:modules/tour/templates/include/navheader.tpl" navTitle=$stop['title'] nextURL=$nextURL prevURL=$prevURL}
 {/capture}
 
 {$tabBodies = array()}

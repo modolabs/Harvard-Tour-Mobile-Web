@@ -15,33 +15,36 @@ class TourWebModule extends WebModule {
     $stopId = false;
     $seenStopIds = array();
     
-    $newTour = $this->getArg(self::NEW_TOUR_PARAM, false);
     if (isset($this->args['id'])) {
       $stopId = $this->args['id']; // user came from a page that set the stop
     }
     
-    if (!$newTour) {
-      if (!$stopId && isset($_COOKIE[self::CURRENT_STOP_COOKIE]) && $_COOKIE[self::CURRENT_STOP_COOKIE]) {
-        $stopId = $_COOKIE[self::CURRENT_STOP_COOKIE]; // cookie is set
-      }
-    
-      if (isset($_COOKIE[self::VISITED_STOPS_COOKIE])) {
-        $seenStopIds = explode(',', $_COOKIE[self::VISITED_STOPS_COOKIE]);
-      }
-      if (isset($this->args['fromId'])) {
-        $seenStopIds[] = $this->args['fromId'];
-      }
-    }
-    
-    $this->tour = new Tour($stopId, $seenStopIds);
-    $this->stop = $this->tour->getStop();
-      
+    $newTour = $this->getArg(self::NEW_TOUR_PARAM, false);
     if ($newTour) {
       $expires = time() - 3600; // drop cookies on new tour
       setcookie(self::CURRENT_STOP_COOKIE,  '', $expires, COOKIE_PATH);
       setcookie(self::VISITED_STOPS_COOKIE, '', $expires, COOKIE_PATH);
     
     } else {
+      if ($stopId === false && isset($_COOKIE[self::CURRENT_STOP_COOKIE]) && 
+                                     $_COOKIE[self::CURRENT_STOP_COOKIE]) {
+        $stopId = $_COOKIE[self::CURRENT_STOP_COOKIE]; // cookie is set
+      }
+    
+      if (isset($_COOKIE[self::VISITED_STOPS_COOKIE])) {
+        $seenStopIds = explode(',', $_COOKIE[self::VISITED_STOPS_COOKIE]);
+      }
+      
+      // Add current stop if we are viewing a detail page
+      if ($stopId !== false && $this->page == 'detail') {
+        $seenStopIds[] = $stopId;
+      }
+    }
+    
+    $this->tour = new Tour($stopId, $seenStopIds);
+    $this->stop = $this->tour->getCurrentStop();
+    
+    if (!$newTour) {
       // store new state
       $expires = time() + self::COOKIE_DURATION;
       setcookie(self::CURRENT_STOP_COOKIE,  $this->stop->getId(),       $expires, COOKIE_PATH);
@@ -51,37 +54,44 @@ class TourWebModule extends WebModule {
   
   protected function markerImages() {
     return array(
-      'self' => 'http://chart.apis.google.com/chart?'.http_build_query(array(
-        'chst' => 'd_simple_text_icon_left',
-        'chld' => ' |9|000000|glyphish_walk|24|000000',
-      )),
-      'current' => 'http://chart.apis.google.com/chart?'.http_build_query(array(
-        'chst' => 'd_map_xpin_letter_withshadow',
-        'chld' => 'pin||DD0000|DD0000',
-      )),
-      'visited' => 'http://chart.apis.google.com/chart?'.http_build_query(array(
-        'chst' => 'd_map_xpin_icon_withshadow',
-        'chld' => 'pin|glyphish_todo|CCCCCC',
-      )),
-      'other' => 'http://chart.apis.google.com/chart?'.http_build_query(array(
-        'chst' => 'd_map_xpin_letter_withshadow',
-        'chld' => 'pin||CCCCCC|CCCCCC',
-      )),
+      'current' => array(
+        'src'      => FULL_URL_PREFIX.'modules/tour/images/map-pin-current.png',
+        'anchor'   => array(40, 40),
+        'size'     => array(80, 80),
+        'realSize' => array(80, 80),
+        'shape'    => array(
+          'coords' => array(27, 4, 53, 42),
+          'type'   => 'rect',
+        ),
+      ),
+      'visited' => array(
+        'src' => FULL_URL_PREFIX.'modules/tour/images/map-pin-past.png',
+        'anchor'   => array(40, 40),
+        'size'     => array(80, 80),
+        'realSize' => array(80, 80),
+        'shape'    => array(
+          'coords' => array(27, 4, 53, 42),
+          'type'   => 'rect',
+        ),
+      ),
+      'other'   => array(
+        'src' => FULL_URL_PREFIX.'modules/tour/images/map-pin.png',
+        'anchor'   => array(40, 40),
+        'size'     => array(80, 80),
+        'realSize' => array(80, 80),
+        'shape'    => array(
+          'coords' => array(27, 4, 53, 42),
+          'type'   => 'rect',
+        ),
+      ),
     );
   }
   
-  protected function currentIcon() {
-    return 'http://chart.apis.google.com/chart?'.http_build_query(array(
-      'chst' => 'd_map_xpin_letter',
-      'chld' => 'pin||DD0000|DD0000',
-    ));
-  }
-  
-  protected function visitedIcon() {
-    return 'http://chart.apis.google.com/chart?'.http_build_query(array(
-      'chst' => 'd_simple_text_icon_left',
-      'chld' => ' |9|555555|glyphish_todo|16|555555',
-    ));
+  protected function getOverviewMapCenter() {
+    return array(
+      'lat' => 42.374464, 
+      'lon' => -71.117232,
+    );
   }
   
   protected function initializeMap($view) {
@@ -106,7 +116,9 @@ class TourWebModule extends WebModule {
     
     $staticMap = 'http://maps.google.com/maps/api/staticmap?sensor=false&size='.$x.'x'.$y;
     if ($view == self::MAP_VIEW_OVERVIEW) {
-      $staticMap .= '&center=42.374464,-71.117232';
+      $center = $this->getOverviewMapCenter();
+    
+      $staticMap .= '&center='.$center['lat'].','.$center['lon'];
     } else {
       $staticMap .= '&zoom=17';
     }
@@ -131,18 +143,32 @@ class TourWebModule extends WebModule {
     }
     
     if ($visited) {
+      $markers = 'shadow:false|icon:'.$markerImages['visited']['src'];
+      if ($_SERVER['SERVER_NAME'] == 'localhost') {
+        $markers = 'color:0xCCCCCC|label:V';
+      }
       $staticMap .= '&'.http_build_query(array(
-        'markers' => 'shadow:false|icon:'.$markerImages['visited'].$visited,
+        'markers' => $markers.$visited,
       ));
     }
+    
     if ($current) {
+      $markers = 'shadow:false|icon:'.$markerImages['current']['src'];
+      if ($_SERVER['SERVER_NAME'] == 'localhost') {
+        $markers = 'color:0xDD0000|label:C';
+      }
       $staticMap .= '&'.http_build_query(array(
-        'markers' => 'shadow:false|icon:'.$markerImages['current'].$current,
+        'markers' => $markers.$current,
       ));
     }
+    
     if ($other) {
+      $markers = 'shadow:false|icon:'.$markerImages['other']['src'];
+      if ($_SERVER['SERVER_NAME'] == 'localhost') {
+        $markers = 'color:0xCCCCCC';
+      }
       $staticMap .= '&'.http_build_query(array(
-        'markers' => 'shadow:false|icon:'.$markerImages['other'].$other,
+        'markers' => $markers.$other,
       ));
     }
     
@@ -150,27 +176,43 @@ class TourWebModule extends WebModule {
   }
   
   protected function initializeDynamicMap($view) {
-    $center = array(
-      'lat' => 42.374464, 
-      'lon' => -71.117232,
-    );
-        
-    $stopOverviewMode = $view == self::MAP_VIEW_OVERVIEW ? 'true' : 'false';
-    
     // Add prefix to urls which will be set via Javascript
+    $fitToBounds = array();
+    $currentStopIndex = 0;
+    
     $tourStops = $this->getAllStopsDetails();
     foreach ($tourStops as $i => $tourStop) {
-      $tourStops[$i]['url'] = URL_PREFIX.ltrim($tourStop['url'], '/');
+      $tourStops[$i]['index'] = $i;
+      if ($tourStop['current']) {
+        $currentStopIndex = $i;
+      } else {
+        $tourStops[$i]['jumpText'] = '';
+      }
+      if ($view == self::MAP_VIEW_OVERVIEW || 
+          $tourStop['current'] ||
+          (isset($tourStops[$i+1]) && $tourStops[$i+1]['current'])) {
+        $fitToBounds[] = array('lat' => $tourStop['lat'], 'lon' => $tourStop['lon']);
+      }
+      if ($view == self::MAP_VIEW_OVERVIEW) {
+        $tourStops[$i]['url'] = URL_PREFIX.ltrim($tourStop['url'], '/');
+      } else {
+        $tourStops[$i]['url'] = URL_PREFIX.ltrim($this->buildTourURL('detail', array(
+          'id' => $tourStop['id'],
+        )), '/');
+      }
     }
     
     $scriptText = "\n".
-      'var centerCoords = '.json_encode($center)."\n".
+      'var centerCoords = '.json_encode($this->getOverviewMapCenter())."\n".
+      'var fitToBounds = '.json_encode($fitToBounds)."\n".
       'var tourStops = '.json_encode($tourStops).";\n".
-      'var tourIcons = '.json_encode($this->markerImages()).";\n";
+      'var tourIcons = '.json_encode($this->markerImages()).";\n".
+      'var currentStopIndex = '.$currentStopIndex.";\n".
+      'var selectedStopIndex = '.$currentStopIndex.";\n";
 
     $this->addExternalJavascript('http://maps.google.com/maps/api/js?sensor=true');
     $this->addInlineJavascript($scriptText);
-    $this->addOnLoad('showMap(centerCoords, tourStops, tourIcons, '.$stopOverviewMode.');');
+    $this->addOnLoad('showMap();');
     $this->addOnOrientationChange('resizeMapOnChange();');
   }
   
@@ -273,7 +315,7 @@ class TourWebModule extends WebModule {
         
         $this->assign('startURL', $this->buildTourURL('map', array(
           'view' => self::MAP_VIEW_OVERVIEW,
-          'id'   => $this->tour->getFirstStop()->getId(),
+          'id'   => $this->tour->getFirstGuidedTourStop()->getId(),
           self::NEW_TOUR_PARAM  => 1,
         )));
         
@@ -326,8 +368,6 @@ class TourWebModule extends WebModule {
         $this->assign('mapViewURL',  $mapViewURL);
         $this->assign('newTour',     $newTour);
         $this->assign('doneURL',     $this->getArg('doneURL', $this->buildTourURL('index')));
-        $this->assign('currentIcon', $this->currentIcon());
-        $this->assign('visitedIcon', $this->visitedIcon());
         break;
       
       case 'map':
@@ -370,7 +410,6 @@ class TourWebModule extends WebModule {
         }
 
         $this->assign('view', $view);
-        $this->assign('tappable', $view == self::MAP_VIEW_OVERVIEW);
         break;
         
       case 'detail':
@@ -380,6 +419,7 @@ class TourWebModule extends WebModule {
         
         $this->addOnLoad('setupVideoFrames();');
         $this->addOnOrientationChange('setTimeout(resizeVideoFrames, 0);');
+        $this->addInlineJavascript('var hideTabs = '.json_encode(array_slice($tabKeys, 1)).';');
         
         $prevURL = $this->buildTourURL('map', array(
           'view' => self::MAP_VIEW_APPROACH
@@ -390,7 +430,6 @@ class TourWebModule extends WebModule {
           $nextURL = $this->buildTourURL('map', array(
             'view'   => self::MAP_VIEW_APPROACH,
             'id'     => $nextStop->getId(),
-            'fromId' => $this->stop->getId(),
           ));
         } else {
           $nextURL = $this->buildTourURL('finish');

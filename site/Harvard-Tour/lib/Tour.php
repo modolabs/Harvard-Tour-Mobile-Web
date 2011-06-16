@@ -2,9 +2,9 @@
 
 class Tour {
   protected $stops = array();
-  protected $inProgress = false;
+  protected $firstGuidedTourStopId = '';
   protected $currentStopId = '';
-  protected $seenStopIds = array();
+  protected $inProgress = false;
   protected $lastupdate = 0;
   protected $pages = array(
     'welcome' => array(),
@@ -40,35 +40,55 @@ class Tour {
       }
     }
     
-    foreach ($tourData['stops'] as $id => $stopData) {
-      $this->stops[$id] = new TourStop($id, $stopData);
+    // Figure out which of the seen stop ids is in this tour
+    $existingSeenStopIds = array();
+    foreach ($seenStopIds as $seenStopId) {
+      if (isset($tourData['stops'][$seenStopId])) {
+        $existingSeenStopIds[] = $seenStopId;
+      }
     }
     
-    $firstStopId = reset(array_keys($this->stops));
+    $guidedTourStopIdOrder = array_keys($tourData['stops']);
+    $this->firstGuidedTourStopId = reset($guidedTourStopIdOrder);
     
-    if ($stopId && isset($this->stops[$stopId])) {
+    // Figure out current stop
+    if ($stopId !== false && in_array($stopId, $guidedTourStopIdOrder)) {
       $this->currentStopId = $stopId;
+      
+    } else if (count($existingSeenStopIds)) {
+      $this->currentStopId = reset($existingSeenStopIds);
+      
     } else {
-      $this->currentStopId = $firstStopId;
+      $this->currentStopId = $this->firstGuidedTourStopId;
     }
     
-    if ($stopId && ($stopId != $firstStopId || count($seenStopIds))) {
+    // Figure out if the tour is in progress
+    if ($stopId && ($stopId != $this->firstGuidedTourStopId || count($seenStopIds))) {
       $this->inProgress = true;
     }
     
-    foreach ($seenStopIds as $seenStopId) {
-      if (isset($this->stops[$seenStopId])) {
-        $this->seenStopIds[] = $seenStopId;
+    // Get the real stop order as defined by the first stop the user visited
+    $stopIdOrder = $guidedTourStopIdOrder;
+    if (count($existingSeenStopIds) && reset($existingSeenStopIds) != $this->firstGuidedTourStopId) {
+      $stopIdToGuidedTourIndex = array_flip($guidedTourStopIdOrder);
+      $firstStopGuidedTourIndex = $stopIdToGuidedTourIndex[reset($existingSeenStopIds)];
+      
+      $stopIdOrder = array_merge(
+        array_slice($guidedTourStopIdOrder, $firstStopGuidedTourIndex),
+        array_slice($guidedTourStopIdOrder, 0, $firstStopGuidedTourIndex));
+    }
+    
+    foreach ($stopIdOrder as $id) {
+      $this->stops[$id] = new TourStop($id, $tourData['stops'][$id]);
+
+      if ($id == $this->currentStopId) {
+        $this->stops[$id]->setIsCurrent($id == $this->currentStopId);
+        
+      } else if (in_array($id, $existingSeenStopIds)) {
+        $this->stops[$id]->setWasVisited(true);
       }
     }
     
-    foreach ($this->stops as $id => $stop) {
-      if ($id == $this->currentStopId) {
-        $stop->setIsCurrent($id == $this->currentStopId);
-      } else {
-        $stop->setWasVisited(in_array($id, $seenStopIds));
-      }
-    }
   }
   
   function getAllStops() {
@@ -96,18 +116,30 @@ class Tour {
     }
   }
   
-  function getStop() {
+  function getCurrentStop() {
     return isset($this->stops[$this->currentStopId]) ? 
-      $this->stops[$this->currentStopId] : false;
+      $this->stops[$this->currentStopId] : reset($this->stops);
+  }
+  
+  function getStopIndex($stopId) {
+    $stopIdToIndex = array_flip(array_keys($this->stops));
+    return isset($stopIdToIndex[$stopId]) ? $stopIdToIndex[$stopId] : 0;
+  }
+ 
+  function getFirstStop() {
+    return reset($this->stops);
+  }
+  
+  function getLastStop() {
+    return end($this->stops);
   }
   
   function getFirstStopId() {
-    if (count($this->seenStopIds)) {
-      return reset($this->seenStopIds);
-      
-    } else {
-      return $this->currentStopId;
-    }
+    return $this->getFirstStop()->getId();
+  }
+   
+  function getLastStopId() {
+    return $this->getLastStop()->getId();
   }
   
   function getPreviousStop() {
@@ -132,43 +164,22 @@ class Tour {
   }
   
   function getNextStop() {
-    $firstStopId = $this->getFirstStopId();
     $stopIds = array_keys($this->stops);
     $stopIndex = array_search($this->currentStopId, $stopIds);
-
+    
     if (isset($stopIds[$stopIndex+1])) {
-      // only return next stop if it isn't the stop the user chose first
-      if ($stopIds[$stopIndex+1] != $firstStopId) {
-        return $this->stops[$stopIds[$stopIndex+1]];
-      }
-      
-    } if ($stopIndex == count($stopIds)-1 && $firstStopId != reset($stopIds)) {
-      // We are at the last stop in the curated tour but that isn't where the user started
-      return reset($this->stops); // first stop
+      return $this->stops[$stopIds[$stopIndex+1]];
     }
     
     return false;
   }
   
-  function getFirstStop() {
-    return reset($this->stops);
-  }
-  
-  function getLastStop() {
-    return end($this->stops);
+  function getFirstGuidedTourStop() {
+    return $this->stops[$this->firstGuidedTourStopId];
   }
   
   function isInProgress() {
     return $this->inProgress;
-  }
-  
-  function startOver() {
-    $this->inProgress = false;
-    $this->currentStopId = reset(array_keys($this->stops));
-    foreach ($this->stops as $id => $stop) {
-      $stop->setIsCurrent($id == $this->currentStopId);
-      $stop->setWasVisited(false);
-    }
   }
   
   function getWelcomePageContents() {
@@ -192,7 +203,7 @@ class TourDataParser {
   protected $data = array();
   protected $useCache = true;
   protected $cache = null;
-  protected $cacheLifetime = 3600;
+  protected $cacheLifetime = 86400;
   
   function __construct($useCache=true) {
     $this->useCache = $useCache;
@@ -255,7 +266,7 @@ class TourDataParser {
       }
     }
     
-    foreach ($stopNids as $nid) {
+    foreach ($stopNids as $stopIndex => $nid) {
       $stopNode = $this->getNodeData($nid);
       //error_log(print_r($stopNode, true));
       
@@ -350,7 +361,7 @@ class TourDataParser {
         }
       }
       
-      $this->data['stops'][] = $stopData;
+      $this->data['stops']["s$stopIndex"] = $stopData;
     }
 
     //error_log(print_r($this->data, true));    
