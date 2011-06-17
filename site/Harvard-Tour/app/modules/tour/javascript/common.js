@@ -48,6 +48,8 @@ function showMap() {
     
     var map = new google.maps.Map(mapElement, options);  
 
+    var shadowMarkerImage = getMarkerImage(tourIcons['shadow']);
+
     for (var i = 0; i < tourStops.length; i++) {
       var stop = tourStops[i];
     
@@ -67,7 +69,8 @@ function showMap() {
         'position'  : new google.maps.LatLng(stop['lat'], stop['lon']),
         'title'     : stop['title'],
         'icon'      : getMarkerImage(icon),
-        'shape'     : getMarkerShape(icon)
+        'shadow'    : shadowMarkerImage,
+        'flat'      : false
       });
       tourStops[i]['marker'].tourStopIndex = i;
       
@@ -183,19 +186,9 @@ function selectStop(tourStopIndex) {
 }
 
 function getMarkerImage(icon) {
-  return new google.maps.MarkerImage(
-    icon['src'], 
-    new google.maps.Size(icon['realSize'][0], icon['realSize'][1]), 
-    new google.maps.Point(0, 0),
+  return new google.maps.MarkerImage(icon['src'], null, null,
     new google.maps.Point(icon['anchor'][0], icon['anchor'][1]),
     new google.maps.Size(icon['size'][0], icon['size'][1]));
-}
-
-function getMarkerShape(icon) {
-  return {
-    'type'   : icon['shape']['type'],
-    'coords' : icon['shape']['coords']
-  };
 }
 
 function confirmStopChange() {
