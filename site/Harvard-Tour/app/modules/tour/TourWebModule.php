@@ -106,12 +106,16 @@ class TourWebModule extends WebModule {
   }
   
   protected function initializeStaticMap($view) {
-    $x = 330;
-    $y = 330;
-    if ($this->platform == 'bbplus') {
-      $y = 250;
+	// Default Google Static Map size for any Compliant phones other than BlackBerries that can't use Google Dynamic Maps
+    $x = 314;
+    $y = 270;
+    if ($this->platform == 'bbplus') {   // Google Static Map size for wide 480x360 screen 
+      $x = 464;
+      $y = 280;
+    } else if ($this->platform == 'blackberry') {   // Google Static Map size for 360px-wide Storm, Storm2, and Torch screens
+      $x = 354;
+      $y = 272;
     }
-  
     $markerImages = $this->markerImages();
     
     $staticMap = 'http://maps.google.com/maps/api/staticmap?sensor=false&size='.$x.'x'.$y;
@@ -171,6 +175,7 @@ class TourWebModule extends WebModule {
         'markers' => $markers.$other,
       ));
     }
+    //$staticMap = 'http://66.228.68.52:8995/staticmap.png';
     
     $this->assign('staticMap', $staticMap);
   }

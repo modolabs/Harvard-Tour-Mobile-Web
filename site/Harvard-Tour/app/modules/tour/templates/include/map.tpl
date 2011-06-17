@@ -19,4 +19,7 @@
     </div>
   </div>
 {/if}
+{if $tappable|default: false}
+  <div id="helptext">Tap any pin to select it as your starting point</div>
+{/if}
 <div>{* rest of container *}

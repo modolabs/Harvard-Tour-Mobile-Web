@@ -1,7 +1,7 @@
 {extends file="findExtends:common/templates/tabs.tpl"}
 
 {block name="tabsStart"}
-  <div id="pagehead">
+  <div id="pagehead" class="tabbed">
     {$pageHeader}
     {$smarty.block.parent}
 {/block}
