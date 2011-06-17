@@ -55,30 +55,30 @@ class TourWebModule extends WebModule {
   protected function markerImages() {
     return array(
       'current' => array(
-        'src'      => FULL_URL_PREFIX.'modules/tour/images/map-pin-current.png',
+        'src'      => FULL_URL_PREFIX.'modules/tour/images/map-pin-current@2x.png',
         'anchor'   => array(40, 40),
         'size'     => array(80, 80),
-        'realSize' => array(80, 80),
+        'realSize' => array(160, 160),
         'shape'    => array(
           'coords' => array(27, 4, 53, 42),
           'type'   => 'rect',
         ),
       ),
       'visited' => array(
-        'src' => FULL_URL_PREFIX.'modules/tour/images/map-pin-past.png',
+        'src' => FULL_URL_PREFIX.'modules/tour/images/map-pin-past@2x.png',
         'anchor'   => array(40, 40),
         'size'     => array(80, 80),
-        'realSize' => array(80, 80),
+        'realSize' => array(160, 160),
         'shape'    => array(
           'coords' => array(27, 4, 53, 42),
           'type'   => 'rect',
         ),
       ),
       'other'   => array(
-        'src' => FULL_URL_PREFIX.'modules/tour/images/map-pin.png',
+        'src' => FULL_URL_PREFIX.'modules/tour/images/map-pin@2x.png',
         'anchor'   => array(40, 40),
         'size'     => array(80, 80),
-        'realSize' => array(80, 80),
+        'realSize' => array(160, 160),
         'shape'    => array(
           'coords' => array(27, 4, 53, 42),
           'type'   => 'rect',
