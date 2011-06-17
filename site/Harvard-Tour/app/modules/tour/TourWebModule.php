@@ -4,7 +4,10 @@ class TourWebModule extends WebModule {
   protected $id = 'tour';
   private $tour = null;
   private $stop = '';
+  private $currentStopPage = 'approach';
   const CURRENT_STOP_COOKIE = 'currentStop';
+  const CURRENT_PAGE_COOKIE = 'currentPage';
+  const FIRST_STOP_COOKIE = 'firstStop';
   const VISITED_STOPS_COOKIE = 'visitedStops';
   const COOKIE_DURATION = 31536000;  // 1 year
   const MAP_VIEW_OVERVIEW = 'overview';
@@ -13,43 +16,67 @@ class TourWebModule extends WebModule {
   
   protected function initialize() {
     $stopId = false;
+    $firstStopId = false;
     $seenStopIds = array();
     
     if (isset($this->args['id'])) {
       $stopId = $this->args['id']; // user came from a page that set the stop
     }
     
-    $newTour = $this->getArg(self::NEW_TOUR_PARAM, false);
-    if ($newTour) {
-      $expires = time() - 3600; // drop cookies on new tour
-      setcookie(self::CURRENT_STOP_COOKIE,  '', $expires, COOKIE_PATH);
-      setcookie(self::VISITED_STOPS_COOKIE, '', $expires, COOKIE_PATH);
-    
-    } else {
-      if ($stopId === false && isset($_COOKIE[self::CURRENT_STOP_COOKIE]) && 
-                                     $_COOKIE[self::CURRENT_STOP_COOKIE]) {
-        $stopId = $_COOKIE[self::CURRENT_STOP_COOKIE]; // cookie is set
-      }
-    
-      if (isset($_COOKIE[self::VISITED_STOPS_COOKIE])) {
-        $seenStopIds = explode(',', $_COOKIE[self::VISITED_STOPS_COOKIE]);
-      }
-      
-      // Add current stop if we are viewing a detail page
-      if ($stopId !== false && $this->page == 'detail') {
-        $seenStopIds[] = $stopId;
-      }
+    if (isset($this->args['firstStopId'])) {
+      $firstStopId = $this->args['firstStopId']; // user came from a page that set the stop
     }
     
-    $this->tour = new Tour($stopId, $seenStopIds);
+    if ($stopId === false && self::argVal($_COOKIE, self::CURRENT_STOP_COOKIE, '')) {
+      $stopId = $_COOKIE[self::CURRENT_STOP_COOKIE]; // cookie is set
+    }
+    
+    // Remember which page we are on
+    if (isset($_COOKIE[self::CURRENT_PAGE_COOKIE])) {
+      $this->currentStopPage = $_COOKIE[self::CURRENT_PAGE_COOKIE];
+    }
+    if ($this->page == 'map') {
+      if ($this->getArg('view', self::MAP_VIEW_OVERVIEW) != self::MAP_VIEW_OVERVIEW) {
+        $this->currentStopPage = 'approach';
+      } else if ($this->getArg(self::NEW_TOUR_PARAM, false)) {
+        $this->currentStopPage = 'start';
+      }
+    }
+    if ($this->page == 'detail') {
+      $this->currentStopPage = 'detail';
+    }
+ 
+    if ($firstStopId === false && self::argVal($_COOKIE, self::FIRST_STOP_COOKIE, '')) {
+      $firstStopId = $_COOKIE[self::FIRST_STOP_COOKIE]; // cookie is set
+    }
+  
+    if (isset($_COOKIE[self::VISITED_STOPS_COOKIE])) {
+      $seenStopIds = explode(',', $_COOKIE[self::VISITED_STOPS_COOKIE]);
+    }
+    
+    // Add current stop if we are viewing a detail page
+    if ($stopId !== false && $this->page == 'detail') {
+      $seenStopIds[] = $stopId;
+    }
+    
+    $this->tour = new Tour($stopId, $firstStopId, $seenStopIds);
     $this->stop = $this->tour->getCurrentStop();
     
-    if (!$newTour) {
-      // store new state
-      $expires = time() + self::COOKIE_DURATION;
-      setcookie(self::CURRENT_STOP_COOKIE,  $this->stop->getId(),       $expires, COOKIE_PATH);
-      setcookie(self::VISITED_STOPS_COOKIE, implode(',', $seenStopIds), $expires, COOKIE_PATH);
-    }
+    // store new state
+    $expires = time() + self::COOKIE_DURATION;
+    setcookie(self::CURRENT_STOP_COOKIE,  $this->stop->getId(),          $expires, COOKIE_PATH);
+    setcookie(self::CURRENT_PAGE_COOKIE,  $this->currentStopPage,        $expires, COOKIE_PATH);
+    setcookie(self::FIRST_STOP_COOKIE,    $this->tour->getFirstStopId(), $expires, COOKIE_PATH);
+    setcookie(self::VISITED_STOPS_COOKIE, implode(',', $seenStopIds),    $expires, COOKIE_PATH);
+  }
+  
+  function startNewTour() {
+    // drop cookies on new tour
+    $expires = time() - 3600;
+    setcookie(self::CURRENT_STOP_COOKIE,  '', $expires, COOKIE_PATH);
+    setcookie(self::CURRENT_PAGE_COOKIE,  '', $expires, COOKIE_PATH);
+    setcookie(self::FIRST_STOP_COOKIE,    '', $expires, COOKIE_PATH);
+    setcookie(self::VISITED_STOPS_COOKIE, '', $expires, COOKIE_PATH);
   }
   
   protected function getStaticMarkerImages() {
@@ -221,14 +248,19 @@ class TourWebModule extends WebModule {
   protected function getBriefStopDetails($stop) {
     $coords = $stop->getCoords();
     
+    $urlParams = array(
+      'view' => self::MAP_VIEW_APPROACH, 
+      'id'   => $stop->getId(),
+    );
+    if ($this->getArg(self::NEW_TOUR_PARAM, false)) {
+      $urlParams['firstStopId'] = $stop->getId();
+    }
+    
     return array(
       'id'        => $stop->getId(),
       'title'     => $stop->getTitle(),
       'subtitle'  => $stop->getSubtitle(),
-      'url'       => $this->buildTourURL('map', array(
-        'view' => self::MAP_VIEW_APPROACH, 
-        'id'   => $stop->getId()
-      )),
+      'url'       => $this->buildTourURL('map', $urlParams),
       'photo'     => $stop->getPhotoSrc(),
       'thumbnail' => $stop->getThumbnailSrc(),
       'lat'       => $coords['lat'],
@@ -304,18 +336,35 @@ class TourWebModule extends WebModule {
     }
     
     switch ($this->page) {
-      case 'index':
-        if ($this->tour->isInProgress()) {
-          $this->assign('resumeURL', $this->buildTourURL('map', array(
-            'view' => self::MAP_VIEW_APPROACH,
-          )));
-        }
-        
-        $this->assign('startURL', $this->buildTourURL('map', array(
+      case 'start':
+        $this->startNewTour();
+      
+        $this->redirectTo('map', array(
           'view' => self::MAP_VIEW_OVERVIEW,
           'id'   => $this->tour->getFirstGuidedTourStop()->getId(),
           self::NEW_TOUR_PARAM  => 1,
-        )));
+        ));
+        break;
+    
+      case 'index':
+        if ($this->tour->isInProgress()) {
+          if ($this->currentStopPage == 'approach') {
+            $this->assign('resumeURL', $this->buildTourURL('map', array(
+              'view'   => self::MAP_VIEW_APPROACH,
+            )));
+            
+          } else if ($this->currentStopPage == 'detail') {
+            $this->assign('resumeURL', $this->buildTourURL('detail'));
+            
+          } else {
+            $this->assign('resumeURL', $this->buildTourURL('map', array(
+              'view' => self::MAP_VIEW_OVERVIEW,
+              self::NEW_TOUR_PARAM  => 1,
+            )));
+          }
+        }
+        
+        $this->assign('startURL', $this->buildTourURL('start'));
         
         $this->assign('contents', $this->getPageContents('welcome'));
         break;

@@ -6,7 +6,7 @@
     <a class="active" href="{$mapViewURL}">map</a>
     <span class="spacer">|</span> 
     <span>list</span>
-    {if !$newTour}<a id="doneURL" class="active" href="{$doneURL}">done</a>{/if}
+    {if !$newTour}<a id="doneURL" class="active" href="{$doneURL}">return</a>{/if}
   </div>
 </div>
 

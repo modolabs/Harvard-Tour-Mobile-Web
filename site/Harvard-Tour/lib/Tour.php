@@ -12,7 +12,7 @@ class Tour {
     'help'    => array(),
   );
 
-  function __construct($stopId = false, $seenStopIds = array(), $useCache=true) {
+  function __construct($stopId = false, $firstStopId = false, $seenStopIds = array(), $useCache=true) {
     $parser = new TourDataParser($useCache);
     $tourData = $parser->getTourData();
     
@@ -69,9 +69,9 @@ class Tour {
     
     // Get the real stop order as defined by the first stop the user visited
     $stopIdOrder = $guidedTourStopIdOrder;
-    if (count($existingSeenStopIds) && reset($existingSeenStopIds) != $this->firstGuidedTourStopId) {
+    if ($firstStopId !== false && $firstStopId != $this->firstGuidedTourStopId) {
       $stopIdToGuidedTourIndex = array_flip($guidedTourStopIdOrder);
-      $firstStopGuidedTourIndex = $stopIdToGuidedTourIndex[reset($existingSeenStopIds)];
+      $firstStopGuidedTourIndex = $stopIdToGuidedTourIndex[$firstStopId];
       
       $stopIdOrder = array_merge(
         array_slice($guidedTourStopIdOrder, $firstStopGuidedTourIndex),
