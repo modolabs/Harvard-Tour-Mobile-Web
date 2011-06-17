@@ -1,0 +1,54 @@
+#pagetitle h1 {
+	margin: 0;
+	padding: 0 120px 0 8px;
+	text-align: left;
+	height: 40px;
+}
+#pagehead {
+	height: 100px;
+}
+#pagehead.tabbed {
+	height: 84px;
+}
+#pagehead #sidenav {
+	height: 40px;
+}
+#pagehead #sidenav a {
+	height: 40px;
+	width: 40px;
+}
+#pagehead #sidenav a img {
+	width: 40px; 
+	height: 40px;
+}
+#pagehead #sidenav #previous {
+	left: auto;
+	right: 50px;
+}
+.listrow {
+	font-size: 75%;
+	line-height: 1.2em;
+}
+.listrow h2 {
+	padding-bottom: 2px;
+}
+#nextstop {
+	height: 60px;
+}
+#zoomthumb {
+	width: 90px;
+	height: 60px;
+}
+#pagehead #viewtoggle {
+	line-height: 40px;
+	height: 36px;
+}
+#tabs {
+	height: 40px;
+}
+#tabs li.active {
+	padding-top: 0;
+}
+#tabs a img {
+	padding: 1px 5px;
+}

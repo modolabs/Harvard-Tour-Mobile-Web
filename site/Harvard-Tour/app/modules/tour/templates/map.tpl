@@ -2,8 +2,10 @@
 
 <div id="pagehead">
   {if $view == 'overview'}
-    <div id="pagetitle" class="overview"><h1>{if $newTour}Starting Point{else}Tour Overview{/if}</h1></div>
-    <div id="viewtoggle">
+    {block name="pageTitle"}
+	<div id="pagetitle" class="overview"><h1>{if $newTour}Starting Point{else}Tour Overview{/if}</h1></div>
+    {/block}
+	<div id="viewtoggle">
       <span>map</span>
       <span class="spacer">|</span> 
       <a class="active" href="{$listViewURL}">list</a>
