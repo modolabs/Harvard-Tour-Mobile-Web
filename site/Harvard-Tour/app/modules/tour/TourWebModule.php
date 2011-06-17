@@ -52,37 +52,35 @@ class TourWebModule extends WebModule {
     }
   }
   
-  protected function markerImages() {
+  protected function getStaticMarkerImages() {
+    return array(
+      'current' => FULL_URL_PREFIX.'modules/tour/images/map-pin-current@2x.png',
+      'visited' => FULL_URL_PREFIX.'modules/tour/images/map-pin-past@2x.png',
+      'other'   => FULL_URL_PREFIX.'modules/tour/images/map-pin@2x.png',
+    );
+  }
+  
+  protected function getDynamicMarkerImages() {
     return array(
       'current' => array(
         'src'      => FULL_URL_PREFIX.'modules/tour/images/map-pin-current@2x.png',
-        'anchor'   => array(40, 40),
-        'size'     => array(80, 80),
-        'realSize' => array(160, 160),
-        'shape'    => array(
-          'coords' => array(27, 4, 53, 42),
-          'type'   => 'rect',
-        ),
+        'anchor'   => array(13, 37),
+        'size'     => array(28, 40),
       ),
       'visited' => array(
         'src' => FULL_URL_PREFIX.'modules/tour/images/map-pin-past@2x.png',
-        'anchor'   => array(40, 40),
-        'size'     => array(80, 80),
-        'realSize' => array(160, 160),
-        'shape'    => array(
-          'coords' => array(27, 4, 53, 42),
-          'type'   => 'rect',
-        ),
+        'anchor'   => array(13, 37),
+        'size'     => array(28, 40),
       ),
       'other'   => array(
         'src' => FULL_URL_PREFIX.'modules/tour/images/map-pin@2x.png',
-        'anchor'   => array(40, 40),
-        'size'     => array(80, 80),
-        'realSize' => array(160, 160),
-        'shape'    => array(
-          'coords' => array(27, 4, 53, 42),
-          'type'   => 'rect',
-        ),
+        'anchor'   => array(13, 37),
+        'size'     => array(28, 40),
+      ),
+      'shadow'   => array(
+        'src' => FULL_URL_PREFIX.'modules/tour/images/map-pin-shadow@2x.png',
+        'anchor'   => array(7, 27),
+        'size'     => array(44, 29),
       ),
     );
   }
@@ -116,7 +114,7 @@ class TourWebModule extends WebModule {
       $x = 354;
       $y = 272;
     }
-    $markerImages = $this->markerImages();
+    $markerImages = $this->getStaticMarkerImages();
     
     $staticMap = 'http://maps.google.com/maps/api/staticmap?sensor=false&size='.$x.'x'.$y;
     if ($view == self::MAP_VIEW_OVERVIEW) {
@@ -147,7 +145,7 @@ class TourWebModule extends WebModule {
     }
     
     if ($visited) {
-      $markers = 'shadow:false|icon:'.$markerImages['visited']['src'];
+      $markers = 'shadow:false|icon:'.$markerImages['visited'];
       if ($_SERVER['SERVER_NAME'] == 'localhost') {
         $markers = 'color:0xCCCCCC|label:V';
       }
@@ -157,7 +155,7 @@ class TourWebModule extends WebModule {
     }
     
     if ($current) {
-      $markers = 'shadow:false|icon:'.$markerImages['current']['src'];
+      $markers = 'shadow:false|icon:'.$markerImages['current'];
       if ($_SERVER['SERVER_NAME'] == 'localhost') {
         $markers = 'color:0xDD0000|label:C';
       }
@@ -167,7 +165,7 @@ class TourWebModule extends WebModule {
     }
     
     if ($other) {
-      $markers = 'shadow:false|icon:'.$markerImages['other']['src'];
+      $markers = 'shadow:false|icon:'.$markerImages['other'];
       if ($_SERVER['SERVER_NAME'] == 'localhost') {
         $markers = 'color:0xCCCCCC';
       }
@@ -175,7 +173,6 @@ class TourWebModule extends WebModule {
         'markers' => $markers.$other,
       ));
     }
-    //$staticMap = 'http://66.228.68.52:8995/staticmap.png';
     
     $this->assign('staticMap', $staticMap);
   }
@@ -211,7 +208,7 @@ class TourWebModule extends WebModule {
       'var centerCoords = '.json_encode($this->getOverviewMapCenter())."\n".
       'var fitToBounds = '.json_encode($fitToBounds)."\n".
       'var tourStops = '.json_encode($tourStops).";\n".
-      'var tourIcons = '.json_encode($this->markerImages()).";\n".
+      'var tourIcons = '.json_encode($this->getDynamicMarkerImages()).";\n".
       'var currentStopIndex = '.$currentStopIndex.";\n".
       'var selectedStopIndex = '.$currentStopIndex.";\n";
 
