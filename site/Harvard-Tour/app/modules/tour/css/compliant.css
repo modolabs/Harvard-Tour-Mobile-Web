@@ -9,7 +9,7 @@ html, body, #nonfooternav {
 }
 
 h1 {
-	font: 19px/20px serif;
+	font: 111.7%/1.1em serif;
 	font-weight: normal;
 	padding: 0;
 	margin: 4px 0 10px 0;
@@ -40,7 +40,7 @@ dt img {
 	padding: 3px 2px 3px 4px;
 	background: #f9f9f3 url(/common/images/navback.jpg) bottom repeat-x;
 	font-family: serif;
-	font-size: 16px;
+	font-size: 94.12%;
     margin: 0;
 }
 #homelink {
@@ -60,7 +60,7 @@ dt img {
 #helplinks {
 	list-style-type: none;
 	float: right;
-	font-size: 15px;
+	font-size: 88.23%;
 	line-height: 34px;
 	margin: 0;
 	padding: 0;
@@ -281,7 +281,7 @@ dt img {
 #nextstop #starthere {
   text-align: right;
   font-family: serif;
-  font-size: 14px;
+  font-size: 82.35%;
 }
 #nextstop #starthere a, #nextstop #starthere a:visited {
 	display: inline-block;
