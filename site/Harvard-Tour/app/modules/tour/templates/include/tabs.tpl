@@ -27,6 +27,11 @@
     {foreach $tabBodies as $tabKey => $tabBody}
       {if isset($tabbedView['tabs'][$tabKey])}
         <div class="tabbody" id="{$tabKey}Tab">
+		  {if $tabKey=="insideout"}<h2 class="lensname">Inside/Out</h2>
+		  {else if $tabKey=="fastfacts"}<h2 class="lensname">Fast Facts</h2>
+		  {else if $tabKey=="history"}<h2 class="lensname">History</h2>
+		  {else if $tabKey=="innovation"}<h2 class="lensname">Innovation</h2>
+		  {/if}
           {$tabBody}
         </div>
       {/if}

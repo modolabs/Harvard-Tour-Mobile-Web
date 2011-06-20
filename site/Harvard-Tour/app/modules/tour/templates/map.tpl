@@ -21,9 +21,9 @@
   {/if}
   
   <div id="nextstop" class="listrow">
-    <div class="listthumb">
-      <img src="/common/images/zoomicon-in@2x.png" alt="" border="0" class="zoomicon" onclick="zoomUpDown('zoomup')" />
-      <img id="zoomthumb" src="{$stop['thumbnail']}" onclick="zoomUpDown('zoomup')" alt="Approach photo" width="75" height="50" border="0" class="listphoto" />
+    <div class="listthumb" onclick="zoomUpDown('zoomup')">
+      <img src="/common/images/zoomicon-in.png" alt="" border="0" class="zoomicon" />
+      <img id="zoomthumb" src="{$stop['thumbnail']}" alt="Approach photo" width="75" height="50" border="0" class="listphoto" />
     </div>
     <h2 id="stoptitle">{$stop['title']}</h2>
     {if $newTour}
@@ -37,6 +37,6 @@
     {/if}
   </div>
 </div>
-<div id="zoomup" onclick="zoomUpDown('zoomup')"><img src="/common/images/zoomicon-out@2x.png" alt="" border="0" class="zoomout"/><img src="{$stop['photo']}" class="zoomphoto"/></div>
+<div id="zoomup" onclick="zoomUpDown('zoomup')"><img src="/common/images/zoomicon-out.png" alt="" border="0" class="zoomout"/><img src="{$stop['photo']}" class="zoomphoto"/></div>
 {include file="findInclude:modules/tour/templates/include/map.tpl"}
 {include file="findInclude:common/templates/footer.tpl"}
