@@ -2,19 +2,19 @@
   <div id="welcomehead">
     {if $resumeURL}
       <a id="resumelink" href="{$resumeURL}">
-        <img src="/modules/tour/images/logo@2x.png" alt="harvard yard tour" width="233" height="33" border="0" />
+        <img src="/modules/tour/images/logo.png" alt="harvard yard tour" width="300" height="30" border="0" />
         <br/>
-        <img id="resume" src="/modules/tour/images/resume@2x.png" alt="resume your tour" width="131" height="30" border="0" />
+        <img id="resume" src="/modules/tour/images/resume.png" alt="resume your tour" width="300" height="30" border="0" />
       </a>
       <a id="startoverlink" href="{$startURL}">
-        <img id="startover" src="/modules/tour/images/startover@2x.png" alt="start a new tour" width="131" height="30" border="0" />
+        <img id="startover" src="/modules/tour/images/startover.png" alt="start a new tour" width="300" height="30" border="0" />
       </a>
       
     {else}
       <a id="startlink" href="{$startURL}">
-        <img id="logo" src="/modules/tour/images/logo@2x.png" alt="harvard yard tour" width="233" height="33" border="0" />
+        <img src="/modules/tour/images/logo.png" alt="harvard yard tour" width="300" height="30" border="0" />
         <br/>
-        <img id="begin" src="/modules/tour/images/begin@2x.png" alt="begin your tour" width="131" height="30" border="0" />
+        <img id="begin" src="/modules/tour/images/begin.png" alt="begin your tour" width="300" height="30" border="0" />
       </a>
     {/if}
   </div>
@@ -34,5 +34,21 @@
 {include file="findInclude:common/templates/header.tpl" customHeader=$customHeader}
 
 {include file="findInclude:modules/tour/templates/include/pagecontents.tpl" pageContents=$contents}
+
+<p>
+    {if $resumeURL}
+      <a id="resumelink2" href="{$resumeURL}">
+        <img id="resume" src="/modules/tour/images/resume.png" alt="resume your tour" width="300" height="30" border="0" />
+      </a>
+      <a id="startoverlink" href="{$startURL}">
+        <img id="startover" src="/modules/tour/images/startover.png" alt="start a new tour" width="300" height="30" border="0" />
+      </a>
+      
+    {else}
+      <a id="startlink" href="{$startURL}">
+        <img id="begin" src="/modules/tour/images/begin.png" alt="begin your tour" width="300" height="30" border="0" />
+      </a>
+    {/if}
+</p>
 
 {include file="findInclude:common/templates/footer.tpl"}

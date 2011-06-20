@@ -4,12 +4,14 @@
     {if isset($firstItem['url'])}
       {include file="findInclude:common/templates/navlist.tpl" navlistItems=$pageContent subTitleNewline=true}
     {elseif isset($firstItem['description'])}
-      <dl>
+      <div class="lens-legend">
+        <p><strong><img src="/modules/tour/images/lens-info.png" alt="Info" width="24" height="24" border="0" />Info:</strong>
+          General description of the stop</p>
         {foreach $pageContent as $item}
-          <dt><img src="/modules/tour/images/lens-{$item['id']}-hdpi.png" alt="{$item['name']}" width="24" height="24" border="0" />{$item['name']}:</dt>
-          <dd>{$item['description']}</dd>
+          <p><strong><img src="/modules/tour/images/lens-{$item['id']}.png" alt="{$item['name']}" width="24" height="24" border="0" />{$item['name']}:</strong>
+          {$item['description']}</p>
         {/foreach}
-      </dl>
+      </div>
     {/if}
   {else}
     {$pageContent}

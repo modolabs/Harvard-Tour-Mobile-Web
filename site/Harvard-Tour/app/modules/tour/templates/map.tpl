@@ -37,6 +37,6 @@
     {/if}
   </div>
 </div>
-<img id="zoomup" src="{$stop['photo']}" onclick="zoomUpDown('zoomup')" />
+<div id="zoomup" onclick="zoomUpDown('zoomup')"><img src="/common/images/zoomicon-out@2x.png" alt="" border="0" class="zoomout"/><img src="{$stop['photo']}" class="zoomphoto"/></div>
 {include file="findInclude:modules/tour/templates/include/map.tpl"}
 {include file="findInclude:common/templates/footer.tpl"}

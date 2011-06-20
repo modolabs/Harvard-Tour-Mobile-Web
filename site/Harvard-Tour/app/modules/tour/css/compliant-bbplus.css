@@ -73,3 +73,6 @@
 #content, #tabbodies {
 	font-size: 100%;
 }
+#zoomup img {
+	top: 80px;
+}

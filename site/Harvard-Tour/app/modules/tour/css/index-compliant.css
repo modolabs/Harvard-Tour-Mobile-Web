@@ -9,11 +9,11 @@ a#resumelink {
 	height: 68px;
 	padding: 10px 10px 0 10px;
 }
-a#startoverlink {
+a#startoverlink, a#resumelink2 {
 	text-decoration: none;
 	display: block;
-	height: 40px;
-	padding: 10px 10px 0 10px;  
+	height: 30px;
+	padding: 0 10px 10px 10px;  
 }
 #begin, #startover, #resume {
 	clear: left;
