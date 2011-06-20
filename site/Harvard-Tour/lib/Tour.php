@@ -237,12 +237,14 @@ class TourDataParser {
     $pageContents['help'][] = $this->getNodeLensInfo($tourNode, 'field_help_lenses');
     $pageContents['help'][] = $this->getNodeHTMLArray($tourNode, 'field_help_middle');
     $pageContents['help'][] = $this->getNodeLinks($tourNode, 'field_help_links');
-    $pageContents['help'][] = $this->getNodeHTMLArray($tourNode, 'field_help_footer');
+    $pageContents['help'][] = $this->getNodeHTMLArray($tourNode, 'field_help_middle_2');
     $pageContents['help'][] = $this->getNodeLinks($tourNode, 'field_help_links_2');
+    $pageContents['help'][] = $this->getNodeHTMLArray($tourNode, 'field_help_footer');
     
     // Finish Page
     $pageContents['finish'][] = $this->getNodeHTMLArray($tourNode, 'field_finish');
     $pageContents['finish'][] = $this->getNodeLinks($tourNode, 'field_finish_links');
+    $pageContents['finish'][] = $this->getNodeHTMLArray($tourNode, 'field_finish_footer');
     
     foreach ($pageContents as $page => $contents) {
       foreach ($contents as $content) {

@@ -126,7 +126,7 @@ class TourAPIModule extends APIModule {
   protected function initializeForCommand() {
     $useCache = $this->command != 'refresh';
   
-    $tour = new Tour($this->getArg('id', null), array(), $useCache);
+    $tour = new Tour($this->getArg('id', null), false, array(), $useCache);
     
     switch ($this->command) {
       case 'tour':
