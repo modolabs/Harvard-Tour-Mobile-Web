@@ -7,7 +7,6 @@ html, body, #nonfooternav {
 #container {
   min-height: 0px;
 }
-
 h1 {
 	font: 111.7%/1.1em serif;
 	font-weight: normal;
@@ -34,7 +33,6 @@ dt img {
 	padding-right: 3px;
 	vertical-align: middle;
 }
-
 #navbar {
 	height: 34px;
 	padding: 3px 2px 3px 4px;
@@ -95,7 +93,7 @@ dt img {
 	display: table-cell;
 	vertical-align: middle;
 	padding: 0 60px;
-	font: 20px/1em serif;
+	font: 117.6%/1em serif;
 	text-align: center;
 	color: #fff;
 	text-shadow: rgba(0,0,0,0.7) 0 1px 4px;
@@ -187,7 +185,6 @@ dt img {
 #tabs li.active a {
 	background: #f6f6f0 url(/common/images/tabback-active.jpg) repeat-x;
 	padding: 0;
-	
 }
 #tabs a img {
 	padding: 5px;
@@ -196,7 +193,7 @@ dt img {
 #tabbodies {
 	padding: 4px; /* this left/right padding is duplicated in tour module common.js */
 	background: url(/common/images/bodyback2.jpg) repeat-x;
-	font: 15px/20px sans-serif;
+	font: 88.24%/1.333em sans-serif;
 	color: #464640;
 	min-height: 240px;
 }
@@ -214,7 +211,7 @@ dt img {
 #content p.caption,
 #tabbodies p.caption {
 	color: #666;
-	font: 12px/15px sans-serif;
+	font: 70.6%/1.25em sans-serif;
 	font-style: italic;
 	text-align: center;
 	margin: 2px 5px 15px 5px;
@@ -393,8 +390,9 @@ dt img {
   text-align: center;
 }
 #static_map {
-  border: solid 1px #888;
+  border-bottom: solid 1px #888;
   border-width: 0px 1px 1px 1px;
+  width: 100%;
 }
 
 #content .results {

@@ -1,8 +1,13 @@
+#navbar {
+	font-size: 100%;
+}
 #pagetitle h1 {
+	height: 38px;
 	margin: 0;
-	padding: 0 120px 0 8px;
+	padding: 2px 120px 0 8px;
 	text-align: left;
-	height: 40px;
+	font-size: 123.5%;
+	line-height: 38px;
 }
 #pagehead {
 	height: 100px;
@@ -12,10 +17,12 @@
 }
 #pagehead #sidenav {
 	height: 40px;
+	margin-top: 2px;
 }
 #pagehead #sidenav a {
 	height: 40px;
 	width: 40px;
+	padding: 0;
 }
 #pagehead #sidenav a img {
 	width: 40px; 
@@ -34,6 +41,10 @@
 }
 #nextstop {
 	height: 60px;
+	font-size: 88.23%;
+}
+#nextstop #starthere {
+	font-size: 100%;
 }
 #zoomthumb {
 	width: 90px;
@@ -46,9 +57,16 @@
 #tabs {
 	height: 40px;
 }
+#tabs li a {
+	border-color: #4f595e;
+	height: 40px;
+}
 #tabs li.active {
 	padding-top: 0;
 }
 #tabs a img {
 	padding: 1px 5px;
+}
+#content, #tabbodies {
+	font-size: 100%;
 }
