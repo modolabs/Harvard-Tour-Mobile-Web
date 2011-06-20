@@ -12,6 +12,9 @@
 #pagehead {
 	height: 100px;
 }
+#pagehead.brief {
+  height: 40px;
+}
 #pagehead.tabbed {
 	height: 84px;
 }

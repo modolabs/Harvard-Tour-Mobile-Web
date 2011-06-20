@@ -136,7 +136,7 @@ dt img {
 #pagehead #viewtoggle a:visited,
 #pagehead #viewtoggle span {
 	color: #cbe1f3;
-	padding: 0 8px;
+	padding: 0 6px;
 	text-decoration: none;
 }
 #pagehead #viewtoggle a.active {
@@ -144,6 +144,9 @@ dt img {
 }
 #pagehead #viewtoggle .spacer {
   padding: 0;
+}
+#pagehead #viewtoggle #doneURL {
+	padding-left: 20px;
 }
 #tabs {
 	position: absolute;
@@ -278,16 +281,16 @@ dt img {
 #nextstop #starthere {
   text-align: right;
   font-family: serif;
-  font-size: 82.35%;
+  font-size: 15px;
 }
 #nextstop #starthere a, #nextstop #starthere a:visited {
-	display: inline-block;
-	vertical-align: middle;
-	line-height: 25px;
-	position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 24px;
+  position: relative;
   color: #fff;
   text-decoration: none;
-  padding-right: 29px;
+  padding-right: 28px;
 }
 #nextstop #starthere img {
   position: absolute;
@@ -396,7 +399,7 @@ dt img {
 }
 
 #content .results {
-  margin: 0;
+  margin: -4px;
   padding: 0;
 }
 
@@ -450,7 +453,6 @@ dt img {
 .slideshow .slides .active {
   display: block;
 }
-
 .slideshow .slidenav {
   width: 100%;
   height: 38px;
