@@ -303,7 +303,7 @@ p, dl, ul {
 	vertical-align: baseline;
 }
 #nextstop {
-    position: relative;
+  position: relative;
 	border-top: 1px solid rgba(0,0,0,0.15);
 	height: 44px;
 	color: rgba(255,255,255,0.85);
@@ -324,13 +324,6 @@ p, dl, ul {
   font-family: serif;
   font-size: 15px;
 }
-#nextstop #starthere a, #nextstop #starthere a:visited {
-  display: block;
-  position: relative;
-  padding-right: 28px;
-  color: #fff;
-  text-decoration: none;
-}
 #stoplink {
 	position: absolute;
 	top: 0;
@@ -344,6 +337,16 @@ p, dl, ul {
 #stoplink img {
 	vertical-align: middle;
 	margin-top: -3px;
+}
+#nextstop #starthere a, #nextstop #starthere a:visited {
+  display: block;
+  position: relative;
+  width: auto;
+  padding-right: 5px;
+  height: 16px; /* 50px height - 34px vertical padding */
+  margin-left: 75px; /* for thumbnail */
+  color: #fff;
+  text-decoration: none;
 }
 #mapimage {
 	position: absolute;
@@ -497,11 +500,8 @@ p, dl, ul {
 #content .results li a .listpin {
   float: left;
   height: 48px;
-  width: 28px;
-  padding: 2px 0;
-}
-#content .results li a .listpin img {
-  margin-top: 4px;
+  width: 18px;
+  padding: 2px 0 2px 78px;
 }
 
 #content .results li a .ellipsis {

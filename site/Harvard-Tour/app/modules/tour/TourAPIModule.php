@@ -94,6 +94,7 @@ class TourAPIModule extends APIModule {
         'finish'  => array(),
         'help'    => array(),
       ),
+      'legend'  => array(),
       'updated' => $tour->getLastUpdate(),
     );
     
@@ -113,10 +114,18 @@ class TourAPIModule extends APIModule {
         case 'help':
           $pageObjects = $tour->getHelpPageContents();
           break;
+          
+        case 'legend':
+          $pageObjects = $tour->getLegendPageContents();
+          break;
       }
       
       foreach ($pageObjects as $pageObject) {
-        $tourDetails['pages'][$page][] = $pageObject->getContent();
+        if ($page == 'legend') {
+          $tourDetails['legend'][] = $pageObject->getContent();
+        } else {
+          $tourDetails['pages'][$page][] = $pageObject->getContent();
+        }
       }
     }
     

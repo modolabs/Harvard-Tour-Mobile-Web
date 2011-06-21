@@ -313,6 +313,10 @@ class TourWebModule extends WebModule {
       case 'help':
         $pageObjects = $this->tour->getHelpPageContents();
         break;
+        
+      case 'legend':
+        $pageObjects = $this->tour->getStopDetailLegendContents();
+        break;
     }
     
     foreach ($pageObjects as $pageObject) {
@@ -413,6 +417,7 @@ class TourWebModule extends WebModule {
 
         $showMapLink = false;
         
+        $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
         $this->addOnLoad('setupStopList();');
 
         $this->assign('stops',       $this->getAllStopsDetails());
@@ -486,10 +491,11 @@ class TourWebModule extends WebModule {
           $nextURL = $this->buildTourURL('finish');
         }
         $this->enableTabs($tabKeys, null, $tabJavascripts);
-
+        
         $this->assign('tabKeys', $tabKeys);
         $this->assign('prevURL', $prevURL);
         $this->assign('nextURL', $nextURL);
+        $this->assign('legend',  $this->getPageContents('legend'));
         break;
         
     }
