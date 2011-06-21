@@ -8,9 +8,9 @@
     </div>
     <div class="listpin">
       {if $stop['current']}
-        <img class="current" src="modules/tour/images/map-pin-current@2x.png" alt="pin" border="0" width="18" height="25" />
+        <img class="current" src="modules/tour/images/map-pin-current.png" alt="pin" border="0" width="18" height="25" />
       {elseif $stop['visited']}
-        <img class="visited" src="modules/tour/images/map-pin-past@2x.png" alt="pin" border="0" width="18" height="25" />
+        <img class="visited" src="modules/tour/images/map-pin-past.png" alt="pin" border="0" width="18" height="25" />
       {/if}
     </div>
     <div class="ellipsis listrow" id="ellipsis_{$ellipsisCount++}">
