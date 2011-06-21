@@ -6,38 +6,47 @@ class Tour {
   protected $currentStopId = '';
   protected $inProgress = false;
   protected $lastupdate = 0;
+  protected $legend = array();
   protected $pages = array(
     'welcome' => array(),
     'finish'  => array(),
     'help'    => array(),
   );
+  
+  function buildContentsFromTourData($dataContents) {
+    $contents = array();
+    foreach ($dataContents as $content) {
+      switch ($content['type']) {
+        case 'text':
+          $contents[] = new TourText($content['text']);
+          break;
+        
+        case 'links':
+          $contents[] = new TourLinks($content['links']);
+          break;
+          
+        case 'lensinfo':
+          $contents[] = new TourLensInfo($content['lenses']);
+          break;
+
+        default: 
+          error_log("Unknown content type {$content['type']}");
+          break;
+      }
+    }
+    
+    return $contents;
+  }
 
   function __construct($stopId = false, $firstStopId = false, $seenStopIds = array(), $useCache=true) {
     $parser = new TourDataParser($useCache);
     $tourData = $parser->getTourData();
     
     $this->lastupdate = $tourData['updated'];
-    
-    foreach ($tourData['pages'] as $pageKey => $pageContents) {
-      foreach ($pageContents as $content) {
-        switch ($content['type']) {
-          case 'text':
-            $this->pages[$pageKey][] = new TourText($content['text']);
-            break;
-          
-          case 'links':
-            $this->pages[$pageKey][] = new TourLinks($content['links']);
-            break;
-            
-          case 'lensinfo':
-            $this->pages[$pageKey][] = new TourLensInfo($content['lenses']);
-            break;
+    $this->legend = $this->buildContentsFromTourData($tourData['legend']);
 
-          default: 
-            error_log("Unknown content type {$content['type']}");
-            break;
-        }
-      }
+    foreach ($tourData['pages'] as $pageKey => $pageContents) {
+      $this->pages[$pageKey] = $this->buildContentsFromTourData($pageContents);
     }
     
     // Figure out which of the seen stop ids is in this tour
@@ -194,6 +203,10 @@ class Tour {
     return $this->pages['help'];
   }
   
+  function getStopDetailLegendContents() {
+    return $this->legend;
+  }
+  
   function getLastUpdate() {
     return $this->lastupdate;
   }
@@ -217,7 +230,8 @@ class TourDataParser {
         'help'    => array(),
         'finish'  => array(),
       ),
-      'stops' => array(),
+      'stops'   => array(),
+      'legend'  => array(),
       'updated' => $this->getNodeLastUpdate($tourNode),
     );
     
@@ -257,6 +271,9 @@ class TourDataParser {
       }
     }
     //error_log(print_r($this->data['pages'], true));
+    
+    // Stop Detail Legend
+    $this->data['legend'][] = $this->getNodeLensInfo($tourNode, 'field_stop_legend_lenses');
     
     // Stops
     $stopsNodes = $this->getNodeField($tourNode, 'field_stops', array());
@@ -383,6 +400,10 @@ class TourDataParser {
       return array(
         'type' => 'lensinfo',
         'lenses' => array(
+          'info' => array(
+            'name' => $this->getNodeHTML($lensInfoNode, 'field_info_name'),
+            'desc' => $this->getNodeHTML($lensInfoNode, 'field_info_desc'),
+          ),
           'insideout' => array(
             'name' => $this->getNodeHTML($lensInfoNode, 'field_insideout_name'),
             'desc' => $this->getNodeHTML($lensInfoNode, 'field_insideout_desc'),
