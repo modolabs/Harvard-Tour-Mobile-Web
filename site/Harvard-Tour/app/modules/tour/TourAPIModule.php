@@ -116,17 +116,17 @@ class TourAPIModule extends APIModule {
           break;
           
         case 'legend':
-          $pageObjects = $tour->getLegendPageContents();
+          $pageObjects = $tour->getStopDetailLegendContents();
           break;
       }
       
       foreach ($pageObjects as $pageObject) {
-        if ($page == 'legend') {
-          $tourDetails['legend'][] = $pageObject->getContent();
-        } else {
-          $tourDetails['pages'][$page][] = $pageObject->getContent();
-        }
+        $tourDetails['pages'][$page][] = $pageObject->getContent();
       }
+    }
+    
+    foreach ($tour->getStopDetailLegendContents() as $pageObject) {
+      $tourDetails['legend'][] = $pageObject->getContent();
     }
     
     return $tourDetails;
