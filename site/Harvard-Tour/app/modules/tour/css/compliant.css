@@ -15,6 +15,7 @@ h1 {
 	color: #000;
 }
 h2.lensname {
+	display: none;
 	color: #333;
 	font-family: serif;
 	font-size: 120%;
@@ -28,8 +29,8 @@ p, dl, ul {
 	line-height: 24px;
 	margin: 0 0 1em 0;
 }
-#content .lens-legend p {
-	margin: 0 0 0.5em 0.2em;
+#content .lens-legend p, .lens-legend p {
+	margin: 0 0 0.3em 0.2em;
 }
 .lens-legend img {
 	float: left;
@@ -163,7 +164,7 @@ p, dl, ul {
 	list-style-type: none;
 	margin: 0px;
 	padding: 0px;
-	height: 47px;
+	height: 48px;
 }
 #tabs li {
 	float: left;
@@ -178,8 +179,11 @@ p, dl, ul {
 	display: block;
 	width: 92%;
 	margin: 0 4%;
-	height: 46px;
+	height: 48px;
 	padding: 0;
+	font-size: 10px;
+	line-height: 1em;
+	color: #b4c0cc;
 	text-align: center;
 	background: #485761 url(/common/images/tabback.jpg) repeat-x;
 	border: 1px solid rgba(0,0,0,0.2);
@@ -196,9 +200,12 @@ p, dl, ul {
 #tabs li.active a {
 	background: #f6f6f0 url(/common/images/tabback-active.jpg) repeat-x;
 	padding: 0;
+	color: #606366;
 }
 #tabs a img {
-	padding: 5px;
+	width: 32px;
+	height: 32px;
+	padding-top: 1px;
 }
 #content,
 #tabbodies {
@@ -217,12 +224,12 @@ p, dl, ul {
 
 #content p, #content ul, #content ol,
 #tabbodies p, #tabbodies ul, #tabbodies ol {
-	margin: 15px 5px;
+	margin: 6px 5px 15px 5px;
 }
 #content p.caption,
 #tabbodies p.caption {
 	color: #666;
-	font: 70.6%/1.25em sans-serif;
+	font: 82.35%/1.25em sans-serif;
 	font-style: italic;
 	text-align: center;
 	margin: 2px 5px 15px 5px;
@@ -333,12 +340,14 @@ p, dl, ul {
 	z-index: 2000;
 	top: 96px;
 	left: 0;
-	width: 0;
+	width: 100%;
+	height: 0;
 	transition: all 0.4s ease-out;
 	-webkit-transition: all 0.4s ease-out; /* Safari and Chrome */
 }
 #zoomup.zoomed {
 	width: 100%;
+	height: auto;
 }
 #zoomup .zoomphoto {
 	opacity: 0;
