@@ -135,7 +135,7 @@ function selectStop(tourStopIndex) {
     },
     {
       'key'  : 'photo',
-      'elem' : document.getElementById('zoomup'),
+      'elem' : document.getElementById('zoomphoto'),
       'attr' : 'src'
     },
     {

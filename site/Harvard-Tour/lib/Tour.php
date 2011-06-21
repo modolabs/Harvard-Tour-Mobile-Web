@@ -97,7 +97,6 @@ class Tour {
         $this->stops[$id]->setWasVisited(true);
       }
     }
-    
   }
   
   function getAllStops() {
