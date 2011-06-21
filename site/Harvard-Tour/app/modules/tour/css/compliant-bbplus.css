@@ -72,6 +72,7 @@
 #tabs li a {
 	border-color: #4f595e;
 	height: 40px;
+	text-align: center;
 }
 #tabs li.active {
 	padding-top: 0;
@@ -79,8 +80,19 @@
 #tabs a img {
 	padding: 1px 5px;
 }
+#tabs .tablabel {
+	font-size: 11px;
+	line-height: 12px;
+	padding: 6px 3px 2px 0;
+}
 #content, #tabbodies {
 	font-size: 100%;
+}
+.footnote {
+	font-size: 90%;
+}
+.footnote strong {
+	color: #000;
 }
 #zoomup {
 	top: 80px;

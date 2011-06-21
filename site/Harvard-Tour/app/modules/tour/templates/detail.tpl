@@ -38,4 +38,6 @@
 <a name="scrolldown"> </a>
 {include file="findInclude:modules/tour/templates/include/tabs.tpl" tabBodies=$tabBodies pageheader=$pageHeader}
 
+<div class="lens-legend footnote"><h2>Legend:</h2><p><strong><img src="/device/compliant-iphone/modules/tour/images/lens-info.png" alt="Info" width="24" height="24" border="0">Info:</strong>General description of the stop</p><p><strong><img src="/device/compliant-iphone/modules/tour/images/lens-insideout.png" alt="Inside/out" width="24" height="24" border="0">Inside/out:</strong>An insider's view of Harvard</p><p><strong><img src="/device/compliant-iphone/modules/tour/images/lens-fastfacts.png" alt="Fast facts" width="24" height="24" border="0">Fast facts:</strong>Interesting facts and trivia</p><p><strong><img src="/device/compliant-iphone/modules/tour/images/lens-innovation.png" alt="Innovation" width="24" height="24" border="0">Innovation:</strong>Groundbreaking moments</p><p><strong><img src="/device/compliant-iphone/modules/tour/images/lens-history.png" alt="History" width="24" height="24" border="0">History:</strong>Highlights and stories</p></div>
+
 {include file="findInclude:common/templates/footer.tpl"}

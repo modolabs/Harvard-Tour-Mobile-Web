@@ -30,7 +30,7 @@ p, dl, ul {
 	margin: 0 0 1em 0;
 }
 #content .lens-legend p, .lens-legend p {
-	margin: 0 0 0.3em 0.2em;
+	margin: 0 0 0.25em 0;
 }
 .lens-legend img {
 	float: left;
@@ -41,6 +41,22 @@ p, dl, ul {
 	padding-right: 5px;
 	font-weight: bold;
 	color: #000;
+}
+.footnote {
+	border-top: 2px dotted #eee;
+	margin-top: 8px;
+	padding: 14px 8px;
+	font-size: 76.5%;
+	color: #666;
+} 
+.footnote strong {
+	color: #505050;
+}
+.footnote h2 {
+	color: #666;
+	font-size: 85.7%;
+	font-weight: bold;
+	text-transform: uppercase;
 }
 #navbar {
 	height: 34px;
@@ -164,7 +180,7 @@ p, dl, ul {
 	list-style-type: none;
 	margin: 0px;
 	padding: 0px;
-	height: 48px;
+	height: 47px;
 }
 #tabs li {
 	float: left;
@@ -179,7 +195,7 @@ p, dl, ul {
 	display: block;
 	width: 92%;
 	margin: 0 4%;
-	height: 48px;
+	height: 47px;
 	padding: 0;
 	font-size: 10px;
 	line-height: 1em;
@@ -203,9 +219,10 @@ p, dl, ul {
 	color: #606366;
 }
 #tabs a img {
-	width: 32px;
-	height: 32px;
-	padding-top: 1px;
+	padding-top: 5px;
+}
+#tabs .tablabel {
+	display: none;
 }
 #content,
 #tabbodies {
