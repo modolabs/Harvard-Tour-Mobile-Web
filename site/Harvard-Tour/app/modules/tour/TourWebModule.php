@@ -81,9 +81,9 @@ class TourWebModule extends WebModule {
   
   protected function getStaticMarkerImages() {
     return array(
-      'current' => FULL_URL_PREFIX.'modules/tour/images/static-map-pin-current.png',
-      'visited' => FULL_URL_PREFIX.'modules/tour/images/static-map-pin-past.png',
-      'other'   => FULL_URL_PREFIX.'modules/tour/images/static-map-pin.png',
+      'current' => FULL_URL_PREFIX.'modules/tour/images/map-pin-current.png',
+      'visited' => FULL_URL_PREFIX.'modules/tour/images/map-pin-past.png',
+      'other'   => FULL_URL_PREFIX.'modules/tour/images/map-pin.png',
     );
   }
   
@@ -174,7 +174,7 @@ class TourWebModule extends WebModule {
     }
     
     if ($visited) {
-      $markers = 'shadow:false|icon:'.$markerImages['visited'];
+      $markers = 'icon:'.$markerImages['visited'];
       if ($_SERVER['SERVER_NAME'] == 'localhost') {
         $markers = 'color:0xCCCCCC|label:V';
       }
@@ -184,7 +184,7 @@ class TourWebModule extends WebModule {
     }
     
     if ($current) {
-      $markers = 'shadow:false|icon:'.$markerImages['current'];
+      $markers = 'icon:'.$markerImages['current'];
       if ($_SERVER['SERVER_NAME'] == 'localhost') {
         $markers = 'color:0xDD0000|label:C';
       }
@@ -194,7 +194,7 @@ class TourWebModule extends WebModule {
     }
     
     if ($other) {
-      $markers = 'shadow:false|icon:'.$markerImages['other'];
+      $markers = 'icon:'.$markerImages['other'];
       if ($_SERVER['SERVER_NAME'] == 'localhost') {
         $markers = 'color:0xCCCCCC';
       }
