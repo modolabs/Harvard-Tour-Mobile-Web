@@ -16,6 +16,7 @@ class PeopleWebModule extends WebModule {
     private $detailFields = array();
     private $detailAttributes = array();
     protected $defaultController = 'LDAPPeopleController';
+    protected $encoding = 'UTF-8';
     protected $feeds=array();
     protected $contactGroups = array();
 
@@ -88,7 +89,7 @@ class PeopleWebModule extends WebModule {
             $detail['url'] = $urlFunction($value, $person);
         }
     
-        $detail['title'] = str_replace('$', '<br />', $detail['title']); // $ is the LDAP multiline char
+        $detail['title'] = nl2br($detail['title']); // $ is the LDAP multiline char
         return $detail;
     }
   
@@ -144,7 +145,11 @@ class PeopleWebModule extends WebModule {
         //error_log(print_r($details, true));
         return $details;
     }
-  
+
+    protected function htmlEncodeString($string) {
+        return mb_convert_encoding($string, 'HTML-ENTITIES', $this->encoding);
+    }
+    
     public function federatedSearch($searchTerms, $maxCount, &$results) {
         $total = 0;
         $results = array();
@@ -163,7 +168,7 @@ class PeopleWebModule extends WebModule {
                         'uid'    => $people[$i]->getId(),
                         'filter' => $searchTerms
                     ), false),
-                    'title' => htmlentities($section[0]['title']),
+                    'title' => $this->htmlEncodeString($section[0]['title'])
                 );
             }
         }
@@ -180,7 +185,6 @@ class PeopleWebModule extends WebModule {
             }
             $controller = PeopleController::factory($feedData['CONTROLLER_CLASS'], $feedData);
             $controller->setAttributes($this->detailAttributes);
-            $controller->setDebugMode(Kurogo::getSiteVar('DATA_DEBUG'));
             return $controller;
         } else {
             throw new Exception("Error getting people feed for index $index");
@@ -278,7 +282,7 @@ class PeopleWebModule extends WebModule {
                         // Bookmark
                         if ($this->getOptionalModuleVar('BOOKMARKS_ENABLED', 1)) {
                             $cookieParams = array(
-                                'title'   => htmlentities($section[0]['title']),
+                                'title'   => $this->htmlEncodeString($section[0]['title']),
                                 'uid' => urlencode($uid)
                             );
             
@@ -330,7 +334,7 @@ class PeopleWebModule extends WebModule {
                                             'uid'    => $person->getId(),
                                             'filter' => $this->getArg('filter')
                                         )),
-                                        'title' => htmlentities($section[0]['title']),
+                                        'title' => $this->htmlEncodeString($section[0]['title']),
                                     );
                                 }
                                 //error_log(print_r($results, true));

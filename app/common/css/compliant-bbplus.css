@@ -162,6 +162,7 @@
 }
 
 .fontsize {
+	clear: both;
 	font-size: 75%;
 	margin: 20px 10px;
 }
@@ -191,5 +192,14 @@
 	margin-right: 8px;
 	margin-left: -2px;
 	float: left;
+}
+
+#shareback {
+  /* for now hide this because height 100% doesn't work right on BB */
+	display: none;
+}
+
+#sharedialog {
+  border: solid 1px #333;
 }
 

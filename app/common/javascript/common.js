@@ -1,24 +1,4 @@
 var currentTab;
-var orientationMethod;
-var orientationIsFlipped=false;
-
-// detect how we are detecting orientation
-(function (window) {
-    if (!('orientation' in window)) {
-        window.orientationMethod = 'size';
-        return;
-    }
-
-    window.orientationMethod = 'orientation';
-    var width = document.documentElement.clientWidth || document.body.clientWidth;
-    var height = document.documentElement.clientHeight || document.body.clientHeight;
-    
-    /* at this point the method of orientation detection is not perfect */
-    if (navigator.userAgent.match(/(PlayBook.+RIM Tablet|Android 3\.\d)/)) {
-        window.orientationIsFlipped = true;
-    }
-    
-})(window);
 
 String.prototype.strip = function() {
     return this.replace(/^\s+/, '').replace(/\s+$/, '');
@@ -69,7 +49,25 @@ function rotateScreen() {
 }
 
 function getOrientation() {
-    switch (window.orientationMethod) {
+    if (typeof getOrientation.orientationIsFlipped == 'undefined') {
+        // detect how we are detecting orientation
+        getOrientation.orientationIsFlipped = false;
+        
+        if (!('orientation' in window)) {
+            getOrientation.orientationMethod = 'size';
+        } else {
+            getOrientation.orientationMethod = 'orientation';
+            var width = document.documentElement.clientWidth || document.body.clientWidth;
+            var height = document.documentElement.clientHeight || document.body.clientHeight;
+            
+            /* at this point the method of orientation detection is not perfect */
+            if (navigator.userAgent.match(/(PlayBook.+RIM Tablet|Android 3\.\d)/)) {
+                getOrientation.orientationIsFlipped = true;
+            }
+        }
+    }
+
+    switch (getOrientation.orientationMethod) {
         case 'size':
             var width = document.documentElement.clientWidth || document.body.clientWidth;
             var height = document.documentElement.clientHeight || document.body.clientHeight;
@@ -81,12 +79,12 @@ function getOrientation() {
             switch (window.orientation) {
                 case 0:
                 case 180:
-                    return window.orientationIsFlipped ? 'landscape' : 'portrait';
+                    return getOrientation.orientationIsFlipped ? 'landscape' : 'portrait';
                     break;
                 
                 case 90:
                 case -90:
-                    return window.orientationIsFlipped ? 'portrait': 'landscape';
+                    return getOrientation.orientationIsFlipped ? 'portrait': 'landscape';
                     break;
             }
     }
@@ -230,7 +228,6 @@ function showShare() {
         return;
     }
 	document.getElementById("sharesheet").style.display="block";
-	document.addEventListener('touchmove', doNotScroll, true);
 	var iframes = document.getElementsByTagName('iframe');
 	for (var i=0; i<iframes.length; i++) {
 	    iframes[i].style.visibility = 'hidden';
@@ -242,14 +239,10 @@ function hideShare() {
         return;
     }
 	document.getElementById("sharesheet").style.display="none";
-	document.removeEventListener('touchmove', doNotScroll, true);
 	var iframes = document.getElementsByTagName('iframe');
 	for (var i=0; i<iframes.length; i++) {
 	    iframes[i].style.visibility = 'visible';
 	}
-}
-function doNotScroll( event ) {
-	event.preventDefault(); event.stopPropagation();
 }
 
 // Bookmarks

@@ -100,7 +100,6 @@ class NewsWebModule extends WebModule {
             $feedData['CONTROLLER_CLASS'] = 'RSSDataController';
         }
         $controller = DataController::factory($feedData['CONTROLLER_CLASS'], $feedData);
-        $controller->setDebugMode(Kurogo::getSiteVar('DATA_DEBUG'));
         return $controller;
     } else {
         throw new Exception("Error getting news feed for index $index");
@@ -117,7 +116,7 @@ class NewsWebModule extends WebModule {
     $limit = min($maxCount, count($items));
     for ($i = 0; $i < $limit; $i++) {
       $results[] = array(
-        'title' => $items[$i]->getTitle(),
+        'title' => $this->htmlEncodeFeedString($items[$i]->getTitle()),
         'url'   => $this->buildBreadcrumbURL('story', array(
           'storyID' => $items[$i]->getGUID(),
           'section' => $feedIndex,
@@ -150,6 +149,10 @@ class NewsWebModule extends WebModule {
         $this->showPubDate = isset($feedData['SHOW_PUBDATE']) ? $feedData['SHOW_PUBDATE'] : false;
         $this->showAuthor = isset($feedData['SHOW_AUTHOR']) ? $feedData['SHOW_AUTHOR'] : false;
     }    
+    
+    protected function htmlEncodeFeedString($string) {
+        return mb_convert_encoding($string, 'HTML-ENTITIES', $this->feed->getEncoding());
+    }
     
     protected function initializeForPage() {
         if (!$this->feed) {
@@ -194,8 +197,8 @@ class NewsWebModule extends WebModule {
         $this->enablePager($content, $this->feed->getEncoding(), $storyPage);
         
         $this->assign('date',          $date);
-        $this->assign('title',         $story->getTitle());
-        $this->assign('author',        $story->getAuthor());
+        $this->assign('title',         $this->htmlEncodeFeedString($story->getTitle()));
+        $this->assign('author',        $this->htmlEncodeFeedString($story->getAuthor()));
         $this->assign('image',         $this->getImageForStory($story));
         $this->assign('ajax',          $this->getArg('ajax'));
         break;
@@ -205,7 +208,6 @@ class NewsWebModule extends WebModule {
         $start       = $this->getArg('start', 0);
         
         if ($searchTerms) {
-          $this->setPageTitle('Search');
 
           $this->feed->addFilter('search', $searchTerms);
           $items = $this->feed->items($start, $this->maxPerPage);
@@ -215,10 +217,10 @@ class NewsWebModule extends WebModule {
             $pubDate = strtotime($story->getProperty("pubDate"));
             $date = date("M d, Y", $pubDate);
             $item = array(
-              'title'       => $story->getTitle(),
+              'title'       => $this->htmlEncodeFeedString($story->getTitle()),
               'pubDate'     => $date,
-              'author'      => $story->getAuthor(),
-              'description' => $story->getDescription(),
+              'author'      => $this->htmlEncodeFeedString($story->getAuthor()),
+              'description' => $this->htmlEncodeFeedString($story->getDescription()),
               'url'         => $this->storyURL($story),
               'image'       => $this->getImageForStory($story),
             );
@@ -256,7 +258,7 @@ class NewsWebModule extends WebModule {
           $this->assign('nextURL',     $nextURL);
           $this->assign('showImages',  $this->showImages);
           $this->assign('showPubDate', $this->showPubDate);
-          $this->assign('showAuthor', $this->showAuthor);
+          $this->assign('showAuthor',  $this->showAuthor);
           
         } else {
           $this->redirectTo('index'); // search was blank
@@ -269,8 +271,8 @@ class NewsWebModule extends WebModule {
         $stories = array();
         foreach ($items as $story) {
           $item = array(
-            'title'       => $story->getTitle(),
-            'description' => $story->getDescription(),
+            'title'       => $this->htmlEncodeFeedString($story->getTitle()),
+            'description' => $this->htmlEncodeFeedString($story->getDescription()),
             'url'         => $this->storyURL($story, false, true),
             'image'       => $this->getImageForStory($story),
           );
@@ -306,10 +308,10 @@ class NewsWebModule extends WebModule {
             $pubDate = strtotime($story->getProperty("pubDate"));
             $date = date("M d, Y", $pubDate);
           $item = array(
-            'title'       => $story->getTitle(),
+            'title'       => $this->htmlEncodeFeedString($story->getTitle()),
             'pubDate'     => $date,
-            'author'      => $story->getAuthor(),
-            'description' => $story->getDescription(),
+            'author'      => $this->htmlEncodeFeedString($story->getAuthor()),
+            'description' => $this->htmlEncodeFeedString($story->getDescription()),
             'url'         => $this->storyURL($story),
             'image'       => $this->getImageForStory($story),
           );

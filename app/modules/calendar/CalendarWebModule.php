@@ -19,10 +19,6 @@ class CalendarWebModule extends WebModule {
   protected $timezone;
   protected $defaultSearchOption = 0;
 
-  public function timezone() {
-    return $this->timezone;
-  }
-
   private $searchOptions = array(
     array("phrase" => "in the next 7 days",   "offset" => 7),
     array("phrase" => "in the next 15 days",  "offset" => 15),
@@ -181,10 +177,11 @@ class CalendarWebModule extends WebModule {
     ), $addBreadcrumb);
   }
 
-  private function yearURL($year, $month, $type, $calendar, $addBreadcrumb=true) {
+  private function yearURL($year, $month, $day, $type, $calendar, $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('year', array(
       'year'     => $year,
       'month'    => $month,
+      'day'      => $day,
       'type'     => $type,
       'calendar' => $calendar
     ), $addBreadcrumb);
@@ -192,9 +189,9 @@ class CalendarWebModule extends WebModule {
   
   private function categoryDayURL($time, $categoryID, $name, $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('category', array(
-      'time' => $time,
-      'id'   => $categoryID,
-      'name' => $name, 
+      'time'  => $time,
+      'catid' => $categoryID,
+      'name'  => $name, 
     ), $addBreadcrumb);
   }
   
@@ -206,12 +203,6 @@ class CalendarWebModule extends WebModule {
     return $this->buildBreadcrumbURL('category', array(
       'catid'   => is_array($category) ? $category['catid'] : $category->get_cat_id(),
       'name' => is_array($category) ? $category['name']  : $this->ucname($category->get_name()),
-    ), $addBreadcrumb);
-  }
-  
-  private function subCategorysURL($category, $addBreadcrumb=true) {
-    return $this->buildBreadcrumbURL('sub-categorys', array(
-      'id' => is_array($category) ? $category['catid'] : $category->get_cat_id(),
     ), $addBreadcrumb);
   }
   
@@ -339,16 +330,15 @@ class CalendarWebModule extends WebModule {
         $feedData['CONTROLLER_CLASS'] = 'CalendarDataController';
       }
       $controller = CalendarDataController::factory($feedData['CONTROLLER_CLASS'],$feedData);
-      $controller->setDebugMode(Kurogo::getSiteVar('DATA_DEBUG'));
       return $controller;
     } else {
       throw new Exception("Error getting calendar feed for index $index");
     }
   }
  
-  protected function initialize() {
-    $this->timezone = new DateTimeZone(Kurogo::getSiteVar('LOCAL_TIMEZONE'));
-  }
+    protected function initialize() {
+        $this->timezone = Kurogo::siteTimezone();
+    }
 
   protected function initializeForPage() {
     switch ($this->page) {
@@ -639,7 +629,7 @@ class CalendarWebModule extends WebModule {
         break;
         
       case 'detail':  
-        $calendarFields = $this->loadPageConfigFile('detail', 'detailFields');
+        $calendarFields = $this->getModuleSections('page-detail');
         $type = $this->getArg('type', 'static');
         $calendar = $this->getArg('calendar', $this->getDefaultFeed($type));
         
@@ -775,18 +765,30 @@ class CalendarWebModule extends WebModule {
         break;
         
       case 'year':
-        $year      = $this->getArg('year', null);
-        $type      = $this->getArg('type', 'static');
-        $calendar  = $this->getArg('calendar', $this->getDefaultFeed($type));
-        $month     = $this->getArg('month', 1); // default to january
-        
-        if (!$year) {
-            $year = date('m') < $month ? date('Y') - 1 : date('Y');
+        $type     = $this->getArg('type', 'static');
+        $calendar = $this->getArg('calendar', $this->getDefaultFeed($type));
+
+        // Figure out when the calendar year starts; default to January 1
+        // Allow setting either per-calendar with config or override with url parameter
+        $defaultStartMonth = Kurogo::getOptionalSiteVar(strtoupper($calendar).'_CALENDAR_START_MONTH', 1);
+        $defaultStartDay   = Kurogo::getOptionalSiteVar(strtoupper($calendar).'_CALENDAR_START_DAY', 1);
+
+        $month = intval($this->getArg('month', $defaultStartMonth));
+        $day   = intval($this->getArg('day', $defaultStartDay));
+
+        // Figure out which year we are currently in based on year start month and day:
+        $currentYear = intval(date('Y'));
+        $yearStartForCurrentYear = new DateTime(sprintf("%d%02d%02d", $currentYear, $month, $day), $this->timezone);
+        if (time() < intval($yearStartForCurrentYear->format('U'))) {
+          $currentYear--;  // today's date is before the start date for the current year
         }
-        
-        $start = new DateTime(sprintf("%d%02d01", $year, $month), $this->timezone);
-        $end   = new DateTime(sprintf("%d%02d01", $year+1, $month), $this->timezone);
-        
+
+        // Which year to view; default to current year based on year start month and day:
+        $year = intval($this->getArg('year', $currentYear));
+
+        $start = new DateTime(sprintf("%d%02d%02d", $year, $month, $day), $this->timezone);
+        $end   = new DateTime(sprintf("%d%02d%02d", $year+1, $month, $day), $this->timezone);
+
         $feed = $this->getFeed($calendar, $type);
         $feed->setStartDate($start);
         $feed->setEndDate($end);
@@ -805,13 +807,17 @@ class CalendarWebModule extends WebModule {
         $next    = ($year+1).'&nbsp;-&nbsp;'.($year+2);
         $prev    = ($year-1).'&nbsp;-&nbsp;'. $year;
 
-        if ((date('Y')+1) > $year) {
+        // How many years into the future and past to page:
+        $maxNextYears = Kurogo::getOptionalSiteVar(strtoupper($calendar).'_CALENDAR_MAX_NEXT_YEARS', 1);
+        $maxPrevYears = Kurogo::getOptionalSiteVar(strtoupper($calendar).'_CALENDAR_MAX_PREV_YEARS', 1);
+
+        if ($year < $currentYear + $maxNextYears) {
           $this->assign('next',    $next);
-          $this->assign('nextURL', $this->yearURL($year+1, $month, $type, $calendar, false));
+          $this->assign('nextURL', $this->yearURL($year+1, $month, $day, $type, $calendar, false));
         }
-        if ($year > intval(date('Y'))) {
+        if ($year > $currentYear - $maxPrevYears) {
           $this->assign('prev',    $prev);
-          $this->assign('prevURL', $this->yearURL($year-1, $month, $type, $calendar, false));
+          $this->assign('prevURL', $this->yearURL($year-1, $month, $day, $type, $calendar, false));
         }
 
         $this->assign('current', $current);

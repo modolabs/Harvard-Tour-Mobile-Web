@@ -44,6 +44,11 @@ class ArcGISJSMap extends JavascriptMapImageController {
     {
         $this->mapProjector->setSrcProj($proj);
     }
+
+    public function getMapProjection()
+     {
+        return $this->mapProjector->getDstProj();
+    }
     
     public function setPermanentZoomLevel($zoomLevel)
     {
@@ -150,7 +155,7 @@ class ArcGISJSMap extends JavascriptMapImageController {
         foreach ($this->polygons as $rings) {
             $jsonParams = array(
                 'rings' => $rings,
-                'spatialReference' => array('wkid' => $this->mapProjection),
+                'spatialReference' => array('wkid' => $this->mapProjector->getDstProj()),
                 );
             $json = json_encode($jsonParams);
 
@@ -181,10 +186,10 @@ JS;
     private function collapseAssociativePoints($points)
     {
         $result = array();
+        // TODO: figure out when the arguments should be lon first
         foreach ($points as $point) {
-            if (isset($point['lat']) && isset($point['lon'])) {
-                $result[] = array($point['lat'], $point['lon']);
-            }
+            $latlon = $this->mapProjector->projectPoint($point);
+            $result[] = array($latlon['lon'], $latlon['lat']);
         }
         return $result;
     }
@@ -211,7 +216,7 @@ JS;
             // http://resources.esri.com/help/9.3/arcgisserver/apis/javascript/arcgis/help/jsapi/polyline.htm
             $jsonObj = array(
                 'points' => $paths,
-                'spatialReference' => array('wkid' => $this->mapProjection)
+                'spatialReference' => array('wkid' => $this->mapProjector->getDstProj())
                 );
             
             $json = json_encode($jsonObj);
@@ -333,9 +338,17 @@ JS;
     }
 
     function getHeaderScript() {
-        return '';
+        $script = <<<JS
+function resizeMapOnContainerResize() {
+    if (map && map.loaded) {
+        map.reposition();
+        map.resize();
     }
-
+}
+JS;
+        return $script;
+    }
+    
     function getFooterScript() {
         // put dojo stuff in the footer since the header script
         // gets loaded before the included script
@@ -361,7 +374,10 @@ function loadMap() {
     mapImage.style.width = "{$this->imageWidth}";
     mapImage.style.height = "{$this->imageHeight}";
     
-    map = new esri.Map("{$this->mapElement}");
+    map = new esri.Map("{$this->mapElement}", {
+        'logo' : false,
+        'slider' : false
+    });
     var basemapURL = "{$this->baseURL}";
     var basemap = new esri.layers.ArcGISTiledMapServiceLayer(basemapURL);
 
@@ -397,11 +413,12 @@ function loadMap() {
 function plotFeatures() {
 
     {$this->getSpatialRefJS()}
-{$this->getPolygonJS()}
-{$this->getPathJS()}
-{$this->getMarkerJS()}
+    {$this->getPolygonJS()}
+    {$this->getPathJS()}
+    {$this->getMarkerJS()}
 
     map.centerAndZoom({$this->getCenterJS()}, {$zoomLevel});
+    resizeMapOnContainerResize();
 }
 
 JS;
@@ -410,4 +427,3 @@ JS;
     }
 
 }
-
