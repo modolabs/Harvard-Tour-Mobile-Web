@@ -81,9 +81,9 @@ class TourWebModule extends WebModule {
   
   protected function getStaticMarkerImages() {
     return array(
-      'current' => FULL_URL_PREFIX.'modules/tour/images/map-pin-current@2x.png',
-      'visited' => FULL_URL_PREFIX.'modules/tour/images/map-pin-past@2x.png',
-      'other'   => FULL_URL_PREFIX.'modules/tour/images/map-pin@2x.png',
+      'current' => FULL_URL_PREFIX.'modules/tour/images/static-map-pin-current.png',
+      'visited' => FULL_URL_PREFIX.'modules/tour/images/static-map-pin-past.png',
+      'other'   => FULL_URL_PREFIX.'modules/tour/images/static-map-pin.png',
     );
   }
   
@@ -123,9 +123,11 @@ class TourWebModule extends WebModule {
     switch ($this->platform) {
       case 'blackberry':
       case 'bbplus':
+        $this->assign('tappable', false);
         return $this->initializeStaticMap($view);
         
       default:
+        $this->assign('tappable', true);
         return $this->initializeDynamicMap($view);
     }
   }

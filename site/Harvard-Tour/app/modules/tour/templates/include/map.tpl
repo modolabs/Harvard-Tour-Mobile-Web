@@ -1,10 +1,12 @@
-<div id="helptext">
-  {if $newTour}
-    Tap any grey pin to choose a different starting point
-  {else}
-    Tap any grey pin to jump to another point in the tour
-  {/if}
-</div>
+{if $tappable|default: true}
+  <div id="helptext">
+    {if $newTour}
+      Tap any grey pin to choose a different starting point
+    {else}
+      Tap any grey pin to jump to another point in the tour
+    {/if}
+  </div>
+{/if}
 </div>{* close container *}
 {if $staticMap}
   <div id="static_map_container">
@@ -18,8 +20,5 @@
       <img src="/common/images/loading2.gif" />&nbsp;Loading map...
     </div>
   </div>
-{/if}
-{if $tappable|default: false}
-  <div id="helptext">Tap any pin to select it as your starting point</div>
 {/if}
 <div>{* rest of container *}
