@@ -246,7 +246,7 @@ p, dl, ul {
 #tabbodies .tabbody.active {
   z-index: 10000;
   visibility: visible;
-  position: static;
+  position: relative;
 }
 
 #pagehead.brief + #content {
