@@ -295,7 +295,7 @@ class TourDataParser {
       
       $stopData = array(
         'updated'   => $this->getNodeLastUpdate($stopNode),
-        'title'     => $this->getNodeField($stopNode, 'title'),
+        'title'     => $this->getNodeFieldUTF8($stopNode, 'title'),
         'subtitle'  => $this->getNodeHTML($stopNode, 'field_subtitle'),
         'building'  => $this->getNodeHTML($stopNode, 'field_building'),
         'photo'     => $this->getNodePhoto($stopNode, 'field_approach_photo'),
@@ -431,8 +431,8 @@ class TourDataParser {
       $linkDetails = array();
       foreach ($links as $link) {
         $linkDetails[] = array(
-          'title'    => $this->argVal($link, 'title'),
-          'subtitle' => $this->argVal($link, 'subtitle'),
+          'title'    => $this->argValUTF8($link, 'title'),
+          'subtitle' => $this->argValUTF8($link, 'subtitle'),
           'url'      => $this->argVal($link, 'url'),
         );
       }
@@ -448,7 +448,7 @@ class TourDataParser {
   protected function getURLForNodeFileURI($node) {
     if (isset($node['uri'])) {
       if (preg_match(';^public://(.+)$;', $node['uri'], $matches)) {
-        return Kurogo::getSiteVar('TOUR_SERVICE_FILE_PREFIX').$matches[1];
+        return Kurogo::getSiteVar('TOUR_SERVICE_FILE_PREFIX').str_replace(' ', '%20', $matches[1]);
       }
     }
     return '';
@@ -479,7 +479,7 @@ class TourDataParser {
       $photos[] = array(
         'type'  => 'photo',
         'url'   => $photoURL,
-        'title' => $this->argVal($nodePhoto, 'title', ''),
+        'title' => $this->argValUTF8($nodePhoto, 'title', ''),
       );
     }
     
@@ -512,13 +512,8 @@ class TourDataParser {
     
     $nodeHTMLs = $this->getNodeField($node, $fieldName, array());
     foreach ($nodeHTMLs as $nodeHTML) {
-      $safeValue = $this->argVal($nodeHTML, 'safe_value', '');
+      $safeValue = $this->argValUTF8($nodeHTML, 'safe_value', '');
       
-      if (!substr_compare($safeValue, '<p>',  0,                      3) && 
-          !substr_compare($safeValue, '</p>', strlen($safeValue) - 5, 4)) {
-        $safeValue = substr($safeValue, 3, strlen($safeValue) - 8);
-      }
-    
       $htmlArray[] = array(
         'type' => 'text',
         'text' => $safeValue,
@@ -537,6 +532,14 @@ class TourDataParser {
       }
     }
     return $default;
+  }
+  
+  protected function getNodeFieldUTF8($node, $fieldName, $default='') {
+    $value = $this->getNodeField($node, $fieldName, $default);
+    if (is_string($value)) {
+      return mb_convert_encoding($value, 'HTML-ENTITIES', 'UTF-8');
+    }
+    return $value;
   }
   
   protected function getNodeData($nid) {
@@ -567,6 +570,10 @@ class TourDataParser {
   
   protected function argVal($array, $key, $default='') {
     return isset($array[$key]) ? $array[$key] : $default;
+  }
+  
+  protected function argValUTF8($array, $key, $default='') {
+    return mb_convert_encoding($this->argVal($array, $key, $default), 'HTML-ENTITIES', 'UTF-8');
   }
 }
 
@@ -753,7 +760,7 @@ class TourText {
   }
   
   function getContent() {
-    return '<p>'.$this->html.'</p>';
+    return $this->html;
   }
 }
 

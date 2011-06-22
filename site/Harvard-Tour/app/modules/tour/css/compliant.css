@@ -232,9 +232,23 @@ p, dl, ul {
 	color: #464640;
 	min-height: 240px;
 }
-#tabbodies{
+#tabbodies {
   min-height: 240px;
+  position: relative;
 }
+#tabbodies .tabbody {
+  visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+#tabbodies .tabbody.active {
+  z-index: 10000;
+  visibility: visible;
+  position: static;
+}
+
 #pagehead.brief + #content {
   top: 96px;
 }
@@ -504,14 +518,14 @@ p, dl, ul {
   padding: 2px 0 2px 78px; /* Pad in enough to make room for the thumbnail on the left */
 }
 
-#content .results li a .ellipsis {
+#content .results li a .listrow {
   min-height: 43px;
   overflow: hidden;
   padding: 3px;
 	font-size: 82.35%;
   line-height: 14px;
 }
-#content .results li a .ellipsis h2 {
+#content .results li a .listrow h2 {
   font-size: 125%;
 }
 

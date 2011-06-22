@@ -417,9 +417,6 @@ class TourWebModule extends WebModule {
 
         $showMapLink = false;
         
-        $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
-        $this->addOnLoad('setupStopList();');
-
         $this->assign('stops',       $this->getAllStopsDetails());
         $this->assign('mapViewURL',  $mapViewURL);
         $this->assign('newTour',     $newTour);
@@ -431,9 +428,6 @@ class TourWebModule extends WebModule {
         
         $this->initializeMap($view);
         
-        $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
-        $this->addOnLoad('setupSubtitleEllipsis();');
-
         if ($view == self::MAP_VIEW_OVERVIEW) {
           $stopInfo['url'] = $this->buildTourURL('map', array(
             'view' => self::MAP_VIEW_APPROACH
@@ -475,7 +469,7 @@ class TourWebModule extends WebModule {
         
         $this->addOnLoad('setupVideoFrames();');
         $this->addOnOrientationChange('setTimeout(resizeVideoFrames, 0);');
-        $this->addInlineJavascript('var hideTabs = '.json_encode(array_slice($tabKeys, 1)).';');
+        $this->addInlineJavascript('var currentTourTab = "'.reset($tabKeys).'";');
         
         $prevURL = $this->buildTourURL('map', array(
           'view' => self::MAP_VIEW_APPROACH

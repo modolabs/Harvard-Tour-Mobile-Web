@@ -217,25 +217,6 @@ function zoomUpDown(strID) {
   }
 }
 
-// Initalize the ellipsis event handlers
-function setupStopList() {
-  var stopEllipsizer = new ellipsizer();
-  
-  // cap at 100 divs to avoid overloading phone
-  for (var i = 0; i < 100; i++) {
-    var elem = document.getElementById('ellipsis_'+i);
-    if (!elem) { break; }
-    stopEllipsizer.addElement(elem);
-  }
-}
-function setupSubtitleEllipsis() {
-  var elem = document.getElementById('subtitleEllipsis');
-  if (elem) {
-    var subtitleEllipsizer = new ellipsizer();
-    subtitleEllipsizer.addElement(elem);
-  }
-}
-
 function changeSlide(tab, dir) {
   var selectedIndex = 0;
   var count = 0;
@@ -312,17 +293,6 @@ function setupVideoFrames() {
       }
     }
   }
-  
-  setTimeout(function () {
-    resizeVideoFrames();
-    if (hideTabs) {
-      // hide tabs now that youtube has had a chance to load
-      for (var i = 0; i < hideTabs.length; i++) {
-        var tab = document.getElementById(hideTabs[i]+'Tab');
-        if (tab) { tab.style.display = 'none'; }
-      }
-    }
-  }, 250);
 }
 
 function resizeVideoFrames() {
@@ -341,5 +311,36 @@ function resizeVideoFrames() {
     
     videoFrame.width = newWidth;
     videoFrame.height = newHeight;
+  }
+}
+
+function showTourTab(newTourTab) {
+  // Displays the tab with ID strID
+  if (currentTourTab != newTourTab) {
+    var currentTab     = document.getElementById(currentTourTab+'TourTab');
+    var currentTabbody = document.getElementById(currentTourTab+'TourTabbody');
+    var newTab         = document.getElementById(newTourTab+'TourTab');
+    var newTabbody     = document.getElementById(newTourTab+'TourTabbody');
+  
+    if (currentTab && currentTabbody && newTab && newTabbody) {
+      removeClass(currentTab, 'active');
+      removeClass(currentTabbody, 'active');
+      addClass(newTab, 'active');
+      addClass(newTabbody, 'active');
+      currentTourTab = newTourTab; // Remember which is the currently displayed tab
+      
+      // fake resize event in case tab body was resized while hidden 
+      if (document.createEvent) {
+        var e = document.createEvent('HTMLEvents');
+        e.initEvent('resize', true, true);
+        window.dispatchEvent(e);
+      
+      } else if( document.createEventObject ) {
+        var e = document.createEventObject();
+        document.documentElement.fireEvent('onresize', e);
+      }
+      
+      onDOMChange();
+    }
   }
 }

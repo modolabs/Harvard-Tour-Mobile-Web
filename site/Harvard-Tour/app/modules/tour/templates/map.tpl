@@ -33,7 +33,7 @@
         </a>
       </div>
     {else}
-      <p id="subtitleEllipsis">{$stop['subtitle']}</p>
+      <p id="stopsubtitle">{$stop['subtitle']}</p>
     {/if}
   </div>
 </div>
