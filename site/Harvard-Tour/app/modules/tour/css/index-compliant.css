@@ -1,21 +1,20 @@
 #welcomehead {
   overflow: hidden;
 	background: #f0f0ee url(/common/images/bodyback2.jpg) repeat-x;
+	padding: 10px;
 }
-a#startlink,
-a#resumelink {
-	text-decoration: none;
-	display: block;
-	height: 68px;
-	padding: 10px 10px 0 10px;
-}
-a#startoverlink, a#resumelink2 {
+a.startlink {
 	text-decoration: none;
 	display: block;
 	height: 30px;
-	padding: 0 10px 10px 10px;  
 }
-#begin, #startover, #resume {
+a.logostartlink {
+	height: 68px;
+}
+#welcomefooter a.startlink + a.startlink {
+  padding-top: 3px;
+}
+img.begin, img.startover, img.resume {
 	clear: left;
   float: right;
 }
