@@ -1,3 +1,7 @@
+{$tabEventAction = "Stop Detail"}
+{if strlen($GOOGLE_ANALYTICS_ID)}
+  {$onLoadBlocks[] = "_gaq.push(['_trackEvent', '{$tabEventAction}', '{$tabbedView['tabs'][$tabbedView['current']]['title']} Tab', '{$stop['title']}']);"}
+{/if}
 {include file="findInclude:common/templates/header.tpl"}
 
 <div id="pagehead" class="tabbed">
@@ -9,7 +13,7 @@
         {if isset($tabbedView['tabs'][$tabKey])}
           {$tabInfo = $tabbedView['tabs'][$tabKey]}
           <li{if $tabKey == $tabbedView['current']} class="active"{/if} id="{$tabKey}TourTab">
-            <a href="javascript:void(0);" onclick="showTourTab('{$tabKey}', this);{$tabInfo['javascript']}">
+            <a href="javascript:void(0);" onclick="{if strlen($GOOGLE_ANALYTICS_ID)}_gaq.push(['_trackEvent', '{$tabEventAction}', '{$tabInfo['title']} Tab', '{$stop['title']}']); {/if}showTourTab('{$tabKey}', this);{$tabInfo['javascript']}">
               {block name="lensImage"}
                 <img src="/modules/tour/images/lens-{$tabKey}@2x.png" alt="{$tabInfo['title']}" width="34" height="34" border="0" />
               {/block}
@@ -60,5 +64,12 @@
   <h2>Legend:</h2>
   {include file="findInclude:modules/tour/templates/include/pagecontents.tpl" pageContents=$legend}
 </div>
+
+{* Remove stock showTab() because we are using a custom showTourTab function *}
+{foreach $inlineJavascriptFooterBlocks as $i => $script}
+  {if strncmp($script, "showTab", 7) == 0}
+    {$inlineJavascriptFooterBlocks[$i] = ""}
+  {/if}
+{/foreach}
 
 {include file="findInclude:common/templates/footer.tpl"}

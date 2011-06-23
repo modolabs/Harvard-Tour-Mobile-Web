@@ -246,11 +246,7 @@ class TourWebModule extends WebModule {
     $this->addOnLoad('showMap();');
     $this->addOnOrientationChange('resizeMapOnChange();');
   }
-  
-  protected function hasTabForKey($tabKey, &$tabJavascripts) {
-    return true;
-  }
-  
+    
   protected function getBriefStopDetails($stop) {
     $coords = $stop->getCoords();
     
@@ -466,12 +462,14 @@ class TourWebModule extends WebModule {
         
       case 'detail':
         $detailConfig = $this->loadPageConfigFile('detail', 'detailConfig');        
+
         $tabKeys = array_keys($stopInfo['lenses']);
         $tabJavascripts = array();
+        $this->enableTabs($tabKeys, null, $tabJavascripts);
+        $this->addInlineJavascript('var currentTourTab = "'.reset($tabKeys).'";');
         
         $this->addOnLoad('setupVideoFrames();');
         $this->addOnOrientationChange('setTimeout(resizeVideoFrames, 0);');
-        $this->addInlineJavascript('var currentTourTab = "'.reset($tabKeys).'";');
         
         $prevURL = $this->buildTourURL('map', array(
           'view' => self::MAP_VIEW_APPROACH
@@ -486,9 +484,7 @@ class TourWebModule extends WebModule {
         } else {
           $nextURL = $this->buildTourURL('finish');
         }
-        $this->enableTabs($tabKeys, null, $tabJavascripts);
         
-        $this->assign('tabKeys', $tabKeys);
         $this->assign('prevURL', $prevURL);
         $this->assign('nextURL', $nextURL);
         $this->assign('legend',  $this->getPageContents('legend'));
