@@ -3,6 +3,10 @@
 class TourAPIModule extends APIModule {
   protected $id = 'tour';
   
+  protected function htmlToText($html) {
+    return mb_convert_encoding(strip_tags($html), 'UTF-8', 'HTML-ENTITIES');
+  }
+  
   protected function getBriefStopDetails($stop) {
     $coords = $stop->getCoords();
     
@@ -16,8 +20,8 @@ class TourAPIModule extends APIModule {
     return array(
       'details' => array(
         'id'        => $stop->getId(),
-        'title'     => $stop->getTitle(),
-        'subtitle'  => $stop->getSubtitle(),
+        'title'     => $this->htmlToText($stop->getTitle()),
+        'subtitle'  => $this->htmlToText($stop->getSubtitle()),
         'photo'     => $stop->getPhotoSrc(),
         'thumbnail' => $stop->getThumbnailSrc(),
         'lat'       => $coords['lat'],
