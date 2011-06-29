@@ -858,7 +858,7 @@ class TourVideo {
           // Supports YouTube iframe:
           return '<iframe class="videoFrame" id="videoFrame_'.$this->youTubeId.
             '" src="http://www.youtube.com/embed/'.$this->youTubeId.
-            '?modestbranding=1&title=" width="240" height="195" frameborder="0"></iframe>';
+            '?rel=0&showsearch=0&hd=0&modestbranding=1&title=" width="240" height="195" frameborder="0"></iframe>';
       }
     }
     
