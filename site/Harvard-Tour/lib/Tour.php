@@ -850,15 +850,18 @@ class TourVideo {
     $pagetype = $GLOBALS['deviceClassifier']->getPagetype();
     $platform = $GLOBALS['deviceClassifier']->getPlatform();
     if ($pagetype == 'compliant') {
+      $forceHTML5 = false;
       switch ($platform) {
         case 'iphone':
         case 'ipad':
         case 'android':
+          $forceHTML5 = true;
         case 'computer':
           // Supports YouTube iframe:
           return '<iframe class="videoFrame" id="videoFrame_'.$this->youTubeId.
             '" src="http://www.youtube.com/embed/'.$this->youTubeId.
-            '?rel=0&showsearch=0&hd=0&modestbranding=1&title=" width="240" height="195" frameborder="0"></iframe>';
+            ($forceHTML5 ? '?html5=1&' : '?').'rel=0&hd=0&modestbranding=1&title=" '.
+            'width="240" height="195" frameborder="0"></iframe>';
       }
     }
     
