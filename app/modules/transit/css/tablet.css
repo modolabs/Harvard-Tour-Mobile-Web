@@ -1,0 +1,106 @@
+#timestamp {
+	display: block;
+	line-height: 1.33em;
+	margin-top: 8px;
+}
+
+.tabbody {
+	min-height: 260px;
+}
+
+#schedule {
+  margin: 0px -12px;
+}
+
+#schedule li.icon {
+  min-height: 0;
+}
+
+#schedule li.icon a {
+  padding: 13px 25px 13px 25px;
+  line-height: 1.2em;
+}
+#schedule li.icon img {
+  width: 18px;
+  height: 19px;
+  top: 14px;
+}
+
+.sid {
+	display: inline-block;
+	width: 18px;
+	text-align: center;
+	color: #999;
+}
+
+.current .sid {
+	color: #fff;
+	display: none;
+}
+
+#map, #maptab {
+	text-align: center;
+}
+
+#map img {
+	border: 1px solid #999;
+}
+
+.stop-map {
+    border: 2pt solid white;
+}
+
+.logoContainer {
+  position: relative;
+}
+#servicelogo {
+  display: inline-block;
+  float: right;
+}
+#refresh {
+  float: right;
+	margin-top: -4px;
+	margin-right: -4px;
+	font-size: 82.35%;
+}
+
+.timestamp {
+	position: absolute;
+	right: 10px;
+	top: 14px;
+	float: right;
+	font-size: 82.35%;
+	font-weight: normal;
+	color: #506d8e;
+}
+
+.ampm {
+	font-size: 75%;
+	padding-left: 0.2em
+}
+
+#tabs {
+  display: none;
+}
+#tabbodies,
+.shaded #tabbodies {
+  position: relative;
+  margin-top: .5em;
+}
+.tabbody {
+  display: block !important;
+}
+#stopsTab {
+  border-left: 1px solid #bbb;
+  margin-left: 368px;
+}
+#mapTab {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-height: 352px;
+}
+#mapTab #map img {
+  width: 350px;
+  height: 350px;
+}

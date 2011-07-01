@@ -1,0 +1,92 @@
+#timestamp {
+	display: block;
+	line-height: 1.33em;
+	margin-top: 8px;
+}
+
+.tabbody {
+	min-height: 260px;
+}
+
+#schedule {
+  margin: 0px -12px;
+}
+
+#schedule li.icon {
+  min-height: 0;
+}
+
+#schedule li.icon a {
+  padding: 10px 25px 10px 25px;
+  line-height: 1.2em;
+}
+/* Use float and negative margins because Storm 2 doesn't
+ * handle position: absolute properly when the DOM gets changed
+ * which happens with the countdown timer */
+#schedule li.icon img {
+  display: block;
+  width: 18px;
+  height: 19px;
+  position: static;
+  float: left;
+  margin-left: -24px;
+  margin-top: 1px;
+}
+
+.sid {
+	display: inline-block;
+	width: 18px;
+	text-align: center;
+	color: #999;
+}
+
+.current .sid {
+	color: #fff;
+	display: none;
+}
+
+#map, #maptab {
+	text-align: center;
+}
+
+#map img {
+	border: 1px solid #999;
+}
+
+.stop-map {
+  border: 2pt solid white;
+}
+
+.logoContainer {
+  position: relative;
+}
+#servicelogo {
+  display: inline-block;
+  float: right;
+}
+.refreshContainer {
+  text-align: left;
+}
+#refresh {
+  float: right;
+	margin-top: -4px;
+	margin-right: -4px;
+	margin-left: 4px;
+	margin-bottom: 4px;
+	font-size: 82.35%;
+}
+
+.timestamp {
+	position: absolute;
+	right: 10px;
+	top: 14px;
+	float: right;
+	font-size: 82.35%;
+	font-weight: normal;
+	color: #506d8e;
+}
+
+.ampm {
+	font-size: 75%;
+	padding-left: 0.2em
+}

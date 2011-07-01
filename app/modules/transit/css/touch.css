@@ -1,0 +1,50 @@
+#timestamp {
+	display: block;
+	line-height: 1.33em;
+	margin-top: 8px;
+}
+
+.tabbody {
+	min-height: 260px;
+}
+
+#schedule {
+  margin: 0px -0.75em;
+}
+
+#schedule li.icon {
+  min-height: 0;
+}
+
+#schedule li.icon a {
+  margin: 0;
+  padding: 0.6em 0.5em 0.6em 25px;
+  line-height: 1.2em;
+}
+#schedule li.icon img {
+  width: 18px;
+  height: 19px;
+  top: 14px;
+}
+#map, #maptab {
+	text-align: center;
+}
+
+#map img {
+	border: 1px solid #999;
+}
+
+.stop-map {
+    border: 2pt solid white;
+}
+.logoContainer {
+  position: relative;
+}
+#servicelogo {
+  display: inline-block;
+  float: right;
+}
+.ampm {
+	font-size: 75%;
+	padding-left: 0.2em
+}
