@@ -56,7 +56,7 @@ class TranslocTransitDataParser extends TransitDataParser {
     }
   }
 
-  public function getNews() {
+  public function getNewsForRoutes() {
     $news = array();
     
     $newsInfo = self::getData($this->translocHostname, 'announcements');
@@ -78,6 +78,18 @@ class TranslocTransitDataParser extends TransitDataParser {
     return $news;
   }
   
+  protected function getServiceName() {
+    return 'Translöc';
+  }
+  
+  protected function getServiceId() {
+    return 'transloc';
+  }
+  
+  protected function getServiceLink() {
+    return isset($this->args['serviceURL']) ? $this->args['serviceURL'] : 'http://www.transloc.com/';
+  }
+
   public function getRouteVehicles($routeID) {
     $updateInfo = self::getData($this->translocHostname, 'update');
     
@@ -128,8 +140,6 @@ class TranslocTransitDataParser extends TransitDataParser {
     
     $mergedSegments = array();
     foreach (self::argVal($setupInfo, 'agencies', array()) as $agency) {
-      $agencyID = $agency['name'];
-
       foreach (self::argVal($agency, 'routes', array()) as $i => $routeInfo) {
         if (!isset($routeInfo['id'])) { continue; }
       
@@ -141,7 +151,7 @@ class TranslocTransitDataParser extends TransitDataParser {
       
         $this->addRoute(new TransitRoute(
           $routeID, 
-          $agencyID, 
+          $agency['name'], 
           self::argVal($routeInfo, 'long_name'), 
           '' // will be overridden
         ));

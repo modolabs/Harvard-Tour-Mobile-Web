@@ -66,6 +66,7 @@ class TransitWebModule extends WebModule {
       
       case 'index':
         $indexConfig = $this->loadPageConfigFile('index', 'indexConfig');        
+        $tabs = array();
         
         //
         // Running and Offline Panes
@@ -111,11 +112,17 @@ class TransitWebModule extends WebModule {
         foreach ($offlineRoutes as $agencyID => $section) {
           uasort($offlineRoutes[$agencyID]['items'], array(get_class($this), 'routeSort'));
         }
-        
+        if ($runningRoutes) {
+          $tabs[] = 'running';
+        }
+        if ($offlineRoutes) {
+          $tabs[] = 'offline';
+        }
+
         //
         // News Pane
         //
-        $newsConfigs = $view->getNews();
+        $newsConfigs = $view->getNewsForRoutes();
         
         $news = array();
         foreach ($newsConfigs as $newsID => $newsConfig) {
@@ -135,6 +142,9 @@ class TransitWebModule extends WebModule {
             'date'  => $newsConfig['date'],
             'url'   => $this->newsURL($newsID),
           );
+        }
+        if ($news) {
+          $tabs[] = 'news';
         }
         
         //
@@ -158,13 +168,11 @@ class TransitWebModule extends WebModule {
             $infosections[] = $infosection;
           }
         }
+        if ($infosections) {
+          $tabs[] = 'info';
+        }
         
-        $this->enableTabs(array(
-          'running',
-          'offline',
-          'news',
-          'info',
-        ));
+        $this->enableTabs($tabs);
         
         $this->assign('runningRoutes', $runningRoutes);
         $this->assign('offlineRoutes', $offlineRoutes);
@@ -175,8 +183,6 @@ class TransitWebModule extends WebModule {
       case 'route':
         $routeID = $this->getArg('id');
         
-        $routeConfig = $this->getModuleSection('module');
-
         $routeInfo = $view->getRouteInfo($routeID);
         foreach ($routeInfo['stops'] as $stopID => $stop) {
           $routeInfo['stops'][$stopID]['url']   = $this->stopURL($stopID);
@@ -188,12 +194,12 @@ class TransitWebModule extends WebModule {
           }
           
           if ($stop['upcoming'] || $this->pagetype != 'basic') {
-            $routeInfo['stops'][$stopID]['img'] = '/common/images/';
+            $routeInfo['stops'][$stopID]['img'] = '/modules/transit/images/';
           }
           switch ($this->pagetype) {
             case 'basic':
               if ($stop['upcoming']) {
-                $routeInfo['stops'][$stopID]['img'] .= 'bus.gif';
+                $routeInfo['stops'][$stopID]['img'] .= 'shuttle.gif';
               }
               break;
             
@@ -224,7 +230,7 @@ class TransitWebModule extends WebModule {
         $this->assign('lastRefresh',    time());
         $this->assign('autoReloadTime', self::RELOAD_TIME);
         $this->assign('routeInfo',      $routeInfo);
-        $this->assign('routeConfig',    $routeConfig);
+        $this->assign('serviceInfo',    $view->getServiceInfoForRoute($routeID));
         break;
       
       case 'stop':
@@ -252,6 +258,13 @@ class TransitWebModule extends WebModule {
         uasort($runningRoutes, array(get_class($this), 'routeSort'));
         uasort($offlineRoutes, array(get_class($this), 'routeSort'));
         
+        $serviceInfo = false;
+        if (count($runningRoutes)) {
+          $serviceInfo = $view->getServiceInfoForRoute(reset(array_keys($runningRoutes)));
+        } else if (count($offlineRoutes)) {
+          $serviceInfo = $view->getServiceInfoForRoute(reset(array_keys($offlineRoutes)));
+        }
+        
         $mapImageWidth = 298;
         if ($this->pagetype == 'basic') {
           $mapImageWidth = 200;
@@ -272,6 +285,7 @@ class TransitWebModule extends WebModule {
         $this->assign('offlineRoutes',  $offlineRoutes);
         $this->assign('lastRefresh',    time());
         $this->assign('autoReloadTime', self::RELOAD_TIME);
+        $this->assign('serviceInfo',    $serviceInfo);
         break;
       
       case 'info':
@@ -294,7 +308,7 @@ class TransitWebModule extends WebModule {
         break;
         
       case 'announcement':
-        $newsConfigs = $view->getNews();
+        $newsConfigs = $view->getNewsForRoutes();
         $newsID = $this->getArg('id');
         
         if (!isset($newsConfigs[$newsID])) {

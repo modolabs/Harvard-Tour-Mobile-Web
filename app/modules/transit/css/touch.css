@@ -18,12 +18,12 @@
 
 #schedule li.icon a {
   margin: 0;
-  padding: 0.6em 0.5em 0.6em 25px;
+  padding: 0.7em 0.5em 0.6em 25px;
   line-height: 1.2em;
 }
 #schedule li.icon img {
-  width: 18px;
-  height: 19px;
+  width: 15px;
+  height: 12px;
   top: 14px;
 }
 #map, #maptab {

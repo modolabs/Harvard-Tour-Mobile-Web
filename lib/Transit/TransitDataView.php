@@ -373,18 +373,18 @@ class TransitDataView {
     return $vehicles;
   }
   
-  public function getNews() {
+  public function getNewsForRoutes() {
     $allNews = array();
     
     foreach ($this->parsers as $parser) {
       $news = array();
 
       if ($parser['live']) {
-        $news = $parser['live']->getNews();
+        $news = $parser['live']->getNewsForRoutes();
       }
       
       if ($parser['static']) {
-        $staticNews = $parser['static']->getNews();
+        $staticNews = $parser['static']->getNewsForRoutes();
         if (!count($news)) {
           $news = $staticNews;
         
@@ -397,7 +397,23 @@ class TransitDataView {
     
     return $allNews;
   }
-
+  
+  public function getServiceInfoForRoute($routeID) {
+    $info = false;
+    
+    $parser = $this->parserForRoute($routeID);
+    
+    if ($parser['live']) {
+      $info = $parser['live']->getServiceInfo();
+    }
+    
+    if (!$info && $parser['static']) {
+      $info = $parser['static']->getServiceInfo();
+    }
+    
+    return $info;
+  }
+  
   private function getAllRoutes($time=null) {
     $allRoutes = array();
     $cacheName = 'allRoutes';

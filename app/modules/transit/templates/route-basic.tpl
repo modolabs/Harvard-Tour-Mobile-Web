@@ -4,19 +4,19 @@
   <p class="image">
     <img src="{$mapImageSrc}" height="{$mapImageSize}" width="{$mapImageSize}" />
   </p>
-  {if $routeConfig['serviceLogo']}
+  {if $serviceInfo['id']}
     <table align="center">
       <tr>
         <td valign="middle">
-          {if $routeConfig['serviceLink'] && !$routeConfig['serviceName']}<a href="{$routeConfig['serviceLink']}">{/if}
-            <img src="/modules/{$moduleID}/images/{$routeConfig['serviceLogo']}.gif" />
-          {if $routeConfig['serviceLink'] && !$routeConfig['serviceName']}</a>{/if}
+          {if $serviceInfo['url'] && !$serviceInfo['title']}<a href="{$serviceInfo['url']}">{/if}
+            <img src="/modules/transit/images/{$serviceInfo['id']}{$imageExt}" />
+          {if $serviceInfo['url'] && !$serviceInfo['title']}</a>{/if}
         </td>
-        {if $routeConfig['serviceName']}
+        {if $serviceInfo['title']}
           <td valign="middle">
-            {if $routeConfig['serviceLink']}<a href="{$routeConfig['serviceLink']}">{/if}
-              {$routeConfig['serviceName']}
-            {if $routeConfig['serviceLink']}</a>{/if}
+            {if $serviceInfo['url']}<a href="{$serviceInfo['url']}">{/if}
+              {$serviceInfo['title']|escape:'htmlall'}
+            {if $serviceInfo['url']}</a>{/if}
           </td>
         {/if}
       </tr>

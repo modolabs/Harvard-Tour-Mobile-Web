@@ -11,11 +11,11 @@
   </h2>
   <p class="smallprint logoContainer clear">
     {block name="headerServiceLogo"}
-      {if $routeConfig['serviceLogo']}
+      {if $serviceInfo['id']}
         <span id="servicelogo">
-          {if $routeConfig['serviceLink']}<a href="{$routeConfig['serviceLink']}">{/if}
-            <img src="/modules/{$moduleID}/images/{$routeConfig['serviceLogo']}{$serviceLogoExt|default:'.png'}" />
-          {if $routeConfig['serviceLink']}</a>{/if}
+          {if $serviceInfo['url']}<a href="{$serviceInfo['url']}">{/if}
+            <img src="/modules/transit/images/{$serviceInfo['id']}{$imageExt}" />
+          {if $serviceInfo['url']}</a>{/if}
         </span>
       {/if}
     {/block}
@@ -38,7 +38,7 @@
     {capture name="subtitle" assign="subtitle"}
       {include file="findInclude:modules/{$moduleID}/templates/include/predictions.tpl" predictions=$routeInfo['predictions']}
     {/capture}
-    {if $subtitle}
+    {if trim($subtitle)}
       {$runningRoutes[$i]['subtitle'] = $subtitle}
     {/if}
   {/foreach}
@@ -49,7 +49,7 @@
 {/if}
 
 {if count($offlineRoutes)}
-  <h3 class="nonfocal">Services at other times by:</h3>
+  <h3 class="nonfocal">Serviced at other times by:</h3>
   {include file="findInclude:common/templates/navlist.tpl" navlistItems=$offlineRoutes accessKey=false}
 {/if}
 

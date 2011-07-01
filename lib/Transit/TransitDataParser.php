@@ -15,6 +15,9 @@ abstract class TransitDataParser {
   private $stops     = array();
   private $overrides = array();
   
+  protected $platform = 'unknown';
+  protected $pagetype = 'compliant';
+  
   static private $arrows = array(
     '1' => 'n',
     '2' => 'ne',
@@ -34,6 +37,9 @@ abstract class TransitDataParser {
   }
   
   function __construct($args, $overrides, $whitelist, $daemonMode=false) {
+    $this->pagetype = Kurogo::deviceClassifier()->getPagetype();
+    $this->platform = Kurogo::deviceClassifier()->getPlatform();
+  
     $this->daemonMode = $daemonMode;
     $this->args = $args;
     $this->overrides = $overrides;
@@ -54,6 +60,26 @@ abstract class TransitDataParser {
   public function getNewsForRoutes() {
     // override if the parser can get news items
     return array();
+  }
+  
+  protected function getServiceId() {
+    return '';
+  }
+
+  protected function getServiceName() {
+    return '';
+  }
+  
+  protected function getServiceLink() {
+    return '';
+  }
+  
+  public function getServiceInfo() {
+    return array(
+      'id'    => $this->getServiceId(),
+      'title' => $this->getServiceName(),
+      'url'   => $this->getServiceLink(),
+    );
   }
   
   abstract protected function loadData();
@@ -816,8 +842,10 @@ class TransitRoute {
   
   public function setStopPredictions($directionID, $stopID, $predictions) {
     $direction = $this->getDirection($directionID);
-    foreach ($direction['segments'] as &$segment) {
-      $segment->setStopPredictions($stopID, $predictions);
+    if ($direction && isset($direction['segments'])) {
+      foreach ($direction['segments'] as $segment) {
+        $segment->setStopPredictions($stopID, $predictions);
+      }
     }
   }
   
@@ -1196,7 +1224,7 @@ class TransitSegment {
 
     if ($this->hasPredictions) {
       foreach ($this->stops as $index => $stop) {
-        if (isset($stop['predictions'])) {
+        if (isset($stop['predictions']) && is_array($stop['predictions'])) {
           foreach ($stop['predictions'] as $prediction) {
             if (TransitTime::predictionIsValidForTime($prediction, $time)) {
               return true; // live service with valid prediction

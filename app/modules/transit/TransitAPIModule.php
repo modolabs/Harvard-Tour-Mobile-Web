@@ -52,7 +52,7 @@ class TransitAPIModule extends APIModule {
         'lat' => $stopInfo['coordinates']['lat'],
         'lon' => $stopInfo['coordinates']['lon'],
       ),
-      'arrives' => $this->argVal($stopInfo, 'predictions', ''),
+      'arrives' => $this->argVal($stopInfo, 'predictions', array()),
     );
   }
   
@@ -81,101 +81,14 @@ class TransitAPIModule extends APIModule {
     return $vehicle;
   }
   
-  protected function mergePaths($paths) {
-    // the iPhone app does not understand paths which aren't in a loop.  Wheeee!
-    $paths = array_values($paths);
-  
-    if (count($paths) > 1) {
-      $foundPair = true;
-      while ($foundPair) {
-        $foundPair = false;
-        for ($i = 0; $i < count($paths); $i++) {
-          for ($j = 0; $j < count($paths); $j++) {
-            if ($i == $j) { continue; }
-            
-            $path1 = array_values($paths[$i]);
-            $path2 = array_values($paths[$j]);
-            //error_log("Path 1 ($i): ".count($path1)." points");
-            //error_log("Path 2 ($j): ".count($path2)." points");
-            for ($x = 0; $x < count($path1)-1; $x++) {
-              for ($y = 0; $y < count($path2)-1; $y++) {
-                
-                if ($path1[$x] == $path2[$y] && $path1[$x+1] == $path2[$y+1]) {
-                  // Found a place to attach the paths!
-                  $path1Segment1 = array_slice($path1, 0, $x+1);
-                  $path1Segment2 = array_slice($path1, $x);
-                  $path2Segment1 = array_slice($path2, 0, $y+1);
-                  $path2Segment2 = array_slice($path2, $y);
-                  
-                  unset($paths[$i]);
-                  unset($paths[$j]);
-                  $paths[] = $this->mergeArrays(array(
-                    $path1Segment1,
-                    array_reverse($path2Segment1),
-                    array_reverse($path2Segment2),
-                    $path1Segment2,
-                  ));
-                  $foundPair = true;
-                  break;
-                } else if ($path1[$x] == $path2[$y+1] && $path1[$x+1] == $path2[$y]) {
-                  // Found a place to attach the paths!
-                  $path1Segment1 = array_slice($path1, 0, $x+1);
-                  $path1Segment2 = array_slice($path1, $x);
-                  
-                  unset($paths[$i]);
-                  unset($paths[$j]);
-                  $paths[] = $this->mergeArrays(array(
-                    $path1Segment1,
-                    $path2,
-                    $path1Segment2,
-                  ));
-                  $foundPair = true;
-                }
-              }
-              if ($foundPair) { break; }
-            }
-            if ($foundPair) { break; }
-          }
-          if ($foundPair) { break; }
-        }
-      }
-    }
-  
-    if (count($paths) > 1) {
-      error_log("Warning!  Multiple path segments after merge.");
-    }  
-  
-    // Last ditch effort... if there is still more than one we will just
-    // merge and live with the criss-crosses
-    $mergedPath = array();
-    foreach ($paths as $path) {
-      $mergedPath = array_merge($mergedPath, $path);
-    }
-    
-    return $mergedPath;
-  }
-  
-  protected function mergeArrays($arrays) {
-    $result = array();
-    foreach ($arrays as $array) {
-      $result = array_merge($result, $array);
-    }
-    return array_values($result);
-  }
-  
   protected function initializeForCommand() {
     if ($this->command == '__stripGTFSToDB') {
         $gtfsToDB = new StripGTFSToDB();
-        $gtfsToDB->addGTFS('mit', 
-            array()); // all routes
+        $gtfsToDB->addGTFS('mit');
         $gtfsToDB->addGTFS('mbta', 
-            array('1', '701', '747'), // routes
-            array('1' => 'mbta',),    // agency remap
-            array(                    // route remap
-                '01-1079'  => '1',
-                '701-1079' => '701',
-                '747-1079' => '747',
-            ));
+            array('1', '701', '747'), // route filter
+            array('1' => 'mbta'),     // agency remap
+            array('01' => '1'));      // route remap
         
         if (!$gtfsToDB->convert()) {
             throw new Exception($gtfsToDB->getError());
@@ -186,7 +99,6 @@ class TransitAPIModule extends APIModule {
         return;
     }
 
-  
     $transitConfig = new TransitConfig($this->loadFeedData());
     $view = new TransitDataView($transitConfig);
 
@@ -245,7 +157,8 @@ class TransitAPIModule extends APIModule {
           $response['stops'][] = $this->formatStopInfoForRoute($routeId, $stopId, $stopInfo);
         }
         
-        $response['path'] = $this->mergePaths($view->getRoutePaths($routeId));
+        // Note: these line segments are not necessarily a loop
+        $response['paths'] = array_values($view->getRoutePaths($routeId));
   
         $response['vehicles'] = array();
         foreach($view->getRouteVehicles($routeId) as $vehicleId => $vehicleInfo) {
@@ -257,7 +170,7 @@ class TransitAPIModule extends APIModule {
         break;
       
       case 'announcements':
-        $newsConfigs = $view->getNews();
+        $newsConfigs = $view->getNewsForRoutes();
         
         $agencies = array();
         foreach ($newsConfigs as $newsConfig) {

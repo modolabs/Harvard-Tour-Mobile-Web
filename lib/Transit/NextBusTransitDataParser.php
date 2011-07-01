@@ -8,6 +8,18 @@ class NextBusTransitDataParser extends TransitDataParser {
     return true;
   }
   
+  protected function getServiceName() {
+    return 'NextBus';
+  }
+  
+  protected function getServiceId() {
+    return 'nextbus';
+  }
+  
+  protected function getServiceLink() {
+    return isset($this->args['serviceURL']) ? $this->args['serviceURL'] : 'http://www.nextbus.com/';
+  }
+  
   public function getRouteVehicles($routeID) {
     $route = $this->getRoute($routeID);
     if (!$route) { return array(); }
@@ -41,10 +53,6 @@ class NextBusTransitDataParser extends TransitDataParser {
     }
     
     return $vehicles;
-  }
-  
-  public function getNews() {
-    return array();
   }
 
   protected function updatePredictionData($routeID) {
@@ -103,23 +111,11 @@ class NextBusTransitDataParser extends TransitDataParser {
 
   protected function loadData() {
     $agencyIDs = explode(',', $this->args['agencies']);
-    $routeIDs  = explode(',', $this->args['routes']);
-    
-    if (isset($this->args['fromAgencies'], $this->args['toAgencies'])) {
-      $agencyRemap = array_combine(
-        explode(',', $this->args['fromAgencies']), 
-        explode(',', $this->args['toAgencies']));
-      
-      if ($agencyRemap) {
-        foreach ($agencyIDs as $index => $agencyID) {
-          if (isset($agencyRemap[$agencyID])) {
-            $agencyIDs[$index] = $agencyRemap[$agencyID];
-          }
-        }
-      }
+    $routeIDs = array(); // all routes
+    if (isset($this->args['routes'])) {
+      $routeIDs  = explode(',', $this->args['routes']);
     }
-    $agencyIDs = array_unique($agencyIDs);
-
+    
     foreach ($agencyIDs as $agencyID) {
       //error_log("NextBus loading ".str_pad($agencyID, 20)." memory_get_usage(): ".memory_get_usage());
       
@@ -134,7 +130,7 @@ class NextBusTransitDataParser extends TransitDataParser {
       
       foreach ($xml->getElementsByTagName('route') as $route) {
         $routeID = $route->attributes->getNamedItem('tag')->nodeValue;
-        if (!in_array($routeID, $routeIDs)) {
+        if ($routeIDs && !in_array($routeID, $routeIDs)) {
           continue;
         }
         
@@ -425,16 +421,18 @@ class NextBusTransitDataParser extends TransitDataParser {
   }
 
   private static function loadXML($text) {
-    $xml = new DOMDocument();
-    $xml->loadXML($text);
-    
-    $errorCount = 0;
-    foreach ($xml->getElementsByTagName('Error') as $error) {
-      error_log($error->nodeValue);
-      $errorsCount++;
-    }
-    if ($errorCount == 0) {
-      return $xml;
+    if ($text) {
+      $xml = new DOMDocument();
+      $xml->loadXML($text);
+      
+      $errorCount = 0;
+      foreach ($xml->getElementsByTagName('Error') as $error) {
+        error_log($error->nodeValue);
+        $errorCount++;
+      }
+      if ($errorCount == 0) {
+        return $xml;
+      }
     }
     return false;
   }

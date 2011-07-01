@@ -47,10 +47,6 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
     return false;
   }
   
-  public function getNews() {
-    return array();
-  }
-
   protected function getStop($id) {
     if (!isset($this->stops[$id])) {
       $sql = "SELECT * FROM stops where stop_id = '$id'";
@@ -102,11 +98,10 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
     while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
       $routeID = $row['route_id'];
       $route = $this->getRoute($routeID);
-      if (!$route->isRunning($now, $inService) && !$inService)
-        continue;
       $this->updatePredictionData($routeID);
       
-      $routePredictions[$routeID] = $route->getPredictionsForStop($stopID, $now);
+      $routePredictions[$routeID]['predictions'] = $route->getPredictionsForStop($stopID, $now);
+      $routePredictions[$routeID]['running'] = $route->isRunning($now, $inService) && $inService;
       $routePredictions[$routeID]['name'] = $route->getName();
       $routePredictions[$routeID]['live'] = $this->isLive();
     }
@@ -126,7 +121,6 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
   
   protected function loadData() {
     $agencyIDs = explode(',', $this->args['agencies']);
-    $routeIDs  = explode(',', $this->args['routes']);
 
     if (!count($agencyIDs)) {
       error_log("no agency IDs found");
