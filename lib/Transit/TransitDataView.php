@@ -9,6 +9,7 @@ class TransitDataView {
   private $parsers = array();
   private $daemonMode = false;
   private static $viewCache = null;
+  private $globalIDSeparator = null;
   
   private static function getViewCache() {
     if (!isset(self::$viewCache)) {
@@ -25,32 +26,35 @@ class TransitDataView {
     $this->config = $transitConfig;
     $this->daemonMode = $daemonMode;
     
+     $this->globalIDSeparator = Kurogo::getOptionalSiteVar('TRANSIT_GLOBAL_ID_SEPARATOR', '__');
+    
     foreach ($this->config->getParserIDs() as $parserID) {
+      $parser = array(
+        'system' => $this->config->getSystem($parserID),
+        'live'   => false,
+        'static' => false,
+      );
     
       if ($this->config->hasLiveParser($parserID)) {
-      
         $parser['live'] = TransitDataParser::factory(
-          $this->config->getLiveParserClass($parserID), 
+          $this->config->getLiveParserClass($parserID),
           $this->config->getLiveParserArgs($parserID),
           $this->config->getLiveParserOverrides($parserID),
           $this->config->getLiveParserRouteWhitelist($parserID),
           $daemonMode
-        );
-      } else {
-        $parser['live'] = false;
+        ); 
       }
-      if ($this->config->hasStaticParser($parserID)) {
       
+      if ($this->config->hasStaticParser($parserID)) {
         $parser['static'] = TransitDataParser::factory(
-          $this->config->getStaticParserClass($parserID), 
+          $this->config->getStaticParserClass($parserID),
           $this->config->getStaticParserArgs($parserID),
           $this->config->getStaticParserOverrides($parserID),
           $this->config->getStaticParserRouteWhitelist($parserID),
           $daemonMode
-        );
-      } else {
-        $parser['static'] = false;
+        ); 
       }
+      
       $this->parsers[$parserID] = $parser;
     }
   }
@@ -71,16 +75,18 @@ class TransitDataView {
     }
   }
   
-  public function getStopInfoForRoute($routeID, $stopID) {
+  public function getStopInfoForRoute($globalRouteID, $globalStopID) {  
     $stopInfo = array();
-    $cacheName = "stopInfoForRoute.$routeID.$stopID";
+    $cacheName = "stopInfoForRoute.$globalRouteID.$globalStopID";
     $cache = self::getViewCache();
     
     if ($cache->isFresh($cacheName) && !$this->daemonMode) {
       $stopInfo = json_decode($cache->read($cacheName), true);
       
     } else {
-      $parser = $this->parserForRoute($routeID);
+      list($system, $routeID) = $this->getRealID($globalRouteID);
+      list($system, $stopID)  = $this->getRealID($globalStopID);
+      $parser = $this->parserForRoute($system, $routeID);
       
       if ($parser['live']) {
         $stopInfo = $parser['live']->getStopInfoForRoute($routeID, $stopID);
@@ -114,16 +120,18 @@ class TransitDataView {
     return $stopInfo;
   }
   
-  public function getStopInfo($stopID) {
+  public function getStopInfo($globalStopID) {
     $stopInfo = array();
-    $cacheName = "stopInfo.$stopID";
+    $cacheName = "stopInfo.$globalStopID";
     $cache = self::getViewCache();
     
     if ($cache->isFresh($cacheName) && !$this->daemonMode) {
       $stopInfo = json_decode($cache->read($cacheName), true);
       
     } else {
-      foreach ($this->parsersForStop($stopID) as $parser) {
+      list($system, $stopID) = $this->getRealID($globalStopID);
+    
+      foreach ($this->parsersForStop($system, $stopID) as $parser) {
         $parserInfo = false;
         
         if ($parser['live']) {
@@ -144,17 +152,21 @@ class TransitDataView {
             }
           }
   
-          foreach ($staticParserInfo['routes'] as $routeID => $stopTimes) {
+          foreach ($staticParserInfo['routes'] as $routeID => $routeInfo) {
             if (!isset($parserInfo['routes'][$routeID])
-                || !isset($parserInfo['routes'][$routeID]['arrives'])) {
-              $parserInfo['routes'][$routeID] = $stopTimes;
+                || !isset($parserInfo['routes'][$routeID]['predictions'])) {
+              $parserInfo['routes'][$routeID] = $routeInfo;
+            }
+            
+            // Use static route names if available
+            if (isset($routeInfo['name']) && $routeInfo['name']) {
+              $parserInfo['routes'][$routeID]['name'] = $routeInfo['name'];
             }
           }
-        } else {
-          foreach ($parserInfo['routes'] as $routeID => $stopTimes) {
-            if (!isset($stopTimes['arrives'])) {
-              $parserInfo['routes'][$routeID]['arrives'] = 0;
-            }
+          
+          // Use static stop names if available
+          if (isset($staticParserInfo['name']) && $staticParserInfo['name']) {
+            $parserInfo['name'] = $staticParserInfo['name'];
           }
         }
         
@@ -166,9 +178,6 @@ class TransitDataView {
               if (!isset($stopInfo['routes'][$routeID])) {
                 $stopInfo['routes'][$routeID] = $stopTimes;
               } else {
-                if (!isset($stopTimes['arrives']) || $stopTimes['arrives'] < $stopInfo['routes'][$routeID]['arrives']) {
-                  $stopInfo['routes'][$routeID]['arrives'] = $stopTimes['arrives'];
-                }
                 if (!isset($stopTimes['predictions'])) {
                   $stopInfo['routes'][$routeID]['predictions'] = $stopTimes['predictions'];
                   
@@ -184,14 +193,17 @@ class TransitDataView {
           }
         }
       }
+      $this->remapStopInfo($parser['system'], $stopInfo);
+      
       $cache->write(json_encode($stopInfo), $cacheName);
     }
     return $stopInfo;
   }
 
-  public function getMapImageForStop($stopID, $width=270, $height=270) {
+  public function getMapImageForStop($globalStopID, $width=270, $height=270) {
     $image = false;
-    $parser = reset($this->parsersForStop($stopID));
+    list($system, $stopID) = $this->getRealID($globalStopID);
+    $parser = reset($this->parsersForStop($system, $stopID));
     
     if ($parser['live']) {
       $image = $parser['live']->getMapImageForStop($stopID, $width, $height);
@@ -204,9 +216,10 @@ class TransitDataView {
     return $image;
   }
 
-  public function getMapImageForRoute($routeID, $width=270, $height=270) {
+  public function getMapImageForRoute($globalRouteID, $width=270, $height=270) {
     $image = false;
-    $parser = $this->parserForRoute($routeID);
+    list($system, $routeID) = $this->getRealID($globalRouteID);
+    $parser = $this->parserForRoute($system, $routeID);
     
     if ($parser['live']) {
       $image = $parser['live']->getMapImageForRoute($routeID, $width, $height);
@@ -219,16 +232,17 @@ class TransitDataView {
     return $image;
   }
   
-  public function getRouteInfo($routeID, $time=null) {
+  public function getRouteInfo($globalRouteID, $time=null) {
     $routeInfo = array();
-    $cacheName = "routeInfo.$routeID";
+    $cacheName = "routeInfo.$globalRouteID";
     $cache = self::getViewCache();
     
     if ($cache->isFresh($cacheName) && $time == null && !$this->daemonMode) {
       $routeInfo = json_decode($cache->read($cacheName), true);
       
     } else {
-      $parser = $this->parserForRoute($routeID);
+      list($system, $routeID) = $this->getRealID($globalRouteID);
+      $parser = $this->parserForRoute($system, $routeID);
       
       if ($parser['live']) {
         $routeInfo = $parser['live']->getRouteInfo($routeID, $time);
@@ -337,6 +351,8 @@ class TransitDataView {
         
         $routeInfo['lastupdate'] = $now;
       }
+      $this->remapRouteInfo($parser['system'], $routeInfo);
+
       if ($time == null) {
         $cache->write(json_encode($routeInfo), $cacheName);
       }
@@ -345,10 +361,11 @@ class TransitDataView {
     return $routeInfo;    
   }
   
-  public function getRoutePaths($routeID) {
+  public function getRoutePaths($globalRouteID) {
     $paths = array();
     
-    $parser = $this->parserForRoute($routeID);
+    list($system, $routeID) = $this->getRealID($globalRouteID);
+    $parser = $this->parserForRoute($system, $routeID);
     
     if ($parser['live']) {
       $paths = $parser['live']->getRoutePaths($routeID);
@@ -359,11 +376,12 @@ class TransitDataView {
     return $paths;
   }
   
-  public function getRouteVehicles($routeID) {
+  public function getRouteVehicles($globalRouteID) {
     $vehicles = array();
     
-    $parser = $this->parserForRoute($routeID);
-    
+    list($system, $routeID) = $this->getRealID($globalRouteID);
+    $parser = $this->parserForRoute($system, $routeID);
+
     if ($parser['live']) {
       $vehicles = $parser['live']->getRouteVehicles($routeID);
     } else if ($parser['static']) {
@@ -380,11 +398,11 @@ class TransitDataView {
       $news = array();
 
       if ($parser['live']) {
-        $news = $parser['live']->getNewsForRoutes();
+        $news = $this->remapNews($parser['system'], $parser['live']->getNewsForRoutes());
       }
       
       if ($parser['static']) {
-        $staticNews = $parser['static']->getNewsForRoutes();
+        $staticNews = $this->remapNews($parser['system'], $parser['static']->getNewsForRoutes());
         if (!count($news)) {
           $news = $staticNews;
         
@@ -398,10 +416,11 @@ class TransitDataView {
     return $allNews;
   }
   
-  public function getServiceInfoForRoute($routeID) {
+  public function getServiceInfoForRoute($globalRouteID) {
     $info = false;
     
-    $parser = $this->parserForRoute($routeID);
+    list($system, $routeID) = $this->getRealID($globalRouteID);
+    $parser = $this->parserForRoute($system, $routeID);
     
     if ($parser['live']) {
       $info = $parser['live']->getServiceInfo();
@@ -427,11 +446,11 @@ class TransitDataView {
         $routes = array();
         
         if ($parser['live']) {
-          $routes = $parser['live']->getRoutes($time);
+          $routes = $this->remapRoutes($parser['system'], $parser['live']->getRoutes($time));
         }
         
         if ($parser['static']) {
-          $staticRoutes = $parser['static']->getRoutes($time);
+          $staticRoutes = $this->remapRoutes($parser['system'], $parser['static']->getRoutes($time));
           if (!count($routes)) {
             $routes = $staticRoutes;
           } else {
@@ -494,8 +513,51 @@ class TransitDataView {
     return $routes;
   }
 
-  private function parserForRoute($routeID) {
+  // Private functions
+  private function remapStopInfo($system, &$stopInfo) {
+    if (isset($stopInfo['routes'])) {
+      $routes = array();
+      foreach ($stopInfo['routes'] as $routeID => $routeInfo) {
+        $routes[$this->getGlobalID($system, $routeID)] = $routeInfo;
+      }
+      $stopInfo['routes'] = $routes;
+    }
+  }
+  
+  private function remapRouteInfo($system, &$routeInfo) {
+    if (isset($routeInfo['stops'])) {
+      $stops = array();
+      foreach ($routeInfo['stops'] as $stopID => $stopInfo) {
+        $stops[$this->getGlobalID($system, $stopID)] = $stopInfo;
+      }
+      $routeInfo['stops'] = $stops;
+    }
+  }
+  
+  private function remapRoutes($system, $routes) {
+    $mappedRoutes = array();
+    
+    foreach ($routes as $routeID => $routeInfo) {
+      $mappedRoutes[$this->getGlobalID($system, $routeID)] = $routeInfo;
+    }
+    
+    return $mappedRoutes;
+  }
+  
+  private function remapNews($system, $news) {
+    $mappedNews = array();
+    
+    foreach ($news as $routeID => $newsItems) {
+      $mappedNews[$this->getGlobalID($system, $routeID)] = $newsItems;
+    }
+    
+    return $mappedNews;
+  }
+
+  private function parserForRoute($system, $routeID) {
     foreach ($this->parsers as $parser) {
+      if ($parser['system'] != $system) { continue; }
+    
       if ($parser['live'] && $parser['live']->hasRoute($routeID)) {
         return $parser;
       }
@@ -506,15 +568,30 @@ class TransitDataView {
     return array('live' => false, 'static' => false);
   }
   
-  private function parsersForStop($stopID) {
+  private function parsersForStop($system, $stopID) {
     $parsers = array();
   
     foreach ($this->parsers as $parser) {
+      if ($parser['system'] != $system) { continue; }
+    
       if (($parser['live'] && $parser['live']->hasStop($stopID)) ||
           ($parser['static'] && $parser['static']->hasStop($stopID))) {
         $parsers[] = $parser;
       }
     }
     return $parsers;
+  }
+  
+  private function getGlobalID($system, $realID) {
+    return $system.$this->globalIDSeparator.$realID;
+  }
+  
+  private function getRealID($globalID) {
+    $parts = explode($this->globalIDSeparator, $globalID);
+    if (count($parts) == 2) {
+      return $parts;
+    } else {
+      throw new Exception("Invalid global view ID '$globalID'");
+    }
   }
 }

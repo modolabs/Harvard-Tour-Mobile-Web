@@ -103,6 +103,7 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
       $routePredictions[$routeID]['predictions'] = $route->getPredictionsForStop($stopID, $now);
       $routePredictions[$routeID]['running'] = $route->isRunning($now, $inService) && $inService;
       $routePredictions[$routeID]['name'] = $route->getName();
+      $routePredictions[$routeID]['agency'] = $route->getAgencyID();
       $routePredictions[$routeID]['live'] = $this->isLive();
     }
 
@@ -141,18 +142,18 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
     }
     while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
       $routeID = $row['route_id'];
-      if (isset($row['route_long_name'])) {
+      if (isset($row['route_long_name']) && $row['route_long_name']) {
         $routeName = $row['route_long_name'];
-      } else if (isset($row['route_short_name'])) {
+      } else if (isset($row['route_short_name']) && $row['route_short_name']) {
         $routeName = $row['route_short_name'];
       } else {
-        $routeName = null;
+        $routeName = $routeID;
       }
       
       $route = new GTFSDatabaseTransitRoute(
         $routeID,
         $row['agency_id'],
-        $routeName, // may be null
+        $routeName,
         $row['route_desc'] // may be null
         );
   

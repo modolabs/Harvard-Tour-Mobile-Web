@@ -110,8 +110,8 @@ abstract class TransitDataParser {
   }
   
   // used to avoid warnings when looking for the right parser for a route
-  public function hasRoute($id) {
-    return isset($this->routes[$id]);
+  public function hasRoute($routeID) {
+    return isset($this->routes[$routeID]);
   }
 
   //
@@ -142,7 +142,7 @@ abstract class TransitDataParser {
   public function hasStop($id) {
     return isset($this->stops[$id]);
   }
- 
+  
   protected function getMapIconUrlForRouteStop($routeID) {
     if ($_SERVER['SERVER_NAME'] != 'localhost') {
       return FULL_URL_PREFIX.'modules/transit/images/shuttle_stop_dot.png';
@@ -254,7 +254,8 @@ abstract class TransitDataParser {
         
         $routePredictions[$routeID]['predictions'] = $route->getPredictionsForStop($stopID, $now);
         $routePredictions[$routeID]['running'] = $route->isRunning($now);
-        $routePredictions[$routeID]['name'] = $this->getRoute($routeID)->getName();
+        $routePredictions[$routeID]['name'] = $route->getName();
+        $routePredictions[$routeID]['agency'] = $route->getAgencyID();
         $routePredictions[$routeID]['live'] = $this->isLive();
       }
     }
@@ -551,6 +552,15 @@ abstract class TransitDataParser {
         }
       }
     }
+    if (isset($routeInfo['stops'], $this->overrides['stop'])) {
+      foreach ($routeInfo['stops'] as $stopID => $stopInfo) {
+        foreach ($this->overrides['stop'] as $field => $overrides) {
+          if (isset($overrides[$stopID], $stopInfo[$field])) {
+            $routeInfo['stops'][$stopID][$field] = $overrides[$stopID];
+          }
+        }
+      }
+    }
   }
   
   protected function applyStopInfoOverrides($stopID, &$stopInfo) {
@@ -558,6 +568,15 @@ abstract class TransitDataParser {
       foreach ($this->overrides['stop'] as $field => $overrides) {
         if (isset($overrides[$stopID])) {
           $stopInfo[$field] = $overrides[$stopID];
+        }
+      }
+    }
+    if (isset($stopInfo['routes'], $this->overrides['route'])) {
+      foreach ($stopInfo['routes'] as $routeID => $routeInfo) {
+        foreach ($this->overrides['route'] as $field => $overrides) {
+          if (isset($overrides[$routeID], $routeInfo[$field])) {
+            $stopInfo['routes'][$routeID][$field] = $overrides[$routeID];
+          }
         }
       }
     }

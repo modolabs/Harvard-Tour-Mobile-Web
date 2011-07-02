@@ -12,6 +12,8 @@ class TransitConfig {
     // See config/feeds/transit.ini for more details on the structure of the ini
 
     foreach ($feedConfig as $id => $config) {
+      $system = isset($config['system']) ? $config['system'] : $id;
+    
       $liveParserClass = null;
       if (isset($config['live_class']) && $config['live_class']) {
         $liveParserClass = $config['live_class'];
@@ -24,7 +26,7 @@ class TransitConfig {
       }
       unset($config['static_class']);
 
-      $this->addParser($id, $liveParserClass, $staticParserClass);
+      $this->addParser($id, $system, $liveParserClass, $staticParserClass);
       
       if (isset($config['route_whitelist']) && count($config['route_whitelist'])) {
         $this->setRouteWhitelist($id, $config['route_whitelist']);
@@ -32,6 +34,8 @@ class TransitConfig {
       unset($config['route_whitelist']);
       
       foreach ($config as $configKey => $configValue) {
+        if ($configKey == 'system') { continue; }
+      
         $parts = explode('_', $configKey);
         
         $type = $parts[0];
@@ -81,9 +85,11 @@ class TransitConfig {
     }
   }
   
-  public function addParser($id, $liveParserClass=null, $staticParserClass=null) {
+  public function addParser($id, $system, $liveParserClass=null, $staticParserClass=null) {
     if (isset($liveParserClass) || isset($staticParserClass)) {
-      $this->parsers[$id] = array();
+      $this->parsers[$id] = array(
+        'system' => $system,
+      );
     }
     if (isset($liveParserClass) && $liveParserClass) {
       $this->parsers[$id]['live'] = array(
@@ -149,6 +155,10 @@ class TransitConfig {
   }
   public function hasStaticParser($id) {
     return isset($this->parsers[$id], $this->parsers[$id]['static']);
+  }
+  
+  public function getSystem($id) {
+    return isset($this->parsers[$id]) ? $this->parsers[$id]['system'] : $id;
   }
   
   public function getLiveParserClass($id) {
