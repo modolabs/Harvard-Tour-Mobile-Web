@@ -38,17 +38,18 @@ class TransitConfig {
       
         $parts = explode('_', $configKey);
         
-        $type = $parts[0];
-        $field = $parts[1];
+        $parser = $parts[0];
+        $type = $parts[1];
         $keyOrVal = end($parts);
         
         // skip values so we don't add twice
         if ($keyOrVal == 'vals') { continue; }  
         
-        if ($type != 'live' && $type != 'static') {
+        if (!($parser == 'live' || $parser == 'static' || ($type == 'override' && $parser == 'all'))) {
           error_log("Warning: unknown transit configuration type '$type'");
           continue;
         }
+        $parsers = ($parser == 'all') ? array('live', 'static') : array($parser);
         
         $configValueKey = implode('_', array_slice($parts, 0, -1)).'_vals';
         if (!isset($config[$configValueKey])) {
@@ -59,10 +60,10 @@ class TransitConfig {
         $fieldKeys = $configValue;
         $fieldValues = $config[$configValueKey];
         
-        switch ($field) {
+        switch ($type) {
           case 'argument': 
             foreach ($fieldKeys as $i => $fieldKey) {
-              $this->setArgument($id, $type, $fieldKey, $fieldValues[$i]);
+              $this->setArgument($id, $parsers, $fieldKey, $fieldValues[$i]);
             }
             break;
             
@@ -72,7 +73,7 @@ class TransitConfig {
               $field = $parts[3];
               
               foreach ($fieldKeys as $i => $fieldKey) {
-                $this->setFieldOverride($id, $type, $object, $field, $fieldKey, $fieldValues[$i]);
+                $this->setFieldOverride($id, $parsers, $object, $field, $fieldKey, $fieldValues[$i]);
               }
             }
             break;
@@ -107,21 +108,25 @@ class TransitConfig {
     }
   }
   
-  private function setArgument($id, $type, $key, $value) {
-    if (isset($this->parsers[$id], $this->parsers[$id][$type])) {
-      $this->parsers[$id][$type]['arguments'][$key] = $value;
+  private function setArgument($id, $parsers, $key, $value) {
+    foreach ($parsers as $parser) {
+      if (isset($this->parsers[$id], $this->parsers[$id][$parser])) {
+        $this->parsers[$id][$parser]['arguments'][$key] = $value;
+      }
     }
   }
   
-  private function setFieldOverride($id, $type, $object, $field, $key, $value) {
-    if (isset($this->parsers[$id], $this->parsers[$id][$type])) {
-      if (!isset($this->parsers[$id][$type]['overrides'][$object])) {
-        $this->parsers[$id][$type]['overrides'][$object] = array();
+  private function setFieldOverride($id, $parsers, $object, $field, $key, $value) {
+    foreach ($parsers as $parser) {
+      if (isset($this->parsers[$id], $this->parsers[$id][$parser])) {
+        if (!isset($this->parsers[$id][$parser]['overrides'][$object])) {
+          $this->parsers[$id][$parser]['overrides'][$object] = array();
+        }
+        if (!isset($this->parsers[$id][$parser]['overrides'][$object][$field])) {
+          $this->parsers[$id][$parser]['overrides'][$object][$field] = array();
+        }
+        $this->parsers[$id][$parser]['overrides'][$object][$field][$key] = $value;
       }
-      if (!isset($this->parsers[$id][$type]['overrides'][$object][$field])) {
-        $this->parsers[$id][$type]['overrides'][$object][$field] = array();
-      }
-      $this->parsers[$id][$type]['overrides'][$object][$field][$key] = $value;
     }
   }
 

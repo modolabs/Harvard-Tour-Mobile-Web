@@ -653,7 +653,6 @@ class TransitTime {
 
   static public function getCurrentTime() {
     return time();
-    //return strtotime("01:45:00 11/3/2010");
   }
 
   private static function getComponents($tt) {
@@ -1088,14 +1087,14 @@ class TransitService {
     $datetime = TransitTime::getLocalDatetimeFromTimestamp($time);
     
     $date = intval($datetime->format('Ymd'));
-    $dayName = $datetime->format('l');
+    $dayOfWeek = $datetime->format('l');
     
     if (count($this->dateRanges)) {
       $insideValidDateRange = false;
       foreach ($this->dateRanges as $dateRange) {
         $week  = $dateRange['weekdays'];
         
-        if ($date >= $dateRange['first'] && $date <= $dateRange['last'] && $week[strtolower($dayName)]) {
+        if ($date >= $dateRange['first'] && $date <= $dateRange['last'] && $week[strtolower($dayOfWeek)]) {
           $insideValidDateRange = true;
           break;
         }

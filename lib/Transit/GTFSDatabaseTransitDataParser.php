@@ -74,8 +74,6 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
     // ensure the data required by TransitDataParser is loaded
     $this->getStop($stopID);
     
-    // route->getPredictionsForStop($stopID, TransitTime::getCurrentTime())
-    
     return parent::getStopInfoForRoute($routeID, $stopID);
   }
   
@@ -458,6 +456,7 @@ class GTFSDatabaseTransitRoute extends TransitRoute {
       $datetime = TransitTime::getLocalDatetimeFromTimestamp($now);
       
       $date = $datetime->format('Ymd');
+      $dayOfWeek = strtolower($datetime->format('l'));
       
       $segments = array();
       
@@ -484,7 +483,6 @@ class GTFSDatabaseTransitRoute extends TransitRoute {
       // get all segments that run today regardless of what time it is
       // presence of a segment indicates the route is in service
       $services = array();
-      $dayOfWeek = strtolower(date('l', $date));
       $sql = 'SELECT t.trip_id AS trip_id, t.service_id AS service_id, t.trip_headsign AS trip_headsign, t.direction_id AS direction_id'
             .'  FROM trips t, calendar c'
             ." WHERE route_id = '".$this->getID()."'"
