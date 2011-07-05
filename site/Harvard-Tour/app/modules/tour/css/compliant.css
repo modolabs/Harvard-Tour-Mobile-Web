@@ -89,7 +89,7 @@ p, dl, ul {
 	padding: 0;
 }
 #helplinks li {
-	display: inline-block;
+	display: inline;
 	margin-left: 6px;
 }
 #helplinks a {
@@ -97,7 +97,6 @@ p, dl, ul {
 	color: #4c6680;
 	text-shadow: rgba(0,0,0,0.13) -1px -1px 1px,rgba(255,255,255,0.85) 1px 1px 1px;
 	padding: 0 8px;
-	display: inline-block;
 }
 #pagehead {
 	position: relative;
@@ -153,7 +152,7 @@ p, dl, ul {
 	position: absolute;
 	top: 0;
 	right: 0;
-	padding: 4px 2px 0 0;
+	padding: 3px 2px 0 0;
 	height: 52px;
 	font: 82.4%/56px serif;
 	color: #cbe1f3;
@@ -161,11 +160,9 @@ p, dl, ul {
 #pagehead #viewtoggle a, 
 #pagehead #viewtoggle a:visited,
 #pagehead #viewtoggle span {
-	height: 52px;
 	color: #cbe1f3;
 	padding: 0 8px;
 	text-decoration: none;
-	display: inline-block;
 }
 #pagehead #viewtoggle a.active {
 	color: #fff;
@@ -174,7 +171,7 @@ p, dl, ul {
   padding: 0;
 }
 #pagehead #viewtoggle #doneURL {
-	padding-left: 16px;
+	margin-left: 4px;
 }
 #tabs {
 	position: absolute;
