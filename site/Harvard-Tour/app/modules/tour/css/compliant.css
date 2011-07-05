@@ -561,19 +561,27 @@ p, dl, ul {
 .slideshow .slidenav .slidedot {
   display: inline-block;
   height: 38px;
-  width: 14px;
-  margin: 0 6px 0;
-  background: transparent url(/common/images/page-dot.png) no-repeat center left;
+  line-height: 38px;
+  margin: 0 6px 0 0;
 }
-.slideshow .slidenav .slidedot.active {
-  background-image: url(/common/images/page-dot-current.png);
+.slideshow .slidenav .slidedot img.active {
+  display: none;
+}
+.slideshow .slidenav .slidedot.active img.active {
+  display: inline;
+}
+.slideshow .slidenav .slidedot img.inactive {
+  display: inline;
+}
+.slideshow .slidenav .slidedot.active img.inactive {
+  display: none;
 }
 .slideshow .slidenav a {
 	display: block;
 	width: 47px;
   height: 38px;
 	position: absolute;
-	top: 0
+	top: 0;
 }
 .slideshow .slidenav .previous {
 	left: 0;

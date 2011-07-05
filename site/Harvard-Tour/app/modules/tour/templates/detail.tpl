@@ -44,7 +44,10 @@
                     <img src="/common/images/page-prev.png" alt="Previous" width="47" height="38" border="0" />
                   </a>
                   {foreach $lensContent as $slide}
-                    <div id="slidedot_{$tabKey}_{$slide@index}" class="slidedot{if $slide@first} active{/if}"></div>
+                    <span id="slidedot_{$tabKey}_{$slide@index}" class="slidedot{if $slide@first} active{/if}">
+                      <img class="inactive" src="/common/images/page-dot.png" height="14" width="14" />
+                      <img class="active" src="/common/images/page-dot-current.png" height="14" width="14" />
+                    </span>
                   {/foreach}
                   <a id="slidenext_{$tabKey}" class="next active" onclick="nextSlide('{$tabKey}')">
                     <img src="/common/images/page-next.png" alt="Next" width="47" height="38" border="0" />
