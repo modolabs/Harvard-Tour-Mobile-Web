@@ -243,12 +243,14 @@ p, dl, ul {
   left: 0;
   width: 100%;
   height: 400px;
+  overflow: hidden;
 }
 #tabbodies .tabbody.active {
   z-index: 10000;
   visibility: visible;
   position: relative;
   height: auto;
+  overflow: visible;
 }
 
 #pagehead.brief + #content {
