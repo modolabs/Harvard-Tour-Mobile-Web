@@ -128,11 +128,9 @@ class TourWebModule extends WebModule {
     switch ($this->platform) {
       case 'blackberry':
       case 'bbplus':
-        $this->assign('tappable', false);
         return $this->initializeStaticMap($view);
         
       default:
-        $this->assign('tappable', true);
         return $this->initializeDynamicMap($view);
     }
   }
@@ -460,6 +458,11 @@ class TourWebModule extends WebModule {
           
           $this->assign('prevURL', $prevURL);
           $this->assign('nextURL', $nextURL);          
+          
+          // For static map help text
+          $this->assign('listViewURL', $this->buildTourURL('list', array(
+            'doneURL' => $this->buildTourURL($this->page, $this->args),
+          )));
         }
 
         $this->assign('view', $view);

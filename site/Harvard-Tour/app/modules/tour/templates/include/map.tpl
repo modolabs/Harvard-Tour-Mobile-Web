@@ -1,15 +1,17 @@
 <div id="helptext">
-  {if $tappable|default: true}
+  {if $staticMap}
+    {if $newTour}
+      Switch to <a href="{$listViewURL}">list view</a> to choose a different starting point
+    {elseif $view == 'overview'}
+      Switch to <a href="{$listViewURL}">list view</a> to jump to another point in the tour
+    {else}
+      To jump to another point in the tour, go to the <a href="{$listViewURL}">tour overview list</a>
+    {/if}
+  {else}
     {if $newTour}
       Tap any grey pin to choose a different starting point
     {else}
       Tap any grey pin to jump to another point in the tour
-    {/if}
-  {else}
-    {if $newTour}
-      Switch to list view to choose a different starting point
-    {else}
-      Switch to list view to jump to another point in the tour
     {/if}
   {/if}
 </div>
