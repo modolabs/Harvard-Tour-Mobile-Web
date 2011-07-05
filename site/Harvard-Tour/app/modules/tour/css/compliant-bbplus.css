@@ -2,24 +2,35 @@
 	font-size: 100%;
 }
 #pagetitle h1 {
-	height: 38px;
+	min-height: 1.5em;
+	height: auto;
 	margin: 0;
 	padding: 2px 120px 0 8px;
 	text-align: left;
 	font-size: 123.5%;
 	line-height: 38px;
 }
+#pagetitle.overview {
+  padding-right: 4.5em;
+}
+#pagetitle.overview h1 {
+  width: 100%;
+}
 #pagehead {
-	height: 100px;
+	min-height: 100px;
+  height: auto;
 }
 #pagehead.brief {
-  height: 40px;
+  min-height: 40px;
+  height: auto;
 }
 #pagehead.tabbed {
-	height: 84px;
+	min-height: 84px;
+  height: auto;
 }
 #pagehead #sidenav {
 	height: 40px;
+  height: auto;
 	margin-top: 2px;
 }
 #pagehead #sidenav a {
@@ -36,9 +47,12 @@
 	right: 50px;
 }
 .listrow {
-	font-size: 75%;
-	line-height: 1.2em;
 	padding-left: 97px;
+}
+.listrow,
+#content .results li a .listrow {
+	font-size: 85%;
+	line-height: 1.2em;
 }
 .listrow h2 {
 	padding-bottom: 2px;
@@ -48,12 +62,15 @@
 	height: 60px;
 }
 #nextstop {
-	height: 60px;
+	min-height: 54px;
+  height: auto;
 	font-size: 88.23%;
+	background: #7c8893 url(/common/images/headback.jpg) repeat-x 0 -1px;
 }
 #nextstop #starthere {
 	font-size: 100%;
-	height: 60px;
+	min-height: 60px;
+  height: auto;
 }
 #stoplink {
 	padding-top: 34px;

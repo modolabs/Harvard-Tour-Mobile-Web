@@ -6,7 +6,7 @@
     {elseif isset($firstItem['description'])}
       <div class="lens-legend">
         {foreach $pageContent as $item}
-          <p><strong><img src="/modules/tour/images/lens-{$item['id']}.png" alt="{$item['name']}" width="24" height="24" border="0" />{$item['name']}:</strong>
+          <p><strong><img src="/modules/tour/images/lens-{$item['id']}.png" alt="{$item['name']}" width="24" height="24" border="0" />{$item['name']}:</strong> 
           {$item['description']}</p>
         {/foreach}
       </div>

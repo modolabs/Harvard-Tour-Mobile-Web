@@ -1,22 +1,14 @@
+html, body, #nonfooternav {
+  height: 100%;
+	margin: 0;
+	padding: 0;
+	min-height: 600px;
+}
+
 #welcomehead {
   overflow: hidden;
 	background: #f0f0ee url(/common/images/bodyback2.jpg) repeat-x;
-	padding: 10px;
-}
-a.startlink {
-	text-decoration: none;
-	display: block;
-	height: 30px;
-}
-a.logostartlink {
-	height: 68px;
-}
-#welcomefooter a.startlink + a.startlink {
-  padding-top: 3px;
-}
-img.begin, img.startover, img.resume {
-	clear: left;
-  float: right;
+	padding: 10px 10px 4px 10px;
 }
 #logo {
 	float: left;
@@ -34,7 +26,7 @@ img.begin, img.startover, img.resume {
 	padding: 0;
 	background-color: rgba(0,0,0,0.6);
 }
-#download a {
+#download span {
 	text-decoration: none;
 	display: block;
 	font: 12px/26px sans-serif;
@@ -42,7 +34,7 @@ img.begin, img.startover, img.resume {
 	color: rgba(255,255,255,0.95);
 	text-shadow: 0 0 4px #000;
 }
-#download a img {
+#download span img {
 	margin-top: -14px;
 	float: right;
 	padding: 0 8px 0 5px;
@@ -60,4 +52,29 @@ img.begin, img.startover, img.resume {
 #footer a {
 	text-decoration: none;
 	color: #505050
+}
+h2.lensname {
+	display: none;
+	color: #333;
+	font-family: serif;
+	font-size: 120%;
+	margin: 0;
+	padding: 6px;
+}
+.lens-legend {
+	line-height: 24px;
+	margin: 0 0 1em 0;
+}
+#content .lens-legend p, .lens-legend p {
+	margin: 0 0 0.25em 0;
+}
+.lens-legend img {
+	float: left;
+	padding-right: 3px;
+	vertical-align: middle;
+}
+.lens-legend strong {
+	padding-right: 5px;
+	font-weight: bold;
+	color: #000;
 }
