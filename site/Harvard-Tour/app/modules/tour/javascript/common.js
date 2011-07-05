@@ -90,6 +90,9 @@ function showMap() {
     var zoomChangeListener = google.maps.event.addListener(map, 'zoom_changed', function() {
       var zoomChangeBoundsListener = google.maps.event.addListener(map, 'bounds_changed', function(event) {
         map.setOptions({minZoom: null, maxZoom: null});
+        if (fitToBounds.length > 2) {
+          map.panTo(new google.maps.LatLng(centerCoords['lat'], centerCoords['lon']));
+        }
         google.maps.event.removeListener(zoomChangeBoundsListener);
       });
       google.maps.event.removeListener(zoomChangeListener);

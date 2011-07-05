@@ -5,7 +5,7 @@
     {elseif $view == 'overview'}
       Switch to <a href="{$listViewURL}">list view</a> to jump to another point in the tour
     {else}
-      To jump to another point in the tour, go to the <a href="{$listViewURL}">tour overview list</a>
+      To jump elsewhere in the tour, use the <a href="{$listViewURL}">tour overview list</a>
     {/if}
   {else}
     {if $newTour}
