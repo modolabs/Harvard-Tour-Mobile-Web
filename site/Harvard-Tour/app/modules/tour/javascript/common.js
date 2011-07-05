@@ -34,7 +34,7 @@ function showMap() {
   var mapElement = document.getElementById('map_canvas');
   if (mapElement) {
     var options = {
-      'zoom' : 18,
+      'zoom' : 19, // make sure zoom level and bounds change when fitBounds is called
       'center' : new google.maps.LatLng(centerCoords['lat'], centerCoords['lon']),
       'mapTypeId' : google.maps.MapTypeId.ROADMAP,
       'mapTypeControl' : false,
@@ -84,23 +84,24 @@ function showMap() {
       bounds.extend(new google.maps.LatLng(fitToBounds[i]['lat'], fitToBounds[i]['lon']));
     }
     
-    if (fitToBounds.length > 1) {
-      map.fitBounds(bounds);
-    } else {
-      map.panTo(bounds.getCenter());
-    }
-    
+    // Restrict the zoom level while fitting to bounds
+    // Listeners will definitely get called because the initial zoom level is 19
+    map.setOptions({ minZoom: 16, maxZoom: 18 });
+    var zoomChangeListener = google.maps.event.addListener(map, 'zoom_changed', function() {
+      var zoomChangeBoundsListener = google.maps.event.addListener(map, 'bounds_changed', function(event) {
+        map.setOptions({minZoom: null, maxZoom: null});
+        google.maps.event.removeListener(zoomChangeBoundsListener);
+      });
+      google.maps.event.removeListener(zoomChangeListener);
+    });
+    map.fitBounds(bounds);
+
     /*
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(position) {
-        var location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-  
-        var marker = new google.maps.Marker({
-          'clickable' : false,
-          'map'       : map, 
-          'position'  : location
-        });
-      });
+      updateCurrentPosition(map);
+      setInterval(function() {
+        updateCurrentPosition(map);
+      }, 2000);
     }
     */
     
@@ -109,6 +110,24 @@ function showMap() {
     var elem = document.getElementById('map_loading');
     elem.style.display = 'none';
   }
+}
+
+function updateCurrentPosition(map) {
+  navigator.geolocation.getCurrentPosition(function(position) {
+    var location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+
+    if (typeof updateCurrentPosition.selfMarker == 'undefined') {
+      updateCurrentPosition.selfMarker = new google.maps.Marker({
+        'clickable' : false,
+        'map'       : map, 
+        'position'  : location,
+        'flat'      : true,
+        'icon'      : getMarkerImage(tourIcons['self'])
+      });
+    } else {
+      updateCurrentPosition.selfMarker.setPosition(location);
+    }
+  }, function() {}, { enableHighAccuracy: true });
 }
 
 function selectStop(tourStopIndex) {

@@ -109,13 +109,18 @@ class TourWebModule extends WebModule {
         'anchor'   => array(7, 27),
         'size'     => array(44, 29),
       ),
+      'self'   => array(
+        'src' => FULL_URL_PREFIX.'modules/tour/images/map-location@2x.png',
+        'anchor'   => array(8, 8),
+        'size'     => array(16, 16),
+      ),
     );
   }
   
   protected function getOverviewMapCenter() {
     return array(
-      'lat' => 42.374464, 
-      'lon' => -71.117232,
+      'lat' => floatval(Kurogo::getSiteVar('TOUR_CENTER_LAT')),
+      'lon' => floatval(Kurogo::getSiteVar('TOUR_CENTER_LON')),
     );
   }
   
