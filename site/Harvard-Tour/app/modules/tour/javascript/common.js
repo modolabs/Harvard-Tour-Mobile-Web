@@ -339,10 +339,10 @@ function resizeVideoFrames() {
 function checkTourTab() {
   var anchor = location.hash;
   if (anchor.length > 1) {
-    var possibleTabName = anchor.substr(1);
+    var possibleTabName = anchor.replace('#tab_', '');
     var possibleTab = document.getElementById(possibleTabName+'TourTab');
     if (possibleTab) {
-      showTourTab(possibleTabName);
+      setTimeout(function() { showTourTab(possibleTabName) }, 250);
     }
   }
 }
@@ -373,7 +373,15 @@ function showTourTab(newTourTab) {
         document.documentElement.fireEvent('onresize', e);
       }
       
-      location.hash = '#'+newTourTab;
+      var hash = '#tab_'+newTourTab;
+      if (window.history && window.history.pushState && window.history.replaceState && 
+        !((/ Mobile\/([1-7][a-z]|(8([abcde]|f(1[0-8]))))/i).test(navigator.userAgent) /* disable for versions of iOS before version 4.3 (8F190) */
+					|| (/AppleWebKit\/5([0-2]|3[0-2])/i).test(navigator.userAgent) /* disable for the mercury iOS browser, or at least older versions of the webkit engine */)) {
+        history.pushState({}, document.title, hash);
+      } else {
+        location.hash = hash;
+      }
+      
       onDOMChange();
     }
   }
