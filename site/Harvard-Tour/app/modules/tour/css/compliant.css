@@ -89,7 +89,7 @@ p, dl, ul {
 	padding: 0;
 }
 #helplinks li {
-	display: inline;
+	display: inline-block;
 	margin-left: 6px;
 }
 #helplinks a {
@@ -97,6 +97,7 @@ p, dl, ul {
 	color: #4c6680;
 	text-shadow: rgba(0,0,0,0.13) -1px -1px 1px,rgba(255,255,255,0.85) 1px 1px 1px;
 	padding: 0 8px;
+	display: inline-block;
 }
 #pagehead {
 	position: relative;
@@ -160,9 +161,11 @@ p, dl, ul {
 #pagehead #viewtoggle a, 
 #pagehead #viewtoggle a:visited,
 #pagehead #viewtoggle span {
+	height: 52px;
 	color: #cbe1f3;
-	padding: 0 4px;
+	padding: 0 8px;
 	text-decoration: none;
+	display: inline-block;
 }
 #pagehead #viewtoggle a.active {
 	color: #fff;

@@ -4,7 +4,7 @@
   <div id="pagetitle" class="overview"><h1>{if $newTour}Starting Point{else}Tour Overview{/if}</h1></div>
   <div id="viewtoggle">
     <a class="active" href="{$mapViewURL}">map</a>
-    <span class="spacer">|</span> 
+    <span class="spacer">|</span>
     <span>list</span>
     {if !$newTour}<a id="doneURL" class="active" href="{$doneURL}">return</a>{/if}
   </div>
