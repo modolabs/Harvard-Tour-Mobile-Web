@@ -336,6 +336,17 @@ function resizeVideoFrames() {
   }
 }
 
+function checkTourTab() {
+  var anchor = location.hash;
+  if (anchor.length > 1) {
+    var possibleTabName = anchor.substr(1);
+    var possibleTab = document.getElementById(possibleTabName+'TourTab');
+    if (possibleTab) {
+      showTourTab(possibleTabName);
+    }
+  }
+}
+
 function showTourTab(newTourTab) {
   // Displays the tab with ID strID
   if (currentTourTab != newTourTab) {
@@ -362,6 +373,7 @@ function showTourTab(newTourTab) {
         document.documentElement.fireEvent('onresize', e);
       }
       
+      location.hash = '#'+newTourTab;
       onDOMChange();
     }
   }

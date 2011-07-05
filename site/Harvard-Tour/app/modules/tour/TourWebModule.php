@@ -476,7 +476,7 @@ class TourWebModule extends WebModule {
         $this->enableTabs($tabKeys, null, $tabJavascripts);
         $this->addInlineJavascript('var currentTourTab = "'.reset($tabKeys).'";');
         
-        $this->addOnLoad('setupVideoFrames();');
+        $this->addOnLoad('setupVideoFrames();checkTourTab();');
         $this->addOnOrientationChange('setTimeout(resizeVideoFrames, 0);');
         
         $prevURL = $this->buildTourURL('map', array(
