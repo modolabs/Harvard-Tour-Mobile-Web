@@ -128,6 +128,7 @@ class TourWebModule extends WebModule {
     switch ($this->platform) {
       case 'blackberry':
       case 'bbplus':
+      case 'winphone7': // does not support touchmove and friends
         return $this->initializeStaticMap($view);
         
       default:
@@ -145,6 +146,9 @@ class TourWebModule extends WebModule {
     } else if ($this->platform == 'blackberry') {   // Google Static Map size for 360px-wide Storm, Storm2, and Torch screens
       $x = 354;
       $y = 272;
+    } else if ($this->platform == 'winphone7') {
+      $x = 320;
+      $y = 262;
     }
     $markerImages = $this->getStaticMarkerImages();
     

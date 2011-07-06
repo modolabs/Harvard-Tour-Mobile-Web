@@ -29,4 +29,4 @@
     </div>
   </div>
 {/if}
-<div>{* rest of container *}
+<div style="display: none">{* rest of container *}

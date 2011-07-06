@@ -23,6 +23,7 @@ img.begin, img.startover, img.resume {
 }
 #hero {
 	position: relative;
+	clear: both;
 }
 #download {
 	display: block;

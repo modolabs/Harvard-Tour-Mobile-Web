@@ -871,8 +871,13 @@ class TourVideo {
               $data['data']['content'][6], 
               $data['data']['thumbnail'],
               $data['data']['thumbnail']['hqDefault'])) {
-      // Supports rtsp only
-      return '<a class="videoLink" href="'.$data['data']['content'][6].'">'.
+      
+      $url = $data['data']['content'][6]; // Blackberries do rtsp only
+      if ($platform == 'winphone7') {
+        // Intent url to launch YouTube native player (also works for Androids with player installed)
+        $url = 'vnd.youtube:'.$this->youTubeId.'?vndapp=youtube_mobile&vndclient=mv-google&vndel=watch';
+      }
+      return '<a class="videoLink" href="'.$url.'">'.
         '<div class="playButton"><div></div></div>'.
         '<img src="'.$data['data']['thumbnail']['hqDefault'].'" /></a>';
     } else {

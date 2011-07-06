@@ -1,0 +1,43 @@
+#pagehead {
+	font: 17px/1.33em 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+#map_container {
+  top: 164px;
+}
+#nextstop {
+	border-top: 1px solid #666672;
+	color: white;
+	background: #7c8893 url(/common/images/headback.jpg) repeat-x 0px -4px;
+}
+#nextstop h2 {
+	color: white;
+}
+#helptext {
+  background: #444;
+	height: 22px;
+	line-height: 20px;
+	font-size: 85%;
+}
+#pagetitle {
+}
+#pagetitle h1 {
+  height: 52px;
+  line-height: 25px;
+  padding-top: 4px;
+}
+#pagetitle.overview h1 {
+  padding-left: 10px;
+  margin-left: 0;
+  line-height: 56px;
+  height: 56px;
+  padding-top: 0px;
+}
+#pagehead #viewtoggle {
+  line-height: 54px;
+}
+#stoplink {
+  padding-top: 20px;
+}
+#stoplink img {
+  margin-top: 4px;
+}

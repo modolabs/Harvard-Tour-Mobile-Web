@@ -11,7 +11,7 @@
       </a>
       
     {else}
-      <a class="startlink bigstartlink" href="{$startURL}">
+      <a class="startlink logostartlink" href="{$startURL}">
         <img src="/modules/tour/images/logo.png" alt="harvard yard tour" width="300" height="30" border="0" />
         <br/>
         <img class="begin" src="/modules/tour/images/begin.png" alt="begin your tour" width="300" height="30" border="0" />

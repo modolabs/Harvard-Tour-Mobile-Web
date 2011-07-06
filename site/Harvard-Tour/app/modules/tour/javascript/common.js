@@ -21,8 +21,10 @@ function resizeMap() {
     var windowHeight = 0;
     if (window.innerHeight !== undefined) {
       windowHeight = window.innerHeight;
-    } else {
-      windowHeight = document.documentElement.clientHeight; // ie7
+    } else if (typeof document.body != "undefined" && 
+               typeof document.body.clientHeight != "undefined" && 
+               document.body.clientHeight != 0){
+      windowHeight = document.body.clientHeight; // ie7
     }
     
     mapcontainer.style.height = (windowHeight - headerHeight)+'px';
@@ -342,7 +344,11 @@ function checkTourTab() {
     var possibleTabName = anchor.replace('#tab_', '');
     var possibleTab = document.getElementById(possibleTabName+'TourTab');
     if (possibleTab) {
-      setTimeout(function() { showTourTab(possibleTabName) }, 250);
+      setTimeout(function() { 
+        if (anchor == location.hash) {
+          showTourTab(possibleTabName) 
+        }
+      }, 250);
     }
   }
 }
@@ -374,9 +380,9 @@ function showTourTab(newTourTab) {
       }
       
       var hash = '#tab_'+newTourTab;
-      if (window.history && window.history.pushState && window.history.replaceState && 
-        !((/ Mobile\/([1-7][a-z]|(8([abcde]|f(1[0-8]))))/i).test(navigator.userAgent) /* disable for versions of iOS before version 4.3 (8F190) */
-					|| (/AppleWebKit\/5([0-2]|3[0-2])/i).test(navigator.userAgent) /* disable for the mercury iOS browser, or at least older versions of the webkit engine */)) {
+      if (window.history && window.history.pushState && window.history.replaceState && // Regexs from history js plugin
+        !((/ Mobile\/([1-7][a-z]|(8([abcde]|f(1[0-8]))))/i).test(navigator.userAgent) || // disable for versions of iOS < 4.3 (8F190)
+					 (/AppleWebKit\/5([0-2]|3[0-2])/i).test(navigator.userAgent))) { // disable for the mercury iOS browser and older webkit
         history.pushState({}, document.title, hash);
       } else {
         location.hash = hash;

@@ -1,17 +1,19 @@
 {capture name="customHeader" assign="customHeader"}
-  <div id="welcomehead">
-    <img src="/modules/tour/images/logo.png" alt="harvard yard tour" width="300" height="30" border="0" />
-  </div>
-  <div id="hero">
-    <img src="/modules/tour/images/hero-hdpi.jpg" alt="Photo of Harvard" width="100%" border="0" />
-    {if $pagetype == 'compliant' && $platform == 'iphone'}
-      <div id="download">
-        <span>
-          Free iPhone app coming soon!
-          <img src="/modules/tour/images/iphone4@2x.png" alt="iPhone" width="25" height="47" border="0" />
-        </span>
-      </div>
-    {/if}
+  <div id="customheader">
+    <div id="welcomehead">
+      <img src="/modules/tour/images/logo.png" alt="harvard yard tour" width="300" height="30" border="0" />
+    </div>
+    <div id="hero">
+      <img src="/modules/tour/images/hero-hdpi.jpg" alt="Photo of Harvard" border="0" />
+      {if $pagetype == 'compliant' && $platform == 'iphone'}
+        <div id="download">
+          <span>
+            Free iPhone app coming soon!
+            <img src="/modules/tour/images/iphone4@2x.png" alt="iPhone" width="25" height="47" border="0" />
+          </span>
+        </div>
+      {/if}
+    </div>
   </div>
 {/capture}
 
@@ -19,9 +21,9 @@
 
 <p>Coming Soon: Mobile Tour of Harvard Yard</p>
 
-<p>Welcome to Harvard University! Tour Harvard Yard with any web-enabled smartphone to learn about life at Harvard today as well as the University’s 375-year history.</p>
+<p>Welcome to Harvard University! Tour Harvard Yard with any web-enabled smartphone to learn about life at Harvard today as well as the University&#039;s 375-year history.</p>
 
-<p>This self-guided tour features text descriptions at each stop as well as audio, video and images — including pictures from the University archives and exclusive inside views of Harvard buildings today. Each of the sixteen stops offers a general description, as well as additional information in up to four categories:</p>
+<p>This self-guided tour features text descriptions at each stop as well as audio, video and images &mdash; including pictures from the University archives and exclusive inside views of Harvard buildings today. Each of the sixteen stops offers a general description, as well as additional information in up to four categories:</p>
 
 <div class="lens-legend">
   <p><strong><img src="/harvard-tour/modules/tour/images/lens-info.png" alt="Info" width="24" height="24" border="0" />Info:</strong> 

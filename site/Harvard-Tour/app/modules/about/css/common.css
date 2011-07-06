@@ -7,14 +7,20 @@ html, body, #nonfooternav {
 
 #welcomehead {
   overflow: hidden;
-	background: #f0f0ee url(/common/images/bodyback2.jpg) repeat-x;
 	padding: 10px 10px 4px 10px;
 }
 #logo {
 	float: left;
 }
+#customheader {
+	background: transparent url(/common/images/bodyback2.jpg) repeat-x;
+}
 #hero {
 	position: relative;
+	text-align: center;
+}
+#hero > img {
+  max-width: 100%;
 }
 #download {
 	display: block;
@@ -42,7 +48,6 @@ html, body, #nonfooternav {
 #container {
 	margin-top: -4px;
 	padding: 10px;
-	background: url(/common/images/bodyback2.jpg) repeat-x;
 	color: #505050;
 }
 #footer {
