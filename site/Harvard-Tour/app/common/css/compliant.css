@@ -1,0 +1,38 @@
+#footer {
+	margin: 40px 0 20px 0;
+	font-size: 64.7%;
+  text-align: center;
+}
+#footer a {
+	text-decoration: none;
+	color: #505050
+}
+.h375logo {
+  margin: 1em auto; 
+  padding-bottom: 1em;
+}
+
+h2.lensname {
+	display: none;
+	color: #333;
+	font-family: serif;
+	font-size: 120%;
+	margin: 0;
+	padding: 6px;
+}
+.lens-legend {
+	line-height: 24px;
+	margin: 0 0 1em 0;
+}
+#content .lens-legend p, .lens-legend p {
+	margin: 0 0 0.25em 0;
+}
+.lens-legend img {
+	float: left;
+	padding-right: 3px;
+	vertical-align: middle;
+}
+.lens-legend strong {
+	font-weight: bold;
+	color: #000;
+}

@@ -14,6 +14,11 @@
   {/if}
 {/block}
 
-{block name="footerKurogo"}<div style="text-align: center; margin: 1em auto; padding-bottom: 1em"><a href="http://375.harvard.edu" target="_new"><img src="/modules/tour/images/h375.png" width="60" height="20" alt="Harvard 375" /></a></div>
+{block name="footerKurogo"}
+  <div class="h375logo">
+    <a href="http://375.harvard.edu" target="_new">
+      <img src="/modules/tour/images/h375.png" width="60" height="20" alt="Harvard 375" />
+    </a>
+  </div>
 {/block}
 

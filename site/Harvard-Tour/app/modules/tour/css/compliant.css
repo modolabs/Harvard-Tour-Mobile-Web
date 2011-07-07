@@ -14,32 +14,8 @@ h1 {
 	margin: 4px 0 10px 0;
 	color: #000;
 }
-h2.lensname {
-	display: none;
-	color: #333;
-	font-family: serif;
-	font-size: 120%;
-	margin: 0;
-	padding: 6px;
-}
 p, dl, ul {
 	margin: 0 0 15px 0;
-}
-.lens-legend {
-	line-height: 24px;
-	margin: 0 0 1em 0;
-}
-#content .lens-legend p, .lens-legend p {
-	margin: 0 0 0.25em 0;
-}
-.lens-legend img {
-	float: left;
-	padding-right: 3px;
-	vertical-align: middle;
-}
-.lens-legend strong {
-	font-weight: bold;
-	color: #000;
 }
 .footnote {
 	border-top: 2px dotted #eee;
@@ -588,10 +564,6 @@ p, dl, ul {
 .slideshow .slidenav .next {
 	right: 0;
 }
-#footer {
-  text-align: center;
-}
-
 a.videoLink, a.videoLink:visited {
   position: relative;
   display: block;
