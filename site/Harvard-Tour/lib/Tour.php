@@ -847,6 +847,8 @@ class TourVideo {
   }
 
   public function getContent() {
+    $content = '<p>Video not available</p>';
+    
     $pagetype = $GLOBALS['deviceClassifier']->getPagetype();
     $platform = $GLOBALS['deviceClassifier']->getPlatform();
     if ($pagetype == 'compliant') {
@@ -858,31 +860,34 @@ class TourVideo {
           $forceHTML5 = true;
         case 'computer':
           // Supports YouTube iframe:
-          return '<iframe class="videoFrame" id="videoFrame_'.$this->youTubeId.
+          $content = '<iframe class="videoFrame" id="videoFrame_'.$this->youTubeId.
             '" src="http://www.youtube.com/embed/'.$this->youTubeId.
             ($forceHTML5 ? '?html5=1&controls=0&' : '?').'rel=0&hd=0&modestbranding=1&title=" '.
             'width="240" height="195" frameborder="0"></iframe>';
+          break;
+        
+        default:
+          $data = $this->getYouTubeData();
+          if (isset($data['data'],
+                    $data['data']['content'],
+                    $data['data']['content'][6],
+                    $data['data']['thumbnail'],
+                    $data['data']['thumbnail']['hqDefault'])) {
+            
+            $url = $data['data']['content'][6]; // Blackberries do rtsp only
+            if ($platform == 'winphone7') {
+              // Intent url to launch YouTube native player (also works for Androids with player installed)
+              $url = 'vnd.youtube:'.$this->youTubeId.'?vndapp=youtube_mobile&vndclient=mv-google&vndel=watch';
+            }
+            $content = '<a class="videoLink" href="'.$url.'">'.
+              '<div class="playButton"><div></div></div>'.
+              '<img src="'.$data['data']['thumbnail']['hqDefault'].'" /></a>';
+          }
+          break;
       }
     }
     
-    $data = $this->getYouTubeData();
-    if (isset($data['data'], 
-              $data['data']['content'],
-              $data['data']['content'][6], 
-              $data['data']['thumbnail'],
-              $data['data']['thumbnail']['hqDefault'])) {
-      
-      $url = $data['data']['content'][6]; // Blackberries do rtsp only
-      if ($platform == 'winphone7') {
-        // Intent url to launch YouTube native player (also works for Androids with player installed)
-        $url = 'vnd.youtube:'.$this->youTubeId.'?vndapp=youtube_mobile&vndclient=mv-google&vndel=watch';
-      }
-      return '<a class="videoLink" href="'.$url.'">'.
-        '<div class="playButton"><div></div></div>'.
-        '<img src="'.$data['data']['thumbnail']['hqDefault'].'" /></a>';
-    } else {
-      return '<p>Video not available</p>';
-    }
+    return $content.($this->title ? '<p class="caption">'.$this->title.'</p>' : '');
   }
       
   protected function getYouTubeData() {
