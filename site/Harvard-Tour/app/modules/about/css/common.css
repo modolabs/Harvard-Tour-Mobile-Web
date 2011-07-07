@@ -5,6 +5,11 @@ html, body, #nonfooternav {
 	min-height: 600px;
 }
 
+#container {
+	font-size: 88.24%;
+	line-height: 1.33em;
+}
+
 #welcomehead {
   overflow: hidden;
 	padding: 10px 10px 4px 10px;
@@ -79,7 +84,6 @@ h2.lensname {
 	vertical-align: middle;
 }
 .lens-legend strong {
-	padding-right: 5px;
 	font-weight: bold;
 	color: #000;
 }
