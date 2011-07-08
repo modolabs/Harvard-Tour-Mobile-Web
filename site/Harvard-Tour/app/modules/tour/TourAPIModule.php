@@ -44,14 +44,14 @@ class TourAPIModule extends APIModule {
         return array(
           'type'  => 'photo',
           'url'   => $content->getSrc(),
-          'title' => $content->getTitle(),
+          'title' => $this->htmlToText($content->getTitle()),
         );
         
       case 'TourVideo':
         return array(
           'type'  => 'video',
           'url'   => $content->getSrc(),
-          'title' => $content->getTitle(),
+          'title' => $this->htmlToText($content->getTitle()),
         );
         
       case 'TourSlideshow':
