@@ -12,8 +12,8 @@
 abstract class DataController
 {
     protected $DEFAULT_PARSER_CLASS='PassthroughDataParser';
+    protected $initArgs=array();
     protected $cacheFolder='Data';
-    protected $cacheFileSuffix='';
     protected $parser;
     protected $url;
     protected $cache;
@@ -22,9 +22,7 @@ abstract class DataController
     protected $method='GET';
     protected $filters=array();
     protected $requestHeaders=array();
-    protected $responseHeaders=array();
-    protected $responseStatus;
-    protected $responseCode;
+    protected $response;
     protected $totalItems = null;
     protected $debugMode=false;
     protected $useCache=true;
@@ -45,14 +43,6 @@ abstract class DataController
      */
     protected function cacheFolder() {
         return CACHE_DIR . "/" . $this->cacheFolder;
-    }
-    
-    /**
-     * This method should return the file suffix for cache files. Subclasses should simply set the $cacheFileSuffix property if necessary
-	 * @return string
-     */
-    protected function cacheFileSuffix() {
-        return $this->cacheFileSuffix ? '.' . $this->cacheFileSuffix : '';
     }
     
     /**
@@ -114,15 +104,6 @@ abstract class DataController
         return md5($url);
     }
 
-    /**
-     * Returns a full path to the cacheMetaFile, a file used to include information about the request.
-     * @return string
-     */
-    protected function cacheMetaFile($url = null) {
-        $url = $url ? $url : $this->url();
-        return sprintf("%s/%s-meta.txt", $this->cacheFolder(), md5($url));
-    }
-    
    /**
      * Sets the data parser to use for this request. Typically this is set at initialization automatically,
      * but certain subclasses might need to determine the parser dynamically.
@@ -197,6 +178,7 @@ abstract class DataController
      * @param array $args an associative array of arguments and paramters
      */
     protected function init($args) {
+        $this->initArgs = $args;
 
         if (isset($args['DEBUG_MODE'])) {
             $this->setDebugMode($args['DEBUG_MODE']);
@@ -225,23 +207,27 @@ abstract class DataController
         $this->initStreamContext($args);
     }
 
+    public function getResponse() {
+        return $this->response->getResponse();
+    }
+
     public function getResponseHeaders() {
-        return $this->responseHeaders;
+        return $this->response->getHeaders();
     }
 
     public function getResponseStatus() {
-        return $this->responseStatus;
+        return $this->response->getStatus();
     }
 
     public function getResponseCode() {
-        return $this->responseCode;
+        return $this->response->getCode();
     }
 
     public function getResponseHeader($header) {
-        return isset($this->responseHeaders[$header]) ? $this->responseHeaders[$header] : null;
+        return $this->response->getHeader($header);
     }
 
-    public function setHeader($header, $value) {
+    public function addHeader($header, $value) {
         $this->requestHeaders[$header] = $value;
         $headers = array();
         //@TODO: Might need to escape this
@@ -250,6 +236,10 @@ abstract class DataController
         }
             
         stream_context_set_option($this->streamContext, 'http', 'header', implode("\r\n", $headers));
+    }
+    
+    public function getHeaders() {
+        return $this->requestHeaders;
     }
 
     public function setMethod($method) {
@@ -346,6 +336,22 @@ abstract class DataController
         $this->setTotalItems($parser->getTotalItems());
         return $parsedData;
     }
+
+    /**
+     * Parse a file. This method will also attempt to set the total items in a request by calling the
+     * data parser's getTotalItems() method
+     * @param string $file a file containing the contents of the data
+     * @param DataParser $parser optional, a alternative data parser to use. 
+     * @return mixed the parsed data. This value is data dependent
+     */
+    protected function parseFile($file, DataParser $parser=null) {       
+        if (!$parser) {
+            $parser = $this->parser;
+        }
+        $parsedData = $parser->parseFile($file);
+        $this->setTotalItems($parser->getTotalItems());
+        return $parsedData;
+    }
     
     /**
      * Return the parsed data. The default implementation will retrive the data and return value of
@@ -354,8 +360,24 @@ abstract class DataController
      * @return mixed the parsed data. This value is data dependent
      */
     public function getParsedData(DataParser $parser=null) {
-        $data = $this->getData();
-        return $this->parseData($data, $parser);
+        if (!$parser) {
+            $parser = $this->parser;
+        }
+
+        switch ($parser->getParseMode()) 
+        {
+            case DataParser::PARSE_MODE_STRING:
+                $data = $this->getData();
+                return $this->parseData($data, $parser);
+                break;
+        
+           case DataParser::PARSE_MODE_FILE:
+                $file = $this->getDataFile();
+                return $this->parseFile($file, $parser);
+                break;
+            default:
+                throw new Exception("Unknown parse mode");
+        }
     }
     
     /**
@@ -385,18 +407,14 @@ abstract class DataController
      */
     protected function getCacheData() {
         $cache = $this->getCache();
-        return $cache->read($this->cacheFilename());
+        $data = $cache->read($this->cacheFilename());
+        if ($response = @unserialize($data)) {
+            $this->response = $response;
+            return $response->getResponse();
+        }
+        return null;
     }
 
-    protected function getCacheHeaders() {
-        $file = $this->cacheMetaFile();
-        $headers = array();
-        if ($contents = @file_get_contents($file)) {
-            $headers = unserialize($contents);
-        }
-        return $headers;
-    }
-    
     /**
      * Writes the included data to the file based on cacheFilename(). Subclasses could override 
      * this if they implement custom caching 
@@ -415,7 +433,7 @@ abstract class DataController
     protected function getCache() {
         if ($this->cache === NULL) {
               $this->cache = new DiskCache($this->cacheFolder(), $this->cacheLifetime, TRUE);
-              $this->cache->setSuffix($this->cacheFileSuffix());
+              $this->cache->setSuffix('.cache');
               $this->cache->preserveFormat();
         }
         
@@ -423,11 +441,38 @@ abstract class DataController
     }
     
     /**
+     * Retrieves the data and saves it to a file. 
+     * @return string a file containing the data
+     */
+    public function getDataFile() {
+        $dataFile = $this->cacheFilename() . '-data';
+        $cache = $this->getCache();
+        if ($this->useCache) {
+            if ($cache->isFresh($dataFile)) {
+                $data = $cache->read($dataFile);
+
+            } else {
+                if ($data = $this->getData()) {
+                    $cache->write($data, $dataFile);
+                } elseif ($this->useStaleCache) {
+                    // return stale cache if the data is unavailable
+                    $data = $this->read($dataFile);
+                }
+            }
+        } else {
+            $data = $this->getData();
+            $cache->write($data, $dataFile);
+        }
+        
+        return $cache->getFullPath($dataFile);
+    }
+    
+    /**
      * Retrieves the data.  The default implementation will use the url returned by the url() 
      * function. If the cache is still fresh than it will return the data saved in the cache,
      * otherwise it will retrieve the data using the retrieveData() method and save the cache.
-     * Subclasses should only need to override this method if an alternative caching scheme is
-     * @param int a unix timestamp or null to use the current time
+     * Subclasses should only need to override this method if an alternative caching scheme is needed.
+     * @return string the data
      */
     public function getData() {
 
@@ -441,20 +486,19 @@ abstract class DataController
         if ($this->useCache) {
             if ($this->cacheIsFresh()) {
                 $data = $this->getCacheData();
-                $this->responseHeaders = $this->getCacheHeaders();
 
                 if ($this->debugMode) {
                     error_log(sprintf(__CLASS__ . " Using cache for %s", $url));
                 }
 
             } else {
-
                 if ($data = $this->retrieveData($url)) {
-                    $this->writeCache($data); 
+                    if ($this->response) {
+                        $this->writeCache(serialize($this->response));
+                    }
                 } elseif ($this->useStaleCache) {
                     // return stale cache if the data is unavailable
                     $data = $this->getCacheData();
-                    $this->responseHeaders = $this->getCacheHeaders();
                 }
             }
         } else {
@@ -478,40 +522,19 @@ abstract class DataController
         }
         
         $data = file_get_contents($url, false, $this->streamContext);
-        if (isset($http_response_header)) {
-            $this->parseHTTPResponseHeaders($http_response_header);
-            if ($this->debugMode) {
-                error_log(sprintf(__CLASS__ . " Returned status %d and %d bytes", $this->responseCode, strlen($data)));
-            }
-            
-            $this->responseHeaders['X-Kurogo-URL'] = $url;
-            file_put_contents($this->cacheMetaFile($url), serialize($this->responseHeaders));
+        $http_response_header = isset($http_response_header) ? $http_response_header : array();
+
+        $this->response = new DataResponse();
+        $this->response->setRequest($this->method, $url, $this->filters, $this->requestHeaders);
+        $this->response->setResponse($data, $http_response_header);
+        
+        if ($this->debugMode) {
+            error_log(sprintf(__CLASS__ . " Returned status %d and %d bytes", $this->getResponseCode(), strlen($data)));
         }
         
         return $data;
     }
     
-    protected function parseHTTPResponseHeaders($http_response_header) {
-        foreach ($http_response_header as $http_header) {
-            list($header, $value) = $this->parseHTTPHeader($http_header);
-            if ($header) {
-                $this->responseHeaders[$header] = $value;
-            } elseif (preg_match("#^(HTTP/1.\d) (\d\d\d) (.+)$#", $http_header, $bits)) {
-                $this->responseCode = $bits[2];
-                $this->responseStatus = $bits[3];
-            }
-        }
-    }
-    
-    protected function parseHTTPHeader($header) {
-        if (preg_match("/(.*?):\s*(.*)/", $header, $bits)) {
-            return array(
-                trim($bits[1]),
-                trim($bits[2])
-            );
-        }
-    }
-
     /**
      * Sets the cache lifetime in seconds. Will be called if the initialization args contains CACHE_LIFETIME
      * @param int seconds to cache results (default for base class is 900 seconds / 15 minutes)

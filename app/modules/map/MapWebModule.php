@@ -1,6 +1,6 @@
 <?php
 
-includePackage('Maps');
+Kurogo::includePackage('Maps');
 
 define('MAP_GROUP_COOKIE', 'mapgroup');
 
@@ -100,6 +100,13 @@ class MapWebModule extends WebModule {
         unset($configData['feed']);
         
         return $configData;
+    }
+
+    public function linkForValue($value, Module $callingModule, KurogoObject $otherValue=null) {
+        return array_merge(
+            parent::linkForValue($value, $callingModule, $otherValue),
+            array('class'=>'map')
+        );
     }
 
     protected function initialize() {

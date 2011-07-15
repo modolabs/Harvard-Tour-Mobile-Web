@@ -4,18 +4,13 @@ class KMLDataController extends MapDataController
 {
     protected $parserClass = 'KMLDataParser';
 
-    protected function cacheFileSuffix()
-    {
-        return '.kml';
-    }
-    
     protected function retrieveData($url)
     {
     	if (strpos($url, 'kmz') !== false) {
     	    if (!class_exists('ZipArchive')) {
     	        throw new Exception("class ZipArchive (php-zip) not available");
     	    }
-            $tmpDir = Kurogo::getSiteVar('TMP_DIR');
+            $tmpDir = Kurogo::tempDirectory();
             if (!is_writable($tmpDir)) {
     	        throw new Exception("Temporary directory $tmpDir not available");
             }

@@ -5,7 +5,7 @@
   */
 
 
-includePackage('Calendar');
+Kurogo::includePackage('Calendar');
 
 define('DAY_SECONDS', 24*60*60);
 
@@ -28,6 +28,10 @@ class CalendarWebModule extends WebModule {
     //array("phrase" => "this school term",     "offset" => "term"),
     //array("phrase" => "this school year",     "offset" => "year")
   );
+
+    private function getDatesForTimeframe($timeframe) {
+        return $this->getDatesForSearchOption($this->searchOptions[$timeframe]);
+    }
   
   private function getDatesForSearchOption($option) {
     $start = $end = time();
@@ -206,54 +210,67 @@ class CalendarWebModule extends WebModule {
     ), $addBreadcrumb);
   }
   
-  private function detailURL($event, $options=array(), $addBreadcrumb=true, $noBreadcrumbs=false) {
-    $args = array_merge($options, array(
-      'id'   => $event->get_uid(),
-      'time' => $event->get_start()
-    ));
-  
-    if ($noBreadcrumbs) {
-      return $this->buildURL('detail', $args);
-    } else {
-      return $this->buildBreadcrumbURL('detail', $args, $addBreadcrumb);
-    }
-  }
-  
-  public function federatedSearch($searchTerms, $maxCount, &$results) {
-    $searchOption = $this->searchOptions[$this->defaultSearchOption]; // default timeframe
-    
-    /* @TODO which calendars should be searched? */
-    $type = 'static';
-    $calendar = $this->getDefaultFeed($type);
-    
-    $feed = $this->getFeed($calendar, $type); // this allows us to have multiple feeds in the future
-    
-    list($start, $end) = $this->getDatesForSearchOption($searchOption);          
-    $feed->setStartDate($start);
-    $feed->setEndDate($end);
-    $feed->addFilter('search', $searchTerms);
-    $iCalEvents = array_values($feed->items());
+    public function searchItems($searchTerms, $limit=null, $options=null) {  
 
-    $limit = min($maxCount, count($iCalEvents));
-    for ($i = 0; $i < $limit; $i++) {
-      $subtitle = $this->timeText($iCalEvents[$i]);
-      if ($briefLocation = $iCalEvents[$i]->get_location()) {
-        $subtitle .= " | $briefLocation";
-      }
-  
-      $results[] = array(
-        'url'      => $this->detailURL($iCalEvents[$i], array(
-            'calendar'=>$calendar,
-            'type'=>$type
-        ), false, false),
-        'title'    => $iCalEvents[$i]->get_summary(),
-        'subtitle' => $subtitle,
-      );
-    }
+        $type     = isset($options['type']) ? $options['type'] : 'static';
+        $calendar = isset($options['calendar']) ? $options['calendar'] : $this->getDefaultFeed($type);
+        $feed     = $this->getFeed($calendar, $type);
+        
+        if (isset($options['timeframe'])) {
+            list($start, $end) = $this->getDatesForTimeFrame($options['timeframe']);
+            $options['start'] = $start;
+            $options['end'] = $end;
+        }
+        
+        if (isset($options['start'])) {
+            $feed->setStartDate($options['start']);
+        }
+        
+        if (isset($options['end'])) {
+            $feed->setEndDate($options['end']);
+        }
     
-    return count($iCalEvents);
-  }
-  
+        if ($searchTerms) {
+            $feed->addFilter('search', $searchTerms);
+        }
+
+        return $feed->items();
+    }
+
+    public function linkforItem(KurogoObject $event, $data=null) {
+    
+        $subtitle = $this->timeText($event);
+        if ($briefLocation = $event->get_location()) {
+          $subtitle .= " | $briefLocation";
+        }
+        
+        $options = array(
+          'id'   => $event->get_uid(),
+          'time' => $event->get_start()
+        );
+        
+        foreach (array('type','calendar','searchTerms','timeframe','catid','filter') as $field) {
+            if (isset($data[$field])) {
+                $options[$field] = $data[$field];
+            }
+        }
+        
+        $addBreadcrumb = isset($data['addBreadcrumb']) ? $data['addBreadcrumb'] : true;
+        $noBreadcrumbs = isset($data['noBreadcrumbs']) ? $data['noBreadcrumbs'] : false;
+
+        if ($noBreadcrumbs) {
+          $url = $this->buildURL('detail', $options);
+        } else {
+          $url = $this->buildBreadcrumbURL('detail', $options, $addBreadcrumb);
+        }
+
+        return array(
+          'url'       => $url,
+          'title'     => $event->get_summary(),
+          'subtitle'  => $subtitle
+        );
+    }
+
     protected function getFeedsByType() {  
         $feeds = array();
         foreach (array('user','resource','static') as $type) {
@@ -278,11 +295,10 @@ class CalendarWebModule extends WebModule {
        
       case 'user':
       case 'resource':
-        $typeController = $type=='user' ? 'UserCalendarListController' :'ResourceListController';
-        $sectionData = $this->getOptionalModuleSection('calendar_list');
-        $listController = isset($sectionData[$typeController]) ? $sectionData[$typeController] : '';
+        $section = $type=='user' ?  'user_calendars' :'resources';
+        $sectionData = $this->getOptionalModuleSection($section);
+        $listController = isset($sectionData['CONTROLLER_CLASS']) ? $sectionData['CONTROLLER_CLASS'] : '';
         if (strlen($listController)) {
-            $sectionData = array_merge($sectionData, array('SESSION'=>$this->getSession()));
             $controller = CalendarListController::factory($listController, $sectionData);
             switch ($type)
             {
@@ -350,22 +366,22 @@ class CalendarWebModule extends WebModule {
         $start->setTime(0,0,0);
         $end = clone $start;
         $end->setTime(23,59,59);
-        
+
         $type     = $this->getArg('type', 'static');
         $calendar = $this->getArg('calendar', $this->getDefaultFeed($type));
-
-        $feed = $this->getFeed($calendar, $type);
-        $feed->setStartDate($start);
-        $feed->setEndDate($end);
-        $iCalEvents = $feed->items();
-                
+        
+        $options = array(
+            'type'=>$type,
+            'calendar'=>$calendar,
+            'start'=>$start,
+            'end'=>$end
+        );
+        
+        $iCalEvents = $this->searchItems('', null, $options);
+        $options['noBreadcrumbs'] = true;
         $events = array();
         foreach($iCalEvents as $iCalEvent) {
-          $events[] = array(
-            'url'      => $this->detailURL($iCalEvent, array(), false, true),
-            'title'    => $iCalEvent->get_summary().':',
-            'subtitle' => $this->timeText($iCalEvent, true),
-          );
+          $events[] = $this->linkforItem($iCalEvent, $options, false);
         }
         
         $this->assign('events', $events);
@@ -401,6 +417,7 @@ class CalendarWebModule extends WebModule {
             $this->redirectTo('index');
         }
         break;
+        
       case 'user':
         if ($userFeeds = $this->getFeeds('user')) {
           $userCalendars = array();
@@ -427,14 +444,10 @@ class CalendarWebModule extends WebModule {
             $feeds = $this->getFeeds('user');
             $upcomingEvents = array();
             if ($event = $feed->getNextEvent(true)) {
-                $upcomingEvents[] = array(
-                    'title'=>$event->get_summary(),
-                    'subtitle'=>$this->timeText($event),
-                    'url'=>$this->detailURL($event, array(
-                        'type'=>'user',
-                        'calendar'=>$userCalendar
-                     ))
-                );
+                $upcomingEvents[] = $this->linkForItem($event, array(
+                    'type'    =>'user',
+                    'calendar'=>$userCalendar
+                ));
             } else {
                 $upcomingEvents[] = array(
                     'title'=>'No remaining events for today'
@@ -492,7 +505,7 @@ class CalendarWebModule extends WebModule {
         $calendar= $this->getArg('calendar', $this->getDefaultFeed($type));
         $catid   = $this->getArg('catid', '');
         $name    = $this->getArg('name', '');
-        $current = $this->getArg('time', time());
+        $current = $this->getArg('time', time(), FILTER_VALIDATE_INT);
         $next    = $current + DAY_SECONDS;
         $prev    = $current - DAY_SECONDS;
 
@@ -524,29 +537,21 @@ class CalendarWebModule extends WebModule {
             $feed->addFilter('category', $catid);
             $iCalEvents = $feed->items();
           
-          foreach($iCalEvents as $iCalEvent) {
-            $subtitle = $this->timeText($iCalEvent);
-            if ($briefLocation = $iCalEvent->get_location()) {
-              $subtitle .= " | $briefLocation";
-            }
+            foreach($iCalEvents as $iCalEvent) {
           
-            $events[] = array(
-              'url'      => $this->detailURL($iCalEvent, array(
-                'catid'    => $catid,
-                'calendar' => $calendar,
-                'type'     => $type
-              )),
-              'title'    => $iCalEvent->get_summary(),
-              'subtitle' => $subtitle,
-            );
-          }
+                $events[] = $this->linkForItem($iCalEvent, array(
+                    'catid'    =>$catid,
+                    'calendar' =>$calendar,
+                    'type'     =>$type)
+                );
+            }          
         }
         
         $this->assign('events', $events);        
         break;
         
       case 'list':
-        $current  = $this->getArg('time', time());
+        $current = $this->getArg('time', time(), FILTER_VALIDATE_INT);
         $type     = $this->getArg('type', 'static');
         $calendar = $this->getArg('calendar', $this->getDefaultFeed($type));
         $limit    = $this->getArg('limit', 20);
@@ -564,19 +569,11 @@ class CalendarWebModule extends WebModule {
                         
         $events = array();
         foreach($iCalEvents as $iCalEvent) {
-          $subtitle = $this->timeText($iCalEvent);
-          if ($briefLocation = $iCalEvent->get_location()) {
-            $subtitle .= " | $briefLocation";
-          }
-
-          $events[] = array(
-            'url'      => $this->detailURL($iCalEvent, array(
-              'calendar' => $calendar,
-              'type'     => $type
-            )),
-            'title'    => $iCalEvent->get_summary(),
-            'subtitle' => $subtitle
-          );
+        
+            $events[] = $this->linkForItem($iCalEvent, array(
+                'calendar' =>$calendar,
+                'type'     =>$type)
+            );
         }
 
         $this->assign('feedTitle', $this->getFeedTitle($calendar, $type));
@@ -586,7 +583,7 @@ class CalendarWebModule extends WebModule {
         break;
         
       case 'day':  
-        $current = $this->getArg('time', time());
+        $current = $this->getArg('time', time(), FILTER_VALIDATE_INT);
         $type    = $this->getArg('type', 'static');
         $calendar= $this->getArg('calendar', $this->getDefaultFeed($type));
         $next    = strtotime("+1 day", $current);
@@ -605,16 +602,11 @@ class CalendarWebModule extends WebModule {
                 
         $events = array();
         foreach($iCalEvents as $iCalEvent) {
-          $subtitle = $this->timeText($iCalEvent, true);
-            if ($briefLocation = $iCalEvent->get_location()) {
-              $subtitle .= " | $briefLocation";
-            }
-        
-          $events[] = array(
-            'url'      => $this->detailURL($iCalEvent, array('calendar'=>$calendar,'type'=>$type)),
-            'title'    => $iCalEvent->get_summary(),
-            'subtitle' => $subtitle
-          );
+
+            $events[] = $this->linkForItem($iCalEvent, array(
+                'calendar' =>$calendar,
+                'type'     =>$type)
+            );
         }
 
         $this->assign('feedTitle', $this->getFeedTitle($calendar, $type));
@@ -643,7 +635,7 @@ class CalendarWebModule extends WebModule {
             $feed->addFilter('category', $catid);
         }
         
-        $time = $this->getArg('time', time());
+        $time = $this->getArg('time', time(), FILTER_VALIDATE_INT);
 
         if ($event = $feed->getItem($this->getArg('id'), $time)) {
           $this->assign('event', $event);
@@ -694,6 +686,8 @@ class CalendarWebModule extends WebModule {
             if (isset($info['type'])) {
               $field['title'] = $this->valueForType($info['type'], $value);
               $field['url']   = $this->urlForType($info['type'], $value);
+            } elseif (isset($info['module'])) {
+                $field = array_merge($field, Kurogo::moduleLinkForValue($info['module'], $value, $this, $event));
             } else {
               $field['title'] = nl2br($value);
             }
@@ -714,8 +708,7 @@ class CalendarWebModule extends WebModule {
       case 'search':
         if ($filter = $this->getArg('filter')) {
           $searchTerms    = trim($filter);
-          $timeframeKey   = $this->getArg('timeframe', 0);
-          $searchOption   = $this->searchOptions[$timeframeKey];
+          $timeframe      = $this->getArg('timeframe', 0);
           $type           = $this->getArg('type', 'static');
           $searchCalendar = $this->getArg('calendar', $this->getDefaultFeed($type));
           
@@ -726,35 +719,28 @@ class CalendarWebModule extends WebModule {
             $calendar = $searchCalendar;
           }
           
-          $feed         = $this->getFeed($calendar, $type);
+          $options = array(
+            'type'    =>$type,
+            'calendar'=>$calendar,
+            'timeframe'=>$timeframe
+          );
           
-          list($start, $end) = $this->getDatesForSearchOption($searchOption);          
-          $feed->setStartDate($start);
-          $feed->setEndDate($end);
-          $feed->addFilter('search', $searchTerms);
-          $iCalEvents = $feed->items();
-
+          $iCalEvents = $this->searchItems($searchTerms, null, $options);
           $events = array();
           foreach($iCalEvents as $iCalEvent) {
-            $subtitle = $this->timeText($iCalEvent);
-            if ($briefLocation = $iCalEvent->get_location()) {
-              $subtitle .= " | $briefLocation";
-            }
-        
-            $events[] = array(
-              'url'       => $this->detailURL($iCalEvent, array(
-              'calendar'  => $calendar,
-              'type'      => $type,
-              'filter'    => $searchTerms, 
-              'timeframe' => $timeframeKey)),
-              'title'     => $iCalEvent->get_summary(),
-              'subtitle'  => $subtitle
+
+            $events[] = $this->linkForItem($iCalEvent, array(
+                'filter'   =>$searchTerms, 
+                'timeframe'=>$timeframe,
+                'calendar' =>$calendar,
+                'type'     =>$type)
             );
+
           }
                     
           $this->assign('events'        , $events);        
           $this->assign('searchTerms'   , $searchTerms);        
-          $this->assign('selectedOption', $timeframeKey);
+          $this->assign('selectedOption', $timeframe);
           $this->assign('searchOptions' , $this->searchOptions);
           $this->assign('feeds'         , $this->getFeedsByType());
           $this->assign('searchCalendar', $searchCalendar);

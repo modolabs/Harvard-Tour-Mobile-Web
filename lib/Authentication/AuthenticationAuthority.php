@@ -11,6 +11,12 @@ abstract class AuthenticationAuthority
 {
     
     /** 
+      * The arguments used to initialize this authority
+      * @var array
+      */
+    protected $initArgs = array();
+
+    /** 
       * The tag used to identify this authority 
       * @var string
       */
@@ -109,6 +115,7 @@ abstract class AuthenticationAuthority
     public function init($args)
     {
         $args = is_array($args) ? $args : array();
+        $this->initArgs = $args;
         if (!isset($args['TITLE']) || empty($args['TITLE'])) {
             throw new Exception("Invalid authority title");
         }
@@ -328,10 +335,16 @@ abstract class AuthenticationAuthority
     */
     public static function getAuthenticationAuthority($index)
     {
+        static $cache;
+        if (isset($cache[$index])) {
+            return $cache[$index];
+        }
+        
         if ($authorityData = self::getAuthenticationAuthorityData($index)) {
             $authorityClass = $authorityData['CONTROLLER_CLASS'];
             $authorityData['INDEX'] = $index;
             $authority = self::factory($authorityClass, $authorityData);
+            $cache[$index] = $authority;
             return $authority;
         }
         

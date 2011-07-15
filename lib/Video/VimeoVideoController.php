@@ -3,7 +3,6 @@
  class VimeoVideoController extends VideoDataController
  {
     protected $DEFAULT_PARSER_CLASS='VimeoDataParser';
-    protected $cacheFileSuffix='json';
     protected $channel;
     
     protected function init($args) {
@@ -53,9 +52,16 @@
         return $items;
     }
         
+    protected function isValidID($id) {
+        return preg_match("/^[0-9]+$/", $id);
+    }
     
 	 // retrieves video based on its id
 	public function getItem($id) {
+	    if (!$this->isValidID($id)) {
+	        return false;
+	    }
+
         $url = 'http://vimeo.com/api/v2/video/' . $id . '.json';
         $this->setBaseURL($url);
         if ($items = $this->getParsedData()) {

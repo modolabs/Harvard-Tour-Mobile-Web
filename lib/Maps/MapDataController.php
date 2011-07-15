@@ -40,11 +40,6 @@ class MapDataController extends DataController implements MapFolder
         return 86400;
     }
 
-    protected function cacheFileSuffix()
-    {
-        return null;
-    }
-
     public function canSearch()
     {
         return $this->searchable;
@@ -250,16 +245,14 @@ class MapDataController extends DataController implements MapFolder
         }
 
         if (!$this->items) {
-            $data = $this->getData();
-            $this->items = $this->parseData($data);
+            $this->items = $this->getParsedData();
         }
         return $this->parser->getTitle();
     }
 
-    public function items() {
+    public function items($start=0, $limit=null) {
         if (!$this->items) {
-            $data = $this->getData();
-            $this->items = $this->parseData($data);
+            $this->items = $this->getParsedData();
         }
         return $this->items;
     }
