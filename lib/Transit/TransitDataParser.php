@@ -11,9 +11,9 @@ abstract class TransitDataParser {
   protected $whitelist = false;
   protected $daemonMode = false;
   
-  private $routes    = array();
-  private $stops     = array();
-  private $overrides = array();
+  protected $routes    = array();
+  protected $stops     = array();
+  protected $overrides = array();
   
   protected $platform = 'unknown';
   protected $pagetype = 'compliant';
