@@ -34,22 +34,22 @@ class TransitConfig {
       unset($config['route_whitelist']);
       
       foreach ($config as $configKey => $configValue) {
-        if ($configKey == 'system') { continue; }
-      
         $parts = explode('_', $configKey);
+        
+        if (count($parts) < 3) { continue; } // skip extra keys
         
         $parser = $parts[0];
         $type = $parts[1];
         $keyOrVal = end($parts);
-        
-        // skip values so we don't add twice
-        if ($keyOrVal == 'vals') { continue; }  
         
         if (!($parser == 'live' || $parser == 'static' || ($type == 'override' && $parser == 'all'))) {
           error_log("Warning: unknown transit configuration type '$type'");
           continue;
         }
         $parsers = ($parser == 'all') ? array('live', 'static') : array($parser);
+        
+        // skip values so we don't add twice
+        if ($keyOrVal == 'vals') { continue; }
         
         $configValueKey = implode('_', array_slice($parts, 0, -1)).'_vals';
         if (!isset($config[$configValueKey])) {
