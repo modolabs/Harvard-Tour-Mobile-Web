@@ -42,7 +42,7 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
   }
   
   public static function dbQuery($agencyID, $sql, $params) {
-error_log($sql);
+    //error_log($sql);
     $db = self::getDB($agencyID);
     if (!$result = $db->prepare($sql)) {
       error_log("failed to prepare statement: $sql");
@@ -92,6 +92,14 @@ error_log($sql);
     $this->getStop($stopID);
     
     return parent::getStopInfoForRoute($routeID, $stopID);
+  }
+  
+  // used to avoid warnings when looking at the wrong agency
+  public function hasStop($id) {
+    // ensure the data required by TransitDataParser is loaded
+    $this->getStop($id);
+
+    return isset($this->stops[$id]);
   }
   
   public function getStopInfo($stopID) {
@@ -163,6 +171,11 @@ error_log($sql);
         $routeName = $row['route_short_name'];
       } else {
         $routeName = $routeID;
+      }
+      
+      // Agency ID is optional in routes table
+      if (!$row['agency_id']) {
+        $row['agency_id'] = $this->agency;
       }
       
       $route = new GTFSDatabaseTransitRoute(
