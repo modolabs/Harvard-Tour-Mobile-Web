@@ -227,7 +227,7 @@ class StripGTFSToDB {
           'file' => 'routes.txt',
           'fields' => array(
             'route_id'         => 'TEXT NOT NULL PRIMARY KEY',
-            'agency_id'        => 'TEXT NOT NULL REFERENCES agency(agency_id) DEFERRABLE INITIALLY DEFERRED',
+            'agency_id'        => 'TEXT REFERENCES agency(agency_id) DEFERRABLE INITIALLY DEFERRED',
             'route_short_name' => 'TEXT',
             'route_long_name'  => 'TEXT',
             'route_desc'       => 'TEXT',
