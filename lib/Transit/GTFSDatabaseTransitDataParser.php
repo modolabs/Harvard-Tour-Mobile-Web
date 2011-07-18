@@ -40,6 +40,25 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
     }
     return self::$dbRefs[$agency];
   }
+  
+  public static function dbQuery($agencyID, $sql, $params) {
+error_log($sql);
+    $db = self::getDB($agencyID);
+    if (!$result = $db->prepare($sql)) {
+      error_log("failed to prepare statement: $sql");
+    }
+    $result->setFetchMode(PDO::FETCH_ASSOC);
+    if (!$result->execute($params)) {
+      error_log("failed to execute statement with parameters"
+        .print_r($params, true).": $sql");
+      error_log(print_r($db->errorInfo(), true));
+    }
+    return $result;
+  }
+  
+  protected function query($sql, $params=array()) {
+    return self::dbQuery($this->agency, $sql, $params);
+  }
 
   // superclass overrides
 
@@ -49,11 +68,9 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
   
   protected function getStop($id) {
     if (!isset($this->stops[$id])) {
-      $sql = "SELECT * FROM stops where stop_id = '$id'";
-      //error_log($sql);
-
-      $db = self::getDB($this->agency);
-      $result = $db->query($sql);
+      $sql = "SELECT * FROM stops where stop_id = ?";
+      $params = array($id);
+      $result = $this->query($sql, $params);
       if (!$result) {
         error_log("error fetching stop: ".print_r($db->errorInfo(),true));
       }
@@ -82,10 +99,10 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
     $now = TransitTime::getCurrentTime();
     $sql = "SELECT DISTINCT t.route_id AS route_id"
           ."  FROM stop_times s, trips t"
-          ." WHERE s.stop_id = '$stopID'"
+          ." WHERE s.stop_id = ?"
           ."   AND s.trip_id = t.trip_id";
-    $db = self::getDB($this->agency);
-    $result = $db->query($sql);
+    $params = array($stopID);
+    $result = $this->query($sql, $params);
     if (!$result) {
       error_log("error fetching stop info: ".print_r($db->errorInfo(),true));
     }
@@ -134,9 +151,9 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
     self::$gtfsPaths[$this->agency] = Kurogo::getSiteVar('GTFS_DIR').'/'.$dbfile;
     
     $sql = "SELECT * from routes";
-    $result = self::getDB($this->agency)->query($sql);
+    $result = $this->query($sql);
     if (!$result) {
-      error_log('could not load routes: '.print_r(self::getDB($this->agency)->errorInfo(), true));
+      error_log('could not load routes');
     }
     while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
       $routeID = $row['route_id'];
@@ -205,10 +222,9 @@ class GTFSDatabaseTransitSegment extends TransitSegment {
   private function loadFrequencies() {
     $sql = 'SELECT *'
           .'  FROM frequencies'
-          ." WHERE trip_id = '".$this->getID()."'";
-    //error_log($sql);
-    $result = $this->route->getDB()->query($sql);
-
+          ." WHERE trip_id = ?";
+    $params = array($this->getID());
+    $result = $this->route->query($sql, $params);
     $firstTrip = 999999;
     $firstFrequency = 0;
     while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
@@ -236,15 +252,22 @@ class GTFSDatabaseTransitSegment extends TransitSegment {
     }
     
     if (!$this->hasFrequencies()) { // this function works after the above sql query
-      $sql = 'SELECT departure_time'
-            .'  FROM stop_times'
-            .' WHERE stop_sequence = 1'
-            ."   AND trip_id = '".$this->getID()."'";
-      $result = $this->route->getDB()->query($sql);
-      if (!$row = $result->fetch(PDO::FETCH_ASSOC)) {
-        return 0;
+      $sql = 'SELECT MIN(stop_sequence) FROM stop_times WHERE trip_id = ?';
+      $params = array($this->getID());
+      $result = $this->route->query($sql, $params);
+      if ($row = $result->fetch(PDO::FETCH_NUM)) {
+        $sequence = $row[0];
+        $sql = 'SELECT departure_time'
+              .'  FROM stop_times'
+              .' WHERE stop_sequence = ?'
+              .'   AND trip_id = ?';
+        $params = array($sequence, $this->getID());
+        $result = $this->route->query($sql, $params);
+        if (!$row = $result->fetch(PDO::FETCH_ASSOC)) {
+          return 0;
+        }
+        $this->firstStopTime = $row['departure_time'];
       }
-      $this->firstStopTime = $row['departure_time'];
     }
   }
   
@@ -256,17 +279,18 @@ class GTFSDatabaseTransitSegment extends TransitSegment {
         $sql = 'SELECT s.departure_time AS departure_time'
               .'  FROM stop_times s, trips t'
               .' WHERE s.stop_sequence = 1'
-              ."   AND t.route_id = '".$this->route->getID()."'"
+              ."   AND t.route_id = ?"
               .'   AND s.trip_id = t.trip_id'
-              ."   AND s.departure_time > '{$this->firstStopTime}'"
+              ."   AND s.departure_time > ?"
               .' ORDER BY s.departure_time';
-        $result = $this->route->getDB()->query($sql);
-        if ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+        $params = array($this->route->getID(), $this->firstStopTime);
+        $result = $this->route->query($sql, $params);
+        if ($row = $result->fetch()) {
           $this->secondStopTime = $row['departure_time'];
         } else {
           $sql = str_replace('>', '<', $sql) . ' DESC';
-          $result = $this->route->getDB()->query($sql);
-          if ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+          $result = $this->route->getDB()->query($sql, $params);
+          if ($row = $result->fetch()) {
             $this->secondStopTime = $this->firstStopTime;
             $this->firstStopTime = $row['departure_time'];
           }
@@ -302,9 +326,10 @@ class GTFSDatabaseTransitSegment extends TransitSegment {
       // for now just use departure time (as opposed to arrival time)
       $sql = 'SELECT departure_time'
             .'  FROM stop_times'
-            ." WHERE trip_id = '".$this->getID()."'"
+            ." WHERE trip_id = ?"
             .' ORDER BY stop_sequence DESC'; // not sure if it's better to sort on departure_time
-      $result = $this->route->getDB()->query($sql);
+      $params = array($this->getID());
+      $result = $this->route->query($sql, $params);
       $firstTT = TransitTime::createFromString($this->firstStopTime);
       $lastRow = $result->fetch(PDO::FETCH_ASSOC); // discard rest of results
       $lastTT = TransitTime::createFromString($lastRow['departure_time']);
@@ -335,11 +360,11 @@ class GTFSDatabaseTransitSegment extends TransitSegment {
 */
       $sql = 'SELECT arrival_time, departure_time, stop_id, stop_sequence'
             .'  FROM stop_times'
-            ." WHERE trip_id = '".$this->getID()."'"
+            ." WHERE trip_id = ?"
             //.$timeClause
             .' ORDER BY stop_sequence';
-      //error_log($sql);
-      $result = $this->route->getDB()->query($sql);
+      $params = array($this->getID());
+      $result = $this->route->query($sql, $params);
       while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
         $stopIndex = intval($row['stop_sequence']);
         $arrivesTT = TransitTime::createFromString($row['arrival_time']);
@@ -362,10 +387,10 @@ class GTFSDatabaseTransitSegment extends TransitSegment {
 
 class GTFSDatabaseTransitRoute extends TransitRoute {
 
-  public function getDB() {
-    return GTFSDatabaseTransitDataParser::getDB($this->getAgencyID());
+  public function query($sql, $params=array()) {
+    return GTFSDatabaseTransitDataParser::dbQuery($this->getAgencyID(), $sql, $params);
   }
-  
+
   public function isRunning($time, &$inService=null, &$runningSegmentNames=null) {
     $isRunning = false;
     $inService = false;
@@ -465,34 +490,38 @@ class GTFSDatabaseTransitRoute extends TransitRoute {
       $exceptions = array();
       $sql = 'SELECT t.service_id AS service_id, c.exception_type AS exception_type'
             .'  FROM trips t, calendar_dates c'
-            ." WHERE route_id = '".$this->getID()."'"
+            ." WHERE route_id = ?"
             .'   AND t.service_id = c.service_id'
-            ."   AND c.date = '$date'";
-      //error_log($sql);
-      $result = $this->getDB()->query($sql);
+            ."   AND c.date = ?";
+      $params = array($this->getID(), $date);
+      $result = $this->query($sql, $params);
       $additionClause = '';
-      while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+
+      $params = array($this->getID());
+      while ($row = $result->fetch()) {
+        $params[] = $row['service_id'];
         if (GTFSDatabaseTransitService::isAddition($row['exception_type'])) {
-          $additionClause .= 't.service_id = '.$row['service_id'].' OR ';
+          $additionClause .= 't.service_id = ? OR ';
         } else {
-          $exceptions[] = 't.service_id != '.$row['service_id'];
+          $exceptions[] = 't.service_id <> ?';
         }
       }
       $exceptionClause = count($exceptions) ? ' AND ('.implode(' OR ', $exceptions).')' : '';
+      $params[] = $date; // start_date
+      $params[] = $date; // end_date
 
       // get all segments that run today regardless of what time it is
       // presence of a segment indicates the route is in service
       $services = array();
       $sql = 'SELECT t.trip_id AS trip_id, t.service_id AS service_id, t.trip_headsign AS trip_headsign, t.direction_id AS direction_id'
             .'  FROM trips t, calendar c'
-            ." WHERE route_id = '".$this->getID()."'"
+            .' WHERE route_id = ?'
             .'   AND t.service_id = c.service_id'
             .$exceptionClause
-            ."   AND ("
+            .'   AND ('
             .$additionClause
-            ."(c.$dayOfWeek = 1 AND c.start_date <= $date AND c.end_date >= $date))";
-      //error_log($sql);
-      $result = $this->getDB()->query($sql);
+            ."(c.$dayOfWeek = 1 AND c.start_date <= ? AND c.end_date >= ?))";
+      $result = $this->query($sql, $params);
 
       // prep variables in case nothing is running now
       $maxDefaultSegments = 4;
