@@ -17,18 +17,49 @@ class StripGTFSToDB {
         return $this->error;
     }
 
-    function addGTFS($gtfsName, $routeFilter=array(), $agencyRemap=array(), $routeRemap=array()) {
-        $this->config[$gtfsName] = array(
-            'zip'        => DATA_DIR."/gtfs/gtfs-$gtfsName.zip",
-            'db'         => DATA_DIR."/gtfs/gtfs-$gtfsName.sqlite",
+    function addGTFS($feedIndex, $feedData) {
+        $zipFile = DATA_DIR."/gtfs/gtfs-$feedIndex.zip";
+        if (isset($feedData['zipfile'])) {
+          $zipFile = $feedData['zipfile'];
+        }
+        
+        // Optional route whitelist
+        $routeFilter = array();
+        if (isset($feedData['routes']) && is_array($feedData['routes'])) {
+          $routeFilter = $feedData['routes'];
+        }
+        
+        // Optional agency id remap
+        $agencyRemap = array();
+        if (isset($feedData['agency_override_keys'], $feedData['agency_override_vals'])) {
+          foreach ($feedData['agency_override_keys'] as $i => $key) {
+            if (isset($feedData['agency_override_vals'][$i])) {
+              $agencyRemap[$key] = $feedData['agency_override_vals'][$i];
+            }
+          }
+        }
+        
+        // Optional route id remap
+        $routeRemap = array();
+        if (isset($feedData['route_override_keys'], $feedData['route_override_vals'])) {
+          foreach ($feedData['route_override_keys'] as $i => $key) {
+            if (isset($feedData['route_override_vals'][$i])) {
+              $routeRemap[$key] = $feedData['route_override_vals'][$i];
+            }
+          }
+        }
+        
+        $this->config[$feedIndex] = array(
+            'zip'        => $zipFile,
+            'db'         => DATA_DIR."/gtfs/gtfs-$feedIndex.sqlite",
             'routes'     => $routeFilter,
             'fieldRemap' => array(),
         );
         if ($agencyRemap) {
-            $this->config[$gtfsName]['fieldRemap']['agency_id'] = $agencyRemap;
+            $this->config[$feedIndex]['fieldRemap']['agency_id'] = $agencyRemap;
         }
         if ($routeRemap) {
-            $this->config[$gtfsName]['fieldRemap']['route_id'] = $routeRemap;
+            $this->config[$feedIndex]['fieldRemap']['route_id'] = $routeRemap;
         }
     }
     

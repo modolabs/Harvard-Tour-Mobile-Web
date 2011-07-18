@@ -83,12 +83,12 @@ class TransitAPIModule extends APIModule {
   
   protected function initializeForCommand() {
     if ($this->command == '__stripGTFSToDB') {
+        $gtfsConfig = $this->getModuleSections('feeds-gtfs');
+        
         $gtfsToDB = new StripGTFSToDB();
-        $gtfsToDB->addGTFS('mit');
-        $gtfsToDB->addGTFS('mbta', 
-            array('1', '701', '747'), // route filter
-            array('1' => 'mbta'),     // agency remap
-            array('01' => '1'));      // route remap
+        foreach ($gtfsConfig as $gtfsIndex => $gtfsData) {
+          $gtfsToDB->addGTFS($gtfsIndex, $gtfsData);
+        }
         
         if (!$gtfsToDB->convert()) {
             throw new Exception($gtfsToDB->getError());
