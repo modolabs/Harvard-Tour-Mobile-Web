@@ -250,9 +250,6 @@ class GTFSDatabaseTransitSegment extends TransitSegment {
         $firstFrequency = intval($frequency);
       }
 
-      // MIT shuttles don't run a full loop after end time
-      // if other agencies do this we need to change the MIT data or add logic for this
-      //TransitTime::addSeconds($endTT, intval($frequency)); // runs full loop after end_time
       $this->addFrequency($startTT, $endTT, $frequency);
     }
 
@@ -302,7 +299,7 @@ class GTFSDatabaseTransitSegment extends TransitSegment {
           $this->secondStopTime = $row['departure_time'];
         } else {
           $sql = str_replace('>', '<', $sql) . ' DESC';
-          $result = $this->route->getDB()->query($sql, $params);
+          $result = $this->route->query($sql, $params);
           if ($row = $result->fetch()) {
             $this->secondStopTime = $this->firstStopTime;
             $this->firstStopTime = $row['departure_time'];
@@ -354,27 +351,10 @@ class GTFSDatabaseTransitSegment extends TransitSegment {
   public function getStops() {
     if (!count($this->stops)) {
       $now = TransitTime::getCurrentTime();
-/*
-      if ($this->hasFrequencies()) {
-        $frequency = $this->getFrequency($now);
-        $timeClause = '';
 
-      } else {
-        // fourth place with 5am check
-        $hours = intval(date('G', $now));
-        if ($hours < 5) {
-          $hours = strval(intval($hours) + 24);
-        } else {
-          $hours = date('H', $now);
-        }
-        $timeString = $hours.date(':i:s', $now);
-        $timeClause = " AND departure_time > '$timeString'";
-      }
-*/
       $sql = 'SELECT arrival_time, departure_time, stop_id, stop_sequence'
             .'  FROM stop_times'
             ." WHERE trip_id = ?"
-            //.$timeClause
             .' ORDER BY stop_sequence';
       $params = array($this->getID());
       $result = $this->route->query($sql, $params);
@@ -461,6 +441,7 @@ class GTFSDatabaseTransitRoute extends TransitRoute {
       $firstStopTime = '99:99:99';
       $secondStopTime = '99:99:99';
     
+      $this->getDirections();
       foreach ($this->directions as $direction) {
         foreach ($direction['segments'] as $segment) {
           if ($segment->isRunning($time)) {
@@ -536,17 +517,6 @@ class GTFSDatabaseTransitRoute extends TransitRoute {
             ."(c.$dayOfWeek = 1 AND c.start_date <= ? AND c.end_date >= ?))";
       $result = $this->query($sql, $params);
 
-      // prep variables in case nothing is running now
-      $maxDefaultSegments = 4;
-      $timesWithFreqs = array();
-      $timesWithoutFreqs = array();
-      $selectedSegments = array();
-      for ($i = 0; $i < $maxDefaultSegments; $i++) {
-        $timesWithFreqs[] = 999999;
-        $timesWithoutFreqs[] = '99:99:99';
-        $selectedSegments[] = null;
-      }
-
       while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
         $serviceID = $row['service_id'];
         $direction = ($row['direction_id'] === NULL) ? 'loop' : $row['direction_id'];
@@ -560,39 +530,7 @@ class GTFSDatabaseTransitRoute extends TransitRoute {
           $direction,
           $this
           );
-
-        if ($segment->isRunning($now)) {
-          for ($i = 0; $i < $maxDefaultSegments; $i++) {
-            if (!$selectedSegments[$i]) {
-              $selectedSegments[$i] = $segment;
-              break;
-            }
-          }
-        } else if ($segment->hasFrequencies()) {
-          $segmentTime = $segment->getFirstTripTime();
-          for ($i = 0; $i < $maxDefaultSegments; $i++) {
-            if (!$selectedSegments[$i] || $segmentTime < $timesWithFreqs[$i]) {
-              $selectedSegments[$i] = $segment;
-              $timesWithFreqs[$i] = $segmentTime;
-              break;
-            }
-          }
-        } else {
-          $segmentTime = $segment->getFirstStopTime();
-          for ($i = 0; $i < $maxDefaultSegments; $i++) {
-            if (!$selectedSegments[$i] || $segmentTime < $timesWithoutFreqs[$i]) {
-              $selectedSegments[$i] = $segment;
-              $timesWithoutFreqs[$i] = $segmentTime;
-              break;
-            }
-          }
-        }
-      }
-
-      for ($i = 0; $i < $maxDefaultSegments; $i++) {
-        if ($selectedSegments[$i]) {
-          $this->addSegment($selectedSegments[$i]);
-        }
+        $this->addSegment($segment);
       }
     }
     
