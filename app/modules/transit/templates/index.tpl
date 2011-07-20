@@ -2,7 +2,7 @@
 
 {$tabBodies = array()}
 
-{if $offlineRoutes}
+{if $runningRoutes}
   {capture name="runningPane" assign="runningPane"}
     {block name="runningPane"}
       {foreach $runningRoutes as $section}
