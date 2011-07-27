@@ -39,6 +39,10 @@ class Tour {
   }
 
   function __construct($stopId = false, $firstStopId = false, $seenStopIds = array(), $useCache=true) {
+    
+    $config = ConfigFile::factory('tour', 'site');
+    Kurogo::siteConfig()->addConfig($config);
+    
     $parser = new TourDataParser($useCache);
     $tourData = $parser->getTourData();
     
