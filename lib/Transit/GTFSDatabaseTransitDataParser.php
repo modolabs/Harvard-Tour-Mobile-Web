@@ -135,6 +135,7 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
       'name'        => $stop->getName(),
       'description' => $stop->getDescription(),
       'coordinates' => $stop->getCoordinates(),
+      'stopIconURL' => $this->getMapIconUrlForRouteStopPin(),
       'routes'      => $routePredictions,
     );
     
