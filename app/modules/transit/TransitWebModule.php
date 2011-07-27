@@ -195,7 +195,7 @@ class TransitWebModule extends WebModule {
           
           if ($stop['upcoming']) {
             $routeInfo['stops'][$stopID]['title'] = "<strong>{$stop['name']}</strong>";
-            $routeInfo['stops'][$stopID]['imgAlt'] = Kurogo::getSiteVar('busImageAltText');
+            $routeInfo['stops'][$stopID]['imgAlt'] = $this->getModuleVar('busImageAltText');
           }
           
           if ($stop['upcoming'] || $this->pagetype != 'basic') {
