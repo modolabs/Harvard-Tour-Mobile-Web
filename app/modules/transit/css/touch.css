@@ -26,11 +26,11 @@
   height: 12px;
   top: 14px;
 }
-#map, #maptab {
+#map_static, #maptab {
 	text-align: center;
 }
 
-#map img {
+#map_static img {
 	border: 1px solid #999;
 }
 

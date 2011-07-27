@@ -2,7 +2,7 @@
 
 {block name="mapPane"}
   <p class="image">
-    <img src="{$mapImageSrc}" height="{$mapImageHeight}" width="{$mapImageWidth
+    <img src="{$mapImageSrc}" height="{$mapImageHeight}" width="{$mapImageWidth}" />
   {if $serviceInfo['id']}
     <table align="center">
       <tr>

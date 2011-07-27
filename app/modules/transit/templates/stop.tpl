@@ -30,7 +30,7 @@
   </p>
 </div>
 {if $staticMap}
-  <div id="map">
+  <div id="map_static">
     <img src="{$mapImageSrc}" height="{$mapImageHeight}" width="{$mapImageWidth}" />
   </div>
 {else}
