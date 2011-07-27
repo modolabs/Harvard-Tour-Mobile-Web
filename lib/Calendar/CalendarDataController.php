@@ -17,7 +17,6 @@ class CalendarDataController extends DataController
     const START_TIME_LIMIT=-2147483647; 
     const END_TIME_LIMIT=2147483647; 
     protected $cacheFolder = 'Calendar';
-    protected $cacheFileSuffix = 'ics';
     protected $startDate;
     protected $endDate;
     protected $calendar;
@@ -130,7 +129,7 @@ class CalendarDataController extends DataController
     public function getItem($id, $time=null)
     {
         //use the time to limit the range of events to seek (necessary for recurring events)
-        if ($time) {
+        if ($time = filter_var($time, FILTER_VALIDATE_INT)) {
             $start = new DateTime(date('Y-m-d H:i:s', $time));
             $start->setTime(0,0,0);
             $end = clone $start;
@@ -151,8 +150,7 @@ class CalendarDataController extends DataController
     
     public function getEvent($id) {
         if (!$this->calendar) {
-            $data = $this->getData();
-            $this->calendar = $this->parseData($data);
+            $this->calendar = $this->getParsedData();
         }
         
         return $this->calendar->getEvent($id);
@@ -161,8 +159,7 @@ class CalendarDataController extends DataController
     protected function events($limit=null)
     {
         if (!$this->calendar) {
-            $data = $this->getData();
-            $this->calendar = $this->parseData($data);
+            $this->calendar = $this->getParsedData();
         }
 
         $startTimestamp = $this->startTimestamp() ? $this->startTimestamp() : CalendarDataController::START_TIME_LIMIT;

@@ -1,7 +1,7 @@
 <?php
 
 define('ROOT_DIR', dirname(__FILE__).'/..'); 
-define('KUROGO_VERSION', '1.1');
+define('KUROGO_VERSION', '1.2');
 
 /* this is a singleton class */
 class Kurogo
@@ -20,7 +20,7 @@ class Kurogo
     }
         
     public function session() {
-        $this->includePackage('Session');
+        $this->addPackage('Session');
         if (!$this->session) {
             $args = Kurogo::getSiteSection('authentication');
         
@@ -50,8 +50,32 @@ class Kurogo
 
         return self::$_instance;
     }
+    
+    public static function tempDirectory() {
+        return Kurogo::getOptionalSiteVar('TMP_DIR', sys_get_temp_dir());
+    }
+    
+    public static function moduleLinkForItem($moduleID, $object, $options=null) {
+        $module = WebModule::factory($moduleID);
+        return $module->linkForItem($object, $options);
+    }
 
-    public function includePackage($packageName) {
+    public static function moduleLinkForValue($moduleID, $value, Module $callingModule, KurogoObject $otherValue=null) {
+        $module = WebModule::factory($moduleID);
+        return $module->linkForValue($value, $callingModule, $otherValue);
+    }
+
+    public static function searchItems($moduleID, $searchTerms, $limit=null, $options=null) {
+        $module = WebModule::factory($moduleID);
+        return $module->searchItems($searchTerms, $limit, $options);
+    }
+
+    public static function includePackage($packageName) {
+        $Kurogo = self::sharedInstance();
+        return $Kurogo->addPackage($packageName);
+    }
+    
+    public function addPackage($packageName) {
 
         if (!preg_match("/^[a-zA-Z0-9]+$/", $packageName)) {
             throw new Exception("Invalid Package name $packageName");
@@ -67,6 +91,7 @@ class Kurogo
         foreach ($dirs as $dir) {
             if (in_array($dir, $this->libDirs)) {
                 $found = true;
+                continue;
             }
     
             if (is_dir($dir)) {
@@ -207,26 +232,30 @@ class Kurogo
       //
       // Get URL base
       //
-      
-      $pathParts = array_values(array_filter(explode(DIRECTORY_SEPARATOR, $_SERVER['REQUEST_URI'])));
-      
-      $testPath = $_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR;
-      $urlBase = '/';
-      $foundPath = false;
-      if (realpath($testPath) != WEBROOT_DIR) {
-        foreach ($pathParts as $dir) {
-          $test = $testPath.$dir.DIRECTORY_SEPARATOR;
-          
-          if (realpath_exists($test)) {
-            $testPath = $test;
-            $urlBase .= $dir.'/';
-            if (realpath($test) == WEBROOT_DIR) {
-              $foundPath = true;
-              break;
-            }
-          }
-        }
-      }
+      if ($urlBase = self::getOptionalSiteVar('URL_BASE','','urls')) {
+      	$foundPath = true;
+      	$urlBase = rtrim($urlBase,'/').'/';
+      } else {
+		  $pathParts = array_values(array_filter(explode(DIRECTORY_SEPARATOR, $_SERVER['REQUEST_URI'])));
+		  
+		  $testPath = $_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR;
+		  $urlBase = '/';
+		  $foundPath = false;
+		  if (realpath($testPath) != WEBROOT_DIR) {
+			foreach ($pathParts as $dir) {
+			  $test = $testPath.$dir.DIRECTORY_SEPARATOR;
+			  
+			  if (realpath_exists($test)) {
+				$testPath = $test;
+				$urlBase .= $dir.'/';
+				if (realpath($test) == WEBROOT_DIR) {
+				  $foundPath = true;
+				  break;
+				}
+			  }
+			}
+		  }
+		}
       define('URL_BASE', $foundPath ? $urlBase : '/');
       define('IS_SECURE', isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on');
       define('FULL_URL_BASE', 'http'.(IS_SECURE ? 's' : '').'://'.$_SERVER['HTTP_HOST'].URL_BASE);
@@ -439,7 +468,11 @@ class Kurogo
     }
 }
 
+interface KurogoObject 
+{
+}
+
 /* retained for compatibility */
 function includePackage($packageName) {
-    Kurogo::sharedInstance()->includePackage($packageName);
+    Kurogo::includePackage($packageName);
 }

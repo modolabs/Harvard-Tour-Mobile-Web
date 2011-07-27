@@ -117,6 +117,9 @@ for certain modules in a production environment.
 Keep in mind that this setting is independent of -local files. -local files will override any option
 presuming *CONFIG_IGNORE_LOCAL* is not enabled. 
 
+Kurogo has included a series of example -production.ini files to indicate recommended values for production 
+servers
+
 -------------------------------
 Retrieving Configuration Values
 -------------------------------
@@ -171,6 +174,21 @@ Site settings
 * *AUTODETECT_PHONE_NUMBERS* - Turn this off to prevent the auto detection of telephone numbers in 
   content. This is primarily only supported in iOS devices at this time.
   
+  
+-------
+Modules
+-------
+
+* *DYNAMIC_MODULE_NAV_DATA*  - This value determines whether
+  modules can present dynamic data on the navigation home screen. This could include dynamic titles, 
+  images or other information. If you are not providing dynamic data, then you should turn off this
+  option. It is off by default. See :ref:`dynamic_nav_data` for more information
+* *CREATE_DEFAULT_CONFIG* - This value determines whether config folders will be automatically
+  created if they don't exist. This can be convienient for development when you want to populate
+  a config folder with the default values, but should be turned off for production to ensure
+  modules that you don't use don't create configuration folders.
+  
+  
 ---------
 Analytics
 ---------
@@ -183,7 +201,8 @@ Analytics
 --------------
 Temp Directory
 --------------
-* *TMP_DIR* - This should be set to your system's temporary directory (usually /tmp)
+* *TMP_DIR* - This should be set to your a writable temporary directory. If this entry is blank, it
+  will use the system default temporary directory.
 
 ------
 Themes
@@ -248,22 +267,12 @@ Cookies
 * *LAYOUT_COOKIE_LIFESPAN* = How long to remember the device detection results for pagetype and platform.
   In production sites this should be set to a long time, like 1209600 (14 days)
 
-.. _database_config:
-
 --------
 Database
 --------
 
 The main database connection can be used by a variety of modules for storing and retrieving values.
-
-* *DB_DEBUG* - When on, queries are logged and errors are shown on the browser. You should turn this
-  off for production sites or you risk exposing SQL queries when there is a database error.
-* *DB_TYPE* - The database system currently supports 2 types of connections *mysql* or *sqlite* through PDO
-* *DB_HOST* - used by db systems that are hosted on a server
-* *DB_USER* - used by db systems that require a user to authenticate
-* *DB_PASS* - used by db systems that require a password
-* *DB_DBNAME* - used by db systems that require a database
-* *DB_FILE* - used by db systems the use a file (i.e. sqlite).
+See the :doc:`database <database>` section for specific information on configuration values.
 
 --------------
 Authentication
@@ -290,20 +299,34 @@ Log Files
 Module Visibility and protection
 ================================
 
-Each module contains an configuration file in *SITE_DIR/config/modules/MODULEID.ini*. This file
+Each module contains an configuration file in *SITE_DIR/config/moduleID/module.ini*. This file
 contains values common to all modules, as well as module specific values. 
 
+* *id* - The module id to use. By default this will be the same name as the moduleID. You can 
+  change this to create a :ref:`copied module <copy-module>` or to use another module's code
+  at this url. 
 * *title* - The module title. Used in the title bar and other locations
-* *disabled* - Whether or not the module is disabled. A disabled module cannot be used by anyone
+* *disabled* - Whether or not the module is disabled. A disabled module cannot be used by anyone. Use
+  this value for temporarily disabling modules.
 * *search* - Whether or not the module provides search in the federated search feature.
 * *secure* - Whether or not the module requires a secure (https) connection. Configuring secure
   sites is beyond the scope of this document.
+  
+-----------------------------
+Permanently disabling modules
+-----------------------------
 
-It is important to turn on the disabled flag for any modules you do not wish to use. It is *very* 
-important to make sure that the *admin* module is either disabled or protected appropriately to prevent
-exposure of critically important data and configuration. If you utilize logins you should make sure
-the *login* module requires *secure* connections if you have a valid certificate.
+When *CREATE_DEFAULT_CONFIG* is set to 0, if you remove a module's config folder it will
+be permanently disabled and will not be accessible. 
 
+-------------------------------
+Optional Common Module Settings
+-------------------------------
+
+* *SHOW_LOGIN* - By default the login link only appears on the home module. If you wish for it to
+  show up on other modules, you can set this value to 1 on any module you wish to see it. You could
+  also set this to 0 on the home module to suppress its showing.
+  
 ===========
 Home Screen
 ===========

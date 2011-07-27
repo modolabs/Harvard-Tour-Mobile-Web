@@ -1,6 +1,6 @@
 <?php
 
-includePackage('Video');
+Kurogo::includePackage('Video');
 
 class VideoWebModule extends WebModule
 {
@@ -27,24 +27,63 @@ class VideoWebModule extends WebModule
         $this->feeds = $this->loadFeedData();
     }
     
-    protected function getListItemForVideo(VideoObject $video, $section, $paneLink=false) {
+    protected function getDefaultSection() {
+        return key($this->feeds);
+    }
 
-        $listItemArray = VideoModuleUtils::getListItemForVideo($video, $section, $this);
-        
-        $args = array(
-            'section'=>$section,
+    public function linkForItem(KurogoObject $video, $data=null) {
+    
+        $options = array(
             'videoid'=>$video->getID()
         );
-
-        // Add breadcrumb.
         
-        if ($paneLink) {
-          $listItemArray['url'] = $this->buildURL('detail', $args);
-        } else {
-          $listItemArray['url'] = $this->buildBreadcrumbURL('detail', $args);
+        foreach (array('section','filter') as $field) {
+            if (isset($data[$field])) {
+                $options[$field] = $data[$field];
+            }
         }
         
-        return $listItemArray;
+        $addBreadcrumb = isset($data['addBreadcrumb']) ? $data['addBreadcrumb'] : true;
+        $noBreadcrumbs = isset($data['noBreadcrumbs']) ? $data['noBreadcrumbs'] : false;
+
+        if ($noBreadcrumbs) {
+          $url = $this->buildURL('detail', $options);
+        } else {
+          $url = $this->buildBreadcrumbURL('detail', $options, $addBreadcrumb);
+        }
+
+        $desc = $video->getDescription();
+        if (isset($data['federatedSearch']) && $data['federatedSearch']) {
+            $subtitle = '';
+        } else {
+            $subtitle = "(" . VideoModuleUtils::getDuration($video->getDuration()) . ") " . $desc;
+        }
+
+        return array(
+            'url'=>$url,
+            'title'=>$video->getTitle(),
+            'subtitle'=>$subtitle,
+            'imgWidth'=>120,  
+            'imgHeight'=>100,  
+            'img'=>$video->getImage()
+        );
+    }
+    
+    public function searchItems($searchTerms, $limit=null, $options=null) {
+        
+        $section = isset($options['section']) ? $options['section'] : $this->getDefaultSection();
+        $controller = $this->getFeed($section);
+                
+      	$items = $controller->search($searchTerms, 0, $limit);
+      	return $items;
+    }
+    
+    protected function getFeed($feed=null) {
+        $feed = isset($this->feeds[$feed]) ? $feed : $this->getDefaultSection();
+        $feedData = $this->feeds[$feed];
+        
+        $controller = DataController::factory($feedData['CONTROLLER_CLASS'], $feedData);
+        return $controller;
     }
     
     protected function initializeForPage() {
@@ -57,32 +96,33 @@ class VideoWebModule extends WebModule
             throw new Exception("No video feeds configured");
         }
     
-       
         // Categories / Sections
         
-        $section = $this->getArg('section');
-
+        $section = $this->getArg('section', $this->getDefaultSection());
         if (!isset($this->feeds[$section])) {
-            $section = key($this->feeds);
+            $section = $this->getDefaultSection();
         }
         
-        $feedData = $this->feeds[$section];
         $this->assign('currentSection', $section);
         $this->assign('sections'      , VideoModuleUtils::getSectionsFromFeeds($this->feeds));
-        $this->assign('feedData'      , $feedData);
         
-        $controller = DataController::factory($feedData['CONTROLLER_CLASS'], $feedData);
+        $controller = $this->getFeed($section);
         
         switch ($this->page)
         {  
               case 'pane':
                 $start = 0;
                 $maxPerPage = $this->getOptionalModuleVar('MAX_PANE_RESULTS', 5);
+                $data = array(
+                    'noBreadcrumbs'=>true,
+                    'section'=>$section
+                );
 
                 $items = $controller->items($start, $maxPerPage);
                 $videos = array();
+
                 foreach ($items as $video) {
-                    $videos[] = $this->getListItemForVideo($video, $section, true);
+                    $videos[] = $this->linkForItem($video, $data);
                 }
                 
                 $this->assign('videos', $videos);
@@ -108,7 +148,7 @@ class VideoWebModule extends WebModule
                 $totalItems = $controller->getTotalItems();
                 $videos = array();
                 foreach ($items as $video) {
-                    $videos[] = $this->getListItemForVideo($video, $section);
+                    $videos[] = $this->linkForItem($video, array('section'=>$section));
                 }
                 
                 $this->assign('videos', $videos);
@@ -179,31 +219,38 @@ class VideoWebModule extends WebModule
             
                 if ($video = $controller->getItem($videoid)) {
                     $this->setTemplatePage('detail-' . $video->getType());
-                    $this->assign('ajax'      ,       $this->getArg('ajax', null));
-                    $this->assign('videoTitle',       $video->getTitle());
-                    $this->assign('videoid',          $video->getID());
-                    $this->assign('videoDescription', $video->getDescription());
-                    $this->assign('videoAuthor'     , $video->getAuthor());
-                    $this->assign('videoDate'       , $video->getPublished()->format('M n, Y'));
-                    
-                    $body = $video->getDescription() . "\n\n" . $video->getURL();
-
-                    if ($this->getOptionalModuleVar('SHARING_ENABLED', 1)) {
-                        $this->assign('shareEmailURL',    $this->buildMailToLink("", $video->getTitle(), $body));
-                        $this->assign('videoURL',         $video->getURL());
-                        $this->assign('shareRemark',      $video->getTitle());
-                    }
+                    if ($video->canPlay(Kurogo::deviceClassifier())) {
+                        $this->assign('ajax'      ,       $this->getArg('ajax', null));
+                        $this->assign('videoTitle',       $video->getTitle());
+                        $this->assign('videoid',          $video->getID());
+                        $this->assign('videoStreamingURL',$video->getStreamingURL());
+                        $this->assign('videoStillImage',  $video->getStillFrameImage());
+                        $this->assign('videoDescription', $video->getDescription());
+                        $this->assign('videoAuthor'     , $video->getAuthor());
+                        $this->assign('videoDate'       , $video->getPublished()->format('M n, Y'));
+                        
+                        $body = $video->getDescription() . "\n\n" . $video->getURL();
     
-                      // Bookmark
-                    if ($this->getOptionalModuleVar('BOOKMARKS_ENABLED', 1)) {
-                      $cookieParams = array(
-                        'section' => $section,
-                        'title'   => $video->getTitle(),
-                        'videoid' => $videoid
-                      );
-    
-                      $cookieID = http_build_query($cookieParams);
-                      $this->generateBookmarkOptions($cookieID);
+                        if ($this->getOptionalModuleVar('SHARING_ENABLED', 1)) {
+                            $this->assign('shareEmailURL',    $this->buildMailToLink("", $video->getTitle(), $body));
+                            $this->assign('shareTitle','Share this video');
+                            $this->assign('videoURL',         $video->getURL());
+                            $this->assign('shareRemark',      $video->getTitle());
+                        }
+        
+                          // Bookmark
+                        if ($this->getOptionalModuleVar('BOOKMARKS_ENABLED', 1)) {
+                          $cookieParams = array(
+                            'section' => $section,
+                            'title'   => $video->getTitle(),
+                            'videoid' => $videoid
+                          );
+        
+                          $cookieID = http_build_query($cookieParams);
+                          $this->generateBookmarkOptions($cookieID);
+                        }
+                    } else {
+                        $this->setTemplatePage('videoError.tpl');
                     }
     
     
@@ -214,28 +261,4 @@ class VideoWebModule extends WebModule
         }
     }
     
-  public function federatedSearch($searchTerms, $maxCount, &$results) {
-  	 
-    $section = key($this->feeds);
-    if (!$section) return 0;
-    $feedData = $this->feeds[$section];
-    if (!$feedData) return 0;
-    $controller = DataController::factory($feedData['CONTROLLER_CLASS'], $feedData);
-
-  	$items = $controller->search($searchTerms, 0, $maxCount);
-  	 
-  	if ($items) {
-  		$results = array();
-  		foreach ($items as $video) {
-  		    $listItem = $this->getListItemForVideo($video, $section);
-  		    unset($listItem['subtitle']);
-  			$results[] = $listItem;
-  		}
-  		return $controller->getTotalItems();
-  	} else {
-  		return 0;
-  	}
-  	
-  }
-  
  }

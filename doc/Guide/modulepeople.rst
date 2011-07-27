@@ -4,8 +4,8 @@ People Module
 
 The people module enables sites to provide mobile access to their directory. With a few short configuration
 parameters you enable searching and detailed information to users on their mobile device. The built-in
-module supports connecting to either LDAP based directories (including Active Directory), and database
-(MySQL/SQLite) backed directories. 
+module supports connecting to either LDAP based directories (including Active Directory), and 
+:doc:`database <database>` backed directories. 
 
 =================================
 Configuring the Server Connection
@@ -19,16 +19,17 @@ to your directory system.
 
   * LDAPPeopleController - uses a standard LDAP server. You can configure the various fields if your values
     differ from defaults
-  * DatabasePeopleController - connects to an external database server (MySQL/SQLite). This controller assumes
+  * ADPeopleController - a subclass of the LDAP controller that has preconfigured mappings for Active Directory
+  * DatabasePeopleController - connects to an external database server. This controller assumes
     that people are mapped to a single row and that the various fields are stored in single (definable) columns 
   
-* *PERSON_CLASS* allows you to set a different class name for the returned user objects when searching. 
-  This allows you to write custom behavior to handle the data in your directory service. The default 
-  value is *Person*
+* *PERSON_CLASS* allows you to set a different class name for the returned user objects when searching.
+  This class must be a subclass of the *Person* class. This allows you to write custom behavior to handle 
+  the data in your directory service. 
 
---------------------------------
-Options for LDAPPeopleController
---------------------------------
+-------------------------------------------------------
+Options for LDAPPeopleController and ADPeopleController
+-------------------------------------------------------
 
 * *HOST* - should match the address of your server. Keep in mind that this server must
   be accessible from the web server the framework is hosted on. Managing network and firewall 
@@ -45,8 +46,8 @@ Options for LDAPPeopleController
 The following values inform the controller which attributes to use when searching. These values would only
 need to be altered if the values differ from the defaults in parentheses.
 
-* *LDAP_USERID_FIELD* (uid)- Stores the user name for this user. Do not choose an attribute that is sensitiveas
-  they are easily viewed by users.
+* *LDAP_USERID_FIELD* (uid, samaccountname for AD)- Stores the unique user name for this user.
+  Do not choose an attribute that is sensitive as they are easily viewed by users
 * *LDAP_EMAIL_FIELD* (mail) - The attribute of the user's email address
 * *LDAP_FIRSTNAME_FIELD* (givenname) - The attribute of the user's first name
 * *LDAP_LASTNAME_FIELD* (sn) - The attribute of the user's last name
@@ -57,16 +58,9 @@ Options for DatabasePeopleController
 ------------------------------------
 
 The *DatabasePeopleController* has a number of possible configuration values, all of which
-are optional. The following values affect the connectivity to the database system:
+are optional. See :doc:`database` for a full detail on configuring database connections
 
-* DB_TYPE - The database system currently supports 2 types of connections *mysql* or *sqlite* through PDO
-* DB_HOST - used by db systems that are hosted on a server
-* DB_USER - used by db systems that require a user to authenticate
-* DB_PASS - used by db systems that require a password
-* DB_DBNAME - used by db systems that require a database
-* DB_FILE - used by db systems the use a file (i.e. sqlite).
-
-If you omit any of the above values, it will default to the settings in :ref:`database_config`
+If you omit any of the values, it will default to the settings in :ref:`database_config`
 In addition to the connectivity settings, there are several options that tell the controller how to 
 query the database. 
 
@@ -92,8 +86,9 @@ Configuring the Detail Fields
 =============================
 
 Once you have configured the server settings, you need to configure the field mappings between your
-server and the detail view. If your LDAP directory uses standard fields, then most fields should
-map automatically, however, you may still want to customize how it displays or the order of the fields.
+server and the detail view. The default configuration is setup for an LDAP directory. If you use 
+a nonstandard directory, or you utilize the database connector with its own fields, then you will
+need to customize how this displays. 
 
 The fields are configured in the *SITE_DIR/config/people/page-detail.ini* file. Each field is 
 configured in a section (the section name should be unique, but it otherwise irrelevant).
@@ -103,9 +98,11 @@ possible values to influence how a field is displayed:
 * *label* - (required) A text label for the field.  Can include HTML tags.
 * *attributes* - (required) Array of fields to put in the contents (should map the the field names in your backend system)
 * *format* - (optional) A string for vsprintf to format the attributes. Only needed if more than one attribute is provided.
-* *type* - (optional) One of "email", "phone", or "map".  Used to format and generate links.
+* *type* - (optional) One of "email" or "phone".  Used to format and generate links.
+* *module* - (optional) Creates a link to a another module and uses that module's linkForValue method to format the result.
+  See the section on :doc:`moduleinteraction` for more details.
 * *section* - (optional) If this field belongs to a section, the name of that section
-* *parse* - (optional) A function which will be run on the LDAP results before display. Generated with 
+* *parse* - (optional) A function which will be run on the value before display. Generated with 
   *create_function*. Gets the argument "$value" and returns the formatted output.
 
 =============================
@@ -126,6 +123,8 @@ have to be phone numbers, but could be any URL.
 ---------------------------
 Creating groups of contacts
 ---------------------------
+
+* NOTE - Creation of contact groups is not supported in the admin console at this time.
 
 If you have a number of fixed contacts and need to categorize them you can place them into groups. 
 Creating contact groups involves the following steps:

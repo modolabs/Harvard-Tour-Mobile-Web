@@ -35,14 +35,7 @@ class MapDataController extends DataController implements MapFolder
 
     protected function cacheLifespan()
     {
-        // TODO add config so the following line works instead
-        //return Kurogo::getSiteVar('MAP_CACHE_LIFESPAN');
-        return 86400;
-    }
-
-    protected function cacheFileSuffix()
-    {
-        return null;
+        return Kurogo::getSiteVar('MAP_CACHE_LIFESPAN', 'maps');
     }
 
     public function canSearch()
@@ -250,16 +243,14 @@ class MapDataController extends DataController implements MapFolder
         }
 
         if (!$this->items) {
-            $data = $this->getData();
-            $this->items = $this->parseData($data);
+            $this->items = $this->getParsedData();
         }
         return $this->parser->getTitle();
     }
 
-    public function items() {
+    public function items($start=0, $limit=null) {
         if (!$this->items) {
-            $data = $this->getData();
-            $this->items = $this->parseData($data);
+            $this->items = $this->getParsedData();
         }
         return $this->items;
     }

@@ -10,13 +10,25 @@
 abstract class DataParser
 {
     abstract public function parseData($data);
+    const PARSE_MODE_STRING=1;
+    const PARSE_MODE_FILE=2;
     protected $encoding='utf-8';
+    protected $parseMode=self::PARSE_MODE_STRING;
     protected $debugMode=false;
     protected $totalItems = null;
     protected $haltOnParseErrors = true;
+    protected $dataController;
+    
+    public function getParseMode() {
+        return $this->parseMode;
+    }
 
     public function getTotalItems() {
         return $this->totalItems;
+    }
+
+    public function setDataController(DataController $dataController) {
+        $this->dataController = $dataController;
     }
 
     protected function setTotalItems($total) {

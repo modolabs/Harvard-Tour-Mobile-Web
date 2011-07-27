@@ -14,7 +14,6 @@ class RSSDataController extends DataController
     protected $items;
     protected $contentFilter;
     protected $cacheFolder = 'RSS';
-    protected $cacheFileSuffix = 'rss';
 
     public function addFilter($var, $value)
     {
@@ -56,8 +55,7 @@ class RSSDataController extends DataController
     public function items($start=0,$limit=null)
     {
         if (!$this->items) {
-            $data = $this->getData();
-            $this->items = $this->parseData($data);
+            $this->items = $this->getParsedData();
         }
         
         $items = $this->items;

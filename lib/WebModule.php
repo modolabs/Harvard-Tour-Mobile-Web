@@ -15,8 +15,6 @@ abstract class WebModule extends Module {
 
     const INCLUDE_DISABLED_MODULES=true;
     const EXCLUDE_DISABLED_MODULES=false;
-
-  protected $moduleName = '';
       
   protected $page = 'index';
 
@@ -249,6 +247,23 @@ abstract class WebModule extends Module {
     }
   }
 
+
+   //
+  // Percent Mobile Analytics
+  //
+  private function percentMobileAnalyticsGetImageUrl($pmID){
+      if (isset($pmID) && strlen($pmID)){
+       $url = "http://tracking.percentmobile.com/pixel/" .
+          $pmID .
+          "/pixel.gif?v=271009_js";
+       
+       return $url;
+      }
+      else {
+          return "";
+      }
+  }
+
   //
   // Lazy load
   //
@@ -321,6 +336,23 @@ abstract class WebModule extends Module {
         }
   }
   
+    /* This method would be called by other modules to get a valid link from a model object */
+    public function linkForItem(KurogoObject $object, $options=null) {
+       throw new Exception("linkForItem must be subclassed if it is going to be used");
+    }
+
+    /* default implmentation. Subclasses may wish to override this */
+    public function linkForValue($value, Module $callingModule, KurogoObject $otherValue=null) {
+        return array(
+            'title'=>$value, 
+            'url'  =>$this->buildBreadcrumbURL(
+                'search', 
+                array('filter'=>$value),
+                false
+            )
+        );
+    }
+  
     //
     // Factory function
     // instantiates objects for the different modules
@@ -356,7 +388,7 @@ abstract class WebModule extends Module {
     }
     
     protected function loadDeviceClassifierIfNeeded() {
-        $this->deviceClassifier =& Kurogo::deviceClassifier();
+        $this->deviceClassifier = Kurogo::deviceClassifier();
     }
         
     protected function init($page='', $args=array()) {
@@ -408,11 +440,7 @@ abstract class WebModule extends Module {
     $this->autoPhoneNumberDetection = $bool ? true : false;
     $this->assign('autoPhoneNumberDetection', $this->autoPhoneNumberDetection);
   }
-    
-  public function getModuleName() {
-    return $this->moduleName;
-  }
-    
+        
   protected function moduleDisabled() {
     $this->redirectToModule('error', '', array('code'=>'disabled', 'url'=>$_SERVER['REQUEST_URI']));
   }
@@ -460,29 +488,48 @@ abstract class WebModule extends Module {
         return $this->canBeAddedToHomeScreen;
     }
   
-  protected function getAllModules() {
-    $dirs = array(MODULES_DIR, SITE_MODULES_DIR);
+  public static function getAllModules() {
+  	$configFiles = glob(SITE_CONFIG_DIR . "/*/module.ini");
     $modules = array();
-    foreach ($dirs as $dir) {
-        if (is_dir($dir)) {
-            $d = dir($dir);
-            while (false !== ($entry = $d->read())) {
-                if ($entry[0]!='.' && is_dir(sprintf("%s/%s", $dir, $entry))) {
-                    try {
-                        if ($module = WebModule::factory($entry)) {
-                           $modules[$entry] = $module;
-                        }
-                    } catch (Exception $e) {
-                    }
-                }
-            }
-            $d->close();
-        }
-    }
+
+  	foreach ($configFiles as $file) {
+  		if (preg_match("#" . preg_quote(SITE_CONFIG_DIR,"#") . "/([^/]+)/module.ini$#", $file, $bits)) {
+  			$id = $bits[1];
+			try {
+				if ($module = WebModule::factory($id)) {
+				   $modules[$id] = $module;
+				}
+			} catch (Exception $e) {
+			}
+  		}
+  	}
     ksort($modules);    
     return $modules;        
   }
 
+    protected function elapsedTime($timestamp, $date_format='%b %e, %Y @ %l:%M %p') {
+        $now = time();
+        $diff = $now - $timestamp;
+        $today = mktime(0,0,0);
+        $today_timestamp = mktime(0, 0, 0, date('m', $timestamp), date('d', $timestamp), date('Y', $timestamp));
+    
+        if ($diff > 0) {
+            if ($today - $today_timestamp > 86400) {
+                return sprintf("%d days ago", $diff/86400);
+            } elseif ($today - $today_timestamp > 0) {
+                return strftime('Yesterday @ %l:%M %p', $timestamp);
+            } elseif ($diff > 3600) {
+                return sprintf("%d hour%s ago", $diff/3600, intval($diff/3600)>1?'s':'');
+            } elseif ($diff > 60) {
+                return sprintf("%d minute%s ago", $diff/60, intval($diff/60)>1?'s':'');
+            } else {
+                return sprintf("%d second%s ago", $diff, $diff>1 ?'s':'');
+            }
+        
+        } else {
+            return strftime($date_format, $timestamp);
+        }    
+    }
 
   //
   // Module list control functions
@@ -588,7 +635,10 @@ abstract class WebModule extends Module {
 
                 if (Kurogo::getOptionalSiteVar('DYNAMIC_MODULE_NAV_DATA', false)) {
                     $module = WebModule::factory($moduleID, false, array(), false); // do not initialize
-                    $modules[$type][$moduleID] = $module->getModuleNavigationData($moduleNavData);
+                    
+                    if ($moduleNavData = $module->getModuleNavigationData($moduleNavData)) {
+                        $modules[$moduleNavData['type']][$moduleID] = $moduleNavData;
+                    }
                 } else {
                     $modules[$type][$moduleID] = $moduleNavData;
                 }
@@ -835,7 +885,11 @@ abstract class WebModule extends Module {
   }
   
   private function decodeBreadcrumbParam($breadcrumbs) {
-    return json_decode(gzinflate(urldecode($breadcrumbs)), true);
+    if ($json = @gzinflate(urldecode($breadcrumbs))) {
+        return json_decode($json, true);
+    }
+
+    return null;
   }
   
   private function loadBreadcrumbs() {
@@ -1146,6 +1200,17 @@ abstract class WebModule extends Module {
         $this->assign('GOOGLE_ANALYTICS_ID', $gaID);
         $this->assign('gaImageURL', $this->googleAnalyticsGetImageUrl($gaID));
     }
+
+    // Percent Mobile Analytics
+    if ($pmID = Kurogo::getOptionalSiteVar('PERCENT_MOBILE_ID')){
+        $this->assign('PERCENT_MOBILE_ID', $pmID);
+        
+        $pmBASEURL = "http://assets.percentmobile.com/percent_mobile.js";
+        $this->assign('PERCENT_MOBILE_URL', $pmBASEURL);
+        
+        //$this->assign('pmImageURLJS', $this->percentMobileAnalyticsGetImageUrlJS($pmID));
+        $this->assign('pmImageURL', $this->percentMobileAnalyticsGetImageUrl($pmID));
+    }
     
     // Breadcrumbs
     $this->loadBreadcrumbs();
@@ -1209,7 +1274,7 @@ abstract class WebModule extends Module {
     $this->assign('accessKeyStart', $accessKeyStart);
 
     if (Kurogo::getSiteVar('AUTHENTICATION_ENABLED')) {
-        includePackage('Authentication');
+        Kurogo::includePackage('Authentication');
         $this->setCacheMaxAge(0);
         $session = $this->getSession();
         $this->assign('session', $session);
@@ -1273,18 +1338,36 @@ abstract class WebModule extends Module {
   // Subclass this function to set up variables for each template page
   //
   abstract protected function initializeForPage();
+
+    //
+    // Subclass this function and return an array of items for a given search term and feed
+    //
+    public function searchItems($searchTerms, $limit=null, $options=null) {  
+        return array();
+    }
   
-  //
-  // Subclass these functions for federated search support
-  // Return 2 items and a link to get more
-  //
-  public function federatedSearch($searchTerms, $maxCount, &$results) {
-    return 0;
-  }
+    //
+    // Subclass these functions for federated search support
+    // Return 2 items and a link to get more
+    //
   
-  protected function urlForFederatedSearch($searchTerms) {
-    return $this->buildBreadcrumbURL('search', array(
-      'filter' => $searchTerms,
-    ), false);
-  }
+    public function federatedSearch($searchTerms, $maxCount, &$results) {
+        $total = 0;
+        $results = array();
+      
+        $items = $this->searchItems($searchTerms, $maxCount, array('federatedSearch'=>true));
+        $limit = is_array($items) ? min($maxCount, count($items)) : 0;
+
+        for ($i = 0; $i < $limit; $i++) {
+            $results[] = $this->linkforItem($items[$i], array('federatedSearch'=>true, 'filter'=>$searchTerms));
+        }
+        
+        return count($items);
+    }
+  
+    protected function urlForFederatedSearch($searchTerms) {
+        return $this->buildBreadcrumbURL('search', array(
+          'filter' => $searchTerms,
+        ), false);
+    }
 }

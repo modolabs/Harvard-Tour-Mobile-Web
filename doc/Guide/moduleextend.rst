@@ -28,7 +28,9 @@ There are two approaches to updating a template.
 * You can completely replace it. This will rewrite the entire template
 * You can extend it. If the template provides {blocks} you can use the {extends} tag to replace only
   certain parts of the template
-  
+
+.. _extend-module:  
+
 =======================================
 Providing alternative logic (extension)
 =======================================
@@ -36,8 +38,9 @@ Providing alternative logic (extension)
 If you want to replace some of the PHP logic you can provide a subclass of the module. This allows 
 you to override a method or property. It is important to understand the consequences of the method
 you override. In some cases you will want to call the *parent::* method to ensure that the base logic
-is executed. An example of this would be the *initializeForPage* method. If you wanted to override
-the people module you would create *SitePeopleModule.php* in *SITE_DIR/app/modules/people*::
+is executed. An example of this would be the *initializeForPage* or *linkForValue* methods. 
+If you wanted to override the people module you would create *SitePeopleModule.php* in 
+*SITE_DIR/app/modules/people*::
 
     <?php 
     
@@ -57,6 +60,8 @@ the people module you would create *SitePeopleModule.php* in *SITE_DIR/app/modul
     
 This would allow you to override the logic for the index page, but keep the other pages the same.
 You can include alternate page templates for whatever pages you need to replace.
+
+.. _replace-module:
 
 =============================
 Replacing a module completely
@@ -87,16 +92,25 @@ Copying a Module
 
 In some cases you may want to have multiple modules that exist under different URLs that share the
 same logic, but have different configurations. An example of this would be the :doc:`modulecontent` 
-or :doc:`moduleurl`. In this case you simply subclass the parent module and provide a different 
-*$configModule* property::
+or :doc:`moduleurl`. The process is simple:
 
-    <?php 
-    
-    class SomethingWebModule extends ContentModule
-    {
-        protected $configModule = 'something';
-    }
-    
-This module would use the same logic and templates as its parent module, but it would use its
-own set of configuration files, in this case in the *SITE_DIR/config/something* folder. Make sure
-that the class name prefix matches the configModule value.
+* Create a new folder in the *SITE_DIR/config* folder named with the url
+* Create a module.ini file that has an *id* property that matches the name of the module
+  you wish to load. (news, content, url, etc)
+
+Here is an example of the :doc:`moduleurl` for the address */fullweb*. This file would be located at 
+*config/fullweb/module.ini*
+
+.. code-block:: ini
+
+  [module]
+  id = "url"
+  title = "Full Website"
+  disabled = 0
+  protected = 0
+  search = 0
+  secure = 0
+  url = "http://example.com"
+
+This module would use the same logic and templates as the module indicated by *id*, but it would use its
+own set of configuration files, in this case in the *SITE_DIR/config/fullweb* folder. 

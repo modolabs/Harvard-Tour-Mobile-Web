@@ -115,7 +115,7 @@ class ICalAlarm extends ICalObject {
   * @package ExternalData
   * @subpackage Calendar
  */
-class ICalEvent extends ICalObject {
+class ICalEvent extends ICalObject implements KurogoObject {
 
   protected $uid;
   protected $sequence;
@@ -725,7 +725,7 @@ class ICalendar extends ICalObject implements CalendarInterface {
     return $occurrences;
   }
   
-  public function set_attribute($attr, $value)
+  public function set_attribute($attr, $value, $params=null)
   {
     $this->properties[$attr] = $value;
   }
@@ -746,7 +746,7 @@ class ICalendar extends ICalObject implements CalendarInterface {
     return $text;
   }
 
-  public function ical_unescape_text($text) {
+  public static function ical_unescape_text($text) {
     $text = str_replace(array("DQUOTE","\\\\", "\,","\;","\\n"), array("\"","\\",",",";","\n"), $text);
     return $text;
   }

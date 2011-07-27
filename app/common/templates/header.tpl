@@ -27,6 +27,9 @@
         _gaq.push(['_trackPageview']);
       </script>
     {/if}
+    {if strlen($PERCENT_MOBILE_ID)}
+        <script src="{$PERCENT_MOBILE_URL}" type="text/javascript" charset="utf-8"></script>
+    {/if}
     
     {foreach $inlineJavascriptBlocks as $inlineJavascriptBlock}
       <script type="text/javascript">{$inlineJavascriptBlock}</script>
@@ -114,13 +117,15 @@
           {/if}
           
         {/if}
-        <a href="{$breadcrumb['url']}" {if isset($crumbClass)}class="{$crumbClass}{/if}">
-          {if $breadcrumb@first}
-            <img src="/common/images/title-{$navImageID|default:$configModule}.png" width="28" height="28" alt="" />
-          {else}
-            <span>{$breadcrumb['title']}</span>
-          {/if}
-        </a>
+        {if $moduleID != 'home' || !$breadcrumb@first}
+          <a href="{$breadcrumb['url']}" {if isset($crumbClass)}class="{$crumbClass}{/if}">
+            {if $breadcrumb@first}
+              <img src="/common/images/title-{$navImageID|default:$configModule}.png" width="28" height="28" alt="" />
+            {else}
+              <span>{$breadcrumb['title']}</span>
+            {/if}
+          </a>
+        {/if}
       {/foreach}
     {/if}
   {/block}
@@ -140,7 +145,7 @@
       {block name="navbar"}
         <div id="navbar"{if $hasHelp} class="helpon"{/if}>
           <div class="breadcrumbs{if $isModuleHome} homepage{/if}">
-            <a name="top" href="/home/" class="homelink">
+            <a href="/home/" class="homelink">
               <img src="/common/images/homelink.png" width="57" height="45" alt="Home" />
             </a>
             

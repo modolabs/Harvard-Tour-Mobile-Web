@@ -3,10 +3,14 @@
  class YouTubeVideoController extends VideoDataController
  {
     protected $DEFAULT_PARSER_CLASS='YouTubeDataParser';
-    protected $cacheFileSuffix='json';
+    protected $playlist;
     
  	private function setStandardFilters() {
-        $this->setBaseUrl('http://gdata.youtube.com/feeds/mobile/videos');
+ 		if ($this->playlist) {
+			$this->setBaseUrl('http://gdata.youtube.com/feeds/api/playlists/' . $this->playlist);
+ 		} else {
+			$this->setBaseUrl('http://gdata.youtube.com/feeds/mobile/videos');
+		}
         $this->addFilter('alt', 'jsonc'); //set the output format to json
         $this->addFilter('format', 6); //only return mobile videos
         $this->addFilter('v', 2); // version 2
@@ -36,6 +40,10 @@
     protected function init($args) {
         parent::init($args);
 
+        if (isset($args['PLAYLIST']) && strlen($args['PLAYLIST'])) {
+            $this->playlist = $args['PLAYLIST'];
+        }
+
         $this->setStandardFilters();
     }
     
@@ -47,10 +55,17 @@
         $items = parent::items(0, $limit);
         return $items;
     }
+
+    protected function isValidID($id) {
+        return preg_match("/^[A-Za-z0-9_-]+$/", $id);
+    }
     
 	 // retrieves video based on its id
 	public function getItem($id)
 	{
+	    if (!$this->isValidID($id)) {
+	        return false;
+	    }
         $this->setBaseUrl("http://gdata.youtube.com/feeds/mobile/videos/$id");
         $this->addFilter('alt', 'jsonc'); //set the output format to json
         $this->addFilter('format', 6); //only return mobile videos
@@ -63,8 +78,14 @@
 class YouTubeDataParser extends DataParser
 {
     protected function parseEntry($entry) {
+    	if (isset($entry['video']['id'])) {
+    		$entry = array_merge($entry, $entry['video']);
+    	}
         $video = new YouTubeVideoObject();
         $video->setURL($entry['player']['default']);
+        if (isset($entry['content'][6])) {
+            $video->setStreamingURL($entry['content'][6]);
+        }
         $video->setMobileURL($entry['content']['1']);
         $video->setTitle($entry['title']);
         $video->setDescription($entry['description']);
@@ -110,4 +131,12 @@ class YouTubeDataParser extends DataParser
 class YouTubeVideoObject extends VideoObject
 {
     protected $type = 'youtube';
+    
+    public function canPlay(DeviceClassifier $deviceClassifier) {
+        if (in_array($deviceClassifier->getPlatform(), array('blackberry','bbplus'))) {
+            return $this->getStreamingURL();
+        }
+
+        return true;
+    }
 }
