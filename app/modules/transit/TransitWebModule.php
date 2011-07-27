@@ -1,6 +1,7 @@
 <?php
 
-includePackage('Transit');
+Kurogo::includePackage('Transit');
+Kurogo::includePackage('Maps');
 
 class TransitWebModule extends WebModule {
   protected $id = 'transit';
@@ -182,8 +183,12 @@ class TransitWebModule extends WebModule {
         
       case 'route':
         $routeID = $this->getArg('id');
+        $isAjax = $this->getArg('ajax', 0);
+        
+        unset($this->args['ajax']); // do not propagate 
         
         $routeInfo = $view->getRouteInfo($routeID);
+        
         foreach ($routeInfo['stops'] as $stopID => $stop) {
           $routeInfo['stops'][$stopID]['url']   = $this->stopURL($stopID);
           $routeInfo['stops'][$stopID]['title'] = $stop['name'];
@@ -212,30 +217,51 @@ class TransitWebModule extends WebModule {
               break;
           }
         }
+        $this->assign('routeInfo', $routeInfo);
+
+        // Ajax page view
+        if ($isAjax) {
+          $this->setTemplatePage('routeajax');
+          break;
+        }
 
         $this->enableTabs(array('map', 'stops'));
         
-        $mapImageSize = 270;
+        $mapImageWidth = $mapImageHeight = 270;
         if ($this->pagetype == 'basic') {
-          $mapImageSize = 200;
+          $mapImageWidth = $mapImageHeight = 200;
         } else if ($this->pagetype == 'tablet') {
-          $mapImageSize = 350;
+          $mapImageWidth = $mapImageHeight = 350;
         }
+        $this->assign('mapImageWidth',  $mapImageWidth);
+        $this->assign('mapImageHeight', $mapImageHeight);
 
-        $this->addOnLoad('rotateScreen(); autoReload('.self::RELOAD_TIME.');');
-        $this->addOnOrientationChange('rotateScreen();');
+        $staticImage = $view->getMapImageForRoute($routeID, $mapImageWidth, $mapImageHeight);
+        $paths = $view->getRoutePaths($routeID);
+        $markers = array();
+        foreach ($view->getRouteVehicles($routeID) as $vehicle) {
+          $markers[$vehicle['routeID']] = array(
+            'lat' => $vehicle['lat'],
+            'lon' => $vehicle['lon'],
+            'imageURL' => $vehicle['iconURL'],
+            'title' => '',
+          );
+        }
+        $markerUpdateURL = FULL_URL_BASE.API_URL_PREFIX."/{$this->configModule}/vehicleMarkers?id={$routeID}";
+        $this->initMap($staticImage, $markers, $markerUpdateURL, $paths, $routeInfo['color']);
+        
+        $this->addOnOrientationChange('setOrientation(getOrientation());');
 
-        $this->assign('mapImageSrc',    $view->getMapImageForRoute($routeID, $mapImageSize, $mapImageSize));
-        $this->assign('mapImageSize',   $mapImageSize);
-        $this->assign('lastRefresh',    time());
-        $this->assign('autoReloadTime', self::RELOAD_TIME);
-        $this->assign('routeInfo',      $routeInfo);
-        $this->assign('serviceInfo',    $view->getServiceInfoForRoute($routeID));
+        $this->assign('lastRefresh', time());
+        $this->assign('serviceInfo', $view->getServiceInfoForRoute($routeID));
         break;
       
       case 'stop':
         $stopID = $this->getArg('id');
+        $isAjax = $this->getArg('ajax', 0);
         
+        unset($this->args['ajax']); // do not propagate 
+
         $stopInfo = $view->getStopInfo($stopID);
         
         $runningRoutes = array();
@@ -258,6 +284,15 @@ class TransitWebModule extends WebModule {
         uasort($runningRoutes, array(get_class($this), 'routeSort'));
         uasort($offlineRoutes, array(get_class($this), 'routeSort'));
         
+        $this->assign('runningRoutes', $runningRoutes);
+        $this->assign('offlineRoutes', $offlineRoutes);
+        
+        // Ajax page view
+        if ($isAjax) {
+          $this->setTemplatePage('stopajax');
+          break;
+        }
+        
         $serviceInfo = false;
         if (count($runningRoutes)) {
           $serviceInfo = $view->getServiceInfoForRoute(reset(array_keys($runningRoutes)));
@@ -275,17 +310,22 @@ class TransitWebModule extends WebModule {
         } else {
           $mapImageHeight = floor($mapImageWidth/1.5);
         }
-        $this->addOnLoad('autoReload('.self::RELOAD_TIME.');');
-        
-        $this->assign('mapImageSrc',    $view->getMapImageForStop($stopID, $mapImageWidth, $mapImageHeight));
         $this->assign('mapImageWidth',  $mapImageWidth);
         $this->assign('mapImageHeight', $mapImageHeight);
-        $this->assign('stopName',       $stopInfo['name']);
-        $this->assign('runningRoutes',  $runningRoutes);
-        $this->assign('offlineRoutes',  $offlineRoutes);
-        $this->assign('lastRefresh',    time());
-        $this->assign('autoReloadTime', self::RELOAD_TIME);
-        $this->assign('serviceInfo',    $serviceInfo);
+
+        $staticImage = $view->getMapImageForStop($stopID, $mapImageWidth, $mapImageHeight);
+        $marker = $stopInfo['coordinates'];
+        $markers = array(array(
+          'lat' => $stopInfo['coordinates']['lat'],
+          'lon' => $stopInfo['coordinates']['lon'],
+          'imageURL' => $stopInfo['stopIconURL'],
+          'title' => '',
+        ));
+        $this->initMap($staticImage, $markers);
+        
+        $this->assign('stopName',      $stopInfo['name']);
+        $this->assign('lastRefresh',   time());
+        $this->assign('serviceInfo',   $serviceInfo);
         break;
       
       case 'info':
@@ -319,6 +359,48 @@ class TransitWebModule extends WebModule {
         $this->assign('date',    $newsConfigs[$newsID]['date']);        
         $this->assign('content', $newsConfigs[$newsID]['html']);        
         break;
+        
+      case 'stoplist':
+        // ajaxy goodness
+        $routeID = $this->getArg('id');
+        $this->page = $this->getArg('page', 'route');
+        $this->setupRouteInfo($view, $routeID);
+        break;
     }
+  }
+  
+  protected function setupRouteInfo($view, $routeID) {
+    
+    return $routeInfo;
+  }
+  
+  protected function initMap($staticImage, $markers, $markerUpdateURL='', $paths=array(), $pathColor=null, $needsHTMLUpdate=true) {
+    $MapDevice = new MapDevice($this->pagetype, $this->platform);
+    
+    if ($MapDevice->pageSupportsDynamicMap()) {
+      $htmlUpdateURL = '';
+      if ($needsHTMLUpdate) {
+        $htmlUpdateURL = FULL_URL_PREFIX.$this->buildURL($this->page, array_merge(array('ajax' => 1), $this->args));
+      }
+
+      $this->addExternalJavascript('http://maps.google.com/maps/api/js?sensor=true');
+      $this->addInlineJavascript("\n".
+        'var mapMarkers = '.json_encode($markers).";\n".
+        'var mapPaths = '.json_encode($paths).";\n".
+        'var mapPathColor = "'.$pathColor."\";\n".
+        'var markerUpdateURL = "'.$markerUpdateURL."\";\n".
+        'var htmlUpdateURL = "'.$htmlUpdateURL."\";\n".
+        'var markerUpdateFrequency = '.Kurogo::getOptionalSiteVar('MAP_MARKER_UPDATE_FREQ', 2).";\n".
+        'var listUpdateFrequency = '.Kurogo::getOptionalSiteVar('STOP_LIST_UPDATE_FREQ', 20).";\n"
+      );
+      $this->addOnLoad('showMap();');
+      
+    } else {
+        $this->addOnLoad('autoReload('.self::RELOAD_TIME.');');
+        $this->assign('autoReloadTime', self::RELOAD_TIME);
+        $this->assign('mapImageSrc', $staticImage);
+    }
+    
+    $this->assign('staticMap', !$MapDevice->pageSupportsDynamicMap());
   }
 }

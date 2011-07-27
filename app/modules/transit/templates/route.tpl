@@ -4,33 +4,36 @@
 
 {capture name="mapPane" assign="mapPane"}
   {block name="mapPane"}
-    <div id="map">
-      <img src="{$mapImageSrc}" height="{$mapImageSize}" width="{$mapImageSize}" />
-    </div>
+    {if $staticMap}
+      <div id="map">
+        <img src="{$mapImageSrc}" height="{$mapImageHeight}" width="{$mapImageWidth}" />
+      </div>
+    {else}
+      <div id="map_dynamic">
+        <div id="map_canvas">
+        </div>
+        <div id="map_loading">
+          <img src="/common/images/loading2.gif" />&nbsp;Loading map...
+        </div>
+      </div>
+    {/if}
   {/block}
 {/capture}
 {$tabBodies['map'] = $mapPane}
 
 {capture name="stopsPane" assign="stopsPane"}
-  {foreach $routeInfo['stops'] as $stopID => $stopInfo}
-    {capture name="subtitle" assign="subtitle"}
-      {include file="findInclude:modules/transit/templates/include/predictions.tpl" predictions=$stopInfo['predictions']}
-    {/capture}
-    {if $subtitle}
-      {$routeInfo['stops'][$stopID]['subtitle'] = $subtitle}
-    {/if}
-  {/foreach}
-
+  <span class="smallprint">{$routeConfig['stopTimeHelpText']}</span>
   {block name="stopsPane"}
-    <span class="smallprint">{$routeConfig['stopTimeHelpText']}</span>
     <div id="schedule">
-      {include file="findInclude:common/templates/results.tpl" results=$routeInfo['stops'] noResultsText="Stop information not available"}
+      <div id="ajaxcontainer">
+        {include file="findInclude:modules/transit/templates/include/stoplist.tpl"}
+      </div>
     </div>
   {/block}
 {/capture}
 {$tabBodies['stops'] = $stopsPane}
 
-<a name="scrolldown"></a>		
+<a name="scrolldown"></a>
 <div class="focal shaded">
   <h2 class="refreshContainer">
     {block name="refreshButton"}
@@ -59,14 +62,16 @@
         {$routeInfo['summary']}<br/>
       {/if}
       {if $routeInfo['running']}
-        Refreshed at {$lastRefresh|date_format:"%l:%M"}<span class="ampm">{$lastRefresh|date_format:"%p"}</span>
+        Refreshed at <span id="lastrefreshtime">{$lastRefresh|date_format:"%l:%M"}<span class="ampm">{$lastRefresh|date_format:"%p"}</span></span>
         {if $serviceInfo['title']}&nbsp;using {$serviceInfo['title']|escape:'htmlall'}{/if}
       {else}
         Bus not running.
       {/if}
     {/block}
     {block name="autoReload"}
-      <br/>Will refresh automatically in <span id="reloadCounter">{$autoReloadTime}</span> seconds
+      {if $autoReloadTime}
+        <br/>Will refresh automatically in <span id="reloadCounter">{$autoReloadTime}</span> seconds
+      {/if}
     {/block}  
   </p>
 {block name="tabView"}

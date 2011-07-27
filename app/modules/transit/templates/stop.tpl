@@ -20,37 +20,31 @@
       {/if}
     {/block}
     {block name="stopInfo"}
-      Refreshed at {$lastRefresh|date_format:"%l:%M"}<span class="ampm">{$lastRefresh|date_format:"%p"}</span>
+      Refreshed at <span id="lastrefreshtime">{$lastRefresh|date_format:"%l:%M"}<span class="ampm">{$lastRefresh|date_format:"%p"}</span></span>
     {/block}
     {block name="autoReload"}
-      <br/>Will refresh automatically in <span id="reloadCounter">{$autoReloadTime}</span> seconds
+      {if $autoReloadTime}
+        <br/>Will refresh automatically in <span id="reloadCounter">{$autoReloadTime}</span> seconds
+      {/if}
     {/block}
   </p>
 </div>
-<div id="map">
-  <img src="{$mapImageSrc}" height="{$mapImageHeight}" width="{$mapImageWidth}" />
-</div>
-
-<h3 class="nonfocal">Currently serviced by:</h3>
-  
-{if count($runningRoutes)}  
-  {foreach $runningRoutes as $i => $routeInfo}
-    {capture name="subtitle" assign="subtitle"}
-      {include file="findInclude:modules/{$moduleID}/templates/include/predictions.tpl" predictions=$routeInfo['predictions']}
-    {/capture}
-    {if trim($subtitle)}
-      {$runningRoutes[$i]['subtitle'] = $subtitle}
-    {/if}
-  {/foreach}
-
-  {include file="findInclude:common/templates/navlist.tpl" navlistItems=$runningRoutes accessKey=false subTitleNewline=true}
+{if $staticMap}
+  <div id="map">
+    <img src="{$mapImageSrc}" height="{$mapImageHeight}" width="{$mapImageWidth}" />
+  </div>
 {else}
-  <div class="focal">No routes currently servicing this stop</div>  
+  <div id="map_dynamic">
+    <div id="map_canvas">
+    </div>
+    <div id="map_loading">
+      <img src="/common/images/loading2.gif" />&nbsp;Loading map...
+    </div>
+  </div>
 {/if}
 
-{if count($offlineRoutes)}
-  <h3 class="nonfocal">Serviced at other times by:</h3>
-  {include file="findInclude:common/templates/navlist.tpl" navlistItems=$offlineRoutes accessKey=false}
-{/if}
+<div id="ajaxcontainer">
+  {include file="findInclude:modules/transit/templates/include/routelist.tpl"}
+</div>
 
 {include file="findInclude:common/templates/footer.tpl"}

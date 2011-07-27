@@ -45,12 +45,42 @@
 	display: none;
 }
 
-#map, #maptab {
+#map_static, #maptab {
 	text-align: center;
 }
 
-#map img {
+#map_static img {
 	border: 1px solid #999;
+}
+
+#map_dynamic {
+  width: 100%;
+  height: 300px;
+	border-top: 1px solid #999;
+	border-bottom: 1px solid #999;
+	overflow: hidden;
+}
+#mapTab #map_dynamic {
+	border: 1px solid #999;
+}
+
+#map_canvas {
+  width: 100%;
+  height: 100%;
+}
+
+#map_loading {
+  position: absolute;
+  top: 3em;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  height: 40px;
+  line-height: 40px;
+}
+
+#map_loading img {
+  vertical-align: middle;
 }
 
 .stop-map {

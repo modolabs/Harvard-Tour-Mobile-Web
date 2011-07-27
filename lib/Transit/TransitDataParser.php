@@ -264,6 +264,7 @@ abstract class TransitDataParser {
       'name'        => $this->stops[$stopID]->getName(),
       'description' => $this->stops[$stopID]->getDescription(),
       'coordinates' => $this->stops[$stopID]->getCoordinates(),
+      'stopIconURL' => $this->getMapIconUrlForRouteStopPin(),
       'routes'      => $routePredictions,
     );
     

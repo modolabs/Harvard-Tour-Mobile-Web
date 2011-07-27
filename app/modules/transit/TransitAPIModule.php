@@ -187,6 +187,28 @@ class TransitAPIModule extends APIModule {
         $this->setResponse(array_values($agencies));
         $this->setResponseVersion(1);
         break;
+        
+      case 'vehicleMarkers':
+        // used by mobile web for live route maps
+        $routeID = $this->getArg('id');
+        
+        if (!$routeID) {
+          throw new Exception('No route parameter');
+        }
+        
+        $markers = array();
+        foreach ($view->getRouteVehicles($routeID) as $vehicle) {
+          $markers[$vehicle['routeID']] = array(
+            'lat' => $vehicle['lat'],
+            'lon' => $vehicle['lon'],
+            'imageURL' => $vehicle['iconURL'],
+            'title' => '',
+          );
+        }
+       
+        $this->setResponse($markers);
+        $this->setResponseVersion(1);
+        break;        
     }
   }
 }

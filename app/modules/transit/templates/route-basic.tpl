@@ -2,8 +2,7 @@
 
 {block name="mapPane"}
   <p class="image">
-    <img src="{$mapImageSrc}" height="{$mapImageSize}" width="{$mapImageSize}" />
-  </p>
+    <img src="{$mapImageSrc}" height="{$mapImageHeight}" width="{$mapImageWidth
   {if $serviceInfo['id']}
     <table align="center">
       <tr>
@@ -25,7 +24,6 @@
 {/block}
 
 {block name="stopsPane"}
-  <span class="smallprint">{$routeConfig['stopTimeHelpText']}</span>
   <table width="100%" id="schedule">
     {foreach $routeInfo['stops'] as $routeID => $stop}
       <tr>
