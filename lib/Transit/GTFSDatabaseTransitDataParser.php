@@ -12,13 +12,13 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
 
   // if we use multiple gtfs files and one databases per file
   // maintain a central reference
-  private static $gtfsPaths = array();
-  private static $dbRefs = array();
+  protected static $gtfsPaths = array();
+  protected static $dbRefs = array();
   
   // for gtfs files that have multiple agencies, map all
   // agencies to a single canonical agency to simplify db referencing
-  private static $agencyMap = array();
-  private $agency;
+  protected static $agencyMap = array();
+  protected $agency;
   
   public static function getDB($agencyID) {
     $agency = self::$agencyMap[$agencyID];

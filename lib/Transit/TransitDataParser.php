@@ -29,6 +29,8 @@ abstract class TransitDataParser {
     '8' => 'nw',
   );
   
+  static private $sortHelper = array();
+  
   const GOOGLE_STATIC_MAPS_URL = 'http://maps.google.com/maps/api/staticmap?';
   const GOOGLE_CHART_API_URL = 'http://chart.apis.google.com/chart?';
   
@@ -393,7 +395,8 @@ abstract class TransitDataParser {
     foreach ($route->getDirections() as $direction) {
       $directionNames = array();
       $directionStops = array();
-
+      $segmentStopOrders = array(); // reset this
+      
       foreach ($route->getSegmentsForDirection($direction) as $segment) {
         if (!$segment->getService()->isRunning($time)) {
           continue;
@@ -403,9 +406,12 @@ abstract class TransitDataParser {
         if (isset($segmentName)) {
           $directionNames[$segment->getID()] = $segmentName;
         }
-
+        
+        $segmentStopOrder = array();
         foreach ($segment->getStops() as $stopIndex => $stopInfo) {
           $stopID = $stopInfo['stopID'];
+          
+          $segmentStopOrder[] = $stopID;
           
           $arrivalTime = null;
           if ($stopInfo['hasTiming']) {
@@ -435,12 +441,37 @@ abstract class TransitDataParser {
             }
           }
         }
-        
-        $directions[$direction] = array(
-          'names' => array_unique($directionNames),
-          'stops' => $directionStops,
-        );
+        $segmentStopOrders[] = $segmentStopOrder;
       }
+      
+      // Warning: stops within a trip are in order, but not all trips contain
+      // all stops.  The following sort function attempts to build a graph of the 
+      // stop orders in $sortHelper which is then used below in "sortByStopOrder"
+      self::$sortHelper = array();
+      foreach ($segmentStopOrders as $segmentStopOrder) {
+        foreach ($segmentStopOrder as $i => $stopID) {
+          if (!isset(self::$sortHelper[$stopID])) {
+            self::$sortHelper[$stopID] = array(
+              'before' => array(),
+              'after'  => array(),
+            );
+          }
+          
+          self::$sortHelper[$stopID]['before'] = array_unique(array_merge(
+            self::$sortHelper[$stopID]['before'], array_slice($segmentStopOrder, 0, $i)));
+          self::$sortHelper[$stopID]['after'] = array_unique(array_merge(
+            self::$sortHelper[$stopID]['after'], array_slice($segmentStopOrder, $i+1)));
+        }
+      }
+      
+      // Sort the stops using the trip stop orders (not all trips have all stops)
+      uksort($directionStops, array(get_class(), 'sortByStopOrder')); // uses $sortHelper
+      //error_log(print_r(array_keys($directionStops), true));
+      
+      $directions[$direction] = array(
+        'names' => array_unique($directionNames),
+        'stops' => $directionStops,
+      );
     }
 
     // Check if we can merge the directions together into one big loop
@@ -611,6 +642,34 @@ abstract class TransitDataParser {
       return 0; 
     }
     return ($a["i"] < $b["i"]) ? -1 : 1;
+  }
+  
+  public static function sortStopIs($type, $a, $b, $seenStopList=array()) {
+    $stopInfo = self::$sortHelper[$a];
+    foreach (self::$sortHelper[$a][$type] as $stopID) {
+      if ($stopID == $b) {
+        return true;
+      } else if (!in_array($stopID, $seenStopList)) {
+        $seenStopList[] = $stopID;
+        return self::sortStopIs($type, $a, $stopID, $seenStopList);
+      }
+    }
+    return false;
+  }
+  
+  public static function sortByStopOrder($a, $b) {
+    if ($a == $b) {
+      return 0;
+    }
+    
+    if (self::sortStopIs('before', $a, $b) || self::sortStopIs('after', $b, $a)) {
+      return -1;
+    } else if (self::sortStopIs('after', $a, $b) || self::sortStopIs('before', $b, $a)) {
+      return 1;
+    }
+    error_log("WARNING!!!! Not enough information in trip stop orders to determine the relative order of stops $a and $b");
+    
+    return 0;
   }
 }
 
