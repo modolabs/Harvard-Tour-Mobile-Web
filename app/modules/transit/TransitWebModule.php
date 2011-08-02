@@ -35,7 +35,7 @@ class TransitWebModule extends WebModule {
   }
   
   private static function routeSort($a, $b) {
-    return strcmp($a['title'], $b['title']);
+    return strnatcmp($a['title'], $b['title']);
   }
 
   protected function initializeForPage() {
