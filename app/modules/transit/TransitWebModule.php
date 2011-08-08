@@ -252,8 +252,9 @@ class TransitWebModule extends WebModule {
         
         $this->addOnOrientationChange('setOrientation(getOrientation());');
 
-        $this->assign('lastRefresh', time());
-        $this->assign('serviceInfo', $view->getServiceInfoForRoute($routeID));
+        $this->assign('lastRefresh',      time());
+        $this->assign('serviceInfo',      $view->getServiceInfoForRoute($routeID));
+        $this->assign('stopTimeHelpText', $this->getOptionalModuleVar('stopTimeHelpText', ''));
         break;
       
       case 'stop':

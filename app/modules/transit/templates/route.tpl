@@ -22,7 +22,9 @@
 {$tabBodies['map'] = $mapPane}
 
 {capture name="stopsPane" assign="stopsPane"}
-  <span class="smallprint">{$routeConfig['stopTimeHelpText']}</span>
+  {if $stopTimeHelpText}
+    <span class="smallprint">{$stopTimeHelpText}</span>
+  {/if}
   {block name="stopsPane"}
     <div id="schedule">
       <div id="ajaxcontainer">
