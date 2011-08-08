@@ -240,7 +240,7 @@ class TransitWebModule extends WebModule {
         $paths = $view->getRoutePaths($routeID);
         $markers = array();
         foreach ($view->getRouteVehicles($routeID) as $vehicle) {
-          $markers[$vehicle['routeID']] = array(
+          $markers[] = array(
             'lat' => $vehicle['lat'],
             'lon' => $vehicle['lon'],
             'imageURL' => $vehicle['iconURL'],

@@ -198,14 +198,14 @@ class TransitAPIModule extends APIModule {
         
         $markers = array();
         foreach ($view->getRouteVehicles($routeID) as $vehicle) {
-          $markers[$vehicle['routeID']] = array(
+          $markers[] = array(
             'lat' => $vehicle['lat'],
             'lon' => $vehicle['lon'],
             'imageURL' => $vehicle['iconURL'],
             'title' => '',
           );
         }
-       
+        
         $this->setResponse($markers);
         $this->setResponseVersion(1);
         break;        
