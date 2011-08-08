@@ -1,0 +1,29 @@
+#tabs {
+  display: none;
+}
+#tabbodies,
+.shaded #tabbodies {
+  position: relative;
+  margin-top: .5em;
+  overflow: hidden;
+  min-height: 368px;
+}
+.tabbody {
+  display: block !important;
+  min-height: 368px;
+}
+#stopsTab {
+  border-left: 1px solid #bbb;
+  margin-left: 368px;
+}
+#stopsTab .results {
+  border-bottom: 1px solid #bbb;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+#mapTab {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-height: 352px;
+}
