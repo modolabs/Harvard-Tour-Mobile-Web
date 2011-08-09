@@ -239,8 +239,8 @@ class TransitWebModule extends WebModule {
         $staticImage = $view->getMapImageForRoute($routeID, $mapImageWidth, $mapImageHeight);
         $paths = $view->getRoutePaths($routeID);
         $markers = array();
-        foreach ($view->getRouteVehicles($routeID) as $vehicle) {
-          $markers[] = array(
+        foreach ($view->getRouteVehicles($routeID) as $vehicleID => $vehicle) {
+          $markers[$vehicleID] = array(
             'lat' => $vehicle['lat'],
             'lon' => $vehicle['lon'],
             'imageURL' => $vehicle['iconURL'],
@@ -316,7 +316,7 @@ class TransitWebModule extends WebModule {
 
         $staticImage = $view->getMapImageForStop($stopID, $mapImageWidth, $mapImageHeight);
         $marker = $stopInfo['coordinates'];
-        $markers = array(array(
+        $markers = array($stopID => array(
           'lat' => $stopInfo['coordinates']['lat'],
           'lon' => $stopInfo['coordinates']['lon'],
           'imageURL' => $stopInfo['stopIconURL'],

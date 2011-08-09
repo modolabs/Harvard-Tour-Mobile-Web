@@ -98,23 +98,23 @@ class TranslocTransitDataParser extends TransitDataParser {
       if ($vehicleInfo['r'] != $routeID) { continue; }
       
       if ($this->routeIsRunning($routeID) && isset($vehicleInfo['id'])) {
-        $latLon = self::argVal($vehicleInfo, 'll', array(0, 0));
-      
-        $vehicles[$vehicleInfo['id']] = array(
-          'secsSinceReport' => self::argVal($vehicleInfo, 't', PHP_INT_MAX),
-          'lat'             => self::argVal($latLon, 0),
-          'lon'             => self::argVal($latLon, 1),
-          'heading'         => self::argVal($vehicleInfo, 'h', 0),
-          'nextStop'        => self::argVal($vehicleInfo, 'next_stop'),
-          'agencyID'        => $this->getRoute($routeID)->getAgencyID(),
-          'routeID'         => $routeID,
-        );
-        if (isset($vehicleInfo['s'])) {
-          $vehicles[$vehicleInfo['id']]['speed'] = $vehicleInfo['s'];
+        $latLon = self::argVal($vehicleInfo, 'll', false);
+        if ($latLon) {
+          $vehicles[$vehicleInfo['id']] = array(
+            'secsSinceReport' => self::argVal($vehicleInfo, 't', PHP_INT_MAX),
+            'lat'             => self::argVal($latLon, 0),
+            'lon'             => self::argVal($latLon, 1),
+            'heading'         => self::argVal($vehicleInfo, 'h', 0),
+            'nextStop'        => self::argVal($vehicleInfo, 'next_stop'),
+            'agencyID'        => $this->getRoute($routeID)->getAgencyID(),
+            'routeID'         => $routeID,
+          );
+          if (isset($vehicleInfo['s'])) {
+            $vehicles[$vehicleInfo['id']]['speed'] = $vehicleInfo['s'];
+          }
+          $vehicles[$vehicleInfo['id']]['iconURL'] = 
+            $this->getMapIconUrlForRouteVehicle($routeID, $vehicles[$vehicleInfo['id']]);
         }
-        $vehicles[$vehicleInfo['id']]['iconURL'] = 
-          $this->getMapIconUrlForRouteVehicle($routeID, $vehicles[$vehicleInfo['id']]);
-
       } else {
         error_log('Warning: inactive route '.$routeID.' has active vehicle '.$vehicleInfo['id']);
       }
