@@ -6,11 +6,10 @@
   position: relative;
   margin-top: .5em;
   overflow: hidden;
-  min-height: 368px;
 }
 .tabbody {
   display: block !important;
-  min-height: 368px;
+  min-height: 402px;
 }
 #stopsTab {
   border-left: 1px solid #bbb;

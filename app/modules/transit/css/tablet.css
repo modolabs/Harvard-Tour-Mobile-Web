@@ -56,7 +56,7 @@
 #mapTab #map_dynamic {
 	border: 1px solid #999;
   width: 350px;
-  height: 350px;
+  height: 400px;
 }
 
 #map_canvas {
