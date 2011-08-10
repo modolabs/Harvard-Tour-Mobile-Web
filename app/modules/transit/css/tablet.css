@@ -47,14 +47,13 @@
 }
 
 #map_dynamic {
-  width: 100%;
+  clear: both;
   height: 300px;
-	border-top: 1px solid #999;
-	border-bottom: 1px solid #999;
+  margin: 0 12px;
+	border: 1px solid #999;
 	overflow: hidden;
 }
 #mapTab #map_dynamic {
-	border: 1px solid #999;
   width: 350px;
   height: 400px;
 }
