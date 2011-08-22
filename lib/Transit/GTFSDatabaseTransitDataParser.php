@@ -334,6 +334,11 @@ class GTFSDatabaseTransitSegment extends TransitSegment {
       }
       
     } else {
+      if (!isset($this->firstStopTime)) {
+        error_log('Warning! Segment '.$this->getID().' has no stop times');
+        return false;
+      }
+      
       // for now just use departure time (as opposed to arrival time)
       $sql = 'SELECT departure_time'
             .'  FROM stop_times'
