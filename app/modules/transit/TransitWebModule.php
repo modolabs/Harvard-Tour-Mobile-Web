@@ -367,13 +367,6 @@ class TransitWebModule extends WebModule {
         $this->assign('date',    $newsConfigs[$newsID]['date']);        
         $this->assign('content', $newsConfigs[$newsID]['html']);        
         break;
-        
-      case 'stoplist':
-        // ajaxy goodness
-        $routeID = $this->getArg('id');
-        $this->page = $this->getArg('page', 'route');
-        $this->setupRouteInfo($view, $routeID);
-        break;
     }
   }
   
