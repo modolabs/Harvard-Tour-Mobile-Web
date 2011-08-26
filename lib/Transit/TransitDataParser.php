@@ -808,20 +808,37 @@ class TransitTime {
   }
   
   public static function isTimeInRange($timestamp, $fromTT, $toTT) {
-    $time = self::getLocalDatetimeFromTimestamp($timestamp);
-    
-    $tt = TransitTime::createFromString($time->format('G:i:s'));
-    
-    $afterStart = TransitTime::compare($fromTT, $tt) <= 0;
-    $beforeEnd  = TransitTime::compare($toTT, $tt) >= 0;
-    $inRange = $afterStart && $beforeEnd;
-    
-    //error_log(TransitTime::getString($tt)." is ".($inRange ? '' : 'not ')."in range ".TransitTime::getString($fromTT).' - '.TransitTime::getString($toTT));
+    if (is_array($timestamp)) {
+      $start = self::getLocalDatetimeFromTimestamp($timestamp[0]);
+      $end = self::getLocalDatetimeFromTimestamp($timestamp[1]);
+      
+      $startTT = TransitTime::createFromString($start->format('G:i:s'));
+      $endTT = TransitTime::createFromString($end->format('G:i:s'));
+      
+      $endBeforeFrom = TransitTime::compare($endTT, $fromTT) < 0; // timestamp before range
+      $toBeforeStart = TransitTime::compare($toTT, $startTT) < 0; // range before timestamp
+      $inRange = !$endBeforeFrom && !$toBeforeStart;
+      
+    } else {
+      $time = self::getLocalDatetimeFromTimestamp($timestamp);
+      
+      $tt = TransitTime::createFromString($time->format('G:i:s'));
+      
+      $afterStart = TransitTime::compare($fromTT, $tt) <= 0;
+      $beforeEnd  = TransitTime::compare($toTT, $tt) >= 0;
+      $inRange = $afterStart && $beforeEnd;
+      
+      //error_log(TransitTime::getString($tt)." is ".($inRange ? '' : 'not ')."in range ".TransitTime::getString($fromTT).' - '.TransitTime::getString($toTT));
+    }
     return $inRange;
   }
   
   public static function predictionIsValidForTime($prediction, $time) {
-    return $prediction > $time && $prediction - $time < 60*60;
+    if (is_array($time)) {
+      return $prediction > $time[0] && $prediction - $time[1] < 60*60;
+    } else {
+      return $prediction > $time && $prediction - $time < 60*60;
+    }
   }
 }
 
