@@ -285,8 +285,25 @@ class TourWebModule extends WebModule {
     
     $lenses = $stop->getAvailableLenses();
     foreach ($stopDetails['lenses'] as $lens => $contents) {
+      $previousContentIsVideo = false;
       foreach ($stop->getLensContents($lens) as $lensContent) {
-        $stopDetails['lenses'][$lens][] = $lensContent->getContent();
+        $content = $lensContent->getContent();
+        
+        if ($lensContent instanceOf TourVideo) {
+          $previousContentIsVideo = true;
+          
+        } else if ($previousContentIsVideo) {
+          $imageSuffix = '@2x.png';
+          switch ($this->platform) {
+            case 'blackberry':
+            case 'bbplus':
+            case 'winphone7':
+              $imageSuffix = '.png';
+          }
+          $content = preg_replace('/^(<(p|div)[^>]*>)/', '\1<img class="headphones" src="modules/tour/images/headphones'.$imageSuffix.'" alt="has an audio track" width="20" height="16" /> ', $content);
+          $previousContentIsVideo = false;
+        }
+        $stopDetails['lenses'][$lens][] = $content;
       }
     }
     

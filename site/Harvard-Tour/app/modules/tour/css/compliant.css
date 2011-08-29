@@ -611,3 +611,8 @@ video + p.caption,
 	text-align: center;
 	margin: 2px 5px 15px 5px;
 }
+
+img.headphones {
+  float: left;
+  padding-right: .25em;
+}
