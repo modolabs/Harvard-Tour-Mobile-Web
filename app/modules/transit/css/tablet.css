@@ -4,10 +4,6 @@
 	margin-top: 8px;
 }
 
-.tabbody {
-	min-height: 260px;
-}
-
 #schedule {
   margin: 0px -12px;
 }
@@ -53,10 +49,21 @@
 	border: 1px solid #999;
 	overflow: hidden;
 }
+
 #mapTab #map_dynamic {
   width: 350px;
   height: 400px;
   margin: 0;
+}
+#mapTab {
+	min-height: 402px;  /* height + 2px for border */
+}
+
+.portrait #mapTab #map_dynamic {
+  height: 600px;
+}
+.portrait #mapTab {
+  min-height: 602px; /* height + 2px for border */
 }
 
 #map_canvas {
