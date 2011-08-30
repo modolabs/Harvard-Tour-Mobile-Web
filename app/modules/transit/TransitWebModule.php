@@ -225,32 +225,39 @@ class TransitWebModule extends WebModule {
           break;
         }
 
-        $this->enableTabs(array('map', 'stops'));
+        $tabs = array('stops');
         
-        $mapImageWidth = $mapImageHeight = 270;
-        if ($this->pagetype == 'basic') {
-          $mapImageWidth = $mapImageHeight = 200;
-        } else if ($this->pagetype == 'tablet') {
-          $mapImageWidth = $mapImageHeight = 350;
-        }
-        $this->assign('mapImageWidth',  $mapImageWidth);
-        $this->assign('mapImageHeight', $mapImageHeight);
-
-        $staticImage = $view->getMapImageForRoute($routeID, $mapImageWidth, $mapImageHeight);
         $paths = $view->getRoutePaths($routeID);
-        $markers = array();
-        foreach ($view->getRouteVehicles($routeID) as $vehicleID => $vehicle) {
-          $markers[$vehicleID] = array(
-            'lat' => $vehicle['lat'],
-            'lon' => $vehicle['lon'],
-            'imageURL' => $vehicle['iconURL'],
-            'title' => '',
-          );
-        }
-        $markerUpdateURL = FULL_URL_BASE.API_URL_PREFIX."/{$this->configModule}/vehicleMarkers?id={$routeID}";
-        $this->initMap($staticImage, $markers, $markerUpdateURL, $paths, $routeInfo['color']);
+        if ($paths) {
+          array_unshift($tabs, 'map');
+          $this->assign('hasRouteMap', true);
         
-        $this->addOnOrientationChange('setOrientation(getOrientation());');
+          $mapImageWidth = $mapImageHeight = 270;
+          if ($this->pagetype == 'basic') {
+            $mapImageWidth = $mapImageHeight = 200;
+          } else if ($this->pagetype == 'tablet') {
+            $mapImageWidth = $mapImageHeight = 350;
+          }
+          $this->assign('mapImageWidth',  $mapImageWidth);
+          $this->assign('mapImageHeight', $mapImageHeight);
+  
+          $staticImage = $view->getMapImageForRoute($routeID, $mapImageWidth, $mapImageHeight);
+          $markers = array();
+          foreach ($view->getRouteVehicles($routeID) as $vehicleID => $vehicle) {
+            $markers[$vehicleID] = array(
+              'lat' => $vehicle['lat'],
+              'lon' => $vehicle['lon'],
+              'imageURL' => $vehicle['iconURL'],
+              'title' => '',
+            );
+          }
+          $markerUpdateURL = FULL_URL_BASE.API_URL_PREFIX."/{$this->configModule}/vehicleMarkers?id={$routeID}";
+          $this->initMap($staticImage, $markers, $markerUpdateURL, $paths, $routeInfo['color']);
+          
+          $this->addOnOrientationChange('setOrientation(getOrientation());');
+        }
+        
+        $this->enableTabs($tabs);
 
         $this->assign('lastRefresh',      time());
         $this->assign('serviceInfo',      $view->getServiceInfoForRoute($routeID));

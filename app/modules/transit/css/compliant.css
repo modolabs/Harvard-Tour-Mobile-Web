@@ -20,6 +20,10 @@
   padding: 10px 25px 10px 25px;
   line-height: 1.2em;
 }
+#schedule li.icon a .stoptime {
+  float: right;
+  line-height: inherit;
+}
 /* Use float and negative margins because Storm 2 doesn't
  * handle position: absolute properly when the DOM gets changed
  * which happens with the countdown timer */
@@ -116,4 +120,7 @@
 .ampm {
 	font-size: 75%;
 	padding-left: 0.2em
+}
+#notabs {
+  padding-top: 11px;
 }

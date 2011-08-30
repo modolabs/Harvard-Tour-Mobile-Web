@@ -2,24 +2,26 @@
 
 {$tabBodies = array()}
 
-{capture name="mapPane" assign="mapPane"}
-  {block name="mapPane"}
-    {if $staticMap}
-      <div id="map_static">
-        <img src="{$mapImageSrc}" height="{$mapImageHeight}" width="{$mapImageWidth}" />
-      </div>
-    {else}
-      <div id="map_dynamic">
-        <div id="map_canvas">
+{if $hasRouteMap}
+  {capture name="mapPane" assign="mapPane"}
+    {block name="mapPane"}
+      {if $staticMap}
+        <div id="map_static">
+          <img src="{$mapImageSrc}" height="{$mapImageHeight}" width="{$mapImageWidth}" />
         </div>
-        <div id="map_loading">
-          <img src="/common/images/loading2.gif" />&nbsp;Loading map...
+      {else}
+        <div id="map_dynamic">
+          <div id="map_canvas">
+          </div>
+          <div id="map_loading">
+            <img src="/common/images/loading2.gif" />&nbsp;Loading map...
+          </div>
         </div>
-      </div>
-    {/if}
-  {/block}
-{/capture}
-{$tabBodies['map'] = $mapPane}
+      {/if}
+    {/block}
+  {/capture}
+  {$tabBodies['map'] = $mapPane}
+{/if}
 
 {capture name="stopsPane" assign="stopsPane"}
   {if $stopTimeHelpText}
@@ -77,7 +79,13 @@
     {/block}  
   </p>
 {block name="tabView"}
-	  {include file="findInclude:common/templates/tabs.tpl" tabBodies=$tabBodies}
+    {if count($tabBodies) == 1}
+      <div id="notabs">
+    {/if}
+	      {include file="findInclude:common/templates/tabs.tpl" tabBodies=$tabBodies}
+    {if count($tabBodies) == 1}
+      </div>
+    {/if}
 {/block}
 </div>
 
