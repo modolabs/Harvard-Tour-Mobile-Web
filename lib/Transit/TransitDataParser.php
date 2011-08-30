@@ -748,6 +748,20 @@ class TransitTime {
     return self::createFromComponents($hours, $minutes, $seconds);
   }
   
+  public static function createFromTimestamp($timestamp) {
+    $datetime = new DateTime('@'.$timestamp, self::getGMTTimezone());
+    $datetime->setTimeZone(self::getLocalTimezone());
+    
+    $hours = intval($datetime->format('G'));
+    if ($hours < 5) {
+      $hours += 24; // Before 5am is represented as hours+24 (eg 1am is 25:00:00)
+    }
+    $minutes = intval($datetime->format('i'));
+    $seconds = intval($datetime->format('s'));
+    
+    return self::createFromComponents($hours, $minutes, $seconds);
+  }
+  
   public static function getString($tt) {
     list($hours, $minutes, $seconds) = self::getComponents($tt);
     
@@ -809,20 +823,17 @@ class TransitTime {
   
   public static function isTimeInRange($timestamp, $fromTT, $toTT) {
     if (is_array($timestamp)) {
-      $start = self::getLocalDatetimeFromTimestamp($timestamp[0]);
-      $end = self::getLocalDatetimeFromTimestamp($timestamp[1]);
-      
-      $startTT = TransitTime::createFromString($start->format('G:i:s'));
-      $endTT = TransitTime::createFromString($end->format('G:i:s'));
+      $startTT = TransitTime::createFromTimestamp($timestamp[0]);
+      $endTT = TransitTime::createFromTimestamp($timestamp[1]);
       
       $endBeforeFrom = TransitTime::compare($endTT, $fromTT) < 0; // timestamp before range
       $toBeforeStart = TransitTime::compare($toTT, $startTT) < 0; // range before timestamp
       $inRange = !$endBeforeFrom && !$toBeforeStart;
       
-    } else {
-      $time = self::getLocalDatetimeFromTimestamp($timestamp);
+      //error_log(TransitTime::getString($startTT).' - '.TransitTime::getString($endTT)." is ".($inRange ? '' : 'not ')."in range ".TransitTime::getString($fromTT).' - '.TransitTime::getString($toTT));
       
-      $tt = TransitTime::createFromString($time->format('G:i:s'));
+    } else {
+      $tt = TransitTime::createFromTimestamp($timestamp);
       
       $afterStart = TransitTime::compare($fromTT, $tt) <= 0;
       $beforeEnd  = TransitTime::compare($toTT, $tt) >= 0;
