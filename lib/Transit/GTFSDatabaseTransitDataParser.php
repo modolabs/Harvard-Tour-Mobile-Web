@@ -17,14 +17,11 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
   
   // for gtfs files that have multiple agencies, map all
   // agencies to a single canonical agency to simplify db referencing
-  protected static $agencyMap = array();
   protected $agency;
   
   public static function getDB($agencyID) {
-    $agency = self::$agencyMap[$agencyID];
-  
-    if (!isset(self::$dbRefs[$agency])) {
-      $file = self::$gtfsPaths[$agency];
+    if (!isset(self::$dbRefs[$agencyID])) {
+      $file = self::$gtfsPaths[$agencyID];
       //error_log($file);
       if (!file_exists($file)) {
         error_log("no GTFS db at '$file'");
@@ -36,9 +33,9 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
         error_log("could not open db at '$file'");
         return;
       }
-      self::$dbRefs[$agency] = $db;
+      self::$dbRefs[$agencyID] = $db;
     }
-    return self::$dbRefs[$agency];
+    return self::$dbRefs[$agencyID];
   }
   
   public static function dbQuery($agencyID, $sql, $params) {
@@ -145,17 +142,15 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
   }
   
   protected function loadData() {
-    $agencyIDs = explode(',', $this->args['agencies']);
+    // Use first of specified agency ids.  Ignore any agency ids in gtfs file
+    $agencyIDs = isset($this->args['agencies']) ? explode(',', $this->args['agencies']) : array();
 
     if (!count($agencyIDs)) {
-      error_log("no agency IDs found");
+      error_log("no agency IDs found for gtfs parser in feeds.ini");
       return;
     }
-  
+
     $this->agency = $agencyIDs[0];
-    foreach ($agencyIDs as $agencyID) {
-      self::$agencyMap[$agencyID] = $this->agency;
-    }
     $dbfile = $this->args['db'];
     self::$gtfsPaths[$this->agency] = Kurogo::getSiteVar('GTFS_DIR').'/'.$dbfile;
     
@@ -174,14 +169,9 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
         $routeName = $routeID;
       }
       
-      // Agency ID is optional in routes table
-      if (!$row['agency_id']) {
-        $row['agency_id'] = $this->agency;
-      }
-      
       $route = new GTFSDatabaseTransitRoute(
         $routeID,
-        $row['agency_id'],
+        $this->agency,
         $routeName,
         $row['route_desc'] // may be null
         );
