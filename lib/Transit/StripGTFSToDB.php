@@ -244,7 +244,7 @@ class StripGTFSToDB {
         'agency' => array(
           'file' => 'agency.txt',
           'fields' => array(
-            'agency_id'       => 'TEXT NOT NULL PRIMARY KEY',
+            'agency_id'       => 'TEXT',
             'agency_name'     => 'TEXT',
             'agency_url'      => 'TEXT',
             'agency_timezone' => 'TEXT',
@@ -258,7 +258,7 @@ class StripGTFSToDB {
           'file' => 'routes.txt',
           'fields' => array(
             'route_id'         => 'TEXT NOT NULL PRIMARY KEY',
-            'agency_id'        => 'TEXT REFERENCES agency(agency_id) DEFERRABLE INITIALLY DEFERRED',
+            'agency_id'        => 'TEXT',
             'route_short_name' => 'TEXT',
             'route_long_name'  => 'TEXT',
             'route_desc'       => 'TEXT',
