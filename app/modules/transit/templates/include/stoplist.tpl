@@ -4,7 +4,7 @@
       {include file="findInclude:modules/transit/templates/include/predictions.tpl" predictions=$stopInfo['predictions']}
     {/capture}
     {$routeInfo['stops'][$stopID]['subtitle'] = $subtitle}
-  {else}
+  {elseif $stopInfo['arrives'] && $routeInfo['running']}
     {capture name="label" assign="label"}
       <span class="smallprint stoptime">{$stopInfo['arrives']|date_format:"%l:%M%p"|lower}</span>
     {/capture}
