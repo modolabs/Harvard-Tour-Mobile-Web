@@ -78,7 +78,6 @@ class ErrorWebModule extends WebModule {
         $this->assign('linkText', $error['linkText']);
     }
     
-    $this->assign('navImageID', 'about');
     if($this->devError() === false){
       $this->assign('message', $error['message']);
     } else {
@@ -96,7 +95,9 @@ class ErrorWebModule extends WebModule {
       
     // check for development errors
     if(isset($_GET['error'])){
-      $file = $path =  CACHE_DIR . "/errors/" . $_GET['error'] . ".log";
+      $path = explode('/', $_GET['error']);
+      $sanitizedFileName = end($path);
+      $file = $path =  CACHE_DIR . "/errors/" . $sanitizedFileName . ".log";
       if(file_exists($file) && $handle = fopen($file, "r")) {
         $msg = fread($handle, filesize($file));
         fclose($handle);

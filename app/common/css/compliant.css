@@ -168,6 +168,14 @@ select {
 	padding: 4px 6px;
 	-webkit-appearance:textfield;
 }
+.searchwrapper {
+    position: absolute;
+    left: 0;
+    right: 51px;
+}
+.searchwrapper input {
+    width: 100%;
+}
 
 *:first-child+html .forminput {
 	/* The return of IE CSS hacks makes me mad */
@@ -215,6 +223,27 @@ select {
 	height: 38px;
 }
 
+.formlist .formelement {
+  text-align: center;
+  margin-bottom: .5em;
+}
+.formlist .formelement label {
+  text-align: right;
+  margin-right: .5em;
+  display: inline-block;
+  width: 6.5em;
+}
+.formlist .formelement input {
+  width: 9.5em;
+  padding-left: .25em;
+  padding-right: .25em;
+  line-height: 26px;
+}
+.formlist .formelement select {
+  width: 10em;
+  line-height: 26px;
+}
+
 .formbuttons {
 	margin: 16px 0 8px 0;
 	text-align: center;
@@ -249,32 +278,34 @@ a.formbutton div {
 
 input.formbutton {
   -webkit-appearance: none;
-  display: inline-block;
+  display: block;
 	color: #fff;
 	font-weight: bold;
 	font-size: 94.12%;
 	line-height: 26px;  /* height minus padding */
 	text-decoration: none;
-	padding: 5px 5px 5px 12px;
-	margin-right: 0;
+	padding: 5px 12px 5px 12px;
+	margin-right: -7px;
 	border: none;
 	height: 36px;
-	background-color: transparent;
-	background-image: url(/common/images/button-sd-l.png);
-	background-repeat: no-repeat;
-	background-position: center left;
-	-webkit-border-radius: 0px;
-	border-radius: 0px;
-}
-.formbuttonclose {
-  display: inline-block;
 	background-color: transparent;
 	background-image: url(/common/images/button-sd-r.png);
 	background-repeat: no-repeat;
 	background-position: center right;
+	-webkit-border-radius: 0px;
+	border-radius: 0px;
+}
+span.formbuttoncontainer {  /* must be span for winphone7 */
+  display: inline-block;
+	background-color: transparent;
+	background-image: url(/common/images/button-sd-l.png);
+	background-repeat: no-repeat;
+	background-position: center left;
+	padding: 0;
 	margin: 0;
+	margin-right: 7px; /* recenter */
+	overflow: visible;
 	height: 36px;
-	padding-right: 7px;
 }
 
 .radiobutton {
@@ -748,6 +779,56 @@ ul.focal li:first-child {
 	text-decoration: none;
 }
 
+.sidenav2 {
+	margin: 0;
+	position: relative;
+	height: 29px;
+}
+.sidenav2 a {
+	display: block;
+	position: absolute;
+	top: 0;
+	background: transparent url(/common/images/sidenav-arrows.png) no-repeat;
+	height: 29px;
+	line-height: 29px;
+	padding: 0 10px;
+	text-decoration: none;
+	font-size: 88.3%;
+}
+a.sidenav-prev {
+	left: 0;
+	background-position: top left;
+	padding-left: 44px;
+}
+a.sidenav-next {
+	right: 0;
+	background-position: bottom right;
+	padding-right: 44px;
+}
+.sidenav3 {
+	float: right;
+	width: 90px;
+	height: 34px;
+	margin: -4px 0 4px 5px;
+}
+.sidenav3 a {
+	display: block;
+	position: absolute;
+	background: transparent url(/common/images/sidenav-segmented.png) no-repeat;
+	height: 34px;
+	width: 45px;
+}
+.sidenav3 a.sidenav-prev {
+	right: 45px;
+	left: auto;
+	background-position: left;
+	padding: 0;
+}
+.sidenav3 a.sidenav-next {
+	right: 0;
+	background-position: right;
+	padding: 0;
+}
 
 
 /* Specific content formatting */

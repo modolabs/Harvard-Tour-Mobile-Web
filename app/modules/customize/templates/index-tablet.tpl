@@ -2,7 +2,7 @@
 
 {block name="customize"}
   <div class="nonfocal smallprint"> 
-    Use the arrow buttons to customize the order of icons on your homepage, and the checkboxes to toggle visibility. Your changes will be automatically saved.
+    Use the arrow buttons to customize the order of icons on the site-wide navigation bar, and the checkboxes to toggle visibility. Your changes will be automatically saved.
   </div> 
   
   <ul class="nav iconic" id="homepageList">
@@ -22,6 +22,6 @@
     {/foreach}
   </ul>
   <div class="formbuttons">
-    <a class="formbutton" href="../home/"><div>Return to Home</div></a>
+    {include file="findInclude:common/templates/formButtonLink.tpl" buttonTitle="Return to Home" buttonURL="../home/"}
   </div>
 {/block}

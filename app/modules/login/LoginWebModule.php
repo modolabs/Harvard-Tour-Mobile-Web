@@ -160,9 +160,9 @@ class LoginWebModule extends WebModule {
             $this->assign('authorityTitle', $authorityData['TITLE']);
 
             if ($authorityData['USER_LOGIN']=='FORM' && empty($login)) {
+                $this->assign('url', $url);
                 break;
             } elseif ($authority = AuthenticationAuthority::getAuthenticationAuthority($authorityIndex)) {
-                $authority->setDebugMode(Kurogo::getSiteVar('DATA_DEBUG'));
                 if ($authorityData['USER_LOGIN']=='LINK') {
                     $options['return_url'] = FULL_URL_BASE . $this->configModule . '/login?' . http_build_query(array_merge($options, array(
                             'authority'=>$authorityIndex
@@ -245,7 +245,7 @@ class LoginWebModule extends WebModule {
                 $this->setTemplatePage('loggedin');
             } else {
                 if (!$multipleAuthorities && count($authenticationAuthorities['direct'])) {
-                    $this->redirectTo('login', array('authority'=>key($authenticationAuthorities['direct'])));
+                    $this->redirectTo('login', array('url'=>$url,'authority'=>key($authenticationAuthorities['direct'])));
                 }
                 $this->assign('multipleAuthorities', $multipleAuthorities);
             }

@@ -247,6 +247,27 @@ select {
   padding: 0;
 }
 
+.formlist .formelement {
+  text-align: center;
+  margin-bottom: .5em;
+}
+.formlist .formelement label {
+  text-align: right;
+  margin-right: .5em;
+  display: inline-block;
+  width: 6.5em;
+}
+.formlist .formelement input {
+  width: 19.5em;
+  padding-left: .25em;
+  padding-right: .25em;
+  line-height: 26px;
+}
+.formlist .formelement select {
+  width: 20em;
+  line-height: 26px;
+}
+
 .formbuttons {
 	margin: 16px 0 8px 0;
 	text-align: center;
@@ -281,31 +302,34 @@ a.formbutton div {
 
 input.formbutton {
   -webkit-appearance: none;
-  display: inline-block;
+  display: block;
 	color: #fff;
 	font-weight: bold;
 	font-size: 94.12%;
 	line-height: 26px;  /* height minus padding */
 	text-decoration: none;
-	padding: 5px 5px 5px 12px;
-	margin-right: 0;
-  border: none;
+	padding: 5px 12px 5px 12px;
+	margin-right: -7px;
+	border: none;
 	height: 36px;
-	background-color: transparent;
-	background-image: url(/common/images/button-sd-l.png);
-	background-repeat: no-repeat;
-	background-position: center left;
-	-webkit-border-radius: 0px;
-}
-.formbuttonclose {
-  display: inline-block;
 	background-color: transparent;
 	background-image: url(/common/images/button-sd-r.png);
 	background-repeat: no-repeat;
 	background-position: center right;
+	-webkit-border-radius: 0px;
+	border-radius: 0px;
+}
+span.formbuttoncontainer {  /* must be span for winphone7 */
+  display: inline-block;
+	background-color: transparent;
+	background-image: url(/common/images/button-sd-l.png);
+	background-repeat: no-repeat;
+	background-position: center left;
+	padding: 0;
 	margin: 0;
+	margin-right: 7px; /* recenter */
+	overflow: visible;
 	height: 36px;
-	padding-right: 7px;
 }
 
 .radiobutton {
@@ -599,6 +623,8 @@ ul.focal li:first-child {
 	border: none;
 	-webkit-border-bottom-right-radius: 8px;	
 	-webkit-border-bottom-left-radius: 8px;	
+	border-bottom-right-radius: 8px;
+	border-bottom-left-radius: 8px;
 }
 
 .tabbody .results {
@@ -749,6 +775,55 @@ ul.focal li:first-child {
 .sidenav a {
 	padding: 6px 2px;
 	text-decoration: none;
+}
+.sidenav2 {
+	margin: 0;
+	position: relative;
+	height: 29px;
+}
+.sidenav2 a {
+	display: block;
+	position: absolute;
+	background: transparent url(/common/images/sidenav-arrows.png) no-repeat;
+	height: 29px;
+	line-height: 29px;
+	padding: 0 10px;
+	text-decoration: none;
+	font-size: 88.3%;
+}
+a.sidenav-prev {
+	left: 0;
+	background-position: top left;
+	padding-left: 44px;
+}
+a.sidenav-next {
+	right: 0;
+	background-position: bottom right;
+	padding-right: 44px;
+}
+.sidenav3 {
+	float: right;
+	width: 90px;
+	height: 34px;
+	margin: -4px 0 4px 5px;
+}
+.sidenav3 a {
+	display: block;
+	position: absolute;
+	background: transparent url(/common/images/sidenav-segmented.png) no-repeat;
+	height: 34px;
+	width: 45px;
+}
+.sidenav3 a.sidenav-prev {
+	right: 45px;
+	left: auto;
+	background-position: left;
+	padding: 0;
+}
+.sidenav3 a.sidenav-next {
+	right: 0;
+	background-position: right;
+	padding: 0;
 }
 
 
@@ -1059,6 +1134,8 @@ h2.icon {
 	-webkit-border-top-right-radius: 7px;	
 	-webkit-border-top-left-radius: 7px;	
 	text-align: center;
+	border-top-right-radius: 7px;
+	border-top-left-radius: 7px;
 }
 
 #tabs li .badge {
@@ -1434,9 +1511,10 @@ html, body, #nonfooternav {
 
 #footernav .module {
   float: left;
-  width: 85px;
+  width: 83px;
   height: 75px;
   background: transparent url(/common/images/footernav-spacer.png) no-repeat top left;
+  padding-left: 2px;
 }
 #footernav .module:first-child {
   background: none;
@@ -1447,7 +1525,6 @@ html, body, #nonfooternav {
   display: block;
   width: 100%;
   height: 100%;
-  margin-left: 2px;
 	text-decoration: none;
   font-size: 79%;
   line-height: normal;

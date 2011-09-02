@@ -11,6 +11,10 @@ define('DISABLED_MODULES_COOKIE', 'disabledmodules');
 define('MODULE_ORDER_COOKIE', 'moduleorder');
 define('BOOKMARK_COOKIE_DELIMITER', '@@');
 
+if (!function_exists('gzdeflate')) {
+    die("Kurogo requires the zlib PHP extension.");
+}
+
 abstract class WebModule extends Module {
 
     const INCLUDE_DISABLED_MODULES=true;
@@ -63,6 +67,7 @@ abstract class WebModule extends Module {
   
   protected $autoPhoneNumberDetection = true;
   protected $canBeAddedToHomeScreen = true;
+  protected $hideFooterLinks = false;
   
   //
   // Tabbed View support
@@ -222,6 +227,13 @@ abstract class WebModule extends Module {
   //
   private function googleAnalyticsGetImageUrl($gaID) {
     if (isset($gaID) && strlen($gaID)) {
+      // From http://code.google.com/mobile/analytics/docs/web/
+      // "Reminder: Change the prefix on your Analytics web property ID from 
+      // UA- to MO- in the server-side snippets given below. For example, if 
+      // your web property ID is UA-12345-67, you would use MO-12345-67 in your 
+      // server-side snippets."
+      $gaID = str_replace('UA-', 'MO-', $gaID);
+      
       $url = '/ga.php?';
       $url .= "utmac=$gaID";
       $url .= '&utmn=' . rand(0, 0x7fffffff);
@@ -611,6 +623,11 @@ abstract class WebModule extends Module {
         foreach ($moduleConfig as $type => $modulesOfType) {
 
             foreach ($modulesOfType as $moduleID => $title) {
+                $shortTitle = $title;
+                $moduleConfig = ModuleConfigFile::factory($moduleID, 'module');
+                if ($moduleConfig) {
+                    $shortTitle = $moduleConfig->getOptionalVar('shortTitle', $title);
+                }
             
                 $selected = $this->configModule == $moduleID;
                 $primary = $type == 'primary';
@@ -625,7 +642,7 @@ abstract class WebModule extends Module {
                     'type'        => $type,
                     'selected'    => $selected,
                     'title'       => $title,
-                    'shortTitle'  => $title,
+                    'shortTitle'  => $shortTitle,
                     'url'         => "/$moduleID/",
                     'disableable' => true,
                     'disabled'    => $includeDisabled && in_array($moduleID, $disabledIDs),
@@ -694,8 +711,12 @@ abstract class WebModule extends Module {
   protected function addInlineCSS($inlineCSS) {
     $this->inlineCSSBlocks[] = $inlineCSS;
   }
+  protected function getInternalCSSURL($path) {
+    $path = '/min/g='.MIN_FILE_PREFIX.$path.$this->getMinifyArgString();
+    return $path;
+  }
   protected function addInternalCSS($path) {
-    $this->cssURLs[] = '/min/g='.MIN_FILE_PREFIX.$path.$this->getMinifyArgString();
+    $this->cssURLs[] = $this->getInternalCSSURL($path);
   }
   protected function addExternalCSS($url) {
     $this->cssURLs[] = $url;
@@ -712,8 +733,12 @@ abstract class WebModule extends Module {
   protected function addOnLoad($onLoad) {
     $this->onLoadBlocks[] = $onLoad;
   }
-  protected function addInternalJavascript($path) {
+  protected function getInternalJavascriptURL($path) {
     $path = '/min/?g='.MIN_FILE_PREFIX.$path.$this->getMinifyArgString();
+    return $path;
+  }
+  protected function addInternalJavascript($path) {
+    $path = $this->getInternalJavascriptURL($path);
     if (!in_array($path, $this->javascriptURLs)) {
         $this->javascriptURLs[] = $path;
     }
@@ -742,12 +767,18 @@ abstract class WebModule extends Module {
     // Add page Javascript and CSS if any
     $minifyURLs = $this->getMinifyUrls(true);
     
-    $javascript = @file_get_contents(FULL_URL_PREFIX.ltrim($minifyURLs['js'], '/'));
+    $context = stream_context_create(array(
+      'http' => array(
+        'user_agent' => $_SERVER['HTTP_USER_AGENT'],
+      ),
+    ));
+    
+    $javascript = @file_get_contents(FULL_URL_PREFIX.ltrim($minifyURLs['js'], '/'), false, $context);
     if ($javascript) {
       array_unshift($data['inlineJavascriptBlocks'], $javascript);
     }
 
-    $css = @file_get_contents(FULL_URL_PREFIX.ltrim($minifyURLs['css'], '/'));
+    $css = @file_get_contents(FULL_URL_PREFIX.ltrim($minifyURLs['css'], '/'), false, $context);
     if ($css) {
       array_unshift($data['inlineCSSBlocks'], $css);
     }
@@ -1185,6 +1216,7 @@ abstract class WebModule extends Module {
     $this->assign('page',         $this->page);
     $this->assign('isModuleHome', $this->page == 'index');
     $this->assign('request_uri' , $_SERVER['REQUEST_URI']);
+    $this->assign('hideFooterLinks' , $this->hideFooterLinks);
     
     // Font size for template
     $this->assign('fontsizes',    $this->fontsizes);
@@ -1355,7 +1387,10 @@ abstract class WebModule extends Module {
         $total = 0;
         $results = array();
       
-        $items = $this->searchItems($searchTerms, $maxCount, array('federatedSearch'=>true));
+        // Ask for one more item than we show so that we can tell if we need to display
+        // the more results link.  This will need to be changed to 0 if we ever
+        // want to show the full number of matched items in the federated search screen
+        $items = $this->searchItems($searchTerms, $maxCount+1, array('federatedSearch'=>true));
         $limit = is_array($items) ? min($maxCount, count($items)) : 0;
 
         for ($i = 0; $i < $limit; $i++) {

@@ -1,6 +1,6 @@
 {if $shareEmailURL || $shareURL}
 <div id="share">
-  <a onclick="showShare()"><img src="/common/images/share.png"/></a>
+  <a onclick="showShare()"><img src="/common/images/share.png" /></a>
   <div id="sharesheet" style="display:none">
     <div id="shareback"> </div>
     <div id="sharedialog">
@@ -21,7 +21,7 @@
         {/if}
 			</ul>
       <div class="formbuttons">
-        <a class="formbutton" onclick="hideShare()"><div>Cancel</div></a>
+        {include file="findInclude:common/templates/formButtonLink.tpl" buttonTitle="Cancel" buttonOnclick="hideShare()"}
       </div>
 		</div>
 	</div>
