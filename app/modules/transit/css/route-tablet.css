@@ -18,6 +18,9 @@
   border-bottom: 1px solid #bbb;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
+  -webkit-border-bottom-left-radius: 0;
+  -webkit-border-bottom-right-radius: 0;
+  background-color: transparent;
   margin-bottom: -1px;
 }
 #stopsTab .results li:first-child {
@@ -29,26 +32,6 @@
   left: 0;
   min-height: 352px;
 }
-#map_static, #maptab {
-	text-align: center;
-}
-
-#map_static img {
-	border: 1px solid #999;
-}
-
-#map_dynamic {
-  clear: both;
-  height: 300px;
-  margin: 0 12px;
-	border: 1px solid #999;
-	overflow: hidden;
-}
-
-#mapTab #map_dynamic {
-  margin: 0;
-}
-
 .portrait #mapTab #map_dynamic {
   width: 350px;
   height: 600px;
