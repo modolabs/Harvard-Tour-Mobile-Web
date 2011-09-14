@@ -192,8 +192,8 @@ class TransitDataView {
             }
           }
         }
-        $this->remapStopInfo($parser['system'], $stopInfo);
       }
+      $this->remapStopInfo($system, $stopInfo);
       
       $cache->write(json_encode($stopInfo), $cacheName);
     }
