@@ -632,6 +632,8 @@ ul.focal li:first-child {
 	border-width: 1px 0 0 0;
 	-webkit-border-bottom-right-radius: 8px;	
 	-webkit-border-bottom-left-radius: 8px;	
+	border-bottom-right-radius: 8px;
+	border-bottom-left-radius: 8px;
 }
 
 .tabbody .nested {

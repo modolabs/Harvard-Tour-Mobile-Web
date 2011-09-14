@@ -17,6 +17,8 @@
 #stopsTab .results {
   border-radius: 0;
   -webkit-border-radius: 0;
+  border-top-width: 1px;
+  border-bottom-width: 1px;
   background-color: transparent;
   margin-bottom: -1px;
 }
