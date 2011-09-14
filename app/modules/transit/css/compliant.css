@@ -94,17 +94,8 @@
 #servicelogo {
   display: inline-block;
   float: right;
-}
-.refreshContainer {
-  text-align: left;
-}
-#refresh {
-  float: right;
-	margin-top: -4px;
-	margin-right: -4px;
-	margin-left: 4px;
-	margin-bottom: 4px;
-	font-size: 82.35%;
+  margin-top: -5px;
+  margin-right: -5px;
 }
 
 .timestamp {

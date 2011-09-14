@@ -42,9 +42,6 @@
   </table>
 {/block}
 
-{block name="refreshButton"}
-{/block}
-
 {block name="headerServiceLogo"}
 {/block}
 

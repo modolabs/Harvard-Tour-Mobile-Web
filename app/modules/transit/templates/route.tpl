@@ -39,25 +39,18 @@
 
 <a name="scrolldown"></a>
 <div class="focal shaded">
-  <h2 class="refreshContainer">
-    {block name="refreshButton"}
-      <div id="refresh"><a href="{$refreshURL}">
-        <img src="/common/images/refresh.png" alt="Update" width="82" height="32">
-      </a></div>
-    {/block}
-    {$routeInfo['name']}
-  </h2>
+  {block name="headerServiceLogo"}
+    {if $serviceInfo['id']}
+      <span id="servicelogo">
+        {if $serviceInfo['url']}<a href="{$serviceInfo['url']}">{/if}
+          <img src="/modules/transit/images/{$serviceInfo['id']}{$imageExt}" />
+        {if $serviceInfo['url']}</a>{/if}
+      </span>
+    {/if}
+  {/block}
+  <h2 class="nameContainer">{$routeInfo['name']}</h2>
   
   <p class="smallprint logoContainer clear">
-    {block name="headerServiceLogo"}
-      {if $serviceInfo['id']}
-        <span id="servicelogo">
-          {if $serviceInfo['url']}<a href="{$serviceInfo['url']}">{/if}
-            <img src="/modules/transit/images/{$serviceInfo['id']}{$imageExt}" />
-          {if $serviceInfo['url']}</a>{/if}
-        </span>
-      {/if}
-    {/block}
     {block name="routeInfo"}
       {if $routeInfo['description']}
         {$routeInfo['description']}<br/>

@@ -55,19 +55,7 @@
 }
 
 #mapTab #map_dynamic {
-  width: 350px;
-  height: 400px;
   margin: 0;
-}
-#mapTab {
-	min-height: 402px;  /* height + 2px for border */
-}
-
-.portrait #mapTab #map_dynamic {
-  height: 600px;
-}
-.portrait #mapTab {
-  min-height: 602px; /* height + 2px for border */
 }
 
 #map_canvas {
@@ -97,14 +85,16 @@
   position: relative;
 }
 #servicelogo {
-  display: inline-block;
+  display: block;
   float: right;
+  margin-top: -5px;
+  margin-left: -5px;
 }
-#refresh {
+#serviceinfo {
+  display: block;
   float: right;
-	margin-top: -4px;
-	margin-right: -4px;
-	font-size: 82.35%;
+  padding-right: 15px;
+  line-height: 24px;
 }
 
 .timestamp {
