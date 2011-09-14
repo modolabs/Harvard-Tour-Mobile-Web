@@ -15,16 +15,10 @@
   padding-bottom: 0;
 }
 #stopsTab .results {
-  border-bottom: 1px solid #bbb;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  -webkit-border-bottom-left-radius: 0;
-  -webkit-border-bottom-right-radius: 0;
+  border-radius: 0;
+  -webkit-border-radius: 0;
   background-color: transparent;
   margin-bottom: -1px;
-}
-#stopsTab .results li:first-child {
-  border-top: 1px solid #ccc;
 }
 #mapTab {
   position: absolute;
