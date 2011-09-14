@@ -79,6 +79,13 @@ function autoReload(reloadTime) {
   }, 1000);
 }
 
+var mapResizeHandler;
+
+function handleMapResize() {
+  if (typeof mapResizeHandler != 'undefined') {
+    setTimeout(mapResizeHandler, 200);
+  }
+}
 
 function showMap() {
   var mapElement = document.getElementById('map_canvas');
@@ -125,18 +132,13 @@ function showMap() {
         'strokeWeight'  : 2
       });
     }
-     
-    // Restrict the zoom level while fitting to bounds
-    // Listeners will definitely get called because the initial zoom level is 19
-    map.setOptions({ minZoom: 12, maxZoom: 18 });
-    var zoomChangeListener = google.maps.event.addListener(map, 'zoom_changed', function() {
-      var zoomChangeBoundsListener = google.maps.event.addListener(map, 'bounds_changed', function(event) {
-        map.setOptions({minZoom: null, maxZoom: null});
-        google.maps.event.removeListener(zoomChangeBoundsListener);
-      });
-      google.maps.event.removeListener(zoomChangeListener);
-    });
-    map.fitBounds(bounds);
+    
+    fitMapBounds(map, bounds);
+    
+    mapResizeHandler = function () {
+      google.maps.event.trigger(map, 'resize');
+      fitMapBounds(map, bounds);
+    };
     
     var elem = document.getElementById('map_canvas');
     elem.style.visibility = 'visible';
@@ -155,6 +157,20 @@ function showMap() {
     }
   }
 }
+
+function fitMapBounds(map, bounds) {
+  // Restrict the zoom level while fitting to bounds
+  // Listeners will definitely get called because the initial zoom level is 19
+  map.setOptions({ minZoom: 12, maxZoom: 18 });
+  var zoomChangeListener = google.maps.event.addListener(map, 'zoom_changed', function() {
+    var zoomChangeBoundsListener = google.maps.event.addListener(map, 'bounds_changed', function(event) {
+      map.setOptions({minZoom: null, maxZoom: null});
+      google.maps.event.removeListener(zoomChangeBoundsListener);
+    });
+    google.maps.event.removeListener(zoomChangeListener);
+  });
+  map.fitBounds(bounds);
+};
 
 function updateCurrentPosition(map) {
   navigator.geolocation.getCurrentPosition(function(position) {

@@ -395,6 +395,7 @@ class TransitWebModule extends WebModule {
         'var listUpdateFrequency = '.Kurogo::getOptionalSiteVar('STOP_LIST_UPDATE_FREQ', 20).";\n"
       );
       $this->addOnLoad('showMap();');
+      $this->addOnOrientationChange('handleMapResize();');
       
     } else {
         $this->addOnLoad('autoReload('.self::RELOAD_TIME.');');

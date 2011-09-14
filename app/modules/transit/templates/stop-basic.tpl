@@ -1,8 +1,5 @@
 {extends file="findExtends:modules/{$moduleID}/templates/stop.tpl"}
 
-{block name="refreshButton"}
-{/block}
-
 {block name="headerServiceLogo"}
 {/block}
 
