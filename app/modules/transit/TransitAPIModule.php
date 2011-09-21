@@ -83,11 +83,15 @@ class TransitAPIModule extends APIModule {
   
   protected function initializeForCommand() {
     if ($this->command == '__stripGTFSToDB') {
+        if ($_SERVER['REMOTE_ADDR'] != '127.0.0.1' && $_SERVER['REMOTE_ADDR'] != '::1') {
+            throw new Exception("__stripGTFSToDB can only be run from localhost");
+        }
+        
         $gtfsConfig = $this->getModuleSections('feeds-gtfs');
         
         $gtfsToDB = new StripGTFSToDB();
         foreach ($gtfsConfig as $gtfsIndex => $gtfsData) {
-          $gtfsToDB->addGTFS($gtfsIndex, $gtfsData);
+            $gtfsToDB->addGTFS($gtfsIndex, $gtfsData);
         }
         
         if (!$gtfsToDB->convert()) {
