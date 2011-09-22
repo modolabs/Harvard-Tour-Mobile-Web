@@ -1,5 +1,12 @@
 <?php
 
+/****************************************************************
+ *
+ *  Copyright 2011 The President and Fellows of Harvard College
+ *  Copyright 2011 Modo Labs Inc.
+ *
+ *****************************************************************/
+
 // Put the logo path into JavaScript for the live preview.
 drupal_add_js(array('color' => array('logo' => theme_get_setting('logo', 'tour'))), 'setting');
 

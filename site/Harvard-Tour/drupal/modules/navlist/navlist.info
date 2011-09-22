@@ -1,3 +1,6 @@
+; Copyright 2011 The President and Fellows of Harvard College
+; Copyright 2011 Modo Labs Inc.
+
 name = Navigation List Field
 description = Defines a nav list item field type with a title and subtitle for use by Kurogo feeds.
 core = 7.x
