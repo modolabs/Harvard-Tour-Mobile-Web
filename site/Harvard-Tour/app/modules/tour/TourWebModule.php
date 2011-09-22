@@ -375,12 +375,18 @@ class TourWebModule extends WebModule {
     switch ($this->page) {
       case 'start':
         $this->startNewTour();
-      
+        
         $this->redirectTo('map', array(
           'view' => self::MAP_VIEW_OVERVIEW,
           'id'   => $this->tour->getFirstGuidedTourStop()->getId(),
           self::NEW_TOUR_PARAM  => 1,
         ));
+        break;
+      
+      case 'startover':
+        $this->startNewTour();
+        
+        $this->redirectTo('index');
         break;
     
       case 'index':
@@ -429,6 +435,7 @@ class TourWebModule extends WebModule {
         }
         $nextURL = false;
         
+        $this->assign('startOverURL', $this->buildURL('startover'));
         $this->assign('prevURL',  $prevURL);
         $this->assign('nextURL',  $nextURL);
         $this->assign('contents', $this->getPageContents('finish'));
