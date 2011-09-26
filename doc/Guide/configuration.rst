@@ -188,7 +188,9 @@ Modules
   a config folder with the default values, but should be turned off for production to ensure
   modules that you don't use don't create configuration folders.
   
-  
+
+.. _analytics:
+
 ---------
 Analytics
 ---------
@@ -288,10 +290,6 @@ Authentication
 Log Files
 ---------
 
-* *API_LOG_FILE* - Location of the processed API log file
-* *API_CURRENT_LOG_FILE* - Location of the active API log file
-* *WEB_LOG_FILE* - Location of the processed page view log file
-* *WEB_CURRENT_LOG_FILE* - Location of the active page view log file
 * *LOG_DATE_FORMAT* - Date format for log files
 * *LOG_DATE_PATTERN* - regex pattern of log dates, should match output from LOG_DATE_FORMAT
 
