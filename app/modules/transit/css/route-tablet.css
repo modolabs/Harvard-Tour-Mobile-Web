@@ -1,14 +1,20 @@
 #tabs {
   display: none;
 }
+.focal .tabwrapper {
+  margin: 0 -12px;
+}
+
 #tabbodies,
 .shaded #tabbodies {
-  position: relative;
-  margin-top: .5em;
+  display: table;
+  width: 100%;
+  margin: .5em 0 0 0;
   overflow: hidden;
 }
 .tabbody {
-  display: block !important;
+  display: table-cell !important;
+  vertical-align: top;
 }
 #stopsTab {
   border-left: 1px solid #bbb;
@@ -23,28 +29,20 @@
   margin-bottom: -1px;
 }
 #mapTab {
-  position: absolute;
-  top: 0;
-  left: 0;
   min-height: 352px;
 }
-.portrait #mapTab #map_dynamic {
+#stopsTab {
   width: 350px;
+}
+.portrait #mapTab #map_dynamic {
   height: 600px;
 }
 .portrait .tabbody {
   min-height: 612px;
 }
-.portrait #stopsTab {
-  margin-left: 368px;
-}
 .landscape #mapTab #map_dynamic {
-  width: 475px;
   height: 400px;
 }
 .landscape .tabbody {
   min-height: 412px;
-}
-.landscape #stopsTab {
-  margin-left: 493px;
 }

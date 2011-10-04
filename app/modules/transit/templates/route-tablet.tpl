@@ -25,3 +25,8 @@
     {$routeInfo['summary']}<br/>
   {/if}
 {/block}
+{block name="tabView"}
+  <div class="tabwrapper">
+    {$smarty.block.parent}
+  </div>
+{/block}
