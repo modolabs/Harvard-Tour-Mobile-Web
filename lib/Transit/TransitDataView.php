@@ -566,7 +566,7 @@ class TransitDataView {
         return $parser;
       }
     }
-    return array('live' => false, 'static' => false);
+    return array('system' => $system, 'live' => false, 'static' => false);
   }
   
   private function parsersForStop($system, $stopID) {
