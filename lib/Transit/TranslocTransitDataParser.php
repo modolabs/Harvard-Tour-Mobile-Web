@@ -255,16 +255,17 @@ class TranslocTransitDataParser extends TransitDataParser {
   
   private static function getTimeoutForCommand($action) {
     switch ($action) {
+      case 'arrivals':
+      case 'update':
+        return Kurogo::getOptionalSiteVar('TRANSLOC_UPDATE_REQUEST_TIMEOUT', 2);
+
       case 'announcements':
       case 'setup': 
       case 'stops':
-        return 30;
-
-      case 'arrivals':
-      case 'update':
-        return 10;
+      default:
+        return Kurogo::getOptionalSiteVar('TRANSLOC_ROUTE_REQUEST_TIMEOUT', 5);
     }
-    return 30; // unknown command
+    return 5;
   }
 
   private static function getCacheForCommand($action) {
@@ -277,16 +278,16 @@ class TranslocTransitDataParser extends TransitDataParser {
       switch ($action) {
         case 'setup': 
         case 'stops':
-          $cacheTimeout = Kurogo::getSiteVar('TRANSLOC_ROUTE_CACHE_TIMEOUT');
+          $cacheTimeout = Kurogo::getOptionalSiteVar('TRANSLOC_ROUTE_CACHE_TIMEOUT', 3600);
           break;
  
         case 'arrivals':
         case 'update':
-          $cacheTimeout = Kurogo::getSiteVar('TRANSLOC_UPDATE_CACHE_TIMEOUT');
+          $cacheTimeout = Kurogo::getOptionalSiteVar('TRANSLOC_UPDATE_CACHE_TIMEOUT', 2);
           break;
           
         case 'announcements':
-          $cacheTimeout = Kurogo::getSiteVar('TRANSLOC_ANNOUNCEMENT_CACHE_TIMEOUT');
+          $cacheTimeout = Kurogo::getOptionalSiteVar('TRANSLOC_ANNOUNCEMENT_CACHE_TIMEOUT', 120);
           break;          
      }
   
@@ -325,11 +326,12 @@ class TranslocTransitDataParser extends TransitDataParser {
         $hostname, $action).http_build_query($params);
 
       //error_log("TranslocTransitDataParser requesting $url", 0);
-      $ch = curl_init();
-      curl_setopt($ch, CURLOPT_URL, $url);
-      curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-      curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, self::getTimeoutForCommand($action));
-      $contents = curl_exec($ch);
+      $streamContext = stream_context_create(array(
+        'http' => array(
+          'timeout' => floatval(self::getTimeoutForCommand($action)),
+        ),
+      ));
+      $contents = file_get_contents($url, false, $streamContext);
       
       if ($contents === false) {
         error_log("TranslocTransitDataParser error reading '$url': ".curl_error($ch));
@@ -348,8 +350,6 @@ class TranslocTransitDataParser extends TransitDataParser {
           $results = json_decode($cache->read($cacheName), true);
         }
       }
-      
-      curl_close($ch);
     }
     
     //error_log(print_r($results, true));
