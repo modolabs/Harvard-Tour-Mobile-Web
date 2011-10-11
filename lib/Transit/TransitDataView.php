@@ -303,7 +303,7 @@ class TransitDataView {
                   }
                 }
               } else {
-                error_log("Warning: static route info does not have live stop id $stopID");
+                Kurogo::log(LOG_WARNING, "static route info does not have live stop id $stopID", 'transit');
               }
               
               if ($foundFirstStop || TransitDataParser::isSameStop($stopID, $firstStop)) {
@@ -532,6 +532,20 @@ class TransitDataView {
         $stops[$this->getGlobalID($system, $stopID)] = $stopInfo;
       }
       $routeInfo['stops'] = $stops;
+    }
+    
+    if (isset($routeInfo['directions'])) {
+      // remap stop ids for schedule mode structures
+      foreach ($routeInfo['directions'] as $d => $directionInfo) {
+        foreach ($directionInfo['segments'] as $i => $segmentInfo) {
+          foreach ($segmentInfo['stops'] as $j => $stopInfo) {
+            $routeInfo['directions'][$d]['segments'][$i]['stops'][$j]['id'] = $this->getGlobalID($system, $stopInfo['id']);
+          }
+        }
+        foreach ($directionInfo['stops'] as $i => $stopInfo) {
+          $routeInfo['directions'][$d]['stops'][$i]['id'] = $this->getGlobalID($system, $stopInfo['id']);
+        }
+      }
     }
   }
   

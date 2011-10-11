@@ -24,8 +24,14 @@
 {/if}
 
 {capture name="stopsPane" assign="stopsPane"}
-  {if $stopTimeHelpText}
-    <span class="smallprint">{$stopTimeHelpText}</span>
+  {if isset($routeInfo['directions']) && $routeInfo['directions']}
+    {if $scheduleHelpText}
+      <span class="smallprint">{$scheduleHelpText}</span>
+    {/if}
+  {else}
+    {if $stopTimeHelpText}
+      <span class="smallprint">{$stopTimeHelpText}</span>
+    {/if}
   {/if}
   {block name="stopsPane"}
     <div id="schedule">
@@ -48,7 +54,12 @@
       </span>
     {/if}
   {/block}
-  <h2 class="nameContainer">{$routeInfo['name']}</h2>
+  <h2 class="nameContainer">
+    {$routeInfo['name']}
+    {if isset($routeInfo['directions']) && count($routeInfo['directions']) > 1}
+      <br /><span class="direction">{$routeInfo['directions'][$direction]['name']}</span>
+    {/if}
+  </h2>
   
   <p class="smallprint logoContainer clear">
     {block name="routeInfo"}

@@ -116,7 +116,7 @@ class TranslocTransitDataParser extends TransitDataParser {
             $this->getMapIconUrlForRouteVehicle($routeID, $vehicles[$vehicleInfo['id']]);
         }
       } else {
-        error_log('Warning: inactive route '.$routeID.' has active vehicle '.$vehicleInfo['id']);
+        Kurogo::log(LOG_WARNING, "inactive route $routeID has active vehicle {$vehicleInfo['id']}", 'transit');
       }
     }
     return $vehicles;
@@ -230,7 +230,7 @@ class TranslocTransitDataParser extends TransitDataParser {
       $routeID = $routeInfo['id'];
       
       if (!isset($mergedSegments[$routeID])) {
-        error_log("Skipping unknown route '{$routeInfo['id']}'");
+        Kurogo::log(LOG_WARNING, "Skipping unknown route '{$routeInfo['id']}'", 'transit');
         continue;
       }
       
@@ -334,8 +334,7 @@ class TranslocTransitDataParser extends TransitDataParser {
       $contents = file_get_contents($url, false, $streamContext);
       
       if ($contents === false) {
-        error_log("TranslocTransitDataParser error reading '$url': ".curl_error($ch));
-        error_log("TranslocTransitDataParser reading expired cache");
+        Kurogo::log(LOG_ERR, "Error reading '$url', reading expired cache", 'transit');
         $results = json_decode($cache->read($cacheName), true);
         
       } else {
@@ -345,8 +344,7 @@ class TranslocTransitDataParser extends TransitDataParser {
           $cache->write($contents, $cacheName);
           
         } else {
-          error_log("TranslocTransitDataParser error parsing JSON from '$url'");
-          error_log("TranslocTransitDataParser reading expired cache");
+          Kurogo::log(LOG_WARNING, "Error parsing JSON from '$url', reading expired cache", 'transit');
           $results = json_decode($cache->read($cacheName), true);
         }
       }

@@ -7,17 +7,19 @@ class TransitAPIModule extends APIModule {
 
   protected function formatRouteInfo($routeId, $routeInfo) {
     return array(
-      'id'             => "$routeId", // make sure numeric route names are strings
-      'agency'         => $routeInfo['agency'],
-      'title'          => $routeInfo['name'],
-      'summary'        => $this->argVal($routeInfo, 'description', ''),
-      'description'    => $this->argVal($routeInfo, 'summary', ''),
-      'color'          => $routeInfo['color'],
-      'frequency'      => $routeInfo['frequency'],
-      'running'        => $routeInfo['running'] ? true : false,
-      'live'           => $this->argVal($routeInfo, 'live', false) ? true : false,
-      'stopIconURL'    => $this->argVal($routeInfo, 'stopIconURL', ''),
-      'vehicleIconURL' => $this->argVal($routeInfo, 'vehicleIconURL', ''),
+      'id'              => "$routeId", // make sure numeric route names are strings
+      'agency'          => $routeInfo['agency'],
+      'title'           => $routeInfo['name'],
+      'summary'         => $this->argVal($routeInfo, 'description', ''),
+      'description'     => $this->argVal($routeInfo, 'summary', ''),
+      'color'           => $routeInfo['color'],
+      'frequency'       => $routeInfo['frequency'],
+      'running'         => $routeInfo['running'] ? true : false,
+      'live'            => $this->argVal($routeInfo, 'live', false) ? true : false,
+      'stopIconURL'     => $this->argVal($routeInfo, 'stopIconURL', ''),
+      'vehicleIconURL'  => $this->argVal($routeInfo, 'vehicleIconURL', ''),
+      'directions'      => $this->argVal($routeInfo, 'directions', array()),
+      'splitByHeadsign' => $this->argVal($routeInfo, 'splitByHeadsign', false),
     );
   }
   

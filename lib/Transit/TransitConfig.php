@@ -43,7 +43,7 @@ class TransitConfig {
         $keyOrVal = end($parts);
         
         if (!($parser == 'live' || $parser == 'static' || ($type == 'override' && $parser == 'all'))) {
-          error_log("Warning: unknown transit configuration type '$type'");
+          Kurogo::log(LOG_WARNING, "unknown transit configuration type '$type'", 'transit');
           continue;
         }
         $parsers = ($parser == 'all') ? array('live', 'static') : array($parser);
@@ -53,7 +53,7 @@ class TransitConfig {
         
         $configValueKey = implode('_', array_slice($parts, 0, -1)).'_vals';
         if (!isset($config[$configValueKey])) {
-          error_log("Warning: transit configuration file missing value '$configValueKey' for key '$configKey'");
+          Kurogo::log(LOG_WARNING, "transit configuration file missing value '$configValueKey' for key '$configKey'", 'transit');
           continue;
         }
         
@@ -79,7 +79,7 @@ class TransitConfig {
             break;
           
           default:
-            error_log("Warning: unknown transit configuration key '$configKey'");
+            Kurogo::log(LOG_WARNING, "unknown transit configuration key '$configKey'", 'transit');
             break;
         }
       }

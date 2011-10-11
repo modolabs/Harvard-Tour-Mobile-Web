@@ -10,7 +10,7 @@ class TransitWebModule extends WebModule {
   protected function initialize() {
   }
 
-  private function timesURL($routeID, $addBreadcrumb=true, $noBreadcrumb=false, $paneLink=false) {
+  protected function timesURL($routeID, $addBreadcrumb=true, $noBreadcrumb=false, $paneLink=false) {
     $args = array(
       'id' => $routeID,
     );
@@ -22,19 +22,23 @@ class TransitWebModule extends WebModule {
     }
   }
 
-  private function newsURL($newsID, $addBreadcrumb=true) {
+  protected function newsURL($newsID, $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('announcement', array(
       'id' => $newsID,      
     ), $addBreadcrumb);
   }
-  
-  private function stopURL($stopID, $addBreadcrumb=true) {
+
+  protected function stopURL($stopID, $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('stop', array(
       'id' => $stopID,      
     ), $addBreadcrumb);
   }
-  
-  private static function routeSort($a, $b) {
+
+  protected static function routeSort($a, $b) {
+    return strnatcmp($a['title'], $b['title']);
+  }
+
+  protected static function directionSort($a, $b) {
     return strnatcmp($a['title'], $b['title']);
   }
 
@@ -217,6 +221,40 @@ class TransitWebModule extends WebModule {
               break;
           }
         }
+        
+        if (isset($routeInfo['directions']) && $routeInfo['directions']) {
+          // Schedule view
+          $direction = $this->getArg('direction', null);
+          if (count($routeInfo['directions']) == 1) {
+            $direction = reset(array_keys($routeInfo['directions']));
+          }
+          
+          if (isset($direction) && isset($routeInfo['directions'][$direction])) {
+            $this->assign('direction', $direction);
+            
+          } else if (count($routeInfo['directions'])) {
+            $this->setPageTitles('Directions');
+            $this->setBreadcrumbLongTitle($routeInfo['name'].' Directions');
+    
+            $this->setTemplatePage('directions');
+            
+            $directionArgs = $this->args;
+            $directionsList = array();
+            foreach ($routeInfo['directions'] as $direction => $directionInfo) {
+              $directionArgs['direction'] = $direction;
+            
+              $directionList[] = array(
+                'title' => $directionInfo['name'],
+                'url'   => $this->buildBreadcrumbURL($this->page, $directionArgs),
+              );
+            }
+            
+            usort($directionList, array(get_class(), 'directionSort'));
+            
+            $this->assign('directionList', $directionList);
+          }
+        }
+        
         $this->assign('routeInfo', $routeInfo);
 
         // Ajax page view
@@ -368,11 +406,6 @@ class TransitWebModule extends WebModule {
         $this->assign('content', $newsConfigs[$newsID]['html']);        
         break;
     }
-  }
-  
-  protected function setupRouteInfo($view, $routeID) {
-    
-    return $routeInfo;
   }
   
   protected function initMap($staticImage, $markers, $markerUpdateURL='', $paths=array(), $pathColor=null, $needsHTMLUpdate=true) {

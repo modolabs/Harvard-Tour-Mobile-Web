@@ -19,3 +19,29 @@
 #schedule .nested {
   margin-top: 0;
 }
+
+table#schedule {
+  border: solid 2px #444;
+  background-color: #fff;
+}
+table#schedule td {
+  border-color: #bbb;
+  border-style: solid;
+}
+table#schedule .stopicons td,
+table#schedule .stoptimes td {
+  border-right: none;
+  border-top: none;
+  border-bottom: none;
+}
+table#schedule .stopicons td.first,
+table#schedule .stoptimes td.first {
+  border-left: none;
+}
+table#schedule .stopnames td {
+  border-top-color: #444;
+  border-top-width: 2px;
+  border-left: none;
+  border-right: none;
+  padding-left: 6px;
+}

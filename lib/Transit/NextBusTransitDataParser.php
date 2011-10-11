@@ -427,7 +427,7 @@ class NextBusTransitDataParser extends TransitDataParser {
       
       $errorCount = 0;
       foreach ($xml->getElementsByTagName('Error') as $error) {
-        error_log($error->nodeValue);
+        Kurogo::log(LOG_ERR, 'got error loading NextBus xml: '.$error->nodeValue, 'transit');
         $errorCount++;
       }
       if ($errorCount == 0) {
@@ -464,7 +464,7 @@ class NextBusTransitDataParser extends TransitDataParser {
       //error_log("NextBusTransitDataParser requested $url", 0);
       
       if (!$contents) {
-        error_log("Failed to read contents from $url, reading expired cache");
+        Kurogo::log(LOG_ERR, "Failed to read contents from $url, reading expired cache", 'transit');
         $xml = self::loadXML($cache->read($cacheName));
         
       } else {
@@ -474,7 +474,7 @@ class NextBusTransitDataParser extends TransitDataParser {
           $cache->write($contents, $cacheName);
           
         } else {
-          error_log("XML from $url had errors, reading expired cache");
+          Kurogo::log(LOG_ERR, "XML from $url had errors, reading expired cache", 'transit');
           $xml = self::loadXML($cache->read($cacheName));
         }
       }

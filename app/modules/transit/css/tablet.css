@@ -115,3 +115,57 @@
 #notabs {
   padding-top: 11px;
 }
+
+table#schedule{
+  margin: 0;
+  font-size: 90%;
+}
+table#schedule tr td {
+  padding: 0;
+  border: none;
+}
+table#schedule tr td a {
+  display: block;
+  text-decoration: none;
+}
+table#schedule .stopicons td div {
+  padding: 4px 7px 0px 7px;
+  margin-bottom: 6px;
+}
+table#schedule .stopnames td {
+  padding-top: 6px;
+  border-top: solid 1px #aaa;
+}
+table#schedule .stopnames td.first {
+  padding-top: 0px;
+  border-top: none;
+}
+table#schedule .stopnames td a {
+  color: white;
+  padding: 6px 7px;
+  border-top: solid 1px #444;
+  background: #666 url(/common/images/action-arrow-white@2x.png) no-repeat center right;
+  background-size: 14px 17px;
+}
+table#schedule .stoptimes td {
+  background: white;
+  font-size: 82.353%;
+  padding: .5em 0;
+}
+table#schedule .stoptimes td,
+table#schedule .stopicons td div {
+  border-left: 1px dashed #aaa;
+}
+table#schedule .stoptimes td.first,
+table#schedule .stopicons td.first div {
+  border-left: none;
+}
+table#schedule .stoptimes td.skipped {
+  color: #777;
+}
+h3.direction {
+  margin-top: -0.5em;
+}
+h2 .direction {
+  font-size: 90%;
+}

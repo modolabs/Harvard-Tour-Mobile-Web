@@ -96,7 +96,7 @@ abstract class TransitDataParser {
     $id = $route->getID();
 
     if (isset($this->routes[$id])) {
-      error_log(__FUNCTION__."(): Warning duplicate route '$id'");
+      Kurogo::log(LOG_WARNING, __FUNCTION__."(): Duplicate route '$id'", 'transit');
       return;
     }
     $this->routes[$id] = $route;
@@ -104,7 +104,7 @@ abstract class TransitDataParser {
     
   protected function getRoute($id) {
     if (!isset($this->routes[$id])) {
-      error_log(__FUNCTION__."(): Warning no such route '$id'");
+      Kurogo::log(LOG_WARNING, __FUNCTION__."(): No such route '$id'", 'transit');
       return false;
     }
 
@@ -125,7 +125,7 @@ abstract class TransitDataParser {
 
     if (isset($this->stops[$id])) {
       // This case seems to happen fairly often
-      //error_log(__FUNCTION__."(): Warning duplicate stop '$id'");
+      // Kurogo::log(LOG_WARNING, __FUNCTION__."(): Duplicate stop '$id'", 'transit');
       return;
     }
     $this->stops[$id] = $stop;
@@ -133,7 +133,7 @@ abstract class TransitDataParser {
     
   protected function getStop($id) {
     if (!isset($this->stops[$id])) {
-      error_log(__FUNCTION__."(): Warning no such stop '$id'");
+      Kurogo::log(LOG_WARNING, __FUNCTION__."(): No such stop '$id'", 'transit');
       return false;
     }
 
@@ -219,7 +219,7 @@ abstract class TransitDataParser {
   
   public function getStopInfoForRoute($routeID, $stopID) {
     if (!isset($this->routes[$routeID])) {
-      error_log(__FUNCTION__."(): Warning no such route '$routeID'");
+      Kurogo::log(LOG_WARNING, __FUNCTION__."(): No such route '$routeID'", 'transit');
       return array();
     }
   
@@ -243,7 +243,7 @@ abstract class TransitDataParser {
   
   public function getStopInfo($stopID) {
     if (!isset($this->stops[$stopID])) {
-      error_log(__FUNCTION__."(): Warning no such stop '$stopID'");
+      Kurogo::log(LOG_WARNING, __FUNCTION__."(): No such stop '$stopID'", 'transit');
       return array();
     }
   
@@ -278,7 +278,7 @@ abstract class TransitDataParser {
   public function getMapImageForStop($id, $width=270, $height=270) {
     $stop = $this->getStop($id);
     if (!$stop) {
-      error_log(__FUNCTION__."(): Warning no such stop '$id'");
+      Kurogo::log(LOG_WARNING, __FUNCTION__."(): No such stop '$id'", 'transit');
       return false;
     }
     
@@ -297,7 +297,7 @@ abstract class TransitDataParser {
   public function getMapImageForRoute($id, $width=270, $height=270) {
     $route = $this->getRoute($id);
     if (!$route) {
-      error_log(__FUNCTION__."(): Warning no such route '$id'");
+      Kurogo::log(LOG_WARNING, __FUNCTION__."(): No such route '$id'", 'transit');
       return false;
     }
     
@@ -305,7 +305,7 @@ abstract class TransitDataParser {
     $color = $this->getRouteColor($id);
     
     if (!count($paths)) {
-      error_log(__FUNCTION__."(): Warning no path for route '$id'");
+      Kurogo::log(LOG_WARNING, __FUNCTION__."(): No path for route '$id'", 'transit');
       return false;
     }
     
@@ -335,7 +335,7 @@ abstract class TransitDataParser {
   public function routeIsRunning($routeID, $time=null) {
     $route = $this->getRoute($routeID);
     if (!$route) {
-      error_log(__FUNCTION__."(): Warning no such route '$routeID'");
+      Kurogo::log(LOG_WARNING, __FUNCTION__."(): No such route '$routeID'", 'transit');
       return false;
     }
     
@@ -350,7 +350,7 @@ abstract class TransitDataParser {
   public function getRoutePaths($routeID) {
     $route = $this->getRoute($routeID);
     if (!$route) {
-      error_log(__FUNCTION__."(): Warning no such route '$routeID'");
+      Kurogo::log(LOG_WARNING, __FUNCTION__."(): No such route '$routeID'", 'transit');
       return array();
     }
 
@@ -360,7 +360,7 @@ abstract class TransitDataParser {
   public function getRouteInfo($routeID, $time=null) {
     $route = $this->getRoute($routeID);
     if (!$route) {
-      error_log(__FUNCTION__."(): Warning no such route '$routeID'");
+      Kurogo::log(LOG_WARNING, __FUNCTION__."(): No such route '$routeID'", 'transit');
       return array();
     }
     $this->updatePredictionData($routeID);
@@ -383,6 +383,7 @@ abstract class TransitDataParser {
       'inService'      => $inService,
       'stopIconURL'    => $this->getMapIconUrlForRouteStop($routeID),
       'vehicleIconURL' => $this->getMapIconUrlForRouteVehicle($routeID),
+      'scheduleView'   => false,
       'stops'          => array(),
     );
 
@@ -560,14 +561,15 @@ abstract class TransitDataParser {
       $isRunning = $route->isRunning($time, $inService);
 
       $routes[$routeID] = array(
-        'name'        => $route->getName(),
-        'description' => $route->getDescription(),
-        'color'       => $this->getRouteColor($routeID),
-        'frequency'   => round($route->getServiceFrequency($time) / 60),
-        'agency'      => $route->getAgencyID(),
-        'live'        => $isRunning ? $this->isLive() : false,
-        'inService'   => $inService,
-        'running'     => $isRunning,
+        'name'         => $route->getName(),
+        'description'  => $route->getDescription(),
+        'color'        => $this->getRouteColor($routeID),
+        'frequency'    => round($route->getServiceFrequency($time) / 60),
+        'agency'       => $route->getAgencyID(),
+        'live'         => $isRunning ? $this->isLive() : false,
+        'inService'    => $inService,
+        'running'      => $isRunning,
+        'scheduleView' => false,
       );
 
       $this->applyRouteInfoOverrides($routeID, $routes[$routeID]);
@@ -667,7 +669,7 @@ abstract class TransitDataParser {
     } else if (self::sortStopIs('after', $a, $b) || self::sortStopIs('before', $b, $a)) {
       return 1;
     }
-    error_log("WARNING!!!! Not enough information in trip stop orders to determine the relative order of stops $a and $b");
+    Kurogo::log(LOG_WARNING, "Not enough information in trip stop orders to determine the relative order of stops $a and $b", 'transit');
     
     return 0;
   }
@@ -902,7 +904,7 @@ class TransitRoute {
     
     $segmentID = $segment->getID();
     if (isset($this->directions[$direction]['segments'][$segmentID])) {
-      error_log(__FUNCTION__."(): Warning duplicate segment '$segmentID' for route '{$this->name}'");
+      Kurogo::log(LOG_WARNING, __FUNCTION__."(): Duplicate segment '$segmentID' for route '{$this->name}'", 'transit');
     }
     
     $this->directions[$direction]['segments'][$segmentID] = $segment;
@@ -918,7 +920,7 @@ class TransitRoute {
   
   public function getDirection($id) {
     if (!isset($this->directions[$id])) {
-      error_log(__FUNCTION__."(): Warning no such direction '$id'");
+      Kurogo::log(LOG_WARNING, __FUNCTION__."(): No such direction '$id'", 'transit');
       return false;
     }
     return $this->directions[$id];
@@ -939,7 +941,7 @@ class TransitRoute {
   
   public function setStopTimes($directionID, $stopID, $arrivesOffset, $departsOffset) {
     if (!isset($this->directions[$directionID])) {
-      error_log("Warning no direction $directionID for route {$this->id}");
+      Kurogo::log(LOG_WARNING, "No direction $directionID for route {$this->id}", 'transit');
     }
     foreach ($this->directions[$directionID]['segments'] as &$segment) {
       $segment->setStopTimes($stopID, $predictions, $arrivesOffset, $departsOffset);
