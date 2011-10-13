@@ -110,7 +110,54 @@ class TransitAPIModule extends APIModule {
 
     switch($this->command) {
       case 'info':
-        $this->setResponse($this->getModuleSections('feeds-info'));
+        $keyRemap = array(
+          'titles'    => 'title',
+          'subtitles' => 'subtitle',
+          'urls'      => 'url',
+          'classes'   => 'class',
+          'infokeys'  => 'content',
+        );
+      
+        $infoText = $this->getModuleSections('feeds-info');
+        $info = $this->getModuleSections('api-index');
+        
+        $results = array(
+          'agencies' => $info['agencies'],
+          'sections' => array(),
+        );
+        
+        foreach ($info['infosections'] as $sectionKey => $sectionTitle) {
+          $section = $info[$sectionKey];
+          
+          if (isset($section['titles'])) {
+            $itemList = array();
+            foreach ($section as $key => $values) {
+              foreach ($values as $i => $value) {
+                if (!isset($itemList[$i])) {
+                  $itemList[$i] = array();
+                }
+                $listKey = isset($keyRemap[$key]) ? $keyRemap[$key] : $key;
+                $listValue = $value;
+                
+                if ($key == 'infokeys') {
+                  if (isset($infoText['info'][$value])) {
+                    $listValue = $infoText['info'][$value];
+                  } else {
+                    Kurogo::log(LOG_ERR, "Transit api-index.ini error: no info section for $value", 'transit');
+                  }
+                }
+                
+                $itemList[$i][$listKey] = $listValue;
+              }
+            }
+            $results['sections'][] = array(
+              'key'   => $sectionKey,
+              'title' => isset($info['infosections'][$sectionKey]) ? $info['infosections'][$sectionKey] : "",
+              'items' => $itemList,
+            );
+          }
+        }
+        $this->setResponse($results);
         $this->setResponseVersion(1);
         break;
       
