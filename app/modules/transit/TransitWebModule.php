@@ -199,7 +199,7 @@ class TransitWebModule extends WebModule {
           
           if ($stop['upcoming']) {
             $routeInfo['stops'][$stopID]['title'] = "<strong>{$stop['name']}</strong>";
-            $routeInfo['stops'][$stopID]['imgAlt'] = $this->getModuleVar('busImageAltText');
+            $routeInfo['stops'][$stopID]['imgAlt'] = $this->getLocalizedString('CURRENT_STOP_ICON_ALT_TEXT');
           }
           
           if ($stop['upcoming'] || $this->pagetype != 'basic') {
@@ -293,9 +293,13 @@ class TransitWebModule extends WebModule {
           $this->initMap($staticImage, $markers, $markerUpdateURL, $paths, $routeInfo['color']);
           
           $this->addOnOrientationChange('setOrientation(getOrientation());');
+        } else {
+          $this->initListUpdate();
         }
         
-        $this->enableTabs($tabs);
+        if (count($tabs) > 1) {
+          $this->enableTabs($tabs);
+        }
 
         $this->assign('lastRefresh',      time());
         $this->assign('serviceInfo',      $view->getServiceInfoForRoute($routeID));
@@ -408,34 +412,37 @@ class TransitWebModule extends WebModule {
     }
   }
   
-  protected function initMap($staticImage, $markers, $markerUpdateURL='', $paths=array(), $pathColor=null, $needsHTMLUpdate=true) {
+  protected function initMap($staticImage, $markers, $markerUpdateURL='', $paths=array(), $pathColor=null) {
     $MapDevice = new MapDevice($this->pagetype, $this->platform);
     
     if ($MapDevice->pageSupportsDynamicMap()) {
-      $htmlUpdateURL = '';
-      if ($needsHTMLUpdate) {
-        $htmlUpdateURL = FULL_URL_PREFIX.$this->buildURL($this->page, array_merge(array('ajax' => 1), $this->args));
-      }
-
       $this->addExternalJavascript('http://maps.google.com/maps/api/js?sensor=true');
       $this->addInlineJavascript("\n".
         'var mapMarkers = '.json_encode($markers).";\n".
         'var mapPaths = '.json_encode($paths).";\n".
         'var mapPathColor = "'.$pathColor."\";\n".
         'var markerUpdateURL = "'.$markerUpdateURL."\";\n".
-        'var htmlUpdateURL = "'.$htmlUpdateURL."\";\n".
-        'var markerUpdateFrequency = '.Kurogo::getOptionalSiteVar('MAP_MARKER_UPDATE_FREQ', 2).";\n".
-        'var listUpdateFrequency = '.Kurogo::getOptionalSiteVar('STOP_LIST_UPDATE_FREQ', 20).";\n"
+        'var markerUpdateFrequency = '.Kurogo::getOptionalSiteVar('MAP_MARKER_UPDATE_FREQ', 2).";\n"
       );
       $this->addOnLoad('showMap();');
       $this->addOnOrientationChange('handleMapResize();');
+      $this->initListUpdate();
       
     } else {
-        $this->addOnLoad('autoReload('.self::RELOAD_TIME.');');
-        $this->assign('autoReloadTime', self::RELOAD_TIME);
-        $this->assign('mapImageSrc', $staticImage);
+      $this->addOnLoad('autoReload('.self::RELOAD_TIME.');');
+      $this->assign('autoReloadTime', self::RELOAD_TIME);
+      $this->assign('mapImageSrc', $staticImage);
     }
     
     $this->assign('staticMap', !$MapDevice->pageSupportsDynamicMap());
+  }
+  
+  function initListUpdate() {
+    $listUpdateURL = FULL_URL_PREFIX.$this->buildURL($this->page, array_merge(array('ajax' => 1), $this->args));
+    $this->addInlineJavascript("\n".
+      'var htmlUpdateURL = "'.$listUpdateURL."\";\n".
+      'var listUpdateFrequency = '.Kurogo::getOptionalSiteVar('STOP_LIST_UPDATE_FREQ', 20).";\n"
+    );
+    $this->addOnLoad('initListUpdate();');
   }
 }

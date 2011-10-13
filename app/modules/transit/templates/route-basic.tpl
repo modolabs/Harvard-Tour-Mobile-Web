@@ -23,31 +23,12 @@
   {/if}
 {/block}
 
-{block name="stopsPane"}
-  <table width="100%" id="schedule">
-    {foreach $routeInfo['stops'] as $routeID => $stop}
-      <tr>
-        <td width="18px" valign="middle">
-          {if $stop['img']}
-            <img src="{$stop['img']}" width="16" height="13" alt="Bus arriving next at this stop" />
-          {/if}
-        </td>
-        <td valign="middle"{if $stop['upcoming']} class="current"{/if}>
-          <a href="{$stop['url']}">
-            {$stop['title']}
-          </a>
-        </td>
-      </tr>
-    {/foreach}
-  </table>
-{/block}
-
 {block name="headerServiceLogo"}
 {/block}
 
-{block name="routeInfo"}
+{block name="headerServiceInfo"}
   {$smarty.block.parent}
-  (<a href="{$refreshURL}">refresh</a>)
+  &nbsp;(<a href="{$refreshURL}">refresh</a>)
 {/block}
 
 {block name="autoReload"}

@@ -1,8 +1,8 @@
 {extends file="findExtends:modules/{$moduleID}/templates/route.tpl"}
 
-{block name="routeInfo"}
+{block name="headerServiceInfo"}
   {$smarty.block.parent}
-  (<a href="{$refreshURL}">refresh</a>)
+  &nbsp;(<a href="{$refreshURL}">refresh</a>)
 {/block}
 
 {block name="autoReload"}

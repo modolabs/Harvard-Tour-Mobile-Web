@@ -8,26 +8,26 @@
 	min-height: 260px;
 }
 
-#schedule {
+#stops {
   margin: 0px -12px;
 }
 
-#schedule li.icon {
+#stops li.icon {
   min-height: 0;
 }
 
-#schedule li.icon a {
+#stops li.icon a {
   padding: 10px 25px 10px 25px;
   line-height: 1.2em;
 }
-#schedule li.icon a .stoptime {
+#stops li.icon a .stoptime {
   float: right;
   line-height: inherit;
 }
 /* Use float and negative margins because Storm 2 doesn't
  * handle position: absolute properly when the DOM gets changed
  * which happens with the countdown timer */
-#schedule li.icon img {
+#stops li.icon img {
   display: block;
   width: 18px;
   height: 19px;
@@ -116,51 +116,52 @@
   padding-top: 11px;
 }
 
-table#schedule{
+table#scheduleView {
   margin: 0;
   font-size: 90%;
+	border-spacing: 0;
 }
-table#schedule tr td {
+table#scheduleView tr td {
   padding: 0;
   border: none;
 }
-table#schedule tr td a {
+table#scheduleView tr td a {
   display: block;
   text-decoration: none;
 }
-table#schedule .stopicons td div {
+table#scheduleView .stopicons td div {
   padding: 4px 7px 0px 7px;
   margin-bottom: 6px;
 }
-table#schedule .stopnames td {
+table#scheduleView .stopnames td {
   padding-top: 6px;
   border-top: solid 1px #aaa;
 }
-table#schedule .stopnames td.first {
+table#scheduleView .stopnames td.first {
   padding-top: 0px;
   border-top: none;
 }
-table#schedule .stopnames td a {
+table#scheduleView .stopnames td a {
   color: white;
   padding: 6px 7px;
   border-top: solid 1px #444;
   background: #666 url(/common/images/action-arrow-white@2x.png) no-repeat center right;
   background-size: 14px 17px;
 }
-table#schedule .stoptimes td {
+table#scheduleView .stoptimes td {
   background: white;
   font-size: 82.353%;
   padding: .5em 0;
 }
-table#schedule .stoptimes td,
-table#schedule .stopicons td div {
+table#scheduleView .stoptimes td,
+table#scheduleView .stopicons td div {
   border-left: 1px dashed #aaa;
 }
-table#schedule .stoptimes td.first,
-table#schedule .stopicons td.first div {
+table#scheduleView .stoptimes td.first,
+table#scheduleView .stopicons td.first div {
   border-left: none;
 }
-table#schedule .stoptimes td.skipped {
+table#scheduleView .stoptimes td.skipped {
   color: #777;
 }
 h3.direction {

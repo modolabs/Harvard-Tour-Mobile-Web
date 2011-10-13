@@ -1,13 +1,15 @@
 {if $routeInfo['scheduleView'] && isset($routeInfo['directions'], $routeInfo['directions'][$direction])}
   {$directionInfo = $routeInfo['directions'][$direction]}
-  {$maxColumns = 4}
+  {block name="maxColumns"}
+    {$maxColumns = 4}
+  {/block}
   {$columnCount = max(1, min(count($directionInfo['segments']), $maxColumns))}
   {$columnWidth = 100}
   {if $columnCount > 1}
     {$columnWidth = ceil(100 / $columnCount)}
   {/if}
   
-  <table id="schedule"{block name="tableAttrs"}{/block}>
+  <table id="scheduleView"{block name="tableAttrs"}{/block}>
     <tr class="stopicons">
       {block name="stopIconSuffix"}
         {$stopIcon = "shuttle@2x.png"}
@@ -17,9 +19,11 @@
           <td align="center" class="{if $segmentInfo@first}first{/if}" width="{$columnWidth}%">
             <div class="smallprint">
               {if $stopIcon}
-                <img src="/modules/transit/images/{$stopIcon}" width="24" height="24" /><br />
+                <img src="/modules/transit/images/{$stopIcon}" width="24" height="24" />
               {/if}
-              Bus Run {$i+1}
+              {$subtitleText = "BUS_COLUMN_TEXT"|getLocalizedString:($i+1)}
+              {if $subtitleText && $stopIcon}<br />{/if}
+              {$subtitleText}
             </div>
           </td>
         {/if}
@@ -39,7 +43,8 @@
               {$hasArrivalTime = isset($segmentInfo['stops'][$i]['arrives']) && $segmentInfo['stops'][$i]['arrives'] >= $now}
               <td align="center" class="{if !$hasArrivalTime}skipped{if $segmentInfo@first} {/if}{/if}{if $segmentInfo@first}first{/if}" width="{$columnWidth}%">
                 {if $hasArrivalTime}
-                  {$segmentInfo['stops'][$i]['arrives']|date_format:"%l:%M%p"|lower}
+                  {$arrivalFormat = "ARRIVAL_DATE_FORMAT"|getLocalizedString}
+                  {$segmentInfo['stops'][$i]['arrives']|date_format:$arrivalFormat|lower}
                 {else}
                   &mdash;
                 {/if}
@@ -67,5 +72,11 @@
     {/if}
   {/foreach}
   
-  {include file="findInclude:common/templates/results.tpl" results=$routeInfo['stops'] noResultsText="Stop information not available" labelColon=false}
+  {if count($routeInfo['stops'])}
+    {block name="flatList"}
+      {include file="findInclude:common/templates/results.tpl" results=$routeInfo['stops'] labelColon=false resultslistID="listView"}
+    {/block}
+  {else}
+    {"NO_STOP_INFO"|getLocalizedString}
+  {/if}
 {/if}

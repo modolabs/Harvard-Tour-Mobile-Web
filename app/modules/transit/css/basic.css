@@ -1,44 +1,45 @@
-#schedule {
+#stops table#listView {
 	width: 100%;
 	margin: 0.75em 0;
 	position: relative;
 	border-bottom: 1px solid #999;
 	border-spacing: 0;
 }
-#schedule td {
+#stops table#listView td {
 	padding: 6px 0;
 	line-height: 1em;
 	border-top: 1px solid #ccc;
 }
 
-#schedule a {
+#stops a {
     color: #000;
     padding-left: 4px;
 }
 
-#schedule .nested {
+#stops .nested {
   margin-top: 0;
 }
 
-table#schedule {
+table#scheduleView {
   border: solid 2px #444;
   background-color: #fff;
+	border-spacing: 0;
 }
-table#schedule td {
+table#scheduleView td {
   border-color: #bbb;
   border-style: solid;
 }
-table#schedule .stopicons td,
-table#schedule .stoptimes td {
+table#scheduleView .stopicons td,
+table#scheduleView .stoptimes td {
   border-right: none;
   border-top: none;
   border-bottom: none;
 }
-table#schedule .stopicons td.first,
-table#schedule .stoptimes td.first {
+table#scheduleView .stopicons td.first,
+table#scheduleView .stoptimes td.first {
   border-left: none;
 }
-table#schedule .stopnames td {
+table#scheduleView .stopnames td {
   border-top-color: #444;
   border-top-width: 2px;
   border-left: none;

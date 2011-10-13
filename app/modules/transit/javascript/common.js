@@ -149,13 +149,16 @@ function showMap() {
     if (markerUpdateURL.length && markerUpdateFrequency) {
       setInterval(function () { updateMarkers(map); }, markerUpdateFrequency*1000);
     }
-    if (htmlUpdateURL.length && listUpdateFrequency) {
-      setInterval(updateHTML, listUpdateFrequency*1000);
-    }
     if (typeof onMapLoad != 'undefined') {
       // Allows sites to make additional changes to the map after it loads
       onMapLoad(map);
     }
+  }
+}
+
+function initListUpdate() {
+  if (htmlUpdateURL.length && listUpdateFrequency) {
+    setInterval(updateHTML, listUpdateFrequency*1000);
   }
 }
 
