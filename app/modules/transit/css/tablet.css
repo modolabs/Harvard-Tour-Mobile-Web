@@ -8,19 +8,19 @@
   margin: 0px -12px;
 }
 
-#stops li.icon {
+#listView li.icon {
   min-height: 0;
 }
 
-#stops li.icon a {
+#listView li.icon a {
   padding: 13px 25px 13px 25px;
   line-height: 1.2em;
 }
-#stops li.icon a .stoptime {
+#listView li.icon a .stoptime {
   float: right;
   line-height: inherit;
 }
-#stops li.icon img {
+#listView li.icon img {
   width: 18px;
   height: 19px;
   top: 14px;

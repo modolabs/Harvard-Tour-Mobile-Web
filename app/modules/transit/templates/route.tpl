@@ -28,7 +28,7 @@
     {if $scheduleHelpText}
       <span class="smallprint">{$scheduleHelpText}</span>
     {/if}
-  {else}
+  {elseif $routeInfo['stops']}
     {$stopTimeHelpText = "STOP_TIME_HELP_TEXT"|getLocalizedString}
     {if $stopTimeHelpText}
       <span class="smallprint">{$stopTimeHelpText}</span>

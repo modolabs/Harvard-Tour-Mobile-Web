@@ -77,6 +77,8 @@
       {include file="findInclude:common/templates/results.tpl" results=$routeInfo['stops'] labelColon=false resultslistID="listView"}
     {/block}
   {else}
-    {"NO_STOP_INFO"|getLocalizedString}
+    <div class="nonfocal">
+      {"NO_STOP_INFO"|getLocalizedString}
+    </div>
   {/if}
 {/if}
