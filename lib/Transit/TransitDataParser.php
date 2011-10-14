@@ -384,6 +384,7 @@ abstract class TransitDataParser {
       'stopIconURL'    => $this->getMapIconUrlForRouteStop($routeID),
       'vehicleIconURL' => $this->getMapIconUrlForRouteVehicle($routeID),
       'scheduleView'   => false,
+      'view'           => 'list',
       'stops'          => array(),
     );
 

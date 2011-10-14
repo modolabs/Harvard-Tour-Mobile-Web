@@ -18,8 +18,7 @@ class TransitAPIModule extends APIModule {
       'live'            => $this->argVal($routeInfo, 'live', false) ? true : false,
       'stopIconURL'     => $this->argVal($routeInfo, 'stopIconURL', ''),
       'vehicleIconURL'  => $this->argVal($routeInfo, 'vehicleIconURL', ''),
-      'directions'      => $this->argVal($routeInfo, 'directions', array()),
-      'splitByHeadsign' => $this->argVal($routeInfo, 'splitByHeadsign', false),
+      'view'            => $this->argVal($routeInfo, 'view', 'list'),
     );
   }
   
@@ -205,9 +204,15 @@ class TransitAPIModule extends APIModule {
         
         $response = $this->formatRouteInfo($routeId, $routeInfo);
         
-        $response['stops'] = array();
-        foreach ($routeInfo['stops'] as $stopId => $stopInfo) {
-          $response['stops'][] = $this->formatStopInfoForRoute($routeId, $stopId, $stopInfo);
+        // schedule view or stop list view?
+        if (isset($routeInfo['directions'])) {
+          $response['directions'] = $routeInfo['directions'];
+          
+        } else {
+          $response['stops'] = array();
+          foreach ($routeInfo['stops'] as $stopId => $stopInfo) {
+            $response['stops'][] = $this->formatStopInfoForRoute($routeId, $stopId, $stopInfo);
+          }
         }
         
         // Note: these line segments are not necessarily a loop
@@ -217,7 +222,7 @@ class TransitAPIModule extends APIModule {
         foreach($view->getRouteVehicles($routeId) as $vehicleId => $vehicleInfo) {
           $response['vehicles'][] = $this->formatVehicleInfo($vehicleId, $vehicleInfo);
         }
-
+        
         $this->setResponse($response);
         $this->setResponseVersion(1);
         break;

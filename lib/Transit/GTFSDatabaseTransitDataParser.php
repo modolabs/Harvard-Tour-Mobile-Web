@@ -275,6 +275,9 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
         usort($routeInfo['directions'][$d]['segments'], array(get_class(), 'sortDirectionSegments'));
       }
       //error_log(print_r($routeInfo['directions'], true));
+      
+      $routeInfo['stops'] = array(); // this doesn't necessarily have all the stops if we are in schedule view
+      $routeInfo['view'] = 'schedule';
     }
         
     return $routeInfo;
