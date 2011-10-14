@@ -61,7 +61,6 @@ class TransitAPIModule extends APIModule {
   protected function formatVehicleInfo($vehicleId, $vehicleInfo) {
     $vehicle = array(
       'id'         => $vehicleId,
-      'nextStopId' => $vehicleInfo['nextStop'],
       'agencyId'   => $vehicleInfo['agencyID'],
       'routeId'    => $vehicleInfo['routeID'],
       'lastSeen'   => time() + $vehicleInfo['secsSinceReport'],
@@ -71,6 +70,10 @@ class TransitAPIModule extends APIModule {
         'lon' => $vehicleInfo['lon'],
       ),
     );
+    
+    if (isset($vehicleInfo['nextStop'])) {
+      $vehicle['nextStop'] = $vehicleInfo['nextStop'];
+    }
     
     if (isset($vehicleInfo['speed'])) {
       $vehicle['speed'] = $vehicleInfo['speed'];
