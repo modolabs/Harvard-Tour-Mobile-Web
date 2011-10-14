@@ -196,7 +196,7 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
       $runningRange = array($time, $time + Kurogo::getSiteVar('GTFS_TRANSIT_ROUTE_RUNNING_PADDING'));
       foreach ($this->routes as $routeID => $route) {
         $routes[$routeID]['running'] = $route->isRunning($runningRange);
-        $routes[$routeID]['scheduleView'] = true;
+        $routes[$routeID]['view'] = 'schedule';
       }
     }
     
@@ -210,8 +210,6 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
     $routeInfo = parent::getRouteInfo($routeID, $time);
     
     if ($routeInfo && isset($this->args['scheduleView']) && $this->args['scheduleView']) {
-      $routeInfo['scheduleView'] = true;
-      
       $route = $this->getRoute($routeID);
       if (!$route) {
         Kurogo::log(LOG_WARNING, __FUNCTION__."(): Warning no such route '$routeID'", 'transit');

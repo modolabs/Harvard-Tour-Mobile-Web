@@ -383,7 +383,6 @@ abstract class TransitDataParser {
       'inService'      => $inService,
       'stopIconURL'    => $this->getMapIconUrlForRouteStop($routeID),
       'vehicleIconURL' => $this->getMapIconUrlForRouteVehicle($routeID),
-      'scheduleView'   => false,
       'view'           => 'list',
       'stops'          => array(),
     );
@@ -570,7 +569,7 @@ abstract class TransitDataParser {
         'live'         => $isRunning ? $this->isLive() : false,
         'inService'    => $inService,
         'running'      => $isRunning,
-        'scheduleView' => false,
+        'view'         => 'list',
       );
 
       $this->applyRouteInfoOverrides($routeID, $routes[$routeID]);

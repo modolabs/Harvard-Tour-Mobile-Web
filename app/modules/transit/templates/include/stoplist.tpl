@@ -1,4 +1,4 @@
-{if $routeInfo['scheduleView'] && isset($routeInfo['directions'], $routeInfo['directions'][$direction])}
+{if $routeInfo['view'] == 'schedule' && isset($routeInfo['directions'], $routeInfo['directions'][$direction])}
   {$directionInfo = $routeInfo['directions'][$direction]}
   {block name="maxColumns"}
     {$maxColumns = 4}

@@ -18,6 +18,7 @@ class TransitAPIModule extends APIModule {
       'live'            => $this->argVal($routeInfo, 'live', false) ? true : false,
       'stopIconURL'     => $this->argVal($routeInfo, 'stopIconURL', ''),
       'vehicleIconURL'  => $this->argVal($routeInfo, 'vehicleIconURL', ''),
+      'splitByHeadsign' => $this->argVal($routeInfo, 'splitByHeadsign', false),
       'view'            => $this->argVal($routeInfo, 'view', 'list'),
     );
   }
