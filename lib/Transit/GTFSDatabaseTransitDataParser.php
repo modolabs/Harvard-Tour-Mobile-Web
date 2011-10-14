@@ -262,7 +262,11 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
         foreach ($route->getDirections() as $direction) {
           $segments = $route->getSegmentsForDirection($direction);
           
-          $routeInfo['directions'][$direction] = $this->getDirectionInfo($agencyID, $routeID, $direction, $segments, $time);
+          // Make sure direction is not an integer so php doesn't think this is 
+          // an ordered array and renumber our directions!
+          $d = is_numeric($direction) ? "direction_{$direction}" : $direction;
+          
+          $routeInfo['directions'][$d] = $this->getDirectionInfo($agencyID, $routeID, $direction, $segments, $time);
         }
       }
         
