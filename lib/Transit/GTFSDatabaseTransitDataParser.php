@@ -22,6 +22,10 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
   // For routes where not all vehicles stop at all stops
   protected $stopOrders = array();
   
+  // Set this to true for stop order debugging
+  // Do not leave this set to true because it modifies the REST API output
+  protected $debugStopOrder = false;
+  
   public static function getDB($agencyID) {
     if (!isset(self::$dbRefs[$agencyID])) {
       $file = self::$gtfsPaths[$agencyID];
@@ -413,7 +417,9 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
         for ($j = $remainingStopsIndex; $j < count($segmentInfo['stops']); $j++) {
           if ($segmentInfo['stops'][$j]['id'] == $stopInfo['stopID']) {
             $remainingStopsIndex = $j+1;
-            $segmentInfo['stops'][$j]['i'] = $stopInfo['i'];
+            if ($this->debugStopOrder) {
+              $segmentInfo['stops'][$j]['i'] = $stopInfo['i']; // useful for debugging stop sorting issues
+            }
             $segmentInfo['stops'][$j]['arrives'] = $arrives;
             break;
           }
@@ -425,12 +431,16 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
       $segments[] = $segmentInfo;
     }
     
-    /*foreach ($segments as $i => $segmentInfo) {
-      error_log("Trip {$segmentInfo['id']}");
-      foreach ($segmentInfo['stops'] as $stop) {
-        error_log("\t\t".str_pad($stop['id'], 8)." => {$stop['i']}");
+    // Useful for debugging stop sorting issues
+    // very noisy output so we really don't want this most of the time
+    if ($this->debugStopOrder) {
+      foreach ($segments as $i => $segmentInfo) {
+        error_log("Trip {$segmentInfo['id']}");
+        foreach ($segmentInfo['stops'] as $stop) {
+          error_log("\t\t".str_pad($stop['id'], 8).' => '.(isset($stop['i']) ? $stop['i'] : 'skipped'));
+        }
       }
-    }*/
+    }
     
     foreach ($stopArray as $i => $stopInfo) {
       $stop = $this->getStop($stopInfo['id']);
