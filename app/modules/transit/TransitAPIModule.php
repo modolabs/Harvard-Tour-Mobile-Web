@@ -5,7 +5,7 @@ includePackage('Transit');
 class TransitAPIModule extends APIModule {
   protected $id = 'transit';
 
-  protected function formatRouteInfo($routeId, $routeInfo) {
+  protected function formatBriefRouteInfo($routeId, $routeInfo) {
     return array(
       'id'              => "$routeId", // make sure numeric route names are strings
       'agency'          => $routeInfo['agency'],
@@ -16,11 +16,35 @@ class TransitAPIModule extends APIModule {
       'frequency'       => $routeInfo['frequency'],
       'running'         => $routeInfo['running'] ? true : false,
       'live'            => $this->argVal($routeInfo, 'live', false) ? true : false,
-      'stopIconURL'     => $this->argVal($routeInfo, 'stopIconURL', ''),
-      'vehicleIconURL'  => $this->argVal($routeInfo, 'vehicleIconURL', ''),
-      'splitByHeadsign' => $this->argVal($routeInfo, 'splitByHeadsign', false),
       'view'            => $this->argVal($routeInfo, 'view', 'list'),
     );
+  }
+  
+  protected function formatFullRouteInfo($routeId, $routeInfo) {
+    // Get the basic attributes for the route
+    $formatted = $this->formatBriefRouteInfo($routeId, $routeInfo);
+    
+    // Stop and vehicle icons
+    if (isset($routeInfo['stopIconURL'])) {
+      $formatted['stopIconURL'] = $routeInfo['stopIconURL'];
+    }
+    if (isset($routeInfo['vehicleIconURL'])) {
+      $formatted['vehicleIconURL'] = $routeInfo['vehicleIconURL'];
+    }
+    
+    // Schedule view or stop list view?
+    if (isset($routeInfo['directions'])) {
+      $formatted['directions'] = $routeInfo['directions'];
+      $formatted['splitByHeadsign'] = $this->argVal($routeInfo, 'splitByHeadsign', false);
+      
+    } else {
+      $formatted['stops'] = array();
+      foreach ($routeInfo['stops'] as $stopId => $stopInfo) {
+        $formatted['stops'][] = $this->formatStopInfoForRoute($routeId, $stopId, $stopInfo);
+      }
+    }
+    
+    return $formatted;
   }
   
   protected function formatStopInfo($stopId, $stopInfo) {
@@ -187,7 +211,7 @@ class TransitAPIModule extends APIModule {
         $response = array();
         $routesInfo = $view->getRoutes();
         foreach ($routesInfo as $routeId => $routeInfo) {
-          $response[] = $this->formatRouteInfo($routeId, $routeInfo);
+          $response[] = $this->formatBriefRouteInfo($routeId, $routeInfo);
         }
         
         $this->setResponse($response);
@@ -206,22 +230,13 @@ class TransitAPIModule extends APIModule {
           throw new Exception("No such route '$routeId'");
         }
         
-        $response = $this->formatRouteInfo($routeId, $routeInfo);
+        $response = $this->formatFullRouteInfo($routeId, $routeInfo);
         
-        // schedule view or stop list view?
-        if (isset($routeInfo['directions'])) {
-          $response['directions'] = $routeInfo['directions'];
-          
-        } else {
-          $response['stops'] = array();
-          foreach ($routeInfo['stops'] as $stopId => $stopInfo) {
-            $response['stops'][] = $this->formatStopInfoForRoute($routeId, $stopId, $stopInfo);
-          }
-        }
-        
+        // Add route paths (if any)
         // Note: these line segments are not necessarily a loop
         $response['paths'] = array_values($view->getRoutePaths($routeId));
-  
+        
+        // Add route vehicles (if any)
         $response['vehicles'] = array();
         foreach($view->getRouteVehicles($routeId) as $vehicleId => $vehicleInfo) {
           $response['vehicles'][] = $this->formatVehicleInfo($vehicleId, $vehicleInfo);
