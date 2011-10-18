@@ -30,10 +30,9 @@
       {/foreach}
     </tr>
     {foreach $directionInfo['stops'] as $i => $stopInfo}
-      {$stopURL = $routeInfo['stops'][$stopInfo['id']]['url']}
       <tr class="stopnames">
         <td {if $columnCount > 1}colspan="{$columnCount}"{/if}{if $stopInfo@first} class="first"{/if} width="100%">
-          <a href="{$stopURL}">{$stopInfo['name']}</a>
+          <a href="{$stopInfo['url']}">{$stopInfo['name']}</a>
         </td>
       </tr>
       <tr class="stoptimes">

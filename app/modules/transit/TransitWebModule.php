@@ -193,66 +193,76 @@ class TransitWebModule extends WebModule {
         
         $routeInfo = $view->getRouteInfo($routeID);
         
-        foreach ($routeInfo['stops'] as $stopID => $stop) {
-          $routeInfo['stops'][$stopID]['url']   = $this->stopURL($stopID);
-          $routeInfo['stops'][$stopID]['title'] = $stop['name'];
-          
-          if ($stop['upcoming']) {
-            $routeInfo['stops'][$stopID]['title'] = "<strong>{$stop['name']}</strong>";
-            $routeInfo['stops'][$stopID]['imgAlt'] = $this->getLocalizedString('CURRENT_STOP_ICON_ALT_TEXT');
-          }
-          
-          if ($stop['upcoming'] || $this->pagetype != 'basic') {
-            $routeInfo['stops'][$stopID]['img'] = '/modules/transit/images/';
-          }
-          switch ($this->pagetype) {
-            case 'basic':
-              if ($stop['upcoming']) {
-                $routeInfo['stops'][$stopID]['img'] .= 'shuttle.gif';
+        switch ($routeInfo['view']) {
+          case 'schedule':
+            if (isset($routeInfo['directions']) && $routeInfo['directions']) {
+              // Schedule view
+              $direction = $this->getArg('direction', null);
+              if (count($routeInfo['directions']) == 1) {
+                $direction = reset(array_keys($routeInfo['directions']));
               }
-              break;
-            
-            case 'touch':
-              $routeInfo['stops'][$stopID]['img'] .= $stop['upcoming'] ? 'shuttle.gif' : 'shuttle-spacer.gif';
-              break;
               
-            default:
-              $routeInfo['stops'][$stopID]['img'] .= $stop['upcoming'] ? 'shuttle.png' : 'shuttle-spacer.png';
-              break;
-          }
-        }
+              if (isset($direction) && isset($routeInfo['directions'][$direction])) {
+                $this->assign('direction', $direction);
+                foreach ($routeInfo['directions'][$direction]['stops'] as $i => $stop) {
+                  $routeInfo['directions'][$direction]['stops'][$i]['url'] = $this->stopURL($stop['id']);
+                }
+                
+              } else if (count($routeInfo['directions'])) {
+                $this->setPageTitles('Directions');
+                $this->setBreadcrumbLongTitle($routeInfo['name'].' Directions');
         
-        if (isset($routeInfo['directions']) && $routeInfo['directions']) {
-          // Schedule view
-          $direction = $this->getArg('direction', null);
-          if (count($routeInfo['directions']) == 1) {
-            $direction = reset(array_keys($routeInfo['directions']));
-          }
-          
-          if (isset($direction) && isset($routeInfo['directions'][$direction])) {
-            $this->assign('direction', $direction);
-            
-          } else if (count($routeInfo['directions'])) {
-            $this->setPageTitles('Directions');
-            $this->setBreadcrumbLongTitle($routeInfo['name'].' Directions');
-    
-            $this->setTemplatePage('directions');
-            
-            $directionArgs = $this->args;
-            $directionsList = array();
-            foreach ($routeInfo['directions'] as $direction => $directionInfo) {
-              $directionArgs['direction'] = $direction;
-            
-              $directionList[] = array(
-                'title' => $directionInfo['name'],
-                'url'   => $this->buildBreadcrumbURL($this->page, $directionArgs),
-              );
+                $this->setTemplatePage('directions');
+                
+                $directionArgs = $this->args;
+                $directionsList = array();
+                foreach ($routeInfo['directions'] as $direction => $directionInfo) {
+                  $directionArgs['direction'] = $direction;
+                
+                  $directionList[] = array(
+                    'title' => $directionInfo['name'],
+                    'url'   => $this->buildBreadcrumbURL($this->page, $directionArgs),
+                  );
+                }
+                
+                usort($directionList, array(get_class(), 'directionSort'));
+                
+                $this->assign('directionList', $directionList);
+              }
             }
+            break;
             
-            usort($directionList, array(get_class(), 'directionSort'));
-            
-            $this->assign('directionList', $directionList);
-          }
+          case 'list':
+          default:
+            foreach ($routeInfo['stops'] as $stopID => $stop) {
+              $routeInfo['stops'][$stopID]['url']   = $this->stopURL($stopID);
+              $routeInfo['stops'][$stopID]['title'] = $stop['name'];
+              
+              if ($stop['upcoming']) {
+                $routeInfo['stops'][$stopID]['title'] = "<strong>{$stop['name']}</strong>";
+                $routeInfo['stops'][$stopID]['imgAlt'] = $this->getLocalizedString('CURRENT_STOP_ICON_ALT_TEXT');
+              }
+              
+              if ($stop['upcoming'] || $this->pagetype != 'basic') {
+                $routeInfo['stops'][$stopID]['img'] = '/modules/transit/images/';
+              }
+              switch ($this->pagetype) {
+                case 'basic':
+                  if ($stop['upcoming']) {
+                    $routeInfo['stops'][$stopID]['img'] .= 'shuttle.gif';
+                  }
+                  break;
+                
+                case 'touch':
+                  $routeInfo['stops'][$stopID]['img'] .= $stop['upcoming'] ? 'shuttle.gif' : 'shuttle-spacer.gif';
+                  break;
+                  
+                default:
+                  $routeInfo['stops'][$stopID]['img'] .= $stop['upcoming'] ? 'shuttle.png' : 'shuttle-spacer.png';
+                  break;
+              }
+            }
+            break;
         }
         
         $this->assign('routeInfo', $routeInfo);
