@@ -148,8 +148,16 @@ class TransitAPIModule extends APIModule {
         $infoText = $this->getModuleSections('feeds-info');
         $info = $this->getModuleSections('api-index');
         
+        $agencies = array();
+        foreach ($info['agencies'] as $agencyID => $agencyName) {
+          $agencies[] = array(
+            'id'    => $agencyID,
+            'title' => $agencyName,
+          );
+        }
+        
         $results = array(
-          'agencies' => $info['agencies'],
+          'agencies' => $agencies,
           'sections' => array(),
         );
         

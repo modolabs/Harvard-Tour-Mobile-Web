@@ -77,8 +77,8 @@ class TransitWebModule extends WebModule {
         // Running and Offline Panes
         //
         $routeConfigs = $view->getRoutes();
-        $runningRoutes = array();
-        $offlineRoutes = array();
+        $runningRoutes = array_fill_keys(array_keys($indexConfig['agencies']), false);
+        $offlineRoutes = array_fill_keys(array_keys($indexConfig['agencies']), false);
 
         foreach ($routeConfigs as $routeID => $routeConfig) {
           $agencyID = $routeConfig['agency'];
@@ -88,7 +88,7 @@ class TransitWebModule extends WebModule {
           );
           
           if ($routeConfig['running']) {
-            if (!isset($runningRoutes[$agencyID])) {
+            if (!isset($runningRoutes[$agencyID]) || !$runningRoutes[$agencyID]) {
               $heading = isset($indexConfig['agencies'][$agencyID]) ? 
                 $indexConfig['agencies'][$agencyID] : $agencyID;
             
@@ -99,7 +99,7 @@ class TransitWebModule extends WebModule {
             }
             $runningRoutes[$agencyID]['items'][$routeID] = $entry;
           } else {
-            if (!isset($offlineRoutes[$agencyID])) {
+            if (!isset($offlineRoutes[$agencyID]) || !$offlineRoutes[$agencyID]) {
               $heading = isset($indexConfig['agencies'][$agencyID]) ? 
                 $indexConfig['agencies'][$agencyID] : $agencyID;
             
@@ -111,6 +111,12 @@ class TransitWebModule extends WebModule {
             $offlineRoutes[$agencyID]['items'][$routeID] = $entry;
           }
         }
+        
+        // Remove empty sections
+        $runningRoutes = array_filter($runningRoutes);
+        $offlineRoutes = array_filter($offlineRoutes);
+
+        // Sort routes
         foreach ($runningRoutes as $agencyID => $section) {
           uasort($runningRoutes[$agencyID]['items'], array(get_class($this), 'routeSort'));
         }
