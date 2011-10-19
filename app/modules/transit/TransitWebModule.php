@@ -438,7 +438,7 @@ class TransitWebModule extends WebModule {
         'var mapPaths = '.json_encode($paths).";\n".
         'var mapPathColor = "'.$pathColor."\";\n".
         'var markerUpdateURL = "'.$markerUpdateURL."\";\n".
-        'var markerUpdateFrequency = '.Kurogo::getOptionalSiteVar('MAP_MARKER_UPDATE_FREQ', 2).";\n"
+        'var markerUpdateFrequency = '.$this->getOptionalModuleVar('MAP_MARKER_UPDATE_FREQ', 2).";\n"
       );
       $this->addOnLoad('showMap();');
       $this->addOnOrientationChange('handleMapResize();');
@@ -457,7 +457,7 @@ class TransitWebModule extends WebModule {
     $listUpdateURL = FULL_URL_PREFIX.$this->buildURL($this->page, array_merge(array('ajax' => 1), $this->args));
     $this->addInlineJavascript("\n".
       'var htmlUpdateURL = "'.$listUpdateURL."\";\n".
-      'var listUpdateFrequency = '.Kurogo::getOptionalSiteVar('STOP_LIST_UPDATE_FREQ', 20).";\n"
+      'var listUpdateFrequency = '.$this->getOptionalModuleVar('STOP_LIST_UPDATE_FREQ', 20).";\n"
     );
     $this->addOnLoad('initListUpdate();');
   }
