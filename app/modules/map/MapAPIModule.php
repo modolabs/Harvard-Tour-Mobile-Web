@@ -222,6 +222,32 @@ class MapAPIModule extends APIModule
         return $path;
     }
 
+    protected function getGeometryType(MapGeometry $geometry) {
+        if ($geometry instanceof MapPolygon) {
+            return 'polygon';
+        }
+        if ($geometry instanceof MapPolyline) {
+            return 'polyline';
+        }
+        return 'point';
+    }
+
+    protected function formatGeometry(MapGeometry $geometry) {
+        $result = array();
+        if ($geometry instanceof MapPolygon) {
+            foreach ($geometry->getRings() as $aRing) {
+                $result[] = $aRing->getPoints();
+            }
+
+        } elseif ($geometry instanceof MapPolyline) {
+            $result = $geometry->getPoints();
+
+        } else {
+            $result = $geometry->getCenterCoordinate();
+        }
+        return $result;
+    }
+
     protected function displayTextFromMeters($meters)
     {
         $result = null;
@@ -368,13 +394,23 @@ class MapAPIModule extends APIModule
                     $placemark = $dataController->selectPlacemark($placemarkId);
 
                     $fields = $placemark->getFields();
+                    $geometry = $placemark->getGeometry();
 
                     $response = array(
-                        'title' => $placemark->getTitle(),
+                        'id'       => $placemarkId,
+                        'title'    => $placemark->getTitle(),
                         'subtitle' => $placemark->getSubtitle(),
-                        'address' => $placemark->getAddress(),
-                        'extraFields' => $placemark->getFields(),
+                        'address'  => $placemark->getAddress(),
+                        'details'  => $placemark->getFields(),
                     );
+
+                    if ($geometry) {
+                        $center = $geometry->getCenterCoordinate();
+                        $response['lat'] = $center['lat'];
+                        $response['lon'] = $center['lon'];
+                        $response['geometryType'] = $this->getGeometryType($geometry);
+                        $response['geometry'] = $this->formatGeometry($geometry);
+                    }
 
                     $this->setResponse($response);                                                              
                     $this->setResponseVersion(1);                                                               
@@ -385,40 +421,36 @@ class MapAPIModule extends APIModule
             case 'search':
                 $mapSearch = $this->getSearchClass($this->args);
 
-                $searchType = $this->getArg('type');
-                if ($searchType == 'nearby') {
-                    $lat = $this->getArg('lat', 0);
-                    $lon = $this->getArg('lon', 0);
-                    if ($lat || $lon) {
+                $lat = $this->getArg('lat', 0);
+                $lon = $this->getArg('lon', 0);
+                if ($lat || $lon) {
+                    // defaults values for proximity search
+                    $tolerance = 1000;
+                    $maxItems = 0;
 
-                        // defaults values for proximity search
-                        $tolerance = 1000;
-                        $maxItems = 0;
-
-                        // check for settings in feedgroup config
-                        $configData = $this->getDataForGroup($this->feedGroup);
-                        if ($configData) {
-                            if (isset($configData['NEARBY_THRESHOLD'])) {
-                                $tolerance = $configData['NEARBY_THRESHOLD'];
-                            }
-                            if (isset($configData['NEARBY_ITEMS'])) {
-                                $maxItems = $configData['NEARBY_ITEMS'];
-                            }
-                        }
-
-                        // check for override settings in feeds
-                        $configData = $this->getCurrentFeed();
+                    // check for settings in feedgroup config
+                    $configData = $this->getDataForGroup($this->feedGroup);
+                    if ($configData) {
                         if (isset($configData['NEARBY_THRESHOLD'])) {
                             $tolerance = $configData['NEARBY_THRESHOLD'];
                         }
                         if (isset($configData['NEARBY_ITEMS'])) {
                             $maxItems = $configData['NEARBY_ITEMS'];
                         }
-
-                        $searchResults = $mapSearch->searchByProximity(
-                            array('lat' => $lat, 'lon' => $lon),
-                            1000, 10);
                     }
+
+                    // check for override settings in feeds
+                    $configData = $this->getCurrentFeed();
+                    if (isset($configData['NEARBY_THRESHOLD'])) {
+                        $tolerance = $configData['NEARBY_THRESHOLD'];
+                    }
+                    if (isset($configData['NEARBY_ITEMS'])) {
+                        $maxItems = $configData['NEARBY_ITEMS'];
+                    }
+
+                    $searchResults = $mapSearch->searchByProximity(
+                        array('lat' => $lat, 'lon' => $lon),
+                        1000, 10);
 
                 } else {
                     $searchTerms = $this->getArg('q');
