@@ -117,13 +117,11 @@ class LocationsWebModule extends WebModule {
                 );
                 $map = Kurogo::moduleLinkForValue('map', $mapLocation, $this);
                 // change tile for the map link
-                $mapLink['title'] = "Search on Map";
+                $mapLink['title'] = $subtitle;
                 $mapLink['url'] = $map['url'];
-                $title = array(
-                    'title' => $title,
-                    'subtitle' => $subtitle
-                );
+                $mapLink['class'] = 'map';
                 $this->assign('title', $title);
+                $this->assign('location',array($mapLink));
                 $this->assign('nextDetail', $nextDetail);
                 $this->assign('mapLink', $mapLink);
                 $this->assign('events', $events);

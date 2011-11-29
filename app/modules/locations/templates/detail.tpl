@@ -1,26 +1,17 @@
 {include file="findInclude:common/templates/header.tpl"}
 
-<div class="focal">
+<div class="nonfocal">
   {block name="title"}
-    <h2>
-      {include file="findInclude:common/templates/listItem.tpl" item=$title}
-    </h2>
+    <h2>{$title}</h2>
   {/block}
 
-  {block name="events"}
-    {if count($events)}
-      {include file="findInclude:common/templates/navlist.tpl" navlistItems=$events accessKey=false}
-    {/if}
-  {/block}
+</div>  
+  {include file="findInclude:common/templates/navlist.tpl" navlistItems=$location}
+
+{block name="events"}
+{if count($events)}
+  {include file="findInclude:common/templates/navlist.tpl" navlistItems=$events accessKey=false subTitleNewline=true}
+{/if}
+{/block}
   
-  <p class="legend">
-    {include file="findInclude:common/templates/listItem.tpl" item=$mapLink}
-  </p>
-
-  <p class="legend">
-    {include file="findInclude:common/templates/listItem.tpl" item=$nextDetail}
-  </p>
-
-</div>
-
 {include file="findInclude:common/templates/footer.tpl"}
