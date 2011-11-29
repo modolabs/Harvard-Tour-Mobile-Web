@@ -3,6 +3,7 @@
 <div class="nonfocal">
   {block name="title"}
     <h2>{$title}</h2>
+    <p>{$description}</p>
   {/block}
 
 </div>  

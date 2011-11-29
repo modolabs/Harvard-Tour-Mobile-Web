@@ -121,6 +121,7 @@ class LocationsWebModule extends WebModule {
                 $mapLink['url'] = $map['url'];
                 $mapLink['class'] = 'map';
                 $this->assign('title', $title);
+                $this->assign('description', $feed->getDescription());
                 $this->assign('location',array($mapLink));
                 $this->assign('nextDetail', $nextDetail);
                 $this->assign('mapLink', $mapLink);
