@@ -51,17 +51,16 @@ class LocationsWebModule extends WebModule {
                 $next = "<br />next: " . $nextEvent->get_summary() . ' at ' . $this->timeText($nextEvent);
             }
         }
-        
-        $statusImg = $status ? '<img src="/modules/locations/images/locations-status-'.$status.'.png" />' : '';
-        
+                
         $options = array(
             'id' => $id
         );
         
         return array(
-            'title'    => sprintf('%s %s', $statusImg, $feed->getTitle()),
+            'title'    => $feed->getTitle(),
             'subtitle' => sprintf("%s <br /> %s %s %s", $statusString, $feed->getSubtitle(), $current, $next),
-            'url'      => $this->buildBreadcrumbURL('detail', $options, true)
+            'url'      => $this->buildBreadcrumbURL('detail', $options, true),
+            'listclass'=> $status
         );
     }
     
