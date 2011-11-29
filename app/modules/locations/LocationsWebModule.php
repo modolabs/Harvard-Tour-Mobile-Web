@@ -1,7 +1,6 @@
 <?php
 
-class LocationsWebModule extends WebModule
-{
+class LocationsWebModule extends WebModule {
     protected $id = 'locations';
     
     protected $feeds = array();
@@ -17,39 +16,7 @@ class LocationsWebModule extends WebModule
         
         return LocationsDataModel::factory($dataModel, $feedData);
     }
-    /*
-    $subtitle = $this->timeText($event);
-      if ($briefLocation = $event->get_location()) {
-        $subtitle .= " | $briefLocation";
-      }
-      
-      $options = array(
-        'id'   => $event->get_uid(),
-        'time' => $event->get_start()
-      );
-      
-      foreach (array('type','calendar','searchTerms','timeframe','catid','filter') as $field) {
-          if (isset($data[$field])) {
-              $options[$field] = $data[$field];
-          }
-      }
 
-      $addBreadcrumb = isset($data['addBreadcrumb']) ? $data['addBreadcrumb'] : true;
-      $noBreadcrumbs = isset($data['noBreadcrumbs']) ? $data['noBreadcrumbs'] : false;
-
-      if ($noBreadcrumbs) {
-        $url = $this->buildURL('detail', $options);
-      } else {
-        $url = $this->buildBreadcrumbURL('detail', $options, $addBreadcrumb);
-      }
-
-      return array(
-        'url'       => $url,
-        'title'     => $event->get_summary(),
-        'subtitle'  => $subtitle
-      );
-      
-     */
     protected function timeText($event, $timeOnly=false) {
         if ($timeOnly) {
             if ($event->get_end() - $event->get_start() == -1) {
@@ -62,7 +29,7 @@ class LocationsWebModule extends WebModule
         }
     }
     
-    public function linkForLocation($id, $data) {        
+    public function linkForLocation($id) {        
         $feed = $this->getLocationFeed($id);
 
         $status = "";
@@ -92,8 +59,8 @@ class LocationsWebModule extends WebModule
         );
         
         return array(
-            'title'    => sprintf('%s %s', $statusImg, $data['TITLE']),
-            'subtitle' => sprintf("%s <br /> %s %s %s", $statusString, $data['SUBTITLE'], $current, $next),
+            'title'    => sprintf('%s %s', $statusImg, $feed->getTitle()),
+            'subtitle' => sprintf("%s <br /> %s %s %s", $statusString, $feed->getSubtitle(), $current, $next),
             'url'      => $this->buildBreadcrumbURL('detail', $options, true)
         );
     }
@@ -111,12 +78,55 @@ class LocationsWebModule extends WebModule
                 $locations = array();
                 
                 foreach ($this->feeds as $id => $feedData) {
-                    $location = $this->linkForLocation($id, $feedData);
+                    $location = $this->linkForLocation($id);
                     $locations[] = $location;
                 }
 
                 $this->assign('locations', $locations);
                 
+                break;
+            case 'detail':
+                $id = $this->getArg('id');
+                // specified date for events
+                $date = $this->getArg('date', date('Y-m-d', time()));
+                $feed = $this->getLocationFeed($id);
+                // get title, subtitle and maplocation
+                $title = $feed->getTitle();
+                $subtitle = $feed->getSubtitle();
+                $mapLocation = $feed->getMapLocation();
+                $start = new DateTime($date, $this->timezone);
+                $end = clone $start;
+                $start->setTime(0,0,0);
+                $end->setTime(23,59,59);
+                // set start and end date for items
+                $feed->setStartDate($start);
+                $feed->setEndDate($end);
+                $items = $feed->items();
+                $events = array();
+                // format events data
+                foreach($items as $item) {
+                    $event['title'] = $item->get_summary();
+                    $event['subtitle'] = date("H:i:s", $item->get_start()) . " - " . date("H:i:s", $item->get_end());
+                    $events[] = $event;
+                }
+                $nextDate = date("Y-m-d", strtotime("+1 day", strtotime($date)));
+                $nextDateString = date("F j", strtotime("+1 day", strtotime($date)));
+                $nextDetail = array(
+                    'title' => "See next day's info",
+                    'url' => $this->buildBreadcrumbURL('detail', array('id' => $id, 'date' => $nextDate), true)
+                );
+                $map = Kurogo::moduleLinkForValue('map', $mapLocation, $this);
+                // change tile for the map link
+                $mapLink['title'] = "Search on Map";
+                $mapLink['url'] = $map['url'];
+                $title = array(
+                    'title' => $title,
+                    'subtitle' => $subtitle
+                );
+                $this->assign('title', $title);
+                $this->assign('nextDetail', $nextDetail);
+                $this->assign('mapLink', $mapLink);
+                $this->assign('events', $events);
                 break;
         }
     }
