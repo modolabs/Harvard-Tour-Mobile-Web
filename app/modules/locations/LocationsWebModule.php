@@ -32,6 +32,7 @@ class LocationsWebModule extends WebModule
                 foreach ($this->feeds as $id => $feedData) {
                     $feed = $this->getLocationFeed($id);
                     print_r($feed);
+                    exit;
                 }
                 print_r($this->feeds);
                 exit;
