@@ -52,7 +52,7 @@ class LocationsWebModule extends WebModule {
             }
         }
         
-        $statusImg = $status ? '<img src="/modules/locations/images/dining-status-'.$status.'.png" />' : '';
+        $statusImg = $status ? '<img src="/modules/locations/images/locations-status-'.$status.'.png" />' : '';
         
         $options = array(
             'id' => $id
