@@ -81,6 +81,7 @@ class LocationsWebModule extends WebModule {
                     $locations[] = $location;
                 }
 
+                $this->assign('description', $this->getModuleVar('description','strings'));
                 $this->assign('locations', $locations);
                 
                 break;
