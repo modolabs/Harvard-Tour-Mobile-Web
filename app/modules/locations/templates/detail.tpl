@@ -13,6 +13,16 @@
         {/if}
       </a>{block name="sidenavSpacer"} {/block}
     {/if}
+    {block name="date"}
+    <span class="sidenav-current nonfocal">
+      {if $isToday}
+        Today
+      {else}
+        {$current|date_format:$titleDateFormat}
+      {/if}
+      </span>
+    {/block}
+
     {if $nextURL && $next}
       <a href="{$nextURL}" class="sidenav-next">
         {if $linkDateFormat}
@@ -27,33 +37,20 @@
 {/if}
 {/capture}
 
-{capture name="fullTitle" assign="fullTitle"}
-  {$title}{if $current || $isToday}: 
-    {block name="date"}
-      {if $isToday}
-        Today
-      {else}
-        {$current|date_format:$titleDateFormat}
-      {/if}
-    {/block}
-  {/if}
-{/capture}
 
 <div class="nonfocal">
   {block name="title"}
-    <h2>{$fullTitle}</h2>
+    <h2>{$title}</h2>
     <p>{$description}</p>
   {/block}
 </div>
-{$sideNav}
   {include file="findInclude:common/templates/navlist.tpl" navlistItems=$location}
 
+{$sideNav}
 {block name="events"}
 {if count($events)}
   {include file="findInclude:common/templates/navlist.tpl" navlistItems=$events accessKey=false subTitleNewline=true}
 {/if}
 {/block}
-
-{$sideNav}
 
 {include file="findInclude:common/templates/footer.tpl"}
