@@ -49,7 +49,7 @@
 {$sideNav}
 {block name="events"}
 {if count($events)}
-  {include file="findInclude:common/templates/navlist.tpl" navlistItems=$events accessKey=false subTitleNewline=true}
+  {include file="findInclude:common/templates/navlist.tpl" navlistItems=$events navlistID="locations" accessKey=false subTitleNewline=true}
 {/if}
 {/block}
 

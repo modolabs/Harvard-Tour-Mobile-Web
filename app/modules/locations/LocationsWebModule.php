@@ -29,6 +29,68 @@ class LocationsWebModule extends WebModule {
         }
     }
     
+    protected function valueForType($type, $value) {
+        $valueForType = $value;
+  
+        switch ($type) {
+            case 'datetime':
+                $valueForType = DateFormatter::formatDateRange($value, DateFormatter::LONG_STYLE, DateFormatter::NO_STYLE);
+                if ($value instanceOf TimeRange) {
+                    $timeString = DateFormatter::formatDateRange($value, DateFormatter::NO_STYLE, DateFormatter::MEDIUM_STYLE);
+                    $valueForType .= "<br />\n" . $timeString;
+                }
+                break;
+
+            case 'url':
+                $valueForType = str_replace("http://http://", "http://", $value);
+                if (strlen($valueForType) && !preg_match('/^http\:\/\//', $valueForType)) {
+                    $valueForType = 'http://'.$valueForType;
+                }
+                break;
+        
+            case 'phone':
+                $valueForType = PhoneFormatter::formatPhone($value);
+                break;
+      
+            case 'email':
+                $valueForType = str_replace('@', '@&shy;', $value);
+                break;
+        
+            case 'category':
+                $valueForType = $this->formatTitle($value);
+                break;
+        }
+    
+        return $valueForType;
+    }
+  
+    protected function urlForType($type, $value) {
+        $urlForType = null;
+  
+        switch ($type) {
+            case 'url':
+                $urlForType = str_replace("http://http://", "http://", $value);
+                if (strlen($urlForType) && !preg_match('/^http\:\/\//', $urlForType)) {
+                    $urlForType = 'http://'.$urlForType;
+                }
+                break;
+        
+            case 'phone':
+                $urlForType = PhoneFormatter::getPhoneURL($value);
+                break;
+        
+            case 'email':
+                $urlForType = "mailto:$value";
+                break;
+        
+            case 'category':
+                $urlForType = $this->categoryURL($value, false);
+                break;
+        }
+    
+        return $urlForType;
+    }
+    
     public function linkForLocation($id) {        
         $feed = $this->getLocationFeed($id);
 
@@ -65,6 +127,35 @@ class LocationsWebModule extends WebModule {
         );
     }
     
+    protected function linkForSechedule(KurogoObject $event, $data=null) {
+        $subtitle = date("H:i:s", $event->get_start()) . " - " . date("H:i:s", $event->get_end());
+
+        $options = array(
+            'id'   => $event->get_uid(),
+            'time' => $event->get_start()
+        );
+        
+        if (isset($data['section'])) {
+            $options['section'] = $data['section'];
+        }
+        
+        $class = '';
+        $url   = '';
+        if ($event->getRange()->contains(new TimeRange(time()))) {
+            $class = 'open';
+            $url = $this->buildBreadcrumbURL('schedule', $options, true);
+        } else {
+            $class = 'closed';
+        }
+                    
+        return array(
+            'title'     => $event->get_summary(),
+            'subtitle'  => $subtitle,
+            'url'       => $url,
+            'listclass' => $class
+        );
+    }
+    
     protected function initialize() {
         $this->feeds = $this->loadFeedData();
         $this->timezone = Kurogo::siteTimezone();
@@ -91,9 +182,10 @@ class LocationsWebModule extends WebModule {
                 // specified date for events
                 $current = $this->getArg('time', time(), FILTER_VALIDATE_INT);
                 //$date = $this->getArg('date', date('Y-m-d', time()));
+                
+               
                 $next    = strtotime("+1 day", $current);
                 $prev    = strtotime("-1 day", $current);
-                
                 $feed = $this->getLocationFeed($id);
                 
                 // get title, subtitle and maplocation
@@ -114,9 +206,11 @@ class LocationsWebModule extends WebModule {
 
                 $events = array();
                 // format events data
+                $options = array(
+                    'section' => $id
+                );
                 foreach($items as $item) {
-                    $event['title'] = $item->get_summary();
-                    $event['subtitle'] = date("H:i:s", $item->get_start()) . " - " . date("H:i:s", $item->get_end());
+                    $event = $this->linkForSechedule($item, $options);
                     $events[] = $event;
                 }
                 
@@ -144,6 +238,50 @@ class LocationsWebModule extends WebModule {
                 $this->assign('titleDateFormat', $this->getLocalizedString('MEDIUM_DATE_FORMAT'));
                 $this->assign('linkDateFormat', $this->getLocalizedString('SHORT_DATE_FORMAT'));
                 $this->assign('isToday', $dayRange->contains(new TimeRange($current)));
+                
+                break;
+            case 'schedule':
+                $section = $this->getArg('section');
+                $id = $this->getArg('id');
+                
+                $feed = $this->getLocationFeed($section);
+                $time = $this->getArg('time', time(), FILTER_VALIDATE_INT);
+                
+                if ($event = $feed->getItem($id, $time)) {
+                    $this->assign('event', $event);
+                } else {
+                    throw new KurogoUserException($this->getLocalizedString('EVENT_NOT_FOUND'));
+                }
+                
+                $eventFields = $this->getModuleSections('schedule-detail');
+                $fields = array();
+                foreach ($eventFields as $key => $info) {
+                    $field = array();
+          
+                    $value = $event->get_attribute($key);
+                    if (empty($value)) { continue; }
+
+                    if (isset($info['label'])) {
+                        $field['label'] = $info['label'];
+                    }
+          
+                    if (isset($info['class'])) {
+                        $field['class'] = $info['class'];
+                    }
+                    
+                    if (isset($info['type'])) {
+                        $field['title'] = $this->valueForType($info['type'], $value);
+                        $field['url']   = $this->urlForType($info['type'], $value);
+                    } elseif (isset($info['module'])) {
+                        $field = array_merge($field, Kurogo::moduleLinkForValue($info['module'], $value, $this, $event));
+                    } else {
+                        $field['title'] = nl2br($value);
+                    }
+          
+                    $fields[] = $field;
+                }  
+                $this->assign('fields', $fields);
+                
                 break;
         }
     }
