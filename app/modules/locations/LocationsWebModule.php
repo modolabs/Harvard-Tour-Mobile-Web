@@ -140,10 +140,9 @@ class LocationsWebModule extends WebModule {
         }
         
         $class = '';
-        $url   = '';
+        $url = $this->buildBreadcrumbURL('schedule', $options, true);
         if ($event->getRange()->contains(new TimeRange(time()))) {
             $class = 'open';
-            $url = $this->buildBreadcrumbURL('schedule', $options, true);
         } else {
             $class = 'closed';
         }
