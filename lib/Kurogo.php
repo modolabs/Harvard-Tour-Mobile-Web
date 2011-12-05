@@ -22,9 +22,32 @@ class Kurogo
     protected $locale;    
     protected $languages=array();
     protected $cacher;
+    protected $module;
+    protected $request;
 
     private function __construct() {
         $this->startTime = microtime(true);
+    }
+    
+    public function setCurrentModule(Module $module) {
+        $this->module = $module;
+    }
+    
+    public function setRequest($id, $page, $args) {
+        $this->request = array(
+            'id'=>$id,
+            'page'=>$page,
+            'args'=>$args
+        );
+    }
+
+    public function getCurrentModule() {
+        return $this->module;
+    }
+    
+    public static function getArrayForRequest() {
+        $Kurogo = Kurogo::sharedInstance();
+        return $Kurogo->request;
     }
     
     public static function getElapsed() {
@@ -339,7 +362,7 @@ class Kurogo
         return $this->logger;
     }
 
-    private function cacher() {
+    public function cacher() {
         return $this->cacher;
     }
     
@@ -365,7 +388,8 @@ class Kurogo
         
         $key = SITE_NAME . '-' . $key;
         if ($cacher = Kurogo::sharedInstance()->cacher()) {
-            Kurogo::log(LOG_DEBUG, "Setting $key to $value", 'cache');
+            $logValue = is_scalar($value) ? $value : gettype($value);
+            Kurogo::log(LOG_DEBUG, "Setting $key to $logValue", 'cache');
             return $cacher->set($key, $value, $ttl);
         }
         return false;
@@ -554,6 +578,7 @@ class Kurogo
 
     private function initSite(&$path) {
     
+        includePackage('Cache');
         includePackage('Config');
         $siteConfig = new ConfigGroup();    
         // Load main configuration file
@@ -565,8 +590,7 @@ class Kurogo
         define('CONFIG_IGNORE_LOCAL', $siteConfig->getVar('CONFIG_IGNORE_LOCAL', 'kurogo'));
         
         if ($cacheClass = $siteConfig->getOptionalVar('CACHE_CLASS','', 'cache')) {
-            includePackage('Cache');
-            $this->cacher = KurogoCache::factory($cacheClass, $siteConfig->getOptionalSection('cache'));
+            $this->cacher = KurogoMemoryCache::factory($cacheClass, $siteConfig->getOptionalSection('cache'));
         }
         
         
@@ -704,6 +728,7 @@ class Kurogo
         define('CACHE_DIR',            SITE_DIR . DIRECTORY_SEPARATOR . 'cache');
         define('LOG_DIR',              SITE_DIR . DIRECTORY_SEPARATOR . 'logs');
         define('SITE_CONFIG_DIR',      SITE_DIR . DIRECTORY_SEPARATOR . 'config');
+        define('SITE_DISABLED_DIR',    SITE_DIR . DIRECTORY_SEPARATOR . 'config_disabled');
     
         //load in the site config file (required);
         $config = ConfigFile::factory('site', 'site');
@@ -1011,6 +1036,19 @@ class Kurogo
         }
     }
     
+    public static function defaultModule() {
+      $platform = strtoupper(Kurogo::deviceClassifier()->getPlatform());
+      $pagetype = strtoupper(Kurogo::deviceClassifier()->getPagetype());
+
+      if (!$module = Kurogo::getOptionalSiteVar("DEFAULT-{$pagetype}-{$platform}",'','urls')) {
+        if (!$module = Kurogo::getOptionalSiteVar("DEFAULT-{$pagetype}",'', 'urls')) {
+            $module = Kurogo::getOptionalSiteVar("DEFAULT",'home','urls');
+        }
+      }
+      
+        return $module; 
+    }
+    
     public function clearCaches($type=null) {
 
         self::log(LOG_NOTICE, "Clearing site caches", "kurogo");
@@ -1038,13 +1076,15 @@ class Kurogo
     
     public static function getCacheClasses() {
         includePackage('Cache');
-        return KurogoCache::getCacheClasses();
+        return KurogoMemoryCache::getCacheClasses();
         
     }
 }
 
 interface KurogoObject 
 {
+    public function getID();
+    public function filterItem($filters);
 }
 
 /* retained for compatibility */

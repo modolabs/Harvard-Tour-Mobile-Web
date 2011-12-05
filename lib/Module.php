@@ -211,6 +211,10 @@ abstract class Module
         $this->logView = Kurogo::getOptionalSiteVar('STATS_ENABLED', true) ? true : false;
     }
     
+    public function isEnabled() {
+        return !$this->getModuleVar('disabled', 'module');
+    }
+    
     /**
       * Evaluates whether the current user has access to this Module
       * @return boolean
@@ -281,7 +285,7 @@ abstract class Module
     		return $this->configs[$type];
     	}
     	
-        if ($config = ModuleConfigFile::factory($this->configModule, $type, $opts)) {
+        if ($config = ModuleConfigFile::factory($this->configModule, $type, $opts, $this)) {
             Kurogo::siteConfig()->addConfig($config);
             $this->setConfig($type, $config);
         }
@@ -665,6 +669,10 @@ abstract class Module
             SITE_MODULES_DIR . '/' . $this->id ."/strings/".$lang . '.ini'
         );
         
+        if ($this->id != $this->configModule) {
+            $stringFiles[] = SITE_MODULES_DIR . '/' . $this->configModule ."/strings/".$lang . '.ini';
+        }
+        
         $strings = array();
         foreach ($stringFiles as $stringFile) {
             if (is_file($stringFile)) {
@@ -752,5 +760,24 @@ abstract class Module
       * Action to take when access to the module is restricted
       */
     abstract protected function unauthorizedAccess();
+
+    public function removeModule() {
+        $source_dir = SITE_CONFIG_DIR . DIRECTORY_SEPARATOR . $this->getConfigModule();
+        $base_target_dir = $target_dir = SITE_DISABLED_DIR . DIRECTORY_SEPARATOR . $this->getConfigModule() . '-' . date('Y-m-d');
+        $start = 1;
+        
+        if (!is_dir(SITE_DISABLED_DIR)) {
+            mkdir(SITE_DISABLED_DIR, 0700, true);
+        }
+        
+        while (is_dir($target_dir)) {
+            $target_dir = $base_target_dir . '-' . $start++;
+        }
+        
+        rename($source_dir, $target_dir);
+        Kurogo::clearCache();
+        clearstatcache();
+    }
+    
 
 }

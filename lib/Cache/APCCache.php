@@ -4,7 +4,7 @@ if (!function_exists('apc_fetch')) {
     throw new KurogoException('APCCache requires the APC Extension');
 }
 
-class APCCache extends KurogoCache {
+class APCCache extends KurogoMemoryCache {
     protected $description = 'APC';
 	public function get($key) {
 		return apc_fetch($key);
@@ -29,6 +29,6 @@ class APCCache extends KurogoCache {
 	}
 
 	public function clear() {
-		return apc_clear_cache();
+		return apc_clear_cache('user');
 	}
 }

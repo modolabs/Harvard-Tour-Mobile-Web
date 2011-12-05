@@ -192,15 +192,8 @@ if (get_magic_quotes_gpc()) {
  * home is the default
  */
 if (!strlen($path) || $path == '/') {
-  $platform = strtoupper(Kurogo::deviceClassifier()->getPlatform());
-  $pagetype = strtoupper(Kurogo::deviceClassifier()->getPagetype());
-
-  if (!$url = Kurogo::getOptionalSiteVar("DEFAULT-{$pagetype}-{$platform}",'','urls')) {
-    if (!$url = Kurogo::getOptionalSiteVar("DEFAULT-{$pagetype}",'', 'urls')) {
-        $url = Kurogo::getOptionalSiteVar("DEFAULT",'home','urls');
-    }
-  } 
-  
+    $url = Kurogo::defaultModule();
+      
   if (!preg_match("/^http/", $url)) {
     $url = URL_PREFIX . $url . "/";
   }
@@ -241,6 +234,7 @@ if ($parts[0]==API_URL_PREFIX) {
             break;
     }    
 
+    $Kurogo->setCurrentModule($module);
     $module->executeCommand();
 
 } elseif ($parts[0]=='min') { //used when minify is loaded when multi-site is on
@@ -285,7 +279,10 @@ if ($parts[0]==API_URL_PREFIX) {
       exit;
     }
 
+    $Kurogo->setRequest($id, $page, $args);
+
     if ($module = WebModule::factory($id, $page, $args)) {
+        $Kurogo->setCurrentModule($module);
         $module->displayPage();
     } else {
         throw new KurogoException("Module $id cannot be loaded");

@@ -65,6 +65,9 @@ abstract class WebModule extends Module {
   
   protected $autoPhoneNumberDetection = true;
   protected $canBeAddedToHomeScreen = true;
+  protected $canBeRemoved = true;
+  protected $canBeDisabled = true;
+  protected $canBeHidden = true;
   protected $hideFooterLinks = false;
   
   //
@@ -352,12 +355,36 @@ abstract class WebModule extends Module {
     header("Location: ". URL_PREFIX . ltrim($url, '/'));
     exit;
   }
+
+    protected function buildURLFromArray($params) {
+        $id = isset($params['id']) ? $params['id'] : '';
+        $page = isset($params['page']) ? $params['page'] : '';
+        $args = isset($params['args']) ? $params['args'] : array();
+        
+        if ($id) {
+            return self::buildURLForModule($id, $page, $args);
+        } elseif ($page) {
+            return self::buildURL($page, $args);
+        }
+        
+        return false;
+    }
+  
+    public function getArrayForRequest() {
+        $params = array(
+            'id'=>$this->configModule,
+            'page'=>$this->page,
+            'args'=>$this->args
+        );
+        
+        return $params;
+    }
     
   protected function unauthorizedAccess() {
         if ($this->isLoggedIn()) {  
-            $this->redirectToModule('error', '', array('url'=>$_SERVER['REQUEST_URI'], 'code'=>'protected'));
+            $this->redirectToModule('error', '', array_merge($this->getArrayForRequest(), array('code'=>'protected')));
         } else {
-            $this->redirectToModule('login', '', array('url'=>$_SERVER['REQUEST_URI']));
+            $this->redirectToModule('login', '', $this->getArrayForRequest());
         }
   }
   
@@ -418,13 +445,14 @@ abstract class WebModule extends Module {
         
     protected function init($page='', $args=array()) {
       
+        $this->setArgs($args);
         //Don't call parent if we don't have a page. This is a work around.
         if ($page) {
+            $this->setPage($page);
             parent::init();
         }
 
         $this->moduleName    = $this->getModuleVar('title','module');
-        $this->setArgs($args);
 
         $this->pagetype      = $this->getPagetype();
         $this->platform      = $this->getPlatform();
@@ -451,7 +479,6 @@ abstract class WebModule extends Module {
               $this->fontsize = $_COOKIE['fontsize'];
             }
             
-            $this->setPage($page);
             $this->setTemplatePage($this->page, $this->id);
             $this->setAutoPhoneNumberDetection(Kurogo::getSiteVar('AUTODETECT_PHONE_NUMBERS'));
         }
@@ -467,7 +494,7 @@ abstract class WebModule extends Module {
   }
         
   protected function moduleDisabled() {
-    $this->redirectToModule('error', '', array('code'=>'disabled', 'url'=>$_SERVER['REQUEST_URI']));
+    $this->redirectToModule('error', '', array_merge($this->getArrayForRequest(), array('code'=>'disabled')));
   }
   
     public static function getAllThemes() {
@@ -521,6 +548,51 @@ abstract class WebModule extends Module {
         return $this->canBeAddedToHomeScreen;
     }
   
+    public function canBeRemoved() {
+        return $this->canBeRemoved;
+    }
+
+    public function canBeDisabled() {
+        return $this->canBeDisabled;
+    }
+
+    public function canBeHidden() {
+        return $this->canBeHidden;
+    }
+
+    /* return a list of all available module id's based on their class. This will include both site and Kurogo modules */    
+    public static function getAllModuleClasses() {
+     	
+        $modulePaths = array(
+          SITE_MODULES_DIR,
+          MODULES_DIR
+        );
+
+        $moduleClasses = array();        
+        foreach ($modulePaths as $path) {
+            $moduleFiles = glob($path . "/*/*WebModule.php");
+            foreach ($moduleFiles as $file) {
+                $moduleFile = realpath_exists($file);
+                if ($moduleFile && include_once($moduleFile)) {
+                    if (preg_match("/(Site)?([A-Za-z]+WebModule)\.php$/", $file, $bits)) {
+                        $className = $bits[1] . $bits[2];
+                        $info = new ReflectionClass($className);
+                        if (!$info->isAbstract()) {
+                            try {
+                                $module = new $className();
+                                $moduleClasses[] = $module->getID();
+                            } catch (Exception $e) {}
+                        }
+                    }
+                }
+            }
+        }
+        $moduleClasses = array_unique($moduleClasses);
+        sort($moduleClasses);
+        return $moduleClasses;        
+    }
+  
+
   public static function getAllModules() {
   	$configFiles = glob(SITE_CONFIG_DIR . "/*/module.ini");
     $modules = array();
@@ -580,10 +652,52 @@ abstract class WebModule extends Module {
     return array_merge($navModules['home'], $navModules['primary'], $separator, $navModules['secondary']);
   }
   
-    protected function isOnHomeScreen() {
+    public function isOnHomeScreen() {
         $navModules = $this->getAllModuleNavigationData(self::INCLUDE_DISABLED_MODULES);
         $allModules = array_merge(array_keys($navModules['primary']), array_keys($navModules['secondary']));
         return in_array($this->configModule, $allModules);    
+    }
+    
+    public function isOnTabletHome() {
+        $config = $this->getModuleNavigationConfig();
+        $tabletPanes = $config->getOptionalSection('tablet_panes');
+        return array_search($this->configModule, $tabletPanes);
+    }
+    
+    public function removeFromHomeScreen() {
+        $config = $this->getModuleNavigationConfig();
+        $config->clearVar('primary_modules', $this->configModule);
+        $config->clearVar('secondary_modules', $this->configModule);
+        $config->saveFile();
+    }
+
+    public function removeFromTabletPane() {
+        $config = $this->getModuleNavigationConfig();
+        if ($pane = $this->isOnTabletHome()) {
+            $config->setVar('tablet_panes', $pane, '', $changed);
+            $config->saveFile();
+        }
+    }
+    
+    public function removeModule($removeFromHome=false) {
+    
+        if ($this->isOnHomeScreen()) {
+            if ($removeFromHome) {
+                $this->removeFromHomeScreen();
+            } else {
+                throw new KurogoConfigurationException("Module must first be removed from home screen");
+            }
+        }
+
+        if ($this->isOnTabletHome()) {
+            if ($removeFromHome) {
+                $this->removeFromTabletPane();
+            } else {
+                throw new KurogoConfigurationException("Module must first be removed from tablet pane");
+            }
+        }
+        
+        return parent::removeModule();
     }
   
     protected function getUserDisabledModuleIDs() {
@@ -637,7 +751,7 @@ abstract class WebModule extends Module {
 
             foreach ($modulesOfType as $moduleID => $title) {
                 $shortTitle = $title;
-                $moduleConfig = ModuleConfigFile::factory($moduleID, 'module');
+                $moduleConfig = ModuleConfigFile::factory($moduleID, 'module', ModuleConfigFile::OPTION_DO_NOT_CREATE);
                 if ($moduleConfig) {
                     $shortTitle = $moduleConfig->getOptionalVar('shortTitle', $title);
                 }
@@ -1173,7 +1287,7 @@ abstract class WebModule extends Module {
     }
   
   protected function getPageConfig($name, $opts=0) {
-    $config = ModuleConfigFile::factory($this->configModule, "page-$name", $opts);
+    $config = $this->getConfig("page-$name", $opts);
     Kurogo::siteConfig()->addConfig($config);
     return $config;
   }

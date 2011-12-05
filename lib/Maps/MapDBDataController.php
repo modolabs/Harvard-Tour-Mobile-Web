@@ -43,6 +43,7 @@ class MapDBDataController extends MapDataController implements MapFolder
         if ($this->dbParser->isStored() && $this->dbParser->getCategory()->getListItems()) {
             // make sure this category was populated before skipping
             $this->hasDBData = true;
+            $this->useCache = false;
         }
     }
 
@@ -58,6 +59,11 @@ class MapDBDataController extends MapDataController implements MapFolder
         if (!$this->hasDBData) {
             return parent::getCacheData();
         }
+    }
+
+    protected function parseResponse(DataResponse $response, DataParser $parser=null)
+    {
+        return $this->parseData($response->getResponse(), $parser);
     }
 
     protected function parseData($data, DataParser $parser=null) {
