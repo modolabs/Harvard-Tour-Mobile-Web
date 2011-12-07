@@ -869,7 +869,7 @@ class TourVideo {
           // Supports YouTube iframe:
           $content = '<iframe class="videoFrame" id="videoFrame_'.$this->youTubeId.
             '" src="http://www.youtube.com/embed/'.$this->youTubeId.
-            ($forceHTML5 ? '?html5=1&controls=0' : '').'" '.
+            ($forceHTML5 ? '?html5=1&controls=0&' : '?').'rel=0" '.
             'width="240" height="195" frameborder="0"></iframe>';
           break;
         
