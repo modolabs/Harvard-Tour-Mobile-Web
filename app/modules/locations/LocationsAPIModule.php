@@ -21,17 +21,11 @@ class LocationsAPIModule extends APIModule {
         switch ($this->command) {
             case 'schedule':
             	$id = $this->getArg('id');
-            	if (!$date = $this->getArg('date', date('Y-m-d', time()))) {
-            	    $date = date('Y-m-d', $date);
-            	}
+				$date = $this->getArg('date', date('Y-m-d', time()));
             	
             	$feed = $this->getLocationFeed($id);
                 
                 // get title, subtitle and maplocation
-                $title = $feed->getTitle();
-                $subtitle = $feed->getSubtitle();
-                $mapLocation = $feed->getMapLocation();
-                $this->setLogData($id, $feed->getTitle());
                 
                 $start = new DateTime($date, $this->timezone);
                 $start->setTime(0,0,0);
