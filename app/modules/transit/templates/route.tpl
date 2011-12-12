@@ -5,19 +5,7 @@
 {if $hasRouteMap}
   {capture name="mapPane" assign="mapPane"}
     {block name="mapPane"}
-      {if $staticMap}
-        <div id="map_static">
-          <img src="{$mapImageSrc}" height="{$mapImageHeight}" width="{$mapImageWidth}" />
-        </div>
-      {else}
-        <div id="map_dynamic">
-          <div id="map_canvas">
-          </div>
-          <div id="map_loading">
-            <img src="/common/images/loading2.gif" />&nbsp;Loading map...
-          </div>
-        </div>
-      {/if}
+      {include file="findInclude:modules/transit/templates/include/map.tpl"}
     {/block}
   {/capture}
   {$tabBodies['map'] = $mapPane}
@@ -72,7 +60,7 @@
 {/capture}
 
 <a name="scrolldown"></a>
-<div class="{if count($tabBodies) > 1}focal shaded{else}nonfocal{/if}">
+<div class="nonfocal">
   {block name="headerServiceLogo"}
     {$serviceLogo}
   {/block}

@@ -286,29 +286,7 @@ class TransitWebModule extends WebModule {
           array_unshift($tabs, 'map');
           $this->assign('hasRouteMap', true);
         
-          $mapImageWidth = $mapImageHeight = 270;
-          if ($this->pagetype == 'basic') {
-            $mapImageWidth = $mapImageHeight = 200;
-          } else if ($this->pagetype == 'tablet') {
-            $mapImageWidth = $mapImageHeight = 350;
-          }
-          $this->assign('mapImageWidth',  $mapImageWidth);
-          $this->assign('mapImageHeight', $mapImageHeight);
-  
-          $staticImage = $view->getMapImageForRoute($routeID, $mapImageWidth, $mapImageHeight);
-          $markers = array();
-          foreach ($view->getRouteVehicles($routeID) as $vehicleID => $vehicle) {
-            $markers[$vehicleID] = array(
-              'lat' => $vehicle['lat'],
-              'lon' => $vehicle['lon'],
-              'imageURL' => $vehicle['iconURL'],
-              'title' => '',
-            );
-          }
-          $markerUpdateURL = FULL_URL_BASE.API_URL_PREFIX."/{$this->configModule}/vehicleMarkers?id={$routeID}";
-          $this->initMap($staticImage, $markers, $markerUpdateURL, $paths, $routeInfo['color']);
-          
-          $this->addOnOrientationChange('setOrientation(getOrientation());');
+          $this->initMapForRoute($routeID, $routeInfo, $paths, $view);
         } else {
           $this->initListUpdate();
         }
@@ -394,6 +372,37 @@ class TransitWebModule extends WebModule {
         $this->assign('serviceInfo',   $serviceInfo);
         break;
       
+      case 'fullscreen':
+        $type = $this->getArg('type');
+        if ($type == 'route') {
+          $routeID = $this->getArg('id');
+          
+          $routeInfo = $view->getRouteInfo($routeID);
+          $paths = $view->getRoutePaths($routeID);
+          if ($routeInfo && $paths) {
+            $this->initMapForRoute($routeID, $routeInfo, $paths, $view);
+          } else {
+            $this->redirectTo('route', array(
+              'id' => $routeID,
+            ));
+          }
+          
+        } else if ($type == 'stop') {
+          $stopID = $this->getArg('id');
+          
+          $stopInfo = $view->getStopInfo($stopID);
+          if ($stopInfo) {
+            $this->initMapForStop($stopID, $stopInfo, $view);
+          } else {
+            $this->redirectTo('stop', array(
+              'id' => $stopID,
+            ));
+          }
+        } else {
+          $this->redirectTo('index');
+        }
+        break;
+      
       case 'info':
         $infoType = $this->getArg('id');
         
@@ -428,6 +437,57 @@ class TransitWebModule extends WebModule {
     }
   }
   
+  function initMapForRoute($routeID, $routeInfo, $paths, $view) {
+    $mapImageWidth = $mapImageHeight = 270;
+    if ($this->pagetype == 'basic') {
+      $mapImageWidth = $mapImageHeight = 200;
+    } else if ($this->pagetype == 'tablet') {
+      $mapImageWidth = $mapImageHeight = 350;
+    }
+    $this->assign('mapImageWidth',  $mapImageWidth);
+    $this->assign('mapImageHeight', $mapImageHeight);
+
+    $staticImage = $view->getMapImageForRoute($routeID, $mapImageWidth, $mapImageHeight);
+    $markers = array();
+    foreach ($view->getRouteVehicles($routeID) as $vehicleID => $vehicle) {
+      $markers[$vehicleID] = array(
+        'lat' => $vehicle['lat'],
+        'lon' => $vehicle['lon'],
+        'imageURL' => $vehicle['iconURL'],
+        'title' => '',
+      );
+    }
+    $markerUpdateURL = FULL_URL_BASE.API_URL_PREFIX."/{$this->configModule}/vehicleMarkers?id={$routeID}";
+    $this->initMap($staticImage, $markers, $markerUpdateURL, $paths, $routeInfo['color']);
+    
+    $this->addOnOrientationChange('setOrientation(getOrientation());');
+  }
+  
+  function initMapForStop($stopID, $stopInfo, $view) {
+    $mapImageWidth = 298;
+    if ($this->pagetype == 'basic') {
+      $mapImageWidth = 200;
+    }
+    if ($this->pagetype == 'tablet') {
+      $mapImageWidth = 600;
+      $mapImageHeight = floor($mapImageWidth/2);
+    } else {
+      $mapImageHeight = floor($mapImageWidth/1.5);
+    }
+    $this->assign('mapImageWidth',  $mapImageWidth);
+    $this->assign('mapImageHeight', $mapImageHeight);
+
+    $staticImage = $view->getMapImageForStop($stopID, $mapImageWidth, $mapImageHeight);
+    $marker = $stopInfo['coordinates'];
+    $markers = array($stopID => array(
+      'lat' => $stopInfo['coordinates']['lat'],
+      'lon' => $stopInfo['coordinates']['lon'],
+      'imageURL' => $stopInfo['stopIconURL'],
+      'title' => '',
+    ));
+    $this->initMap($staticImage, $markers);
+  }
+  
   protected function initMap($staticImage, $markers, $markerUpdateURL='', $paths=array(), $pathColor=null) {
     $MapDevice = new MapDevice($this->pagetype, $this->platform);
     
@@ -438,8 +498,11 @@ class TransitWebModule extends WebModule {
         'var mapPaths = '.json_encode($paths).";\n".
         'var mapPathColor = "'.$pathColor."\";\n".
         'var markerUpdateURL = "'.$markerUpdateURL."\";\n".
-        'var markerUpdateFrequency = '.$this->getOptionalModuleVar('MAP_MARKER_UPDATE_FREQ', 2).";\n"
+        'var markerUpdateFrequency = '.$this->getOptionalModuleVar('MAP_MARKER_UPDATE_FREQ', 2).";\n".
+        'var userLocationMarkerURL = "'.FULL_URL_PREFIX."modules/map/images/map-location@2x.png\";\n".
+        'var isFullscreen = '.($this->page == 'fullscreen' ? 'true' : 'false').";\n"
       );
+      
       $this->addOnLoad('showMap();');
       $this->addOnOrientationChange('handleMapResize();');
       $this->initListUpdate();
@@ -451,6 +514,18 @@ class TransitWebModule extends WebModule {
     }
     
     $this->assign('staticMap', !$MapDevice->pageSupportsDynamicMap());
+      
+    if ($this->page == 'fullscreen') {
+      $this->assign('fullscreen', true);
+      $this->assign('returnURL', $this->buildBreadcrumbURL($this->getArg('type'), array(
+        'id' => $this->getArg('id'),
+      ), false));
+    } else {
+      $this->assign('fullscreenURL', $this->buildBreadcrumbURL('fullscreen', array(
+        'type' => $this->page,
+        'id' => $this->getArg('id'),
+      ), false));
+    }
   }
   
   function initListUpdate() {

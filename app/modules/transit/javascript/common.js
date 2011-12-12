@@ -81,10 +81,92 @@ function autoReload(reloadTime) {
 
 var mapResizeHandler;
 
+var updateMapDimensionsTimeoutIds = [];
+function clearUpdateMapDimensionsTimeouts() {
+    for(var i = 0; i < updateMapDimensionsTimeoutIds.length; i++) {
+        window.clearTimeout(updateMapDimensionsTimeoutIds[i]);
+    }
+    updateMapDimensionsTimeoutIds = [];
+}
+
+// Prevent firebombing the browser with Ajax calls on browsers which fire lots
+// of resize events
 function handleMapResize() {
-  if (typeof mapResizeHandler != 'undefined') {
-    setTimeout(mapResizeHandler, 200);
-  }
+    clearUpdateMapDimensionsTimeouts();
+    
+    if (typeof mapResizeHandler != 'undefined') {
+      var timeoutId = window.setTimeout(mapResizeHandler, 200);
+      updateMapDimensionsTimeoutIds.push(timeoutId);
+      timeoutId = window.setTimeout(mapResizeHandler, 500);
+      updateMapDimensionsTimeoutIds.push(timeoutId);
+    }
+}
+
+// id7 doesn't understand window.innerWidth and window.innerHeight
+function getWindowHeight() {
+    if (window.innerHeight !== undefined) {
+        return window.innerHeight;
+    } else {
+        return document.documentElement.clientHeight;
+    }
+}
+
+function getWindowWidth() {
+    if (window.innerWidth !== undefined) {
+        return window.innerWidth;
+    } else {
+        return document.documentElement.clientWidth;
+    }
+}
+
+function findPosY(obj) {
+    // Function for finding the y coordinate of the object passed as an argument.
+    // Returns the y coordinate as an integer, relative to the top left origin of the document.
+    var intCurlTop = 0;
+    if (obj.offsetParent) {
+        while (obj.offsetParent) {
+            intCurlTop += obj.offsetTop;
+            obj = obj.offsetParent;
+        }
+    }
+    return intCurlTop;
+}
+
+function doUpdateContainerDimensions() {
+    if (isFullscreen) {
+        var container = document.getElementById("container");
+        if (container) {
+            var newWidth = getWindowWidth() + "px";
+            var newHeight = getWindowHeight() + "px";
+            
+            // check to see if the container height and width actually changed
+            if (container.style && container.style.width && container.style.width == newWidth
+                                && container.style.height && container.style.height == newHeight) {
+                
+                return; // nothing changed so exit early
+            }
+            
+            container.style.width = newWidth;
+            container.style.height = newHeight;
+        }
+    } else {
+        var mapimage = document.getElementById("map_dynamic");
+        var maptab = document.getElementById("mapTab");
+        if (mapimage) {
+            var topoffset = findPosY(document.getElementById("tabbodies"));
+            var bottomoffset = 0;
+            // TODO lots of hard coding here, need better way to get these values
+            var zoomControlsHeight = 56;
+            var footernav = document.getElementById("footernav");
+            if (footernav) {
+                bottomoffset = 75;
+            }
+            var tabHeight = getWindowHeight() - topoffset - bottomoffset;
+            var tabPadding = 8 * 2;
+            maptab.style.height = (tabHeight - tabPadding) + "px";
+            mapimage.style.height = (tabHeight - zoomControlsHeight - tabPadding) + "px";
+        }
+    }
 }
 
 function showMap() {
@@ -96,21 +178,13 @@ function showMap() {
       'mapTypeControl' : false,
       'panControl' : false,
       'streetViewControl' : false,
-      'zoomControlOptions' : { 
-        'position' : google.maps.ControlPosition.RIGHT_BOTTOM,
-        'style'    : google.maps.ZoomControlStyle.SMALL
-      }
+      'zoomControl' : false
     };
     
     var map = new google.maps.Map(mapElement, options);
-    var bounds = new google.maps.LatLngBounds();
 
     for (var id in mapMarkers) {
       setMapMarker(map, id, mapMarkers[id]);
-      
-      if (!mapPaths.length) {
-        bounds.extend(new google.maps.LatLng(mapMarkers[id]['lat'], mapMarkers[id]['lon']));
-      }
     }
     
     for (var id in mapPaths) {
@@ -120,7 +194,6 @@ function showMap() {
       for (var i = 0; i < mapPath.length; i++) {
         var pathPoint = new google.maps.LatLng(mapPath[i]['lat'], mapPath[i]['lon']);
         path.push(pathPoint);
-        bounds.extend(pathPoint);
       }
       
       mapPaths[id]['polyline'] = new google.maps.Polyline({
@@ -132,22 +205,45 @@ function showMap() {
         'strokeWeight'  : 2
       });
     }
-    bounds = trimBoundsPadding(bounds); // Work around Google's excess bounds padding
     
-    fitMapBounds(map, bounds);
+    fitMapBounds(map, null);
     
     mapResizeHandler = function () {
+      if (typeof doUpdateContainerDimensions != 'undefined') {
+        doUpdateContainerDimensions();
+      }
+      
       google.maps.event.trigger(map, 'resize');
-      fitMapBounds(map, bounds);
+      fitMapBounds(map, null);
     };
     
+    // Map controls
+    document.getElementById("zoomin").onclick = function () {
+      map.setZoom(map.getZoom() + 1);
+    };
+    document.getElementById("zoomout").onclick = function () {
+      map.setZoom(map.getZoom() - 1);
+    };
+    document.getElementById("recenter").onclick = function () {
+      fitMapBounds(map, null);
+    };
+    var locateMeButton = document.getElementById("locateMe");
+    if ("geolocation" in navigator) {
+      initGeolocation(map);
+    } else {
+      locateMeButton.parentNode.removeChild(locateMeButton);
+      document.getElementById("zoomout").style.left = "35%";
+      document.getElementById("recenter").style.left = "64%";
+    }
+    
+    // Make map visible
     var elem = document.getElementById('map_canvas');
     elem.style.visibility = 'visible';
     var elem = document.getElementById('map_loading');
     elem.style.display = 'none';
     
     if (markerUpdateURL.length && markerUpdateFrequency) {
-      setInterval(function () { updateMarkers(map); }, markerUpdateFrequency*1000);
+      setInterval(function () { updateMarkers(map, locateMeButton); }, markerUpdateFrequency*1000);
     }
     if (typeof onMapLoad != 'undefined') {
       // Allows sites to make additional changes to the map after it loads
@@ -178,10 +274,10 @@ function trimBoundsPadding(bounds) {
   var cx = (lng1 + lng2) / 2.;
   var cy = (lat1 + lat2) / 2.;
   
-  lat1 = cy + dy / 1.3;
-  lng1 = cx + dx / 1.3;
-  lat2 = cy - dy / 1.3;
-  lng2 = cx - dx / 1.3;
+  lat1 = cy + dy / 1.2;
+  lng1 = cx + dx / 1.2;
+  lat2 = cy - dy / 1.2;
+  lng2 = cx - dx / 1.2;
   
   sw = new google.maps.LatLng(lat1, lng1);
   ne = new google.maps.LatLng(lat2, lng2);
@@ -189,7 +285,47 @@ function trimBoundsPadding(bounds) {
   return new google.maps.LatLngBounds(sw, ne);
 }
 
-function fitMapBounds(map, bounds) {
+function fitMapBounds(map, userLocation) {
+  var bounds = new google.maps.LatLngBounds();
+  
+  // create a bounds object for the mapPaths (if any)
+  // do this once because the paths don't change
+  if (typeof fitMapBounds.pathBounds == 'undefined') {
+    fitMapBounds.pathBounds = null;
+    for (var id in mapPaths) {
+      for (var i = 0; i < mapPaths[id].length; i++) {
+        var pathPoint = new google.maps.LatLng(
+          mapPaths[id][i]['lat'], mapPaths[id][i]['lon']);
+        if (fitMapBounds.pathBounds === null) {
+          fitMapBounds.pathBounds = new google.maps.LatLngBounds();
+        }
+        fitMapBounds.pathBounds.extend(pathPoint);
+      }
+    }
+  }
+  
+  if (fitMapBounds.pathBounds !== null) {
+    // If we have a map path, use that for the bounds
+    // sometimes shuttles sit in parking lots with gps on
+    // and we don't want to zoom out to show those
+    bounds.union(fitMapBounds.pathBounds);
+    
+  } else {
+    // no map path, fit to markers instead
+    for (var id in mapMarkers) {
+      bounds.extend(new google.maps.LatLng(mapMarkers[id]['lat'], mapMarkers[id]['lon']));
+    }
+  }
+  
+  // if the caller provided a user location, include it
+  if (userLocation !== null) {
+    bounds.extend(userLocation);
+  }
+  
+  if (!isFullscreen) {
+    bounds = trimBoundsPadding(bounds); // Work around Google's excess bounds padding
+  }
+  
   // Restrict the zoom level while fitting to bounds
   // Listeners will definitely get called because the initial zoom level is 19
   map.setOptions({ minZoom: 12, maxZoom: 18 });
@@ -202,24 +338,6 @@ function fitMapBounds(map, bounds) {
   });
   map.fitBounds(bounds);
 };
-
-function updateCurrentPosition(map) {
-  navigator.geolocation.getCurrentPosition(function(position) {
-    var location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-
-    if (typeof updateCurrentPosition.selfMarker == 'undefined') {
-      updateCurrentPosition.selfMarker = new google.maps.Marker({
-        'clickable' : false,
-        'map'       : map, 
-        'position'  : location,
-        'flat'      : true,
-        'icon'      : selfMarkerURL
-      });
-    } else {
-      updateCurrentPosition.selfMarker.setPosition(location);
-    }
-  }, function() {}, { enableHighAccuracy: true });
-}
 
 function updateHTML() {
   var container = document.getElementById('ajaxcontainer');
@@ -255,7 +373,7 @@ function updateMarkers(map) {
   httpRequest.onreadystatechange = function() {
     if (httpRequest.readyState == 4 && httpRequest.status == 200) {
       var obj;
-      if(window.JSON) {
+      if (window.JSON) {
           obj = JSON.parse(httpRequest.responseText);
       } else {
           obj = eval('(' + httpRequest.responseText + ')');
@@ -284,10 +402,6 @@ function updateMarkers(map) {
     }
   }
   httpRequest.send(null);
-  
-  /*if (navigator.geolocation && selfMarkerURL) {
-    updateCurrentPosition(map);
-  }*/
 }
 
 function setMapMarker(map, id, attrs) {
@@ -331,4 +445,68 @@ function setMapMarker(map, id, attrs) {
       onUpdateMapMarker(map, mapMarkers[id]);
     }
   }
+}
+
+function initGeolocation(map) {
+  var locateMeButton = document.getElementById("locateMe");
+  
+  if (!("geolocation" in navigator)) {
+    locateMeButton.parentNode.removeChild(locateMeButton);
+    return;  // no geolocation support
+  }
+
+  var locationWatchId = null;
+  var firstLocationUpdate = false;
+  var userLocationMarker = null;
+
+  locateMeButton.onclick = function() {
+    toggleClass(this, 'enabled');
+    
+    if (hasClass(this, 'enabled')) {
+      firstLocationUpdate = true;
+      
+      locationWatchId = navigator.geolocation.watchPosition(
+        function (location) {
+          var position = new google.maps.LatLng(location.coords.latitude, location.coords.longitude);
+      
+          if (userLocationMarker === null) {
+            userLocationMarker = new google.maps.Marker({
+              'clickable' : false,
+              'map'       : map, 
+              'position'  : position,
+              'flat'      : true,
+              'icon'      : new google.maps.MarkerImage(
+                userLocationMarkerURL,
+                null, // original size
+                null, // origin (0, 0)
+                new google.maps.Point(8, 8),  // anchor
+                new google.maps.Size(16, 16)) // scaled size
+            });
+          } else {
+            if (userLocationMarker.getMap() === null) {
+              userLocationMarker.setMap(map);
+            }
+            userLocationMarker.setPosition(position);
+          }
+          
+          // only recenter on first location so we don't rubber band on scrolling
+          // include current map center on map so zoom/pan is not as confusing
+          if (firstLocationUpdate) {
+            fitMapBounds(map, position);
+            firstLocationUpdate = false;
+          }
+        },
+        function (error) {}, // ignore errors
+        { enableHighAccuracy: true }
+      );
+      
+    } else if (locationWatchId != null) {
+      // remove marker from map and stop watching location
+      if (userLocationMarker !== null) {
+        userLocationMarker.setMap(null);
+      }
+      navigator.geolocation.clearWatch(locationWatchId);
+      locationWatchId = null;
+    }
+  };
 }

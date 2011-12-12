@@ -39,19 +39,7 @@
 </div>
 <div id="stopinfo">
   <div id="mapcontainer">
-    {if $staticMap}
-      <div id="map_static">
-        <img src="{$mapImageSrc}" height="{$mapImageHeight}" width="{$mapImageWidth}" />
-      </div>
-    {else}
-      <div id="map_dynamic">
-        <div id="map_canvas">
-        </div>
-        <div id="map_loading">
-          <img src="/common/images/loading2.gif" />&nbsp;Loading map...
-        </div>
-      </div>
-    {/if}
+    {include file="findInclude:modules/transit/templates/include/map.tpl"}
   </div>
   
   <div id="ajaxcontainer">

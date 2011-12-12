@@ -4,6 +4,10 @@
 	margin-top: 8px;
 }
 
+#tabbodies {
+  border-radius: 0;
+}
+
 .tabbody {
 	min-height: 260px;
 }
