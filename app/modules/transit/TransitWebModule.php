@@ -492,6 +492,9 @@ class TransitWebModule extends WebModule {
     $MapDevice = new MapDevice($this->pagetype, $this->platform);
     
     if ($MapDevice->pageSupportsDynamicMap()) {
+      // Fit detail map to screen if it is the route map or if it is the stop map on tablet:
+      $fitMapToScreen = $this->pagetype == 'tablet' || $this->page == 'route';
+      
       $this->addExternalJavascript('http://maps.google.com/maps/api/js?sensor=true');
       $this->addInlineJavascript("\n".
         'var mapMarkers = '.json_encode($markers).";\n".
@@ -500,7 +503,8 @@ class TransitWebModule extends WebModule {
         'var markerUpdateURL = "'.$markerUpdateURL."\";\n".
         'var markerUpdateFrequency = '.$this->getOptionalModuleVar('MAP_MARKER_UPDATE_FREQ', 2).";\n".
         'var userLocationMarkerURL = "'.FULL_URL_PREFIX."modules/map/images/map-location@2x.png\";\n".
-        'var isFullscreen = '.($this->page == 'fullscreen' ? 'true' : 'false').";\n"
+        'var isFullscreen = '.($this->page == 'fullscreen' ? 'true' : 'false').";\n".
+        'var fitMapToScreen = '.($fitMapToScreen ? 'true' : 'false').";\n"
       );
       
       $this->addOnLoad('showMap();');

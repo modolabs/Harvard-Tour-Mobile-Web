@@ -123,7 +123,7 @@ function findPosY(obj) {
     // Function for finding the y coordinate of the object passed as an argument.
     // Returns the y coordinate as an integer, relative to the top left origin of the document.
     var intCurlTop = 0;
-    if (obj.offsetParent) {
+    if (obj && obj.offsetParent) {
         while (obj.offsetParent) {
             intCurlTop += obj.offsetTop;
             obj = obj.offsetParent;
@@ -149,11 +149,15 @@ function doUpdateContainerDimensions() {
             container.style.width = newWidth;
             container.style.height = newHeight;
         }
-    } else {
+    } else if (fitMapToScreen) {
         var mapimage = document.getElementById("map_dynamic");
         var maptab = document.getElementById("mapTab");
         if (mapimage) {
-            var topoffset = findPosY(document.getElementById("tabbodies"));
+            var mapcontainer = document.getElementById("tabbodies");
+            if (mapcontainer === null) {
+                mapcontainer = document.getElementById("mapcontainer")
+            }
+            var topoffset = findPosY(mapcontainer);
             var bottomoffset = 0;
             // TODO lots of hard coding here, need better way to get these values
             var zoomControlsHeight = 56;
@@ -163,7 +167,9 @@ function doUpdateContainerDimensions() {
             }
             var tabHeight = getWindowHeight() - topoffset - bottomoffset;
             var tabPadding = 8 * 2;
-            maptab.style.height = (tabHeight - tabPadding) + "px";
+            if (maptab) {
+                maptab.style.height = (tabHeight - tabPadding) + "px";
+            }
             mapimage.style.height = (tabHeight - zoomControlsHeight - tabPadding) + "px";
         }
     }
