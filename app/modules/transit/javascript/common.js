@@ -95,10 +95,11 @@ function handleMapResize() {
     clearUpdateMapDimensionsTimeouts();
     
     if (typeof mapResizeHandler != 'undefined') {
-      var timeoutId = window.setTimeout(mapResizeHandler, 200);
-      updateMapDimensionsTimeoutIds.push(timeoutId);
-      timeoutId = window.setTimeout(mapResizeHandler, 500);
-      updateMapDimensionsTimeoutIds.push(timeoutId);
+      updateMapDimensionsTimeoutIds.push(window.setTimeout(mapResizeHandler, 100));
+      updateMapDimensionsTimeoutIds.push(window.setTimeout(mapResizeHandler, 200));
+      updateMapDimensionsTimeoutIds.push(window.setTimeout(mapResizeHandler, 300));
+      updateMapDimensionsTimeoutIds.push(window.setTimeout(mapResizeHandler, 500));
+      updateMapDimensionsTimeoutIds.push(window.setTimeout(mapResizeHandler, 700));
     }
 }
 
@@ -148,6 +149,7 @@ function doUpdateContainerDimensions() {
             
             container.style.width = newWidth;
             container.style.height = newHeight;
+            container.style.minHeight = "0"; // so we don't get extra space at the bottom
         }
     } else if (fitMapToScreen) {
         var mapimage = document.getElementById("map_dynamic");
@@ -160,7 +162,7 @@ function doUpdateContainerDimensions() {
             var topoffset = findPosY(mapcontainer);
             var bottomoffset = 0;
             // TODO lots of hard coding here, need better way to get these values
-            var zoomControlsHeight = 56;
+            var zoomControlsHeight = 45;
             var footernav = document.getElementById("footernav");
             if (footernav) {
                 bottomoffset = 75;
@@ -169,8 +171,10 @@ function doUpdateContainerDimensions() {
             var tabPadding = 8 * 2;
             if (maptab) {
                 maptab.style.height = (tabHeight - tabPadding) + "px";
+                maptab.style.minHeight = "0"; // so we don't get extra space at the bottom
             }
             mapimage.style.height = (tabHeight - zoomControlsHeight - tabPadding) + "px";
+            mapimage.style.minHeight = "0"; // so we don't get extra space at the bottom
         }
     }
 }
@@ -280,10 +284,10 @@ function trimBoundsPadding(bounds) {
   var cx = (lng1 + lng2) / 2.;
   var cy = (lat1 + lat2) / 2.;
   
-  lat1 = cy + dy / 1.2;
-  lng1 = cx + dx / 1.2;
-  lat2 = cy - dy / 1.2;
-  lng2 = cx - dx / 1.2;
+  lat1 = cy + dy / 1.4;
+  lng1 = cx + dx / 1.4;
+  lat2 = cy - dy / 1.4;
+  lng2 = cx - dx / 1.4;
   
   sw = new google.maps.LatLng(lat1, lng1);
   ne = new google.maps.LatLng(lat2, lng2);
@@ -328,9 +332,7 @@ function fitMapBounds(map, userLocation) {
     bounds.extend(userLocation);
   }
   
-  if (!isFullscreen) {
-    bounds = trimBoundsPadding(bounds); // Work around Google's excess bounds padding
-  }
+  bounds = trimBoundsPadding(bounds); // Work around Google's excess bounds padding
   
   // Restrict the zoom level while fitting to bounds
   // Listeners will definitely get called because the initial zoom level is 19

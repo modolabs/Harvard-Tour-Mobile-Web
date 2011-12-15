@@ -49,7 +49,7 @@
 #map_dynamic {
   clear: both;
   height: 300px;
-  margin: 0 12px;
+  margin: 0;
 	border: 1px solid #999;
 	overflow: hidden;
 }
