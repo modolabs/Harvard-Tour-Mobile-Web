@@ -183,7 +183,7 @@ function showMap() {
   var mapElement = document.getElementById('map_canvas');
   if (mapElement) {
     var options = {
-      'zoom' : 19, // make sure zoom level and bounds change when fitBounds is called
+      'zoom' : 17,
       'mapTypeId' : google.maps.MapTypeId.ROADMAP,
       'mapTypeControl' : false,
       'panControl' : false,
@@ -284,10 +284,10 @@ function trimBoundsPadding(bounds) {
   var cx = (lng1 + lng2) / 2.;
   var cy = (lat1 + lat2) / 2.;
   
-  lat1 = cy + dy / 1.4;
-  lng1 = cx + dx / 1.4;
-  lat2 = cy - dy / 1.4;
-  lng2 = cx - dx / 1.4;
+  lat1 = cy + dy / 1.3;
+  lng1 = cx + dx / 1.3;
+  lat2 = cy - dy / 1.3;
+  lng2 = cx - dx / 1.3;
   
   sw = new google.maps.LatLng(lat1, lng1);
   ne = new google.maps.LatLng(lat2, lng2);
@@ -335,8 +335,9 @@ function fitMapBounds(map, userLocation) {
   bounds = trimBoundsPadding(bounds); // Work around Google's excess bounds padding
   
   // Restrict the zoom level while fitting to bounds
-  // Listeners will definitely get called because the initial zoom level is 19
-  map.setOptions({ minZoom: 12, maxZoom: 18 });
+  // Listeners will definitely get called because we set the zoom level to 19
+  map.setOptions({ minZoom: 10, maxZoom: 18 });
+  map.setZoom(19);
   var zoomChangeListener = google.maps.event.addListener(map, 'zoom_changed', function() {
     var zoomChangeBoundsListener = google.maps.event.addListener(map, 'bounds_changed', function(event) {
       map.setOptions({minZoom: null, maxZoom: null});
