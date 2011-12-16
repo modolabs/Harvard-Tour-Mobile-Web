@@ -95,11 +95,8 @@ function handleMapResize() {
     clearUpdateMapDimensionsTimeouts();
     
     if (typeof mapResizeHandler != 'undefined') {
-      updateMapDimensionsTimeoutIds.push(window.setTimeout(mapResizeHandler, 100));
       updateMapDimensionsTimeoutIds.push(window.setTimeout(mapResizeHandler, 200));
-      updateMapDimensionsTimeoutIds.push(window.setTimeout(mapResizeHandler, 300));
       updateMapDimensionsTimeoutIds.push(window.setTimeout(mapResizeHandler, 500));
-      updateMapDimensionsTimeoutIds.push(window.setTimeout(mapResizeHandler, 700));
     }
 }
 
