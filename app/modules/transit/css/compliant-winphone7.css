@@ -1,3 +1,6 @@
 table#scheduleView .stopnames td a {
   background-image: url(/common/images/action-arrow-white.png);
 }
+.tabbody {
+  background-color: #fff;
+}
