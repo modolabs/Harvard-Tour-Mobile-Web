@@ -265,33 +265,6 @@ function initListUpdate() {
   }
 }
 
-// shrink bounds to compensate for padding introduced by google maps
-// when we fit to these bounds
-function trimBoundsPadding(bounds) {
-  var sw = bounds.getSouthWest();
-  var ne = bounds.getNorthEast();
-  
-  var lat1 = sw.lat();
-  var lng1 = sw.lng();
-  var lat2 = ne.lat();
-  var lng2 = ne.lng();
-  
-  var dx = (lng1 - lng2) / 2.;
-  var dy = (lat1 - lat2) / 2.;
-  var cx = (lng1 + lng2) / 2.;
-  var cy = (lat1 + lat2) / 2.;
-  
-  lat1 = cy + dy / 1.3;
-  lng1 = cx + dx / 1.3;
-  lat2 = cy - dy / 1.3;
-  lng2 = cx - dx / 1.3;
-  
-  sw = new google.maps.LatLng(lat1, lng1);
-  ne = new google.maps.LatLng(lat2, lng2);
-  
-  return new google.maps.LatLngBounds(sw, ne);
-}
-
 function fitMapBounds(map, userLocation) {
   var bounds = new google.maps.LatLngBounds();
   
@@ -329,7 +302,10 @@ function fitMapBounds(map, userLocation) {
     bounds.extend(userLocation);
   }
   
-  bounds = trimBoundsPadding(bounds); // Work around Google's excess bounds padding
+   // callback to allow sites to try to work around google maps' padding on small screens
+  if (typeof trimMapBounds != 'undefined') {
+      bounds = trimMapBounds(document.getElementById('map_canvas'), bounds);
+  }
   
   // Restrict the zoom level while fitting to bounds
   // Listeners will definitely get called because we set the zoom level to 19
