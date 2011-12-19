@@ -280,10 +280,12 @@ class TransitWebModule extends WebModule {
         }
 
         $tabs = array('stops');
+        $tabsJavascript = array('');
         
         $paths = $view->getRoutePaths($routeID);
         if ($paths) {
           array_unshift($tabs, 'map');
+          array_unshift($tabsJavascript, 'mapResizeHandler()');
           $this->assign('hasRouteMap', true);
         
           $this->initMapForRoute($routeID, $routeInfo, $paths, $view);
@@ -495,7 +497,7 @@ class TransitWebModule extends WebModule {
       // Fit detail map to screen if it is the route map or if it is the stop map on tablet:
       $fitMapToScreen = $this->pagetype == 'tablet' || $this->page == 'route';
       
-      $this->addExternalJavascript('http://maps.google.com/maps/api/js?sensor=true');
+      $this->addExternalJavascript('http://maps.googleapis.com/maps/api/js?sensor=true');
       $this->addInlineJavascript("\n".
         'var mapMarkers = '.json_encode($markers).";\n".
         'var mapPaths = '.json_encode($paths).";\n".

@@ -184,8 +184,9 @@ function showMap() {
       'mapTypeId' : google.maps.MapTypeId.ROADMAP,
       'mapTypeControl' : false,
       'panControl' : false,
-      'streetViewControl' : false,
-      'zoomControl' : false
+      'zoomControl' : false,
+      'scaleControl' : false,
+      'streetViewControl' : false
     };
     
     var map = new google.maps.Map(mapElement, options);
@@ -195,12 +196,14 @@ function showMap() {
     }
     
     for (var id in mapPaths) {
+      var pathBounds = new google.maps.LatLngBounds();
       var mapPath = mapPaths[id];
       
       var path = [];
       for (var i = 0; i < mapPath.length; i++) {
         var pathPoint = new google.maps.LatLng(mapPath[i]['lat'], mapPath[i]['lon']);
         path.push(pathPoint);
+        pathBounds.extend(pathPoint);
       }
       
       mapPaths[id]['polyline'] = new google.maps.Polyline({
@@ -208,9 +211,10 @@ function showMap() {
         'map'           : map, 
         'path'          : path,
         'strokeColor'   : mapPathColor,
-        'strokeOpacity' : 1,
+        'strokeOpacity' : 1.0,
         'strokeWeight'  : 2
       });
+      mapPaths[id]['bounds'] = pathBounds;
     }
     
     fitMapBounds(map, null);
@@ -267,30 +271,17 @@ function initListUpdate() {
 
 function fitMapBounds(map, userLocation) {
   var bounds = new google.maps.LatLngBounds();
+  var hasPathBounds = false;
   
-  // create a bounds object for the mapPaths (if any)
-  // do this once because the paths don't change
-  if (typeof fitMapBounds.pathBounds == 'undefined') {
-    fitMapBounds.pathBounds = null;
-    for (var id in mapPaths) {
-      for (var i = 0; i < mapPaths[id].length; i++) {
-        var pathPoint = new google.maps.LatLng(
-          mapPaths[id][i]['lat'], mapPaths[id][i]['lon']);
-        if (fitMapBounds.pathBounds === null) {
-          fitMapBounds.pathBounds = new google.maps.LatLngBounds();
-        }
-        fitMapBounds.pathBounds.extend(pathPoint);
-      }
-    }
+  // If we have a map path, use that for the bounds
+  // sometimes shuttles sit in parking lots with gps on
+  // and we don't want to zoom out to show those
+  for (var id in mapPaths) {
+    bounds.union(mapPaths[id]['bounds']);
+    hasPathBounds = true;
   }
   
-  if (fitMapBounds.pathBounds !== null) {
-    // If we have a map path, use that for the bounds
-    // sometimes shuttles sit in parking lots with gps on
-    // and we don't want to zoom out to show those
-    bounds.union(fitMapBounds.pathBounds);
-    
-  } else {
+  if (!hasPathBounds) {
     // no map path, fit to markers instead
     for (var id in mapMarkers) {
       bounds.extend(new google.maps.LatLng(mapMarkers[id]['lat'], mapMarkers[id]['lon']));
