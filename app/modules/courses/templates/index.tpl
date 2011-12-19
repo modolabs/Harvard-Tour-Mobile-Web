@@ -9,7 +9,7 @@
 {include file="findInclude:common/templates/search.tpl"}
 
 {block name="navList"}
-  {include file="findInclude:common/templates/navlist.tpl" navlistItems=$areas}
+  {include file="findInclude:common/templates/navlist.tpl" navlistItems=$course subTitleNewline=true}
 {/block}
 
 {include file="findInclude:common/templates/footer.tpl"}

@@ -8,8 +8,13 @@ abstract class CourseContent implements KurogoObject {
     protected $contentType;
     protected $title;
     protected $description;
+    protected $author;
     protected $publishedDate;
     protected $priority;
+    
+    public function filterItem($filters) {
+        return true;
+    }
     
     public function setID($id) {
         $this->id = $id;
@@ -57,6 +62,22 @@ abstract class CourseContent implements KurogoObject {
     
     public function getDescription() {
         return $this->description;
+    }
+    
+    public function setAuthor($author) {
+        $this->author = $author;
+    }
+    
+    public function getAuthor() {
+        return $this->author;
+    }
+    
+    public function setPublishedDate($dateTime) {
+        $this->publishedDate = $dateTime;
+    }
+    
+    public function getPublishedDate() {
+        return $this->publishedDate;
     }
     
     public static function getPriorities() {

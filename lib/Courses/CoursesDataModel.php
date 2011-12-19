@@ -9,24 +9,22 @@ class CoursesDataModel extends DataModel {
     
     protected $retrievers;
     
+    public function getRetrieverModes() {
+        return array('catalog', 'registation', 'content');
+    }
+    
+    public function isValidRetrieverMode($mode = '') {
+        $modes = $this->getRetrieverModes();
+        
+        return in_array($mode, $modes);
+    }
+    
     //returns an array of terms. 
     public function getAvailableTerms() {
-        return $self:: CURRENT_TERM;
+        return self::CURRENT_TERM;
     }
-    
+
     public function search($searchTerms, $options) {
-        
-    }
-    
-    /**
-     * returns an array of Course objects
-     * @param array $options
-     *  'term'=> a term value or CoursesDataModel::CURRENT_TERM or CoursesDataModel::ALL_TERMS
-     *  'section'=> a CourseCatalogSection - only used for catalogRetriever
-     *  'kind'=> an array of retriever constants to limit by (i.e. catalog, registration, content) if empty then it will default to all available
-     * @return Course object list
-     */
-    public function getCourses($options) {
         
     }
     
@@ -40,12 +38,42 @@ class CoursesDataModel extends DataModel {
         
     }
     
+    //most recent activity from course
+    public function getLastUpdate($courseID) {
+        if ($this->canRetrieve('content')) {
+            return $this->retrievers['content']->getLastUpdate($courseID);
+        }
+        
+        return array();
+    }
+    
     public function canRetrieve($type) {
         if (isset($this->retrievers[$type]) && $this->retrievers[$type]) {
             return true;
         } else {
             return false;
         }
+    }
+    
+    //use the CourseCatalogDataRetriever to get the courses
+    public function getCatalogCourses() {
+        if ($retriever = $this->canRetrieve('catalog')) {
+            
+        }
+        return array();
+    }
+    
+    public function getRegistationCourses() {
+        
+    }
+    
+    //use the CourseContentDataRetriever to get the courses
+    public function getContentCourses($options = array()) {
+        if ($this->canRetrieve('content')) {
+            //binding the refer course id from Registration and Catalog
+            return $this->retrievers['content']->getCourses($options);
+        }
+        return array();
     }
     
     public function setRetriever($type, DataRetriever $retriever) {
@@ -59,15 +87,25 @@ class CoursesDataModel extends DataModel {
     protected function init($args) {
         $this->initArgs = $args;
         
-        foreach ($args as $type => $arg) {
-            //instantiate the retriever class and add it to the retrievers
-            if (isset($arg['RETRIEVER_CLASS'])) {
-                $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
-                $retriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
-                $this->setRetriever($type, $retriever);
-            }
+        if (isset($args['catalog'])) {
+            $arg = $args['catalog'];
+            $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
+            $catalogRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
+            $this->setRetriever('catalog', $retriever);
         }
         
-        print_r($this->retrievers);
+        if (isset($args['registation'])) {
+            $arg = $args['registation'];
+            $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
+            $registationRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
+            $this->setRetriever('registation', $registationRetriever);
+        }
+        
+        if (isset($args['content'])) {
+            $arg = $args['content'];
+            $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
+            $contentRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
+            $this->setRetriever('content', $contentRetriever);
+        }
     }
 }
