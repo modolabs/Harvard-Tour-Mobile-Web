@@ -1,6 +1,10 @@
 table#scheduleView .stopnames td a {
   background-image: url(/common/images/action-arrow-white.png);
 }
-.tabbody {
-  background-color: #fff;
+#tabbodies {
+  overflow: hidden;
+  margin-top: -10px;
+}
+.smalltabs + #tabbodies {
+  margin-top: -12px;
 }
