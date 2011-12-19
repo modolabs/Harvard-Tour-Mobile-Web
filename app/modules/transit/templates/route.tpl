@@ -87,7 +87,7 @@
     {block name="autoReload"}
       {if $autoReloadTime}
         {capture assign="autoReloadTimeString" name="autoReloadTimeString"}
-          <span id="reloadCounter">{$autoReloadTime}</span>
+          <span id="reloadCounter">{$autoReloadTime}</span> 
         {/capture}
         <br/>{"AUTO_RELOAD_MESSAGE"|getLocalizedString:$autoReloadTimeString}
       {/if}
