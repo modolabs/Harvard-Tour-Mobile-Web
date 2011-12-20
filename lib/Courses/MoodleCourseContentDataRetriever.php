@@ -1,6 +1,6 @@
 <?php
 
-class MoodleCourseContentDataRetriever extends CourseContentDataRetriever {
+class MoodleCourseContentDataRetriever extends URLDataRetriever implements CourseContentDataRetriever {
 
     protected $DEFAULT_PARSER_CLASS='MoodleCourseContentDataParser';
     
@@ -88,7 +88,6 @@ class MoodleCourseContentDataRetriever extends CourseContentDataRetriever {
                 $courses[] = $item;
             }
         }
-        
         return $courses;
     }
     

@@ -76,7 +76,7 @@ class CoursesDataModel extends DataModel {
         return array();
     }
     
-    public function setRetriever($type, DataRetriever $retriever) {
+    public function setCoursesRetriever($type, DataRetriever $retriever) {
         if ($retriever instanceOf $this->RETRIEVER_INTERFACE) {
             $this->retrievers[$type] = $retriever;
         } else {
@@ -91,21 +91,21 @@ class CoursesDataModel extends DataModel {
             $arg = $args['catalog'];
             $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
             $catalogRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
-            $this->setRetriever('catalog', $retriever);
+            $this->setCoursesRetriever('catalog', $retriever);
         }
         
         if (isset($args['registation'])) {
             $arg = $args['registation'];
             $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
             $registationRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
-            $this->setRetriever('registation', $registationRetriever);
+            $this->setCoursesRetriever('registation', $registationRetriever);
         }
         
         if (isset($args['content'])) {
             $arg = $args['content'];
             $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
             $contentRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
-            $this->setRetriever('content', $contentRetriever);
+            $this->setCoursesRetriever('content', $contentRetriever);
         }
     }
 }

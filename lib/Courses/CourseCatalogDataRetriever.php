@@ -1,7 +1,7 @@
 <?php
 
-class CourseCatalogDataRetriever extends URLDataRetriever implements CourseCatalogInterface {
+interface CourseCatalogDataRetriever extends CourseDataInterface {
 
-    protected $DEFAULT_PARSER_CLASS='CoursesXMLDataParser';
+    public function getCatalogSections($options);
     
 }
