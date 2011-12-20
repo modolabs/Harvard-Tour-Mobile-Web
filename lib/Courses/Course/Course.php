@@ -1,6 +1,7 @@
 <?php
 
 class Course implements KurogoObject {
+
     protected $courseNumber;
     protected $retrieverIds;
     protected $title;

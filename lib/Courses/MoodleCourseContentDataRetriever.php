@@ -9,6 +9,8 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
     protected $token;
     protected $userID;
     
+    protected $sortType;
+    
     protected function setUserID($userID) {
         $this->userID = $userID;
     }
@@ -22,54 +24,41 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         parent::clearInternalCache();
     }
     
-    protected function baseURL() {
-        if ($this->getOption('action') == 'downLoadFile') {
-            $this->baseURL = $this->getOption('fileUrl');
-            
-        } elseif ($this->getOption('action') == 'getPageContent') {
-            $this->baseURL = $this->getOption('pageUrl');
-        } else {
-            $this->baseURL = sprintf("http%s://%s/webservice/rest/server.php",
-                $this->secure ? 's' : '',
-                $this->server
-            );
-        }
-        
-        return $this->baseURL;
+    protected function cacheKey() {
+        return null;
     }
     
-    protected function parameters() {
-    
-        $parameters = parent::parameters();
-
-        $action = $this->getOption('action');
-        $parameters['wstoken'] = $this->token;
-        $parameters['wsfunction'] = '';
-        $parameters['moodlewsrestformat'] = 'json';
+    protected function initRequest() {
+        $baseUrl = sprintf("http%s://%s/webservice/rest/server.php",
+                $this->secure ? 's' : '',
+                $this->server);
+                
+        $this->setBaseURL($baseUrl);
+        
+        $this->addParameter('wstoken', $this->token);
+        $this->addParameter('wsfunction', '');
+        $this->addParameter('moodlewsrestformat', 'json');
         
         $postData = array();
-
+        $action = $this->getOption('action');
         switch ($action) {
             case 'getCourses':
-                $parameters['wsfunction'] = 'core_enrol_get_users_courses';
+                $this->addParameter('wsfunction', 'core_enrol_get_users_courses');
                 $postData['userid'] = $this->getOption('userID');
                 break;
-            
             case 'getCourseContent':
-                $parameters['wsfunction'] = 'core_course_get_contents';
+                $this->addParameter('wsfunction', 'core_course_get_contents');
                 $postData['courseid'] = $this->getOption('courseID');
                 break;
             default:
                 throw new KurogoDataException("not defined the action:" . $action);
         }
-
+        
         if ($postData) {
             $this->setMethod('POST');
             $this->addHeader('Content-type', 'application/x-www-form-urlencoded');
             $this->setData(http_build_query($postData));
         }
-        
-        return $parameters;
     }
     
     public function getCourses($options) {
@@ -103,12 +92,42 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         
     }
     
-    public function sortContents() {
+    private function sortDonations(&$donations, $sort) {
+        if (empty($donations)) {
+            return array();
+        }
+		$this->sortType = $sort;
+		uasort($donations, array($this, "sortByField"));
+        return $donations;
+	}
+
+
+	private function sortByField($contentA, $contentB) {
+        if ($this->sortType == 'publishedDate') {
+            $contentA_time = $contentA->getPublishedDate() ? $contentA->getPublishedDate()->format('U') : 0;
+            $contentB_time = $contentB->getPublishedDate() ? $contentB->getPublishedDate()->format('U') : 0;
+            return $contentA_time < $contentB_time;
+       } else {
+            $func = 'get' . $this->sortType;
+            return strcasecmp($contentA->$func(), $contentB->$func());
+        }
+	}
+	
+    protected function sortCourseContent($courseContents, $sort) {
+        if (empty($courseContents)) {
+            return array();
+        }
         
+		$this->sortType = $sort;
+		
+		uasort($courseContents, array($this, "sortByField"));
+		
+        return $courseContents;
     }
     
     public function getLastUpdate($courseID) {
         if ($courseContents = $this->getCourseContent($courseID)) {
+            $courseContents = $this->sortCourseContent($courseContents, 'publishedDate');
             return current($courseContents);
         }
         return array();

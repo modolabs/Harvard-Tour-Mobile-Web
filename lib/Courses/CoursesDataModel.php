@@ -13,12 +13,6 @@ class CoursesDataModel extends DataModel {
         return array('catalog', 'registation', 'content');
     }
     
-    public function isValidRetrieverMode($mode = '') {
-        $modes = $this->getRetrieverModes();
-        
-        return in_array($mode, $modes);
-    }
-    
     //returns an array of terms. 
     public function getAvailableTerms() {
         return self::CURRENT_TERM;
@@ -64,13 +58,13 @@ class CoursesDataModel extends DataModel {
     }
     
     public function getRegistationCourses() {
+        //there is some test data
         
     }
     
     //use the CourseContentDataRetriever to get the courses
     public function getContentCourses($options = array()) {
         if ($this->canRetrieve('content')) {
-            //binding the refer course id from Registration and Catalog
             return $this->retrievers['content']->getCourses($options);
         }
         return array();
@@ -91,7 +85,7 @@ class CoursesDataModel extends DataModel {
             $arg = $args['catalog'];
             $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
             $catalogRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
-            $this->setCoursesRetriever('catalog', $retriever);
+            $this->setCoursesRetriever('catalog', $catalogRetriever);
         }
         
         if (isset($args['registation'])) {
