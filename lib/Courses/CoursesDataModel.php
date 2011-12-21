@@ -50,9 +50,9 @@ class CoursesDataModel extends DataModel {
     }
     
     //use the CourseCatalogDataRetriever to get the courses
-    public function getCatalogCourses() {
+    public function getCatalogCourses($areaCode) {
         if ($retriever = $this->canRetrieve('catalog')) {
-            
+            return $this->retrievers['catalog']->getCourses($areaCode);
         }
         return array();
     }
@@ -71,10 +71,31 @@ class CoursesDataModel extends DataModel {
     }
     
     //get the catalog areas
-    public function getCatalogAreas() {
+    public function getCatalogAreas($area = null) {
         if ($this->canRetrieve('catalog')) {
-            return $this->retrievers['catalog']->getCatalogAreas();
+            return $this->retrievers['catalog']->getCatalogAreas($area);
         }
+    }
+    
+    //get a catalog area
+    public function getCatalogArea($area) {
+        $areas = explode("|", $area);
+        
+        if ($areaCode = array_shift($areas)) {
+            $area = null;
+            if ($items = $this->getCatalogAreas()) {
+                foreach ($items as $item) {
+                    if ($areaCode == $item->getID()) {
+                        $area = $item;
+                    }
+                }
+            }
+            while ($area && $areaCode = array_shift($areas)) { 
+                $area = $area->getArea($areaCode);
+            }
+        }
+        
+        return $area;
     }
     
     public function setCoursesRetriever($type, DataRetriever $retriever) {

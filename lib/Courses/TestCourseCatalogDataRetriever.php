@@ -6,7 +6,21 @@ class TestCourseCatalogDataRetriever extends URLDataRetriever implements CourseC
     protected $areasFeed;
     protected $coursesFeed;
     
-    public function getCourses($options) {
+    public function getCourses($areaCode) {
+        if ($this->coursesFeed && isset($this->coursesFeed['BASE_URL']) && $this->coursesFeed['BASE_URL']) {
+            $args = $this->coursesFeed;
+            
+            $this->setBaseURL($args['BASE_URL']);
+            
+            //set the dynamic parser
+            $args['PARSER_CLASS'] = isset($args['PARSER_CLASS']) && $args['PARSER_CLASS'] ? $args['PARSER_CLASS']: $this->DEFAULT_PARSER_CLASS;
+            $parser = DataParser::factory($args['PARSER_CLASS'], $args);
+            $this->setParser($parser);
+            
+            $this->setOption('area', $areaCode);
+            $courses = $this->getData();
+            return $courses;
+        }
     }
     
     public function getAvailableTerms() {
@@ -33,7 +47,7 @@ class TestCourseCatalogDataRetriever extends URLDataRetriever implements CourseC
     public function getCourseContent($courseID) {
     }
     
-    public function getCatalogAreas() {
+    public function getCatalogAreas($area) {
         if ($this->areasFeed && isset($this->areasFeed['BASE_URL']) && $this->areasFeed['BASE_URL']) {
             $args = $this->areasFeed;
             
@@ -44,10 +58,10 @@ class TestCourseCatalogDataRetriever extends URLDataRetriever implements CourseC
             $parser = DataParser::factory($args['PARSER_CLASS'], $args);
             $this->setParser($parser);
             
-            $areas = $this->getData();
+            $this->setOption('area', $area);
             
+            $areas = $this->getData();
             return $areas;
-            exit;
         }
         
         return array();
