@@ -91,16 +91,6 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
     public function getGrades($options) {
         
     }
-    
-    private function sortDonations(&$donations, $sort) {
-        if (empty($donations)) {
-            return array();
-        }
-		$this->sortType = $sort;
-		uasort($donations, array($this, "sortByField"));
-        return $donations;
-	}
-
 
 	private function sortByField($contentA, $contentB) {
         if ($this->sortType == 'publishedDate') {

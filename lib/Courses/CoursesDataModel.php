@@ -70,6 +70,13 @@ class CoursesDataModel extends DataModel {
         return array();
     }
     
+    //get the catalog areas
+    public function getCatalogAreas() {
+        if ($this->canRetrieve('catalog')) {
+            return $this->retrievers['catalog']->getCatalogAreas();
+        }
+    }
+    
     public function setCoursesRetriever($type, DataRetriever $retriever) {
         if ($retriever instanceOf $this->RETRIEVER_INTERFACE) {
             $this->retrievers[$type] = $retriever;

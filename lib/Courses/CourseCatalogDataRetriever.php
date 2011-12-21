@@ -2,6 +2,6 @@
 
 interface CourseCatalogDataRetriever extends CourseDataInterface {
 
-    public function getCatalogSections($options);
+    public function getCatalogAreas();
     
 }

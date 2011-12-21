@@ -19,6 +19,10 @@ class CoursesWebModule extends WebModule {
     public function getCourseFeed() {
     
         if ($feeds = $this->loadFeedData()) {
+            if (isset($feeds['catalog'])) {
+                $catalogFeed = $this->getModuleSections('catalog');
+                $feeds['catalog'] = array_merge($feeds['catalog'], $catalogFeed);
+            }
             return DataModel::factory('CoursesDataModel', $feeds);
         } else {
             throw new KurogoConfigurationException($this->getLocalizedString('ERROR_INVALID_FEED'));
@@ -45,8 +49,12 @@ class CoursesWebModule extends WebModule {
     
     protected function initializeForPage() {
         switch($this->page) {
+            case 'catalog':
+                if ($areas = $this->feed->getCatalogAreas()) {
+                    
+                }
+                break;
             case 'index':
-                
                 $courses = array();
                 
                 if ($items = $this->feed->getContentCourses()) {
@@ -56,7 +64,19 @@ class CoursesWebModule extends WebModule {
                     }
                 }
                 
+                $catalogItems = array();
+                if ($this->feed->canRetrieve('catalog')) {
+                    $catalogItems[] = array(
+                        'title' => 'Course Catalog',
+                        'url'   => $this->buildBreadcrumbURL('catalog', array(), true),
+                    );
+                    $catalogItems[] = array(
+                        'title' => 'Bookmarked Courses',
+                        'url'   => '',
+                    );
+                }
                 $this->assign('course', $courses);
+                $this->assign('catalogItems', $catalogItems);
                 break;
         }
     }
