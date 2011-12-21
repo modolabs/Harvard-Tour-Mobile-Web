@@ -17,6 +17,14 @@ class Course implements KurogoObject {
         return md5(serialize($this->retrieverIds));
     }
     
+    public function setCourseNumber($courseNumber) {
+        $this->courseNumber = $courseNumber;
+    }
+    
+    public function getCourseNumber() {
+        return $this->courseNumber;
+    }
+    
     public function addRetrieverId($type, $id) {
         $this->retrieverIds[$type] = $id;
     }

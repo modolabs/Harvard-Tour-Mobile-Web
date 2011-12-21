@@ -72,11 +72,19 @@ class CoursesXMLDataParser extends XMLDataParser {
                 $parent->addSection($element);
                 break;
             case 'COURSE':
+                $match = true;
                 if ($area = $this->getOption('area')) {
-                    if ($element->getAreaCode()==$area) {
-                        $this->items[] = $element;
+                    if ($element->getAreaCode() != $area) {
+                        $match = false;
                     }
-                } else {
+                }
+                
+                if ($courseNumber = $this->getOption('courseNumber')) {
+                    if ($element->getCourseNumber() != $courseNumber) {
+                        $match = false;
+                    }
+                }
+                if ($match) {
                     $this->items[] = $element;
                 }
                 break;
@@ -89,14 +97,11 @@ class CoursesXMLDataParser extends XMLDataParser {
     }
 }
 
-class CourseXMLObject extends CourseObject
-{
+class CourseXMLObject extends CourseCatalogCourse {
 }
 
-class CourseSectionXMLObject extends CourseSectionObject
-{
+class CourseSectionXMLObject extends CourseSectionObject {
 }
 
-class CourseScheduleXMLObject extends CourseScheduleObject
-{
+class CourseScheduleXMLObject extends CourseScheduleObject {
 }

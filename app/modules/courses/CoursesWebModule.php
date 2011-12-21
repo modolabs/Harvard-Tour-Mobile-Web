@@ -1,14 +1,4 @@
 <?php
-/**
- * CoursesWebModule 
- * 
- * @uses WebModule
- * @package 
- * @version $id$
- * @copyright 2011
- * @author Jeffery You <jianfeng.you@symbio.com> 
- */
-
 includePackage('Courses');
 
 class CoursesWebModule extends WebModule {
@@ -17,7 +7,6 @@ class CoursesWebModule extends WebModule {
     protected $courses;
     
     public function getCourseFeed() {
-    
         if ($feeds = $this->loadFeedData()) {
             if (isset($feeds['catalog'])) {
                 $catalogFeed = $this->getModuleSections('catalog');
@@ -32,17 +21,19 @@ class CoursesWebModule extends WebModule {
     public function linkForCourse(Course $course) {
         $link = array(
             'title' => $course->getTitle(),
+            'url'   => $this->buildBreadcrumbURL('course', array('id'=> $course->getCourseNumber()), true)
         );
+
         if ($lastUpdateContent = $this->feed->getLastUpdate($course->getRetrieverId('content'))) {
             $link['subtitle'] = $lastUpdateContent->getTitle() . '<br/>'. $this->elapsedTime($lastUpdateContent->getPublishedDate()->format('U'));
         }
+        
         
         return $link;
     }
     
     protected function initialize() {
     
-        //$this->courses = $this->getModuleSections('courses');
         $this->feed = $this->getCourseFeed();
         
     }
@@ -60,10 +51,10 @@ class CoursesWebModule extends WebModule {
                     }
                     $this->assign('areas', $areasList);
                 }
+                
                 break;
                 
             case 'area':
-            
                 $baseArea = '';
                 if ($area = $this->getArg('area', '')) {
                     if ($CourseArea = $this->feed->getCatalogArea($area)) {
@@ -87,7 +78,7 @@ class CoursesWebModule extends WebModule {
                 }
 
                 $areas = explode("|", $area);
-                $courses = $this->feed->getCatalogCourses(end($areas));
+                $courses = $this->feed->getCatalogCourses(array('area' => end($areas)));
                 $coursesList = array();
  
                 foreach ($courses as $Course) {
@@ -102,6 +93,15 @@ class CoursesWebModule extends WebModule {
                 $this->assign('areas', $areasList);
                 $this->assign('courses', $coursesList);
                 
+                break;
+            
+            case 'course':
+                $id = $this->getArg('id', '');
+                
+                $course = $this->feed->getCourseById($id);
+                
+                print_r($course);
+                exit;
                 break;
                 
             case 'index':

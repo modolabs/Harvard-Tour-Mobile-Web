@@ -23,8 +23,22 @@ class CoursesDataModel extends DataModel {
     }
     
     //returns a Course object (may call all 3 retrievers to get the data)
-    public function getCourseById($courseID) {
+    public function getCourseById($courseNumber) {
+        $courseList = array();
         
+        if ($this->canRetrieve('content')) {
+            if ($course = $this->retrievers['content']->getCourseById($courseNumber)) {
+                $courseList['content'] = $course;
+            }
+        }
+        
+        if ($this->canRetrieve('catalog')) {
+            if ($course = $this->retrievers['catalog']->getCourseById($courseNumber)) {
+                $courseList['catalog'] = $course;
+            }
+        }
+
+        return $courseList;
     }
     
     //gets grades for this user for the term (both registration and content)
@@ -50,9 +64,13 @@ class CoursesDataModel extends DataModel {
     }
     
     //use the CourseCatalogDataRetriever to get the courses
-    public function getCatalogCourses($areaCode) {
+    /* options:
+     *'area'=> a area code
+     *'courseNumber' => a course number
+     */
+    public function getCatalogCourses($option) {
         if ($retriever = $this->canRetrieve('catalog')) {
-            return $this->retrievers['catalog']->getCourses($areaCode);
+            return $this->retrievers['catalog']->getCourses($option);
         }
         return array();
     }
@@ -90,7 +108,7 @@ class CoursesDataModel extends DataModel {
                     }
                 }
             }
-            while ($area && $areaCode = array_shift($areas)) { 
+            while ($area && $areaCode = array_shift($areas)) {
                 $area = $area->getArea($areaCode);
             }
         }

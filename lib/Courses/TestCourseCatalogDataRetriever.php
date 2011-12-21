@@ -6,7 +6,7 @@ class TestCourseCatalogDataRetriever extends URLDataRetriever implements CourseC
     protected $areasFeed;
     protected $coursesFeed;
     
-    public function getCourses($areaCode) {
+    public function getCourses($options = array()) {
         if ($this->coursesFeed && isset($this->coursesFeed['BASE_URL']) && $this->coursesFeed['BASE_URL']) {
             $args = $this->coursesFeed;
             
@@ -17,34 +17,15 @@ class TestCourseCatalogDataRetriever extends URLDataRetriever implements CourseC
             $parser = DataParser::factory($args['PARSER_CLASS'], $args);
             $this->setParser($parser);
             
-            $this->setOption('area', $areaCode);
+            foreach (array('area', 'courseNumber') as $field) {
+                if (isset($options[$field])) {
+                    $this->setOption($field, $options[$field]);
+                }
+            }
+            
             $courses = $this->getData();
             return $courses;
         }
-    }
-    
-    public function getAvailableTerms() {
-        
-    }
-    
-    public function getCourseById($courseID) {
-        
-    }
-    
-    public function getGrades($options) {
-        
-    }
-
-	private function sortByField($contentA, $contentB) {
-	}
-	
-    protected function sortCourseContent($courseContents, $sort) {
-    }
-    
-    public function getLastUpdate($courseID) {
-    }
-    
-    public function getCourseContent($courseID) {
     }
     
     public function getCatalogAreas($area) {
@@ -65,6 +46,33 @@ class TestCourseCatalogDataRetriever extends URLDataRetriever implements CourseC
         }
         
         return array();
+    }
+    
+    public function getAvailableTerms() {
+        
+    }
+    
+    public function getCourseById($courseNumber) {
+        if ($course = $this->getCourses(array('courseNumber' => $courseNumber))) {
+            return current($course);
+        }
+        return false;
+    }
+    
+    public function getGrades($options) {
+        
+    }
+
+	private function sortByField($contentA, $contentB) {
+	}
+	
+    protected function sortCourseContent($courseContents, $sort) {
+    }
+    
+    public function getLastUpdate($courseID) {
+    }
+    
+    public function getCourseContent($courseID) {
     }
     
     protected function init($args) {

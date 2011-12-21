@@ -50,6 +50,10 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
                 $this->addParameter('wsfunction', 'core_course_get_contents');
                 $postData['courseid'] = $this->getOption('courseID');
                 break;
+            case 'getCourse':
+                $this->addParameter('wsfunction', 'core_course_get_courses');
+                $postData['options']['ids'][] = $this->getOption('courseID');
+                break;
             default:
                 throw new KurogoDataException("not defined the action:" . $action);
         }
@@ -77,6 +81,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
                 $courses[] = $item;
             }
         }
+
         return $courses;
     }
     
@@ -84,8 +89,28 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         
     }
     
-    public function getCourseById($courseID) {
+    public function getCourseById($courseNumber) {
+        $options = array();
         
+        $courseRetrieverID = '';
+        if ($courses = $this->getCourses($options)) {
+            foreach ($courses as $course) {
+                if ($course->getCourseNumber() == $courseNumber) {
+                    $courseRetrieverID = $course->getRetrieverId('content');
+                    break;
+                }
+            }
+        }
+        
+        if ($courseRetrieverID) {
+            $this->clearInternalCache();
+            $this->setOption('action', 'getCourse');
+            $this->setOption('courseID', $courseRetrieverID);
+            if ($course = $this->getData()) {
+                return current($course);
+            }
+        }
+        return array();
     }
     
     public function getGrades($options) {
@@ -183,6 +208,7 @@ class MoodleCourseContentDataParser extends dataParser {
             
             switch ($action) {
                 case 'getCourses':
+                case 'getCourse':
                     foreach ($data as $value) {
                         if ($course = $this->parseCourse($value)) {
                             $items[] = $course;
@@ -207,9 +233,15 @@ class MoodleCourseContentDataParser extends dataParser {
         if (isset($value['visible']) && !$value['visible']) {
             continue;
         }
-        $course = new Course();
+
+        $course = new MoodleCourseContentCourse();
         $course->setTitle($data['shortname']);
+        $course->setFullTitle($data['fullname']);
         $course->addRetrieverId('content', $data['id']);
+        $course->setCourseNumber($data['idnumber']);
+        if (isset($data['summary'])) {
+            $course->setDescription($data['summary']);
+        }
         
         return $course;
     }
@@ -260,6 +292,18 @@ class MoodleCourseContentDataParser extends dataParser {
             }
         }
         return $contentTypes;
+    }
+}
+
+class MoodleCourseContentCourse extends CourseContentCourse {
+    protected $fullTitle;
+    
+    public function setFullTitle($title) {
+        $this->fullTitle = $title;
+    }
+    
+    public function getFullTitle() {
+        return $this->fullTitle;
     }
 }
 
