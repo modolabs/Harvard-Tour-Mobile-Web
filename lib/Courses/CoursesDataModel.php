@@ -30,6 +30,9 @@ class CoursesDataModel extends DataModel {
             if ($course = $this->retrievers['content']->getCourseById($courseNumber)) {
                 $courseList['content'] = $course;
             }
+            if ($courseResource = $this->retrievers['content']->getCourseResourceById($courseNumber)) {
+                $courseList['resource'] = $courseResource;
+            }
         }
         
         if ($this->canRetrieve('catalog')) {

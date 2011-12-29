@@ -54,6 +54,10 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
                 $this->addParameter('wsfunction', 'core_course_get_courses');
                 $postData['options']['ids'][] = $this->getOption('courseID');
                 break;
+            case 'getCourseResource':
+                $this->addParameter('wsfunction', 'core_course_get_contents');
+                $postData['courseid'] = $this->getOption('courseID');
+                break;     	
             default:
                 throw new KurogoDataException("not defined the action:" . $action);
         }
@@ -88,7 +92,26 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
     public function getAvailableTerms() {
         
     }
-    
+    public function getCourseResourceById($courseNumber){
+    	$options = array();
+        $courseRetrieverID = '';
+        if ($courses = $this->getCourses($options)) {
+            foreach ($courses as $course) {
+                if ($course->getCourseNumber() == $courseNumber) {
+                    $courseRetrieverID = $course->getRetrieverId('content');
+                    break;
+                }
+            }
+        }
+        if ($courseRetrieverID) {
+            $this->clearInternalCache();
+            $this->setOption('action', 'getCourseResource');
+            $this->setOption('courseID', $courseRetrieverID);
+            if ($course = $this->getData()) {
+                return current($course);
+            }
+        }
+    }
     public function getCourseById($courseNumber) {
         $options = array();
         
@@ -215,6 +238,7 @@ class MoodleCourseContentDataParser extends dataParser {
                         }
                     }
                     break;
+                case 'getCourseResource':
                 case 'getCourseContent':
                     $items = $this->parseCourseContent($data);
                     break;
@@ -281,9 +305,49 @@ class MoodleCourseContentDataParser extends dataParser {
                             if (isset($module['contents'][0]['timecreated']) && $module['contents'][0]['timecreated']) {
                                 $datetime = new DateTime(date('Y-n-j H:i:s', $module['contents'][0]['timecreated']));
                                 $contentType->setPublishedDate($datetime);
-                            } elseif (isset($module['contents'][0]['timemodified']) && $module['contents'][0]['timemodified']) {
+                            } 
+                            if (isset($module['contents'][0]['timemodified']) && $module['contents'][0]['timemodified']) {
                                 $datetime = new DateTime(date('Y-n-j H:i:s', $module['contents'][0]['timemodified']));
                                 $contentType->setPublishedDate($datetime);
+                            }
+                            if($contentType instanceof DownLoadCourseContent){
+	                            if(isset($module['contents'][0]['type']) && $module['contents'][0]['type']){
+	                            	$contentType->setType($module['contents'][0]['type']);
+	                            }
+	                            if(isset($module['contents'][0]['url']) && $module['contents'][0]['url']){
+	                            	$contentType->setUrl($module['contents'][0]['url']);
+	                            }
+	                            
+	                            if(isset($module['contents'][0]['filename']) && $module['contents'][0]['filename']){
+	                            	$contentType->setFilename($module['contents'][0]['filename']);
+	                            }
+	                            if(isset($module['contents'][0]['filepath']) && $module['contents'][0]['filepath']){
+	                            	$contentType->setFilepath($module['contents'][0]['filepath']);
+	                            }
+	                            if(isset($module['contents'][0]['filesize']) && $module['contents'][0]['filesize']){
+	                            	$contentType->setFilesize($module['contents'][0]['filesize']);
+	                            }
+	                            if(isset($module['contents'][0]['fileurl']) && $module['contents'][0]['fileurl']){
+	                            	$contentType->setFileurl($module['contents'][0]['fileurl']);
+	                            }
+	                            if(isset($module['contents'][0]['timecreated']) && $module['contents'][0]['timecreated']){
+	                            	$contentType->setTimecreated($module['contents'][0]['timecreated']);
+	                            }
+	                            if(isset($module['contents'][0]['timemodified']) && $module['contents'][0]['timemodified']){
+	                            	$contentType->setTimemodified($module['contents'][0]['timemodified']);
+	                            }
+	                            if(isset($module['contents'][0]['sortorder']) && $module['contents'][0]['sortorder']){
+	                            	$contentType->setSortorder($module['contents'][0]['sortorder']);
+	                            }
+	                            if(isset($module['contents'][0]['userid']) && $module['contents'][0]['userid']){
+	                            	$contentType->setUserid($module['contents'][0]['userid']);
+	                            }
+	                            if(isset($module['contents'][0]['author']) && $module['contents'][0]['author']){
+	                            	$contentType->setAuthor($module['contents'][0]['author']);
+	                            }
+	                            if(isset($module['contents'][0]['license']) && $module['contents'][0]['license']){
+	                            	$contentType->setLicense($module['contents'][0]['license']);
+	                            }
                             }
                             $contentTypes[] = $contentType;
                         }
@@ -308,9 +372,8 @@ class MoodleCourseContentCourse extends CourseContentCourse {
 }
 
 class MoodleDownLoadCourseContent extends DownLoadCourseContent {
-    
+   				
 }
-
 class MoodleLinkCourseContent extends LinkCourseContent {
     
 }
