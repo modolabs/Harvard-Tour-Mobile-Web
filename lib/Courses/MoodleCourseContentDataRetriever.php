@@ -28,12 +28,42 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         return null;
     }
     
+    public function retrieveResponse() {
+        $action = $this->getOption('action');
+        $response = parent::retrieveResponse();
+        
+        $response->setContext('action', $action);
+        return $response;
+    }
+    
+    public function getCache() {
+        return $this->cache;
+    }
+  
+    protected function baseURL() {
+
+        if ($this->getOption('action') == 'downLoadFile') {
+            $this->baseURL = $this->getOption('fileUrl');
+            
+        } elseif ($this->getOption('action') == 'getPageContent') {
+            $this->baseURL = $this->getOption('pageUrl');
+        } else {
+            $this->baseURL = sprintf("http%s://%s/webservice/rest/server.php",
+                $this->secure ? 's' : '',
+                $this->server
+            );
+        }
+        
+        return $this->baseURL;
+    }
+    
     protected function initRequest() {
+    	/*
         $baseUrl = sprintf("http%s://%s/webservice/rest/server.php",
                 $this->secure ? 's' : '',
                 $this->server);
-                
         $this->setBaseURL($baseUrl);
+        */
         
         $this->addParameter('wstoken', $this->token);
         $this->addParameter('wsfunction', '');
@@ -57,7 +87,14 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
             case 'getCourseResource':
                 $this->addParameter('wsfunction', 'core_course_get_contents');
                 $postData['courseid'] = $this->getOption('courseID');
-                break;     	
+                break;  
+            case 'downLoadFile':
+            case 'getPageContent':
+                unset($postData['wsfunction']);
+                unset($postData['moodlewsrestformat']);
+                unset($postData['wstoken']);
+                $postData['token'] = $this->token;
+                break;   	
             default:
                 throw new KurogoDataException("not defined the action:" . $action);
         }
@@ -92,7 +129,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
     public function getAvailableTerms() {
         
     }
-    public function getCourseResourceById($courseNumber){
+    public function getCourseContentById($courseNumber,$contentId=''){
     	$options = array();
         $courseRetrieverID = '';
         if ($courses = $this->getCourses($options)) {
@@ -108,9 +145,33 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
             $this->setOption('action', 'getCourseResource');
             $this->setOption('courseID', $courseRetrieverID);
             if ($course = $this->getData()) {
-                return current($course);
+            	$courseContents = array();
+            	if(empty($contentId) && !$contentId){
+	            	foreach ($course as $courseContentObj){
+	            	    if($courseContentObj instanceof DownLoadCourseContent){
+	            	    	$courseContentObj->setType('download');
+	            			$courseContents['downLoad'][] = $courseContentObj;
+	            		}
+	            	    if($courseContentObj instanceof LinkCourseContent){
+	            	    	$courseContentObj->setType('link');
+	            			$courseContents['link'][] = $courseContentObj;
+	            		}
+	            	    if($courseContentObj instanceof PageCourseContent){
+	            	    	$courseContentObj->setType('page');
+	            			$courseContents['page'][] = $courseContentObj;
+	            		}
+	            	}
+            	}else{
+            		foreach ($course as $courseContentObj){
+            			if($courseContentObj->getId() == $contentId){
+            				$courseContents = $courseContentObj;
+            			}
+            		}
+            	}
+            	return $courseContents;
             }
         }
+        return '';
     }
     public function getCourseById($courseNumber) {
         $options = array();
@@ -272,7 +333,7 @@ class MoodleCourseContentDataParser extends dataParser {
     
     protected function parseCourseContent($data) {
         $contentTypes = array();
-        
+        $CourseId = $this->getOption('courseID');
         foreach ($data as $value) {
             $properties = array();
             
@@ -280,28 +341,36 @@ class MoodleCourseContentDataParser extends dataParser {
                 $moduleValue = $value['modules'];
                 unset($value['modules']);
                 $properties['section'] = $value;
-                
                 foreach ($moduleValue as $module) {
                     $contentType = null;
                     if ($module['visible'] && isset($module['modname']) && $module['modname']) {
                         switch ($module['modname']) {
                             case 'resource':
-                                $contentType = new DownLoadCourseContent();
+                                $contentType = new MoodleDownLoadCourseContent();
                                 break;
                                 
                             case 'url':
-                                $contentType = new LinkCourseContent();
+                                $contentType = new MoodleLinkCourseContent();
                                 break;
                                 
                             case 'page':
-                                $contentType = new PageCourseContent();
+                                $contentType = new MoodlePageCourseContent();
                                 break;
                                 
                             default:
                                 break;
                         }
                         if ($contentType) {
-                            $contentType->setTitle($module['name']);
+                            if(isset($module['name'])  && $module['name']){
+                        		$contentType->setTitle($module['name']);
+                        	}
+                            if(isset($module['id'])  && $module['id']){
+                        		$contentType->setID($module['id']);
+                        	}
+                            if(isset($CourseId)  && $CourseId){
+                            	
+                        		$contentType->setCourseID($CourseId);
+                        	}
                             if (isset($module['contents'][0]['timecreated']) && $module['contents'][0]['timecreated']) {
                                 $datetime = new DateTime(date('Y-n-j H:i:s', $module['contents'][0]['timecreated']));
                                 $contentType->setPublishedDate($datetime);
@@ -310,14 +379,13 @@ class MoodleCourseContentDataParser extends dataParser {
                                 $datetime = new DateTime(date('Y-n-j H:i:s', $module['contents'][0]['timemodified']));
                                 $contentType->setPublishedDate($datetime);
                             }
-                            if($contentType instanceof DownLoadCourseContent){
+                            if($module['modname'] == 'resource'){
 	                            if(isset($module['contents'][0]['type']) && $module['contents'][0]['type']){
 	                            	$contentType->setType($module['contents'][0]['type']);
 	                            }
 	                            if(isset($module['contents'][0]['url']) && $module['contents'][0]['url']){
 	                            	$contentType->setUrl($module['contents'][0]['url']);
 	                            }
-	                            
 	                            if(isset($module['contents'][0]['filename']) && $module['contents'][0]['filename']){
 	                            	$contentType->setFilename($module['contents'][0]['filename']);
 	                            }
@@ -349,6 +417,32 @@ class MoodleCourseContentDataParser extends dataParser {
 	                            	$contentType->setLicense($module['contents'][0]['license']);
 	                            }
                             }
+                            
+                            if($module['modname'] == 'url'){
+                            	if(isset($module['contents'][0]['type']) && $module['contents'][0]['type']){
+                            		$contentType->setType($module['contents'][0]['type']);
+                            	}
+                            	if(isset($module['contents'][0]['fileurl']) && $module['contents'][0]['fileurl']){
+                            		$contentType->setFileurl($module['contents'][0]['fileurl']);
+                            	}
+                            
+                            }
+                            
+                            if($module['modname'] == 'page'){
+                                if(isset($module['contents'][0]['type']) && $module['contents'][0]['type']){
+                            		$contentType->setType($module['contents'][0]['type']);
+                            	}
+                                if(isset($module['contents'][0]['filename']) && $module['contents'][0]['filename']){
+                            		$contentType->setFilename($module['contents'][0]['filename']);
+                            	}
+                                if(isset($module['contents'][0]['fileurl']) && $module['contents'][0]['fileurl']){
+                            		$contentType->setFileurl($module['contents'][0]['fileurl']);
+                            	}
+                                if(isset($module['contents'][0]['timemodified']) && $module['contents'][0]['timemodified']){
+                            		$contentType->setTimemodified($module['contents'][0]['timemodified']);
+                            	}
+                            }
+                            
                             $contentTypes[] = $contentType;
                         }
                     }
@@ -356,6 +450,7 @@ class MoodleCourseContentDataParser extends dataParser {
             }
         }
         return $contentTypes;
+        
     }
 }
 
@@ -372,6 +467,15 @@ class MoodleCourseContentCourse extends CourseContentCourse {
 }
 
 class MoodleDownLoadCourseContent extends DownLoadCourseContent {
+    public function getFileType() {
+        $ext = '';
+            if (!is_null($this->getFilename()) && $this->getFilename()) {
+                $filebits = explode('.', $this->getFilename());
+                $ext = strtolower(array_pop($filebits));
+            }
+        
+        return $ext;
+    }
    				
 }
 class MoodleLinkCourseContent extends LinkCourseContent {

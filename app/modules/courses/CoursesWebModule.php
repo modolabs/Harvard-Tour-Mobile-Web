@@ -6,6 +6,36 @@ class CoursesWebModule extends WebModule {
     protected $feed;
     protected $courses;
     
+    protected function linkForContent($content, $data = array()) {
+    
+        $link = array(
+            'title' => $content->getTitle(),
+            'subtitle' => $content->getSubTitle()
+        );
+        
+        if ($contentID = $content->getGUID()) {
+            $type = $content->getType();
+            
+            $options = array(
+                'contentID' => $contentID
+            );
+            
+            foreach (array('section', 'type', 'courseID') as $field) {
+                if (isset($data[$field])) {
+                    $options[$field] = $data[$field];
+                }
+            }
+            $link['url'] = ($content->getType() == 'link') ? 
+                           $content->getFileurl() : 
+                           $this->buildBreadcrumbURL($content->getType(), $options, true);
+            
+        } elseif ($url = $content->getUrl()) {
+            $link['url'] = $url;
+        }
+        
+        return $link;
+    }
+    
     public function getCourseFeed() {
         if ($feeds = $this->loadFeedData()) {
             if (isset($feeds['catalog'])) {
@@ -30,6 +60,13 @@ class CoursesWebModule extends WebModule {
         
         
         return $link;
+    }
+    
+    function outputFile(MoodleDownLoadCourseContent $content) {
+        $file = $content->getCacheFile();
+        header('Content-type: '.mime_type($file));
+        readfile($file);
+        exit;
     }
     
     protected function initialize() {
@@ -98,12 +135,81 @@ class CoursesWebModule extends WebModule {
             case 'course':
                 $id = $this->getArg('id', '');
                 
-                $course = $this->feed->getCourseById($id);
-                
-                print_r($course);
-                exit;
+                //$course = $this->feed->getCourseById($id);
+                $contentTypes = array();
+                if ($contents = $this->feed->getCourseById($id)) {
+                $options = array(
+                    'id'      => $id,
+                	'courseId'=> $contents['content']->getRetrieverId('content'),
+                );
+                    $items = array_keys($contents['resource']);
+                    
+                    foreach ($items as $type) {
+                        $options['type'] = $type;
+                    
+                        $contentType = array(
+                            'title' => $this->getLocalizedString(strtoupper($type) .'_TITLE'),
+                            'url'   => $this->buildBreadcrumbURL('contents', $options, true)
+                        );
+                        
+                        $contentTypes[] = $contentType;
+                    }
+                }
+                $this->assign('contentTypes', $contentTypes);
                 break;
+            case 'contents':
+           // 	$section = $this->getArg('section');
+                $id = $this->getArg('id');
+                //$courseId = $this->getArg('courseId');
+                $type = $this->getArg('type');
                 
+                
+                $items = $this->feed->getCourseById($id);
+                
+                
+                if (!isset($items['resource'][$type])) {
+                    throw new KurogoConfigurationException('not found the content for type ' . $type);
+                }
+                
+                $options = array(
+             //   	'section'  => $section,
+             		//'courseId' => $courseId,
+                    'type'     => $type,
+                    'courseID' => $id
+                );
+                    
+                $contents = array();
+                foreach ($items['resource'][$type] as $item) {
+                    $content = $this->linkForContent($item, $options);
+                    $contents[] = $content;
+                }
+                $this->setPageTitles($this->getLocalizedString(strtoupper($type) .'_TITLE'));
+                $this->assign('contents', $contents);
+                break;
+            case 'page':
+            	$contentID = $this->getArg('contentID', '');
+            	$courseID = $this->getArg('courseID', '');
+                if (!$contents = $this->feed->getCourseById($courseID, $contentID)) {
+                    throw new KurogoConfigurationException('not found the course content');
+                }
+                
+            	$content = $this->feed->getPageTypeContent($contents['resource']);
+            	$this->assign('content', $content);
+            	break;
+            case 'download':
+                //$section   = $this->getArg('section');
+                $courseID  = $this->getArg('courseID');
+                $type      = $this->getArg('type');
+                $contentID = $this->getArg('contentID');
+                
+                //$feed = $this->getCourseFeed($section);
+
+                if (!$contentType = $this->feed->getCourseById($courseID, $contentID)) {
+                    throw new KurogoConfigurationException('not found the course content');
+                }
+                $contentType = $this->feed->getDownLoadTypeContent($contentType['resource'], $courseID);
+                $this->outputFile($contentType);
+                break;
             case 'index':
                 $courses = array();
                 

@@ -12,6 +12,7 @@ class DownLoadCourseContent extends CourseContent {
     protected $userid;
     protected $author;
     protected $license;
+    protected $cacheFile;
     
 	public function getType() {
 		return $this->type;
@@ -91,4 +92,12 @@ class DownLoadCourseContent extends CourseContent {
 	public function setLicense($license) {
 		$this->license = $license;
 	}
+	
+    public function setCacheFile($file) {
+        $this->cacheFile = $file;
+    }
+    
+    public function getCacheFile() {
+        return $this->cacheFile;
+    }
 }

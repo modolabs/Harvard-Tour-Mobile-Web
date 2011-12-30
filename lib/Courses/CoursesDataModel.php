@@ -9,6 +9,59 @@ class CoursesDataModel extends DataModel {
     
     protected $retrievers;
     
+    public function getDownLoadTypeContent(MoodleDownLoadCourseContent $content, $courseID) {
+        $this->retriever = $this->retrievers['content'];
+        
+    	$cache = $this->getRetriever()->getCache();
+        $cacheKey = md5($content->getFileUrl()) . '.' .$content->getFileType();
+        $cacheGroup = isset($this->initArgs['INDEX']) ? $this->initArgs['INDEX'] : '';
+        $cacheGroup .= '-' . $courseID;
+        $cache->setCacheGroup($cacheGroup);
+        $cache->setSerialize(false);
+        
+        $fileFullPath = $cache->getFullPath($cacheKey);
+        if (!$data = $cache->get($cacheKey)) {
+            $this->clearInternalCache();
+            $this->setOption('action', 'downLoadFile');
+            $this->setOption('fileUrl', $content->getFileUrl());
+            $cache->setCacheLifetime(500);
+            if ($response = $this->getRetriever()->retrieveResponse()) {
+                if (!$response instanceOf DataResponse) {
+                    throw new KurogoDataException("Response must be instance of DataResponse");
+                }
+                if ($cache->set($cacheKey, $response->getResponse())) {
+                    $content->setCacheFile($fileFullPath);
+                }
+            }
+        } else {
+            $content->setCacheFile($fileFullPath);
+        }
+        return $content;
+    }
+    
+    public function getPageTypeContent(MoodlePageCourseContent $content) {
+        $this->retriever = $this->retrievers['content'];
+        if ($pageUrl = $content->getFileurl()) {
+            $this->setOption('action', 'getPageContent');
+            $this->setOption('pageUrl', $content->getFileurl());
+            
+            $this->retriever->setParser(new DOMDataParser());
+            $content = '';
+            if ( ($dom = $this->getData()) && ($dom instanceOf DOMDocument)) {
+                if ($element = $dom->getElementsByTagName('body')->item(0)) {
+                    $content = $dom->saveXML($element);
+                    $content = preg_replace("#</?body.*?>#", "", $content);
+                } else {
+                    $content = $this->getResponse();
+                }
+            }
+            
+            return $content;
+        }
+        return '';
+    }
+    
+    
     public function getRetrieverModes() {
         return array('catalog', 'registation', 'content');
     }
@@ -22,16 +75,22 @@ class CoursesDataModel extends DataModel {
         
     }
     
+    public function getContentById($content){
+    	if(isset($content)){
+    		
+    	}
+    }
     //returns a Course object (may call all 3 retrievers to get the data)
-    public function getCourseById($courseNumber) {
+    public function getCourseById($courseNumber,$contentID='') {
         $courseList = array();
         
         if ($this->canRetrieve('content')) {
             if ($course = $this->retrievers['content']->getCourseById($courseNumber)) {
                 $courseList['content'] = $course;
             }
-            if ($courseResource = $this->retrievers['content']->getCourseResourceById($courseNumber)) {
-                $courseList['resource'] = $courseResource;
+            
+         	if ($courseResource = $this->retrievers['content']->getCourseContentById($courseNumber,$contentID)) {
+            	$courseList['resource'] = $courseResource;
             }
         }
         
@@ -65,7 +124,6 @@ class CoursesDataModel extends DataModel {
             return false;
         }
     }
-    
     //use the CourseCatalogDataRetriever to get the courses
     /* options:
      *'area'=> a area code
@@ -127,9 +185,9 @@ class CoursesDataModel extends DataModel {
         }
     }
     
+    
     protected function init($args) {
         $this->initArgs = $args;
-        
         if (isset($args['catalog'])) {
             $arg = $args['catalog'];
             $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);

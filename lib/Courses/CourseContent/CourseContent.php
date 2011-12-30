@@ -16,6 +16,18 @@ abstract class CourseContent implements KurogoObject {
         return true;
     }
     
+    public function getGUID() {
+        if ($this->id) {
+			return $this->id;
+		} elseif ($this->getUrl()) {
+			return $this->getUrl();
+		}
+    }
+    
+    public function getSubTitle() {
+        return '';
+    }
+    
     public function setID($id) {
         $this->id = $id;
     }
@@ -72,6 +84,14 @@ abstract class CourseContent implements KurogoObject {
         return $this->author;
     }
     
+    public function setUrl($url) {
+        $this->url = $url;
+    }
+    
+    public function getUrl() {
+        return $this->url; 
+    }
+    
     public function setPublishedDate($dateTime) {
         $this->publishedDate = $dateTime;
     }
@@ -93,4 +113,6 @@ abstract class CourseContent implements KurogoObject {
     public function getPriority() {
         return $this->priority ? $this->priority : 'none';
     }
+    
+    
 }
