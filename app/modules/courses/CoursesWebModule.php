@@ -133,14 +133,14 @@ class CoursesWebModule extends WebModule {
                 break;
             
             case 'course':
-                $id = $this->getArg('id', '');
+            	// get courseID by AreaCode
+                $id = $this->feed->GetCourseId($this->getArg('id'), 'content');
                 
                 //$course = $this->feed->getCourseById($id);
                 $contentTypes = array();
-                if ($contents = $this->feed->getCourseById($id)) {
+                if ($contents = $this->feed->getCourseContentById($id)) {
                 $options = array(
                     'id'      => $id,
-                	'courseId'=> $contents['content']->getRetrieverId('content'),
                 );
                     $items = array_keys($contents['resource']);
                     
@@ -164,7 +164,7 @@ class CoursesWebModule extends WebModule {
                 $type = $this->getArg('type');
                 
                 
-                $items = $this->feed->getCourseById($id);
+                $items = $this->feed->getCourseContentById($id);
                 
                 
                 if (!isset($items['resource'][$type])) {
@@ -189,7 +189,7 @@ class CoursesWebModule extends WebModule {
             case 'page':
             	$contentID = $this->getArg('contentID', '');
             	$courseID = $this->getArg('courseID', '');
-                if (!$contents = $this->feed->getCourseById($courseID, $contentID)) {
+                if (!$contents = $this->feed->getCourseContentById($courseID, $contentID)) {
                     throw new KurogoConfigurationException('not found the course content');
                 }
                 
@@ -204,7 +204,7 @@ class CoursesWebModule extends WebModule {
                 
                 //$feed = $this->getCourseFeed($section);
 
-                if (!$contentType = $this->feed->getCourseById($courseID, $contentID)) {
+                if (!$contentType = $this->feed->getCourseContentById($courseID, $contentID)) {
                     throw new KurogoConfigurationException('not found the course content');
                 }
                 $contentType = $this->feed->getDownLoadTypeContent($contentType['resource'], $courseID);
@@ -219,7 +219,6 @@ class CoursesWebModule extends WebModule {
                         $courses[] = $course;
                     }
                 }
-                
                 $catalogItems = array();
                 if ($this->feed->canRetrieve('catalog')) {
                     $catalogItems[] = array(

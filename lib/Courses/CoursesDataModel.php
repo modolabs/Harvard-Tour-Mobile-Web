@@ -24,6 +24,7 @@ class CoursesDataModel extends DataModel {
             $this->clearInternalCache();
             $this->setOption('action', 'downLoadFile');
             $this->setOption('fileUrl', $content->getFileUrl());
+            $cache->setCacheLifetime(500);
             if ($response = $this->getRetriever()->retrieveResponse()) {
                 if (!$response instanceOf DataResponse) {
                     throw new KurogoDataException("Response must be instance of DataResponse");
@@ -80,25 +81,41 @@ class CoursesDataModel extends DataModel {
     	}
     }
     //returns a Course object (may call all 3 retrievers to get the data)
-    public function getCourseById($courseNumber,$contentID='') {
+    public function getCourseContentById($courseRetrieverID,$contentID=''){
+    	if ($courseResource = $this->retrievers['content']->getCourseContentById($courseRetrieverID,$contentID)) {
+    		$courseList['resource'] = $courseResource;
+    	}
+    	return $courseList;
+    }
+    public function GetCourseId($courseNumber,$type){
+	    if ($courses = $this->retrievers[$type]->getCourses()) {
+			foreach ($courses as $course) {
+				if ($course->getCourseNumber() == $courseNumber) {
+					$courseRetrieverID = $course->getRetrieverId($type);
+					return $courseRetrieverID;
+				}
+			}
+		}else{
+			return "";
+		}
+    }
+    public function getCourseById($courseNumber) {
         $courseList = array();
         
         if ($this->canRetrieve('content')) {
-            if ($course = $this->retrievers['content']->getCourseById($courseNumber)) {
+        	$courseRetrieverID = GetCourseId($courseNumber,'content');
+            if ($course = $this->retrievers['content']->getCourseById($courseRetrieverID)) {
                 $courseList['content'] = $course;
-            }
-            
-         	if ($courseResource = $this->retrievers['content']->getCourseContentById($courseNumber,$contentID)) {
-            	$courseList['resource'] = $courseResource;
             }
         }
         
         if ($this->canRetrieve('catalog')) {
+        	$courseRetrieverID = GetCourseId($courseNumber,'catalog');
             if ($course = $this->retrievers['catalog']->getCourseById($courseNumber)) {
                 $courseList['catalog'] = $course;
             }
         }
-
+		
         return $courseList;
     }
     

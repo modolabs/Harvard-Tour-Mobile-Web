@@ -106,7 +106,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         }
     }
     
-    public function getCourses($options) {
+    public function getCourses($options = array()) {
         $this->clearInternalCache();
         $this->setOption('action', 'getCourses');
         if (isset($options['userID'])) {
@@ -122,24 +122,13 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
                 $courses[] = $item;
             }
         }
-
         return $courses;
     }
     
     public function getAvailableTerms() {
         
     }
-    public function getCourseContentById($courseNumber,$contentId=''){
-    	$options = array();
-        $courseRetrieverID = '';
-        if ($courses = $this->getCourses($options)) {
-            foreach ($courses as $course) {
-                if ($course->getCourseNumber() == $courseNumber) {
-                    $courseRetrieverID = $course->getRetrieverId('content');
-                    break;
-                }
-            }
-        }
+    public function getCourseContentById($courseRetrieverID,$contentId=''){
         if ($courseRetrieverID) {
             $this->clearInternalCache();
             $this->setOption('action', 'getCourseResource');
@@ -173,18 +162,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         }
         return '';
     }
-    public function getCourseById($courseNumber) {
-        $options = array();
-        
-        $courseRetrieverID = '';
-        if ($courses = $this->getCourses($options)) {
-            foreach ($courses as $course) {
-                if ($course->getCourseNumber() == $courseNumber) {
-                    $courseRetrieverID = $course->getRetrieverId('content');
-                    break;
-                }
-            }
-        }
+    public function getCourseById($courseRetrieverID) {
         
         if ($courseRetrieverID) {
             $this->clearInternalCache();
