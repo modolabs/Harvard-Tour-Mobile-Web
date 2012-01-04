@@ -12,13 +12,6 @@ class CourseCatalogCourse extends Course {
         return $this->catalogNumber;
     }
     
-    public function setTerm($term) {
-        if (!$this->term) {
-            $this->term = new CourseTerm();
-        }
-        $this->term->setTitle($term);
-    }
-
     public function setTermCode($termCode) {
         if (!$this->term) {
             $this->term = new CourseTerm();
