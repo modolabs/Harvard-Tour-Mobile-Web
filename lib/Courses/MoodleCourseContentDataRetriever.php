@@ -442,7 +442,7 @@ class MoodleCourseContentDataParser extends dataParser {
                             		$contentType->setTimemodified($module['contents'][0]['timemodified']);
                             	}
                             }
-                            
+                            $contentType->setProperties($properties);
                             $contentTypes[] = $contentType;
                         }
                     }
@@ -476,12 +476,37 @@ class MoodleDownLoadCourseContent extends DownLoadCourseContent {
         
         return $ext;
     }
+    public function getSubTitle() {
+    
+        $subTitle = '';
+        if ($value = $this->getProperty('section')) {
+            $subTitle = isset($value['name']) ? strip_tags($value['name']) : '';
+        }
+        
+        return $subTitle;
+    }
    				
 }
 class MoodleLinkCourseContent extends LinkCourseContent {
+    public function getSubTitle() {
     
+        $subTitle = '';
+        if ($value = $this->getProperty('section')) {
+            $subTitle = isset($value['name']) ? strip_tags($value['name']) : '';
+        }
+        
+        return $subTitle;
+    }
 }
 
 class MoodlePageCourseContent extends PageCourseContent {
+    public function getSubTitle() {
     
+        $subTitle = '';
+        if ($value = $this->getProperty('section')) {
+            $subTitle = isset($value['name']) ? strip_tags($value['name']) : '';
+        }
+        
+        return $subTitle;
+    }
 }

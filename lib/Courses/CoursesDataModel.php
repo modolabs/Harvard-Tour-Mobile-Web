@@ -24,7 +24,6 @@ class CoursesDataModel extends DataModel {
             $this->clearInternalCache();
             $this->setOption('action', 'downLoadFile');
             $this->setOption('fileUrl', $content->getFileUrl());
-            $cache->setCacheLifetime(500);
             if ($response = $this->getRetriever()->retrieveResponse()) {
                 if (!$response instanceOf DataResponse) {
                     throw new KurogoDataException("Response must be instance of DataResponse");

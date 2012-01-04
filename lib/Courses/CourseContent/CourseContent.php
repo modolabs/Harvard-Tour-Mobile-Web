@@ -114,5 +114,17 @@ abstract class CourseContent implements KurogoObject {
         return $this->priority ? $this->priority : 'none';
     }
     
+    public function setProperties($properties) {
+        $this->properties = $properties;
+    }
+    
+    public function addProperty($key, $value) {
+        $this->properties[$key] = $value;
+    }
+    
+    public function getProperty($var) {
+        return isset($this->properties[$var]) ?  $this->properties[$var] : '';
+    }
+    
     
 }
