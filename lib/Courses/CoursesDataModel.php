@@ -68,7 +68,14 @@ class CoursesDataModel extends DataModel {
     
     //returns an array of terms. 
     public function getAvailableTerms() {
-        return self::CURRENT_TERM;
+        return array(self::getCurrentTerm());
+    }
+    
+    public function getCurrentTerm() {
+        $term = new CourseTerm();
+        $term->setTitle('Current Term');
+        $term->setID(self::CURRENT_TERM);
+        return $term;
     }
 
     public function search($searchTerms, $options) {

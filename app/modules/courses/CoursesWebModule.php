@@ -211,6 +211,18 @@ class CoursesWebModule extends WebModule {
                 $this->outputFile($contentType);
                 break;
             case 'index':
+                $feedTerms = $this->feed->getAvailableTerms();
+                $terms = array();
+                foreach($feedTerms as $term) {
+                    $terms[$term->getID()] = $term->getTitle();
+                }
+                                
+                if (count($terms)>1) {
+                    $this->assign('terms', $terms);
+                } else {
+                    $this->assign('termTitle', current($terms));
+                }
+                
                 $courses = array();
                 
                 if ($items = $this->feed->getContentCourses()) {
@@ -219,6 +231,9 @@ class CoursesWebModule extends WebModule {
                         $courses[] = $course;
                     }
                 }
+                $this->assign('courses', $courses);
+                
+                // do we have a catalog? 
                 $catalogItems = array();
                 if ($this->feed->canRetrieve('catalog')) {
                     $catalogItems[] = array(
@@ -230,7 +245,6 @@ class CoursesWebModule extends WebModule {
                         'url'   => '',
                     );
                 }
-                $this->assign('course', $courses);
                 $this->assign('catalogItems', $catalogItems);
                 break;
         }
