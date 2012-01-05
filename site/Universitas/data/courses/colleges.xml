@@ -44,6 +44,10 @@
     <title>College of Engineering</title>
     <code>EN</code>
         <department>
+            <title>Computer Science</title>
+            <code>COMP</code>
+        </department>
+        <department>
             <title>Civil Engineering</title>
             <code>CIVE</code>
         </department>
