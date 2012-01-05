@@ -24,10 +24,6 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         parent::clearInternalCache();
     }
     
-    protected function cacheKey() {
-        return null;
-    }
-    
     public function retrieveResponse() {
         $action = $this->getOption('action');
         $response = parent::retrieveResponse();
@@ -35,35 +31,13 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         $response->setContext('action', $action);
         return $response;
     }
-    
-    public function getCache() {
-        return $this->cache;
-    }
-  
-    protected function baseURL() {
 
-        if ($this->getOption('action') == 'downLoadFile') {
-            $this->baseURL = $this->getOption('fileUrl');
-            
-        } elseif ($this->getOption('action') == 'getPageContent') {
-            $this->baseURL = $this->getOption('pageUrl');
-        } else {
-            $this->baseURL = sprintf("http%s://%s/webservice/rest/server.php",
-                $this->secure ? 's' : '',
-                $this->server
-            );
-        }
-        
-        return $this->baseURL;
-    }
-    
     protected function initRequest() {
-    	/*
+
         $baseUrl = sprintf("http%s://%s/webservice/rest/server.php",
                 $this->secure ? 's' : '',
                 $this->server);
         $this->setBaseURL($baseUrl);
-        */
         
         $this->addParameter('wstoken', $this->token);
         $this->addParameter('wsfunction', '');
@@ -78,25 +52,26 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
                 break;
             case 'getCourseContent':
                 $this->addParameter('wsfunction', 'core_course_get_contents');
+                $this->setCacheGroup($this->getOption('courseID'));
                 $postData['courseid'] = $this->getOption('courseID');
                 break;
             case 'getCourse':
                 $this->addParameter('wsfunction', 'core_course_get_courses');
+                $this->setCacheGroup($this->getOption('courseID'));
                 $postData['options']['ids'][] = $this->getOption('courseID');
                 break;
             case 'getCourseResource':
                 $this->addParameter('wsfunction', 'core_course_get_contents');
+                $this->setCacheGroup($this->getOption('courseID'));
                 $postData['courseid'] = $this->getOption('courseID');
                 break;  
             case 'downLoadFile':
             case 'getPageContent':
-                unset($postData['wsfunction']);
-                unset($postData['moodlewsrestformat']);
-                unset($postData['wstoken']);
+                $this->setBaseURL($this->getOption('contentUrl'));
                 $postData['token'] = $this->token;
                 break;   	
             default:
-                throw new KurogoDataException("not defined the action:" . $action);
+                throw new KurogoDataException("Action $action not defined");
         }
         
         if ($postData) {
