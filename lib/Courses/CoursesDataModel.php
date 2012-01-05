@@ -23,7 +23,7 @@ class CoursesDataModel extends DataModel {
         if (!$data = $cache->get($cacheKey)) {
             $this->clearInternalCache();
             $this->setOption('action', 'downLoadFile');
-            $this->setOption('fileUrl', $content->getFileUrl());
+            $this->setOption('contentUrl', $content->getFileUrl());
             $cache->setCacheLifetime(500);
             if ($response = $this->getRetriever()->retrieveResponse()) {
                 if (!$response instanceOf DataResponse) {
@@ -43,14 +43,14 @@ class CoursesDataModel extends DataModel {
         $this->retriever = $this->retrievers['content'];
         if ($pageUrl = $content->getFileurl()) {
             $this->setOption('action', 'getPageContent');
-            $this->setOption('pageUrl', $content->getFileurl());
+            $this->setOption('contentUrl', $content->getFileurl());
             
             $this->retriever->setParser(new DOMDataParser());
             $content = '';
             if ( ($dom = $this->getData()) && ($dom instanceOf DOMDocument)) {
                 if ($element = $dom->getElementsByTagName('body')->item(0)) {
                     $content = $dom->saveXML($element);
-                    $content = preg_replace("#</?body.*?>#", "", $content);
+                    $content = preg_replace("#</?body.*?".">#", "", $content);
                 } else {
                     $content = $this->getResponse();
                 }
