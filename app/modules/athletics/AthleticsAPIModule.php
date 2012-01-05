@@ -31,7 +31,7 @@ class AthleticsAPIModule extends APIModule
                 
                 $sports = array();
                 foreach ($sportsConfig as $key => $sportData) {
-                    $sports[$key] = array('title' => $sportData['TITLE']);
+                    $sports[] = array('key'=>$key, 'title' => $sportData['TITLE']);
                 }
                 
                 $response = array(
@@ -108,6 +108,34 @@ class AthleticsAPIModule extends APIModule
                 $this->setResponse($response);
                 $this->setResponseVersion(1);
                 
+                break;
+
+            case "search":
+                $searchTerms = $this->getArg('filter');
+                $start = $this->getArg('start', 0);
+                $section = $this->getArg('section', 'topnews');
+                $mode = $this->getArg('mode');
+
+                $newsFeed = $this->getNewsFeed($section);
+
+                $newsFeed->setStart($start);
+                $newsFeed->setLimit($this->maxPerPage);
+
+                $items = $newsFeed->search($searchTerms);
+                $totalItems = $newsFeed->getTotalItems();
+
+                $stories = array();
+                foreach ($items as $story) {
+                    $stories[] = $this->formatStory($story, $mode);
+                }
+
+                $response = array(
+                    'stories' => $stories,
+                    'moreStories' => ($totalItems - $start - $this->maxPerPage)
+                );
+
+                $this->setResponse($response);
+                $this->setResponseVersion(1);
                 break;
 
             default:
