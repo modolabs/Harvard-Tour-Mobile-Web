@@ -216,7 +216,6 @@ class CoursesWebModule extends WebModule {
                 foreach($feedTerms as $term) {
                     $terms[$term->getID()] = $term->getTitle();
                 }
-                                
                 if (count($terms)>1) {
                     $this->assign('terms', $terms);
                 } else {
@@ -231,9 +230,19 @@ class CoursesWebModule extends WebModule {
                         $courses[] = $course;
                     }
                 }
+                $independentStudy = array(
+                	'title' => $this->getLocalizedString('INDENPENDENT_STUDY_TITLE'),
+                	'url'   => '#',
+                );
+                $artHistory = array(
+                	'title' =>$this->getLocalizedString('ART_HISTORY_TITLE'),
+                	'url'   =>'#',
+                );
+                $courses[] = $independentStudy;
+                $courses[] = $artHistory;
                 $this->assign('courses', $courses);
                 
-                // do we have a catalog? 
+                // do we have a catalog?  catelog just demo and XML file copy from LMS //delete this line after look
                 $catalogItems = array();
                 if ($this->feed->canRetrieve('catalog')) {
                     $catalogItems[] = array(
