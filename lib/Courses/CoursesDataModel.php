@@ -89,6 +89,7 @@ class CoursesDataModel extends DataModel {
     }
     //returns a Course object (may call all 3 retrievers to get the data)
     public function getCourseContentById($courseRetrieverID,$contentID=''){
+        $courseList = array();
     	if ($courseResource = $this->retrievers['content']->getCourseContentById($courseRetrieverID,$contentID)) {
     		$courseList['resource'] = $courseResource;
     	}
