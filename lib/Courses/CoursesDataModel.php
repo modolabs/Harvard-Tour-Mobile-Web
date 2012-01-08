@@ -61,22 +61,23 @@ class CoursesDataModel extends DataModel {
         return '';
     }
     
-    
-    public function getRetrieverModes() {
-        return array('catalog', 'registation', 'content');
-    }
-    
     //returns an array of terms. 
     public function getAvailableTerms() {
         return array(self::getCurrentTerm());
     }
     
     public function getCurrentTerm() {
-        $term = new CourseTerm();
-        /* @TODO: Localize Current Term */
-        $term->setTitle('Current Term');
-        $term->setID(self::CURRENT_TERM);
+        $term = new CourseTermCurrent();
         return $term;
+    }
+    
+    public function getTerm($termCode) {
+        if ($termCode==self::CURRENT_TERM) {
+            return self::getCurrentTerm();
+        } else {
+            /** @TODO retrieve term values */
+            return null;
+        }
     }
 
     public function search($searchTerms, $options) {
@@ -89,47 +90,14 @@ class CoursesDataModel extends DataModel {
     	}
     }
     //returns a Course object (may call all 3 retrievers to get the data)
-    public function getCourseContentById($courseRetrieverID,$contentID=''){
-        $courseList = array();
-    	if ($courseResource = $this->retrievers['content']->getCourseContentById($courseRetrieverID,$contentID)) {
-    		$courseList['resource'] = $courseResource;
-    	}
-    	return $courseList;
-    }
-    public function GetCourseId($courseNumber,$type){
-	    if ($courses = $this->retrievers[$type]->getCourses()) {
-			foreach ($courses as $course) {
-				if ($course->getCourseNumber() == $courseNumber) {
-					$courseRetrieverID = $course->getRetrieverId($type);
-					return $courseRetrieverID;
-				}
-			}
-		}else{
-			return "";
-		}
-    }
-    public function getCourseById($courseNumber) {
-        $courseList = array();
-        
-        if ($this->canRetrieve('content')) {
-        	$courseRetrieverID = GetCourseId($courseNumber,'content');
-            if ($course = $this->retrievers['content']->getCourseById($courseRetrieverID)) {
-                $courseList['content'] = $course;
-            }
+    public function getCourse($type, $courseID) {
+        if ($this->canRetrieve($type)) {
+            return $this->retrievers[$type]->getCourseById($courseID);
         }
-        
-        if ($this->canRetrieve('catalog')) {
-        	$courseRetrieverID = GetCourseId($courseNumber,'catalog');
-            if ($course = $this->retrievers['catalog']->getCourseById($courseNumber)) {
-                $courseList['catalog'] = $course;
-            }
-        }
-		
-        return $courseList;
     }
     
     //gets grades for this user for the term (both registration and content)
-    public function getGrades($term) {
+    public function getGrades(CourseTerm $term) {
         
     }
     

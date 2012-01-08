@@ -45,7 +45,7 @@ class CoursesWebModule extends WebModule {
         switch ($type)
         {
             case 'content':
-                if ($lastUpdateContent = $this->controller->getLastUpdate($course->getRetrieverId('content'))) {
+                if ($lastUpdateContent = $course->getLastUpdate()) {
                     $link['subtitle'] = $lastUpdateContent->getTitle() . '<br/>'. $this->elapsedTime($lastUpdateContent->getPublishedDate()->format('U'));
                 } else {
                     $link['subtitle'] = $this->getLocalizedString('NO_UPDATES');
@@ -136,15 +136,21 @@ class CoursesWebModule extends WebModule {
                 break;
             
             case 'course':
-            	// get courseID by AreaCode
-                $id = $this->controller->GetCourseId($this->getArg('id'), 'content');
+            
+                $id = $this->getArg('id');
+                $type = $this->getArg('type');
                 
-                //$course = $this->controller->getCourseById($id);
+                if (!$course = $this->controller->getCourse($type, $id)) {
+                    $this->redirectTo('index');
+                }
+                             
+                             /*              
                 $contentTypes = array();
-                if ($contents = $this->controller->getCourseContentById($id)) {
-                $options = array(
-                    'id'      => $id,
-                );
+                if ($contents = $this->course->getCourseContentById($id)) {
+
+                    $options = array(
+                        'id'      => $id,
+                    );
                     $items = array_keys($contents['resource']);
                     
                     foreach ($items as $type) {
@@ -159,6 +165,7 @@ class CoursesWebModule extends WebModule {
                     }
                 }
                 $this->assign('contentTypes', $contentTypes);
+                */
                 break;
             case 'contents':
            // 	$section = $this->getArg('section');
@@ -216,9 +223,16 @@ class CoursesWebModule extends WebModule {
             case 'index':
                 $feedTerms = $this->controller->getAvailableTerms();
                 $terms = array();
+                
                 foreach($feedTerms as $term) {
                     $terms[$term->getID()] = $term->getTitle();
                 }
+
+                $term = $this->getArg('term', CoursesDataModel::CURRENT_TERM);
+                if (!$Term = $this->controller->getTerm($term)) {
+                    $Term = $this->controller->getCurrentTerm();
+                }
+                                
                 if (count($terms)>1) {
                     $this->assign('terms', $terms);
                 } else {
@@ -226,10 +240,13 @@ class CoursesWebModule extends WebModule {
                 }
                 
                 $courses = array();
+                $options = array(
+                    'term'=>$Term
+                );
 
                 $this->assign('hasPersonalizedCourses', $this->controller->canRetrieve('registration') || $this->controller->canRetrieve('content'));
                 if ($this->isLoggedIn()) {                
-                    if ($items = $this->controller->getCourses('content')) {
+                    if ($items = $this->controller->getCourses('content', $options)) {
                         foreach ($items as $item) {
                             $course = $this->linkForCourse($item, 'content');
                             $courses[] = $course;
