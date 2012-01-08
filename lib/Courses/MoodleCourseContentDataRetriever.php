@@ -6,6 +6,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
     
     protected $server;
     protected $secure = true;
+    protected $DEFAULT_CACHE_LIFETIME = 60; // 1 min
     protected $token;
     protected $userID;
     
@@ -24,6 +25,14 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         parent::clearInternalCache();
     }
     
+    protected function getUserID() {
+        return $this->userID;
+    }
+
+    protected function getToken() {
+        return $this->token;
+    }
+    
     public function retrieveResponse() {
         $action = $this->getOption('action');
         $response = parent::retrieveResponse();
@@ -39,7 +48,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
                 $this->server);
         $this->setBaseURL($baseUrl);
         
-        $this->addParameter('wstoken', $this->token);
+        $this->addParameter('wstoken', $this->getToken());
         $this->addParameter('wsfunction', '');
         $this->addParameter('moodlewsrestformat', 'json');
         
@@ -68,7 +77,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
             case 'downLoadFile':
             case 'getPageContent':
                 $this->setBaseURL($this->getOption('contentUrl'));
-                $postData['token'] = $this->token;
+                $postData['token'] = $this->getToken();
                 break;   	
             default:
                 throw new KurogoDataException("Action $action not defined");
@@ -87,7 +96,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         if (isset($options['userID'])) {
             $this->setOption('userID', $options['userID']);
         } else {
-            $this->setOption('userID', $this->userID);
+            $this->setOption('userID', $this->getUserID());
         }
 
         $courses = array();
@@ -218,12 +227,14 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
             $this->secure = (bool) $args['SECURE'];
         }
         
-        if (isset($args['TOKEN'])) {
-            $this->token = $args['TOKEN'];
-        }
-        
-        if (isset($args['USERID'])) {
-            $this->userID = $args['USERID'];
+        if ($user = $this->getCurrentUser()) {
+            if ($user instanceOf MoodleUser) {
+                $this->setUser($user);
+            } else {
+                // not a moodle user. Should we do something?
+            }
+        } else {
+            // no user at all
         }
     }
 }
