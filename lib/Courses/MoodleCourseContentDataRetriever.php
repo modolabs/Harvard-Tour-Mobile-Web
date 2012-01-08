@@ -229,13 +229,23 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         
         if ($user = $this->getCurrentUser()) {
             if ($user instanceOf MoodleUser) {
-                $this->setUser($user);
+                $this->setUserID($user->getUserID());
+                $this->setToken($user->getToken());
             } else {
                 // not a moodle user. Should we do something?
             }
         } else {
             // no user at all
         }
+
+        if (isset($args['TOKEN'])) {
+            $this->setToken($args['TOKEN']);
+        }
+        
+        if (isset($args['USERID'])) {
+            $this->setUserID($args['USERID']);
+        }
+        
     }
 }
 
