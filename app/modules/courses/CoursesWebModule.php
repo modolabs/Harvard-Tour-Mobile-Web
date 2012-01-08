@@ -224,7 +224,7 @@ class CoursesWebModule extends WebModule {
                 
                 $courses = array();
                 
-                if ($items = $this->feed->getContentCourses()) {
+                if ($items = $this->feed->getCourses('content')) {
                     foreach ($items as $item) {
                         $course = $this->linkForCourse($item);
                         $courses[] = $course;

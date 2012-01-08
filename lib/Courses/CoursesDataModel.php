@@ -73,13 +73,14 @@ class CoursesDataModel extends DataModel {
     
     public function getCurrentTerm() {
         $term = new CourseTerm();
+        /* @TODO: Localize Current Term */
         $term->setTitle('Current Term');
         $term->setID(self::CURRENT_TERM);
         return $term;
     }
 
     public function search($searchTerms, $options) {
-        
+        /* what are we searching? */
     }
     
     public function getContentById($content){
@@ -153,23 +154,12 @@ class CoursesDataModel extends DataModel {
      *'area'=> a area code
      *'courseNumber' => a course number
      */
-    public function getCatalogCourses($option) {
-        if ($retriever = $this->canRetrieve('catalog')) {
-            return $this->retrievers['catalog']->getCourses($option);
+    public function getCourses($type, $options=array()) {
+
+        if ($this->canRetrieve($type)) {
+            return $this->retrievers[$type]->getCourses($options);
         }
-        return array();
-    }
-    
-    public function getRegistationCourses() {
-        //there is some test data
         
-    }
-    
-    //use the CourseContentDataRetriever to get the courses
-    public function getContentCourses($options = array()) {
-        if ($this->canRetrieve('content')) {
-            return $this->retrievers['content']->getCourses($options);
-        }
         return array();
     }
     
@@ -200,15 +190,15 @@ class CoursesDataModel extends DataModel {
         
         return $area;
     }
-    
+
     public function setCoursesRetriever($type, DataRetriever $retriever) {
-        if ($retriever instanceOf $this->RETRIEVER_INTERFACE) {
+        $interface = 'Course' . ucfirst($type) . 'DataRetriever';
+        if ($retriever instanceOf $interface) {
             $this->retrievers[$type] = $retriever;
         } else {
-            throw new KurogoException("Data Retriever " . get_class($retriever) . " must conform to $this->RETRIEVER_INTERFACE");
+            throw new KurogoException("Data Retriever " . get_class($retriever) . " must conform to $interface");
         }
     }
-    
     
     protected function init($args) {
         $this->initArgs = $args;
