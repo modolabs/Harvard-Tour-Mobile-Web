@@ -56,7 +56,7 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
     
-    function outputFile(MoodleDownLoadCourseContent $content) {
+    function outputFile(DownLoadCourseContent $content) {
         $file = $content->getCacheFile();
         header('Content-type: '.mime_type($file));
         readfile($file);
