@@ -56,6 +56,8 @@ class CoursesWebModule extends WebModule {
 
         if ($lastUpdateContent = $this->feed->getLastUpdate($course->getRetrieverId('content'))) {
             $link['subtitle'] = $lastUpdateContent->getTitle() . '<br/>'. $this->elapsedTime($lastUpdateContent->getPublishedDate()->format('U'));
+        } else {
+            $link['subtitle'] = $this->getLocalizedString('NO_UPDATES');
         }
         
         
@@ -249,3 +251,4 @@ class CoursesWebModule extends WebModule {
         }
     }
 }
+ 
