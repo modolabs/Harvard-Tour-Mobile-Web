@@ -48,18 +48,19 @@ class CoursesWebModule extends WebModule {
         }
     }
     
-    public function linkForCourse(Course $course) {
+    public function linkForCourse(Course $course, $type) {
         $link = array(
             'title' => $course->getTitle(),
-            'url'   => $this->buildBreadcrumbURL('course', array('id'=> $course->getCourseNumber()), true)
+            'url'   => $this->buildBreadcrumbURL('course', array('id'=> $course->getID()), true)
         );
 
-        if ($lastUpdateContent = $this->feed->getLastUpdate($course->getRetrieverId('content'))) {
-            $link['subtitle'] = $lastUpdateContent->getTitle() . '<br/>'. $this->elapsedTime($lastUpdateContent->getPublishedDate()->format('U'));
-        } else {
-            $link['subtitle'] = $this->getLocalizedString('NO_UPDATES');
+        if ($type=='content') {
+            if ($lastUpdateContent = $this->feed->getLastUpdate($course->getRetrieverId('content'))) {
+                $link['subtitle'] = $lastUpdateContent->getTitle() . '<br/>'. $this->elapsedTime($lastUpdateContent->getPublishedDate()->format('U'));
+            } else {
+                $link['subtitle'] = $this->getLocalizedString('NO_UPDATES');
+            }
         }
-        
         
         return $link;
     }
@@ -228,7 +229,7 @@ class CoursesWebModule extends WebModule {
                 
                 if ($items = $this->feed->getCourses('content')) {
                     foreach ($items as $item) {
-                        $course = $this->linkForCourse($item);
+                        $course = $this->linkForCourse($item, 'content');
                         $courses[] = $course;
                     }
                 }
