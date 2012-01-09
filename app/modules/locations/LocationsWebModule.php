@@ -129,7 +129,7 @@ class LocationsWebModule extends WebModule {
     }
     
     protected function linkForSechedule(KurogoObject $event, $data=null) {
-        $subtitle = date("H:i:s", $event->get_start()) . " - " . date("H:i:s", $event->get_end());
+        $subtitle = DateFormatter::formatDateRange($event->get_range(), DateFormatter::NO_STYLE, DateFormatter::SHORT_STYLE);
 
         $options = array(
             'id'   => $event->get_uid(),
