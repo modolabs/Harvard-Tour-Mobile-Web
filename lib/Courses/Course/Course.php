@@ -1,20 +1,24 @@
 <?php
 
-class Course implements KurogoObject {
+abstract class Course implements KurogoObject {
 
+    protected $id;
     protected $courseNumber;
-    protected $retrieverIds;
     protected $title;
     protected $description;
     protected $term;
-    protected $retrievers;
+    protected $retriever;
     
     public function filterItem($filters) {
         return true;
     }
     
     public function getID() {
-        return md5(serialize($this->retrieverIds));
+        return $this->id;
+    }
+
+    public function setID($id) {
+        $this->id = $id;
     }
     
     public function setCourseNumber($courseNumber) {
@@ -25,32 +29,12 @@ class Course implements KurogoObject {
         return $this->courseNumber;
     }
     
-    public function addRetrieverId($type, $id) {
-        $this->retrieverIds[$type] = $id;
+    public function setRetriever(CourseContentDataRetriever $retriever) {
+        $this->retriever = $retriever;
     }
-    
-    public function setRetrieverIds($ids) {
-        $this->retrieverIds = $ids;
-    }
-    
-    public function getRetrieverId($type) {
-        return isset($this->retrieverIds[$type]) ? $this->retrieverIds[$type] : '';
-    }
-    
-    public function setRetrievers($retrievers) {
-        $this->retrievers = $retrievers;
-    }
-    
-    public function setRetriever($type, DataRetriever $retriever) {
-        $this->retrievers[$type] = $retriever;
-    }
-    
-    public function canRetrieve($type) {
-        if (isset($this->retrievers[$type]) && $this->retrievers[$type]) {
-            return $this->retrievers[$type];
-        }
-        
-        return false;
+
+    public function getRetriever() {
+        return $this->retriever;
     }
     
     public function setTitle($title) {

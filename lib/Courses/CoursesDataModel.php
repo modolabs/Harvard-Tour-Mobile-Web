@@ -60,25 +60,27 @@ class CoursesDataModel extends DataModel {
         return '';
     }
     
-    
-    public function getRetrieverModes() {
-        return array('catalog', 'registation', 'content');
-    }
-    
     //returns an array of terms. 
     public function getAvailableTerms() {
         return array(self::getCurrentTerm());
     }
     
     public function getCurrentTerm() {
-        $term = new CourseTerm();
-        $term->setTitle('Current Term');
-        $term->setID(self::CURRENT_TERM);
+        $term = new CourseTermCurrent();
         return $term;
+    }
+    
+    public function getTerm($termCode) {
+        if ($termCode==self::CURRENT_TERM) {
+            return self::getCurrentTerm();
+        } else {
+            /** @TODO retrieve term values */
+            return null;
+        }
     }
 
     public function search($searchTerms, $options) {
-        
+        /* what are we searching? */
     }
     
     public function getContentById($content){
@@ -87,46 +89,14 @@ class CoursesDataModel extends DataModel {
     	}
     }
     //returns a Course object (may call all 3 retrievers to get the data)
-    public function getCourseContentById($courseRetrieverID,$contentID=''){
-    	if ($courseResource = $this->retrievers['content']->getCourseContentById($courseRetrieverID,$contentID)) {
-    		$courseList['resource'] = $courseResource;
-    	}
-    	return $courseList;
-    }
-    public function GetCourseId($courseNumber,$type){
-	    if ($courses = $this->retrievers[$type]->getCourses()) {
-			foreach ($courses as $course) {
-				if ($course->getCourseNumber() == $courseNumber) {
-					$courseRetrieverID = $course->getRetrieverId($type);
-					return $courseRetrieverID;
-				}
-			}
-		}else{
-			return "";
-		}
-    }
-    public function getCourseById($courseNumber) {
-        $courseList = array();
-        
-        if ($this->canRetrieve('content')) {
-        	$courseRetrieverID = GetCourseId($courseNumber,'content');
-            if ($course = $this->retrievers['content']->getCourseById($courseRetrieverID)) {
-                $courseList['content'] = $course;
-            }
+    public function getCourse($type, $courseID) {
+        if ($this->canRetrieve($type)) {
+            return $this->retrievers[$type]->getCourseById($courseID);
         }
-        
-        if ($this->canRetrieve('catalog')) {
-        	$courseRetrieverID = GetCourseId($courseNumber,'catalog');
-            if ($course = $this->retrievers['catalog']->getCourseById($courseNumber)) {
-                $courseList['catalog'] = $course;
-            }
-        }
-		
-        return $courseList;
     }
     
     //gets grades for this user for the term (both registration and content)
-    public function getGrades($term) {
+    public function getGrades(CourseTerm $term) {
         
     }
     
@@ -151,23 +121,12 @@ class CoursesDataModel extends DataModel {
      *'area'=> a area code
      *'courseNumber' => a course number
      */
-    public function getCatalogCourses($option) {
-        if ($retriever = $this->canRetrieve('catalog')) {
-            return $this->retrievers['catalog']->getCourses($option);
+    public function getCourses($type, $options=array()) {
+
+        if ($this->canRetrieve($type)) {
+            return $this->retrievers[$type]->getCourses($options);
         }
-        return array();
-    }
-    
-    public function getRegistationCourses() {
-        //there is some test data
         
-    }
-    
-    //use the CourseContentDataRetriever to get the courses
-    public function getContentCourses($options = array()) {
-        if ($this->canRetrieve('content')) {
-            return $this->retrievers['content']->getCourses($options);
-        }
         return array();
     }
     
@@ -198,15 +157,15 @@ class CoursesDataModel extends DataModel {
         
         return $area;
     }
-    
+
     public function setCoursesRetriever($type, DataRetriever $retriever) {
-        if ($retriever instanceOf $this->RETRIEVER_INTERFACE) {
+        $interface = 'Course' . ucfirst($type) . 'DataRetriever';
+        if ($retriever instanceOf $interface) {
             $this->retrievers[$type] = $retriever;
         } else {
-            throw new KurogoException("Data Retriever " . get_class($retriever) . " must conform to $this->RETRIEVER_INTERFACE");
+            throw new KurogoException("Data Retriever " . get_class($retriever) . " must conform to $interface");
         }
     }
-    
     
     protected function init($args) {
         $this->initArgs = $args;

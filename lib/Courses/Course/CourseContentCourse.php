@@ -1,5 +1,9 @@
 <?php
 
-class CourseContentCourse extends Course {
-
+abstract class CourseContentCourse extends Course {
+    abstract public function getLastUpdate();
+    abstract public function getUpdates($options);
+    abstract public function getTasks($options);
+    abstract public function getResources($options);
+    abstract public function getGrades($options);
 }

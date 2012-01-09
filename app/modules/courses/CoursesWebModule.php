@@ -3,7 +3,7 @@ includePackage('Courses');
 
 class CoursesWebModule extends WebModule {
     protected $id = 'courses'; 
-    protected $feed;
+    protected $controller;
     protected $courses;
     
     protected function linkForContent($content, $data = array()) {
@@ -36,49 +36,52 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
     
-    public function getCourseFeed() {
-        if ($feeds = $this->loadFeedData()) {
-            if (isset($feeds['catalog'])) {
-                $catalogFeed = $this->getModuleSections('catalog');
-                $feeds['catalog'] = array_merge($feeds['catalog'], $catalogFeed);
-            }
-            return DataModel::factory('CoursesDataModel', $feeds);
-        } else {
-            throw new KurogoConfigurationException($this->getLocalizedString('ERROR_INVALID_FEED'));
-        }
-    }
-    
-    public function linkForCourse(Course $course) {
+    public function linkForCourse(Course $course, $type) {
         $link = array(
             'title' => $course->getTitle(),
-            'url'   => $this->buildBreadcrumbURL('course', array('id'=> $course->getCourseNumber()), true)
+            'url'   => $this->buildBreadcrumbURL('course', array('type'=>$type, 'id'=> $course->getID()), true)
         );
 
-        if ($lastUpdateContent = $this->feed->getLastUpdate($course->getRetrieverId('content'))) {
-            $link['subtitle'] = $lastUpdateContent->getTitle() . '<br/>'. $this->elapsedTime($lastUpdateContent->getPublishedDate()->format('U'));
+        switch ($type)
+        {
+            case 'content':
+                if ($lastUpdateContent = $course->getLastUpdate()) {
+                    $link['subtitle'] = $lastUpdateContent->getTitle() . '<br/>'. $this->elapsedTime($lastUpdateContent->getPublishedDate()->format('U'));
+                } else {
+                    $link['subtitle'] = $this->getLocalizedString('NO_UPDATES');
+                }
+                break;
         }
-        
         
         return $link;
     }
     
-    function outputFile(MoodleDownLoadCourseContent $content) {
+    function outputFile(DownLoadCourseContent $content) {
         $file = $content->getCacheFile();
         header('Content-type: '.mime_type($file));
         readfile($file);
         exit;
     }
     
+    protected function getFeedTitle($feed) {
+        return isset($this->feeds[$feed]['TITLE']) ? $this->feeds[$feed]['TITLE'] : '';
+    }
+    
+    /* @TODO provide method to get bookmarked courses */
+    protected function getBookmarkedCourses() {
+        return array();
+    }
+    
     protected function initialize() {
     
-        $this->feed = $this->getCourseFeed();
-        
+        $this->feeds = $this->loadFeedData();
+        $this->controller = CoursesDataModel::factory('CoursesDataModel', $this->feeds);
     }
     
     protected function initializeForPage() {
         switch($this->page) {
             case 'catalog':
-                if ($areas = $this->feed->getCatalogAreas()) {
+                if ($areas = $this->controller->getCatalogAreas()) {
                     $areasList = array();
                     foreach ($areas as $CourseArea) {
                         $areasList[] = array(
@@ -94,7 +97,7 @@ class CoursesWebModule extends WebModule {
             case 'area':
                 $baseArea = '';
                 if ($area = $this->getArg('area', '')) {
-                    if ($CourseArea = $this->feed->getCatalogArea($area)) {
+                    if ($CourseArea = $this->controller->getCatalogArea($area)) {
                         $baseArea = $area . '|';
                         $this->setPageTitles($CourseArea->getTitle());
                     } else {
@@ -104,7 +107,7 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index', array());
                 }
 
-                $areas = $this->feed->getCatalogAreas($area);
+                $areas = $this->controller->getCatalogAreas($area);
                 
                 $areasList = array();
                 foreach ($areas as $CourseArea) {
@@ -115,7 +118,7 @@ class CoursesWebModule extends WebModule {
                 }
 
                 $areas = explode("|", $area);
-                $courses = $this->feed->getCatalogCourses(array('area' => end($areas)));
+                $courses = $this->controller->getCatalogCourses(array('area' => end($areas)));
                 $coursesList = array();
  
                 foreach ($courses as $Course) {
@@ -133,15 +136,21 @@ class CoursesWebModule extends WebModule {
                 break;
             
             case 'course':
-            	// get courseID by AreaCode
-                $id = $this->feed->GetCourseId($this->getArg('id'), 'content');
+            
+                $id = $this->getArg('id');
+                $type = $this->getArg('type');
                 
-                //$course = $this->feed->getCourseById($id);
+                if (!$course = $this->controller->getCourse($type, $id)) {
+                    $this->redirectTo('index');
+                }
+                             
+                             /*              
                 $contentTypes = array();
-                if ($contents = $this->feed->getCourseContentById($id)) {
-                $options = array(
-                    'id'      => $id,
-                );
+                if ($contents = $this->course->getCourseContentById($id)) {
+
+                    $options = array(
+                        'id'      => $id,
+                    );
                     $items = array_keys($contents['resource']);
                     
                     foreach ($items as $type) {
@@ -156,6 +165,7 @@ class CoursesWebModule extends WebModule {
                     }
                 }
                 $this->assign('contentTypes', $contentTypes);
+                */
                 break;
             case 'contents':
            // 	$section = $this->getArg('section');
@@ -164,7 +174,7 @@ class CoursesWebModule extends WebModule {
                 $type = $this->getArg('type');
                 
                 
-                $items = $this->feed->getCourseContentById($id);
+                $items = $this->controller->getCourseContentById($id);
                 
                 
                 if (!isset($items['resource'][$type])) {
@@ -189,11 +199,11 @@ class CoursesWebModule extends WebModule {
             case 'page':
             	$contentID = $this->getArg('contentID', '');
             	$courseID = $this->getArg('courseID', '');
-                if (!$contents = $this->feed->getCourseContentById($courseID, $contentID)) {
+                if (!$contents = $this->controller->getCourseContentById($courseID, $contentID)) {
                     throw new KurogoConfigurationException('not found the course content');
                 }
                 
-            	$content = $this->feed->getPageTypeContent($contents['resource']);
+            	$content = $this->controller->getPageTypeContent($contents['resource']);
             	$this->assign('content', $content);
             	break;
             case 'download':
@@ -204,18 +214,25 @@ class CoursesWebModule extends WebModule {
                 
                 //$feed = $this->getCourseFeed($section);
 
-                if (!$contentType = $this->feed->getCourseContentById($courseID, $contentID)) {
+                if (!$contentType = $this->controller->getCourseContentById($courseID, $contentID)) {
                     throw new KurogoConfigurationException('not found the course content');
                 }
-                $contentType = $this->feed->getDownLoadTypeContent($contentType['resource'], $courseID);
+                $contentType = $this->controller->getDownLoadTypeContent($contentType['resource'], $courseID);
                 $this->outputFile($contentType);
                 break;
             case 'index':
-                $feedTerms = $this->feed->getAvailableTerms();
+                $feedTerms = $this->controller->getAvailableTerms();
                 $terms = array();
+                
                 foreach($feedTerms as $term) {
                     $terms[$term->getID()] = $term->getTitle();
                 }
+
+                $term = $this->getArg('term', CoursesDataModel::CURRENT_TERM);
+                if (!$Term = $this->controller->getTerm($term)) {
+                    $Term = $this->controller->getCurrentTerm();
+                }
+                                
                 if (count($terms)>1) {
                     $this->assign('terms', $terms);
                 } else {
@@ -223,29 +240,39 @@ class CoursesWebModule extends WebModule {
                 }
                 
                 $courses = array();
-                
-                if ($items = $this->feed->getContentCourses()) {
-                    foreach ($items as $item) {
-                        $course = $this->linkForCourse($item);
-                        $courses[] = $course;
+                $options = array(
+                    'term'=>$Term
+                );
+
+                $this->assign('hasPersonalizedCourses', $this->controller->canRetrieve('registration') || $this->controller->canRetrieve('content'));
+                if ($this->isLoggedIn()) {                
+                    if ($items = $this->controller->getCourses('content', $options)) {
+                        foreach ($items as $item) {
+                            $course = $this->linkForCourse($item, 'content');
+                            $courses[] = $course;
+                        }
                     }
+                    $this->assign('courses', $courses);
                 }
-                $this->assign('courses', $courses);
                 
                 // do we have a catalog?  catelog just demo and XML file copy from LMS //delete this line after look
                 $catalogItems = array();
-                if ($this->feed->canRetrieve('catalog')) {
+                if ($this->controller->canRetrieve('catalog')) {
                     $catalogItems[] = array(
-                        'title' => 'Course Catalog',
+                        'title' => $this->getFeedTitle('catalog'),
                         'url'   => $this->buildBreadcrumbURL('catalog', array(), true),
                     );
-                    $catalogItems[] = array(
-                        'title' => 'Bookmarked Courses',
-                        'url'   => '',
-                    );
+                    
+                    if ($bookmarks = $this->getBookmarkedCourses()) {
+                        $catalogItems[] = array(
+                            'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . "(" . count($bookmarks) . ")",
+                            'url'   => '',
+                        );
+                    }
                 }
                 $this->assign('catalogItems', $catalogItems);
                 break;
         }
     }
 }
+ 
