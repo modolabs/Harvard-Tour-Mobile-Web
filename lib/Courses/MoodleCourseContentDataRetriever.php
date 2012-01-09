@@ -9,6 +9,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
     protected $DEFAULT_CACHE_LIFETIME = 60; // 1 min
     protected $token;
     protected $userID;
+    protected $sortType;
         
     protected function setUserID($userID) {
         $this->userID = $userID;
@@ -154,7 +155,41 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
     public function getGrades($options) {
         
     }
+    public function sortCourseContent($courseContents, $sort) {
+        if (empty($courseContents)) {
+            return array();
+        }
+        
+		$this->sortType = $sort;
+		
+		uasort($courseContents, array($this, "sortByField"));
+		
+        return $courseContents;
+    }
+    
+    // sort type for content
+	private function sortByField($contentA, $contentB) {
+		switch ($this->sortType){
+			
+			case 'publishedDate':
+	            $contentA_time = $contentA->getPublishedDate() ? $contentA->getPublishedDate()->format('U') : 0;
+	            $contentB_time = $contentB->getPublishedDate() ? $contentB->getPublishedDate()->format('U') : 0;
+	            return $contentA_time < $contentB_time;		
+	            		
+			default:
+	            $func = 'get' . $this->sortType;
+	            if(function_exists($func)){
+	            	return strcasecmp($contentA->$func(), $contentB->$func());
+	            }else{
+	            	throw new KurogoConfigurationException("Function not exist");
+	            }
+	            
+            break;
+		
+		}
 
+	}
+	
     public function getUpdates($courseID, $options=array()) {
         $this->clearInternalCache();
         $this->setOption('action', 'getCourseContent');
@@ -162,6 +197,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         
         $contents = array();
         if ($items = $this->getData()) {
+        	$items = $this->sortCourseContent($items,'publishedDate');
             foreach ($items as $item) {
                 $item->setCourseID($courseID);
                 $item->setContentRetriever($this);
@@ -276,15 +312,15 @@ class MoodleCourseContentDataParser extends dataParser {
         foreach ($data as $value) {
             $properties = array();
             
-            if (isset($value['modules']) && $value['modules']) {
-                $moduleValue = $value['modules'];
-                unset($value['modules']);
+            if (isset($value['modules']) && $value['modules'] || isset($value['contents']) && $value['contents']) {
+                $moduleValue = isset($value['modules'])?$value['modules']:$value['contents'];
                 $properties['section'] = $value;
                 foreach ($moduleValue as $module) {
                     $contentType = null;
                     if ($module['visible'] && isset($module['modname']) && $module['modname']) {
                         switch ($module['modname']) {
                             case 'resource':
+                            case 'folder':
                                 $contentType = new MoodleDownLoadCourseContent();
                                 break;
                                 
@@ -310,6 +346,9 @@ class MoodleCourseContentDataParser extends dataParser {
                             	
                         		$contentType->setCourseID($CourseId);
                         	}
+                        	
+                        	$contentType->setType($module['modname']);
+                        	
                             if (isset($module['contents'][0]['timecreated']) && $module['contents'][0]['timecreated']) {
                                 $datetime = new DateTime(date('Y-n-j H:i:s', $module['contents'][0]['timecreated']));
                                 $contentType->setPublishedDate($datetime);
@@ -318,7 +357,7 @@ class MoodleCourseContentDataParser extends dataParser {
                                 $datetime = new DateTime(date('Y-n-j H:i:s', $module['contents'][0]['timemodified']));
                                 $contentType->setPublishedDate($datetime);
                             }
-                            if($module['modname'] == 'resource'){
+                            if($module['modname'] == 'resource' || $module['modname'] == 'folder'){
 	                            if(isset($module['contents'][0]['type']) && $module['contents'][0]['type']){
 	                            	$contentType->setType($module['contents'][0]['type']);
 	                            }
@@ -358,9 +397,6 @@ class MoodleCourseContentDataParser extends dataParser {
                             }
                             
                             if($module['modname'] == 'url'){
-                            	if(isset($module['contents'][0]['type']) && $module['contents'][0]['type']){
-                            		$contentType->setType($module['contents'][0]['type']);
-                            	}
                             	if(isset($module['contents'][0]['fileurl']) && $module['contents'][0]['fileurl']){
                             		$contentType->setFileurl($module['contents'][0]['fileurl']);
                             	}
@@ -368,9 +404,6 @@ class MoodleCourseContentDataParser extends dataParser {
                             }
                             
                             if($module['modname'] == 'page'){
-                                if(isset($module['contents'][0]['type']) && $module['contents'][0]['type']){
-                            		$contentType->setType($module['contents'][0]['type']);
-                            	}
                                 if(isset($module['contents'][0]['filename']) && $module['contents'][0]['filename']){
                             		$contentType->setFilename($module['contents'][0]['filename']);
                             	}

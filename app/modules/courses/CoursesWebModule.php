@@ -36,6 +36,37 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
     
+    public function linkForUpdates($content){
+    	$type = array('page' => 'Page',
+    				  'link' => 'Link',
+    				  'file' => 'Download',
+    				  'url' => 'Link',
+    				  );
+    	if ($contentID = $content->getGUID()) {
+	    	$options = array(
+	                'contentID' => $contentID
+	        );
+	    	$link = array(
+	    			'title' => $type[$content->getType()].': '.$content->getTitle(),
+	    	);
+	    	if($content->getPublishedDate()){
+	    		if($content->getAuthor()){
+	    			$link['subtitle'] = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U')) .' by '.$content->getAuthor();
+	    		}else{
+	    			$link['subtitle'] = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U'));
+	    		}
+	    	} else {
+	    		$link['subtitle'] = $content->getSubTitle();
+	    	}
+	    	$link['url'] = ($content->getType() == 'link') ? 
+	        $content->getFileurl() : 
+	        $this->buildBreadcrumbURL($content->getType(), $options, true);
+    	} elseif ($url = $content->getUrl()) {
+            $link['url'] = $url;
+        }
+        return $link;
+    
+    }
     public function linkForCourse(Course $course, $type) {
         $link = array(
             'title' => $course->getTitle(),
@@ -143,7 +174,12 @@ class CoursesWebModule extends WebModule {
                 if (!$course = $this->controller->getCourse($type, $id)) {
                     $this->redirectTo('index');
                 }
-                             
+				
+                $items = $this->controller->getLastUpdate($id);
+                foreach ($items as $item){
+                	$contents[] = $this->linkForUpdates($item);
+                }
+                $this->assign('contents', $contents);
                              /*              
                 $contentTypes = array();
                 if ($contents = $this->course->getCourseContentById($id)) {
@@ -243,7 +279,6 @@ class CoursesWebModule extends WebModule {
                 $options = array(
                     'term'=>$Term
                 );
-
                 $this->assign('hasPersonalizedCourses', $this->controller->canRetrieve('registration') || $this->controller->canRetrieve('content'));
                 if ($this->isLoggedIn()) {                
                     if ($items = $this->controller->getCourses('content', $options)) {

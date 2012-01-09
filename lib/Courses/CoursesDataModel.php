@@ -103,7 +103,7 @@ class CoursesDataModel extends DataModel {
     //most recent activity from course
     public function getLastUpdate($courseID) {
         if ($this->canRetrieve('content')) {
-            return $this->retrievers['content']->getLastUpdate($courseID);
+            return $this->retrievers['content']->getUpdates($courseID);
         }
         
         return array();
