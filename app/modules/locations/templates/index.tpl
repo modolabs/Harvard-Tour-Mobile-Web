@@ -6,6 +6,6 @@
   </p>
 {/if}
 
-{include file="findInclude:common/templates/navlist.tpl" navlistItems=$locations navlistID="locations"}
+{include file="findInclude:common/templates/navlist.tpl" navlistItems=$locations navlistID="locations" subTitleNewline=true}
 
 {include file="findInclude:common/templates/footer.tpl"}
