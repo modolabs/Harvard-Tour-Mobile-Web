@@ -146,6 +146,18 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
     return $stopInfo;
   }
   
+  protected function getRouteName($row) {
+      $names = array();
+      if (isset($row['route_short_name']) && $row['route_short_name']) {
+          $names[] = $row['route_short_name'];
+      }
+      if (isset($row['route_long_name']) && $row['route_long_name']) {
+          $names[] = $row['route_long_name'];
+      }
+      
+      return $names ? implode(' ', $names) : $row['route_id'];
+  }
+  
   protected function loadData() {
     // Use first of specified agency ids.  Ignore any agency ids in gtfs file
     $agencyIDs = isset($this->args['agencies']) ? explode(',', $this->args['agencies']) : array();
@@ -165,19 +177,10 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
       Kurogo::log(LOG_ERR, 'could not load routes: '.print_r($db->errorInfo(), true), 'transit');
     }
     while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-      $routeID = $row['route_id'];
-      if (isset($row['route_long_name']) && $row['route_long_name']) {
-        $routeName = $row['route_long_name'];
-      } else if (isset($row['route_short_name']) && $row['route_short_name']) {
-        $routeName = $row['route_short_name'];
-      } else {
-        $routeName = $routeID;
-      }
-      
       $route = new GTFSDatabaseTransitRoute(
-        $routeID,
+        $row['route_id'],
         $this->agency,
-        $routeName,
+        $this->getRouteName($row),
         $row['route_desc'] // may be null
         );
   
