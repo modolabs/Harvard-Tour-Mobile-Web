@@ -95,23 +95,24 @@ class LocationsWebModule extends WebModule {
         $feed = $this->getLocationFeed($id);
 
         $status = "";
-        $statusString = "";
-        $current = "";
-        $next = "";
+        $subtitle = $feed->getSubtitle();
         
-        $currentEvent = $feed->getCurrentEvent();
+        $currentEvents = $feed->getCurrentEvents();
         $nextEvent = $feed->getNextEvent(true);
         
-        if ($currentEvent) {
-            
+        if (count($currentEvents)>0) {
+            $currentEvent = current($currentEvents);
             $status = 'open';
-            $statusString = $this->getLocalizedString('STATUS_CLOSE_STRING') . DateFormatter::formatDate($currentEvent->get_end(), DateFormatter::NO_STYLE, DateFormatter::SHORT_STYLE);
-            $current = "<br />" . $this->getLocalizedString('CURRENT_EVENT') . $currentEvent->get_summary() . ' at ' . $this->timeText($currentEvent);
+            $events = array();
+            foreach ($currentEvents as $event) {
+                $events[] = $event->get_summary() . ': ' . $this->timeText($event, true);
+            }
+            $subtitle .= "<br />" . implode("<br />", $events);
         } else {
             $status = 'closed';
             if ($nextEvent) {
                 $statusString = $this->getLocalizedString('STATUS_OPEN_STRING') . DateFormatter::formatDate($nextEvent->get_start(), DateFormatter::NO_STYLE, DateFormatter::SHORT_STYLE);
-                $next = "<br />" . $this->getLocalizedString('NEXT_EVENT') . $nextEvent->get_summary() . ' at ' . $this->timeText($nextEvent);
+                $subtitle .= "<br />" . $this->getLocalizedString('NEXT_EVENT') . $nextEvent->get_summary() . ': ' . $this->timeText($nextEvent);
             }
         }
                 
@@ -121,7 +122,7 @@ class LocationsWebModule extends WebModule {
         
         return array(
             'title'    => $feed->getTitle(),
-            'subtitle' => sprintf("%s <br /> %s %s %s", $statusString, $feed->getSubtitle(), $current, $next),
+            'subtitle' => $subtitle, 
             'url'      => $this->buildBreadcrumbURL('detail', $options, true),
             'listclass'=> $status
         );

@@ -22,17 +22,23 @@ class LocationsDataModel extends CalendarDataModel {
         }
     }
 
-    public function getCurrentEvent() {
+    public function getCurrentEvents() {
         $current = new DateTime();
         $current->setTime(date('H'), floor(date('i')/5)*5, 0);
+        $this->setStartDate($current);
+        $this->setEndDate($current);
+
+        $calendar = $this->getCalendar();
+        $startTimestamp = $this->startTimestamp() ? $this->startTimestamp() : CalendarDataController::START_TIME_LIMIT;
+        $endTimestamp = $this->endTimestamp() ? $this->endTimestamp() : CalendarDataController::END_TIME_LIMIT;
+        $range = new TimeRange($this->startTimestamp(), $this->endTimestamp());
         
-        if ($nextEvent = $this->getNextEvent(true)) {
-            if ($nextEvent->get_start() < $current->format('U')) {
-                return $nextEvent;
-            }
-        }
-        
-        return null;
+        return $calendar->getEventsInRange($range);
+    }
+
+    public function getCurrentEvent() {
+        $events = $this->getCurrentEvents();
+        return is_array($events) ? current($events) : null;
     }
     
     public function getDescription() {
