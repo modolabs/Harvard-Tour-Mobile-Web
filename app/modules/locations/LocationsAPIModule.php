@@ -56,6 +56,7 @@ class LocationsAPIModule extends APIModule {
             		$currentEvent = $feedObject->getCurrentEvent();
             		$status = $currentEvent?"open":"closed";
             		$feed= array(
+            			'id'=>$feedData['INDEX'],
             			'title'=>$feedData['TITLE'],
 	            		'subtitle'=>$feedData['SUBTITLE'],
 	            		'maplocation'=>$feedData['MAP_LOCATION'],
