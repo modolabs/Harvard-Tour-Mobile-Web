@@ -11,7 +11,6 @@ class CoursesDataModel extends DataModel {
     
     public function getDownLoadTypeContent(MoodleDownLoadCourseContent $content, $courseID) {
         $this->retriever = $this->retrievers['content'];
-        
     	$cache = $this->getRetriever()->getCache();
         $cacheKey = md5($content->getFileUrl()) . '.' .$content->getFileType();
         $cacheGroup = isset($this->initArgs['INDEX']) ? $this->initArgs['INDEX'] : '';

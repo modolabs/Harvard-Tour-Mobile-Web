@@ -14,7 +14,11 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
     protected function setUserID($userID) {
         $this->userID = $userID;
     }
-
+    
+    public function getCache() {
+        return $this->cache;
+    }
+    
     public function setToken($token) {
         $this->token = $token;
     }
@@ -31,7 +35,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         $response->setContext('action', $action);
         return $response;
     }
-
+	
     protected function initRequest() {
 
         $baseUrl = sprintf("http%s://%s/webservice/rest/server.php",
