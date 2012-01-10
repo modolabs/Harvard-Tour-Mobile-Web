@@ -430,7 +430,8 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
           }
         }
         if ($j == count($segmentInfo['stops'])) {
-          Kurogo::log(LOG_WARNING, "Unable to place stop {$stopInfo['stopID']} for direction '$directionName' starting at index $remainingStopsIndex", 'transit');
+          Kurogo::log(LOG_WARNING, "Unable to place stop {$stopInfo['stopID']} for direction '$directionName' at index {$stopInfo['i']}", 'transit');
+          error_log("Unable to place stop {$stopInfo['stopID']} for direction '$directionName' at index {$stopInfo['i']}");
         }
       }
       $segments[] = $segmentInfo;
@@ -440,7 +441,7 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
     // very noisy output so we really don't want this most of the time
     if ($this->debugStopOrder) {
       foreach ($segments as $i => $segmentInfo) {
-        error_log("Trip {$segmentInfo['id']}");
+        error_log("Trip {$segmentInfo['id']} ($directionName)");
         foreach ($segmentInfo['stops'] as $stop) {
           error_log("\t\t".str_pad($stop['id'], 8).' => '.(isset($stop['i']) ? $stop['i'] : 'skipped'));
         }
@@ -767,13 +768,13 @@ class GTFSDatabaseTransitRoute extends TransitRoute {
     $runningSegmentNames = array();
 
     $this->getDirections();
-    foreach ($this->directions as $direction) {
+    foreach ($this->directions as $directionID => $direction) {
       foreach ($direction['segments'] as $segment) {
         $inService = true; // GTFSDatabaseTransitService objects are only created if they are in service
         if ($segment->isRunning($time)) {
           $name = $segment->getName();
           if (isset($name) && !isset($runningSegmentNames[$name])) {
-            //error_log("   Route {$this->name} has named running segment '$name' (direction '$direction')");
+            //error_log("   Route ".$this->getName()." has named running segment '$name' (direction '$directionID')");
             $runningSegmentNames[$name] = $name;
           }
           $isRunning = true;
