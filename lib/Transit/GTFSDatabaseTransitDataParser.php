@@ -455,6 +455,7 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
       } else {
         Kurogo::log(LOG_WARNING, "Attempt to look up invalid stop {$stopInfo['id']}", 'transit');
       }
+      $this->applyStopInfoOverrides($stopInfo['id'], $stopArray[$i]);
     }
     
     return array(

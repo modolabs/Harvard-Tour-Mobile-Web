@@ -27,23 +27,49 @@ class StripGTFSToDB {
         if (isset($feedData['routes']) && is_array($feedData['routes'])) {
             $routeFilter = $feedData['routes'];
         }
-        
-        // Optional agency id remap
-        $agencyRemap = array();
-        if (isset($feedData['agency_override_keys'], $feedData['agency_override_vals'])) {
-            foreach ($feedData['agency_override_keys'] as $i => $key) {
-                if (isset($feedData['agency_override_vals'][$i])) {
-                    $agencyRemap[$key] = $feedData['agency_override_vals'][$i];
+
+        // Optional replacement fields
+        // Live in arrays of type [FIELD]_replacement_keys and [FIELD]_replacement_vals
+        // (e.g. agency_id_replacement_keys and agency_id_replacement_vals)
+        $fieldRemaps = array();
+        foreach ($feedData as $key => $replaceValues) {
+            $pos = strpos($key, '_override_keys');
+            if ($pos !== false && is_array($replaceValues)) {
+                // is a remap keys config array
+                $replaceField = substr($key, 0, $pos);
+                $replacementsKey = "{$replaceField}_override_vals";
+                if ($replaceField && isset($feedData[$replacementsKey])) {
+                    // values config array is also set
+                    $fieldRemap = array();
+                    foreach ($replaceValues as $i => $replaceValue) {
+                        if (isset($feedData[$replacementsKey][$i])) {
+                            $fieldRemap[$replaceValue] = $feedData[$replacementsKey][$i];
+                        }
+                    }
+                    
+                    if ($fieldRemap) {
+                        $fieldRemaps[$replaceField] = $fieldRemap;
+                    }
                 }
             }
         }
-        
-        // Optional route id remap
-        $routeRemap = array();
-        if (isset($feedData['route_override_keys'], $feedData['route_override_vals'])) {
-            foreach ($feedData['route_override_keys'] as $i => $key) {
-                if (isset($feedData['route_override_vals'][$i])) {
-                    $routeRemap[$key] = $feedData['route_override_vals'][$i];
+
+        // Optional regular expressions for replacement field
+        // Live in strings of type [FIELD]_re_pattern and [FIELD]_re_replace
+        // (e.g. agency_id_re_pattern and agency_id_re_replace)
+        $fieldREs = array();
+        foreach ($feedData as $patternKey => $pattern) {
+            $pos = strpos($patternKey, '_re_pattern');
+            if ($pos !== false && is_string($replaceValues)) {
+                // is _re_pattern config string
+                $replaceField = substr($patternKey, 0, $pos);
+                $replaceKey = "{$replaceField}_re_replace";
+                if ($replaceField && isset($feedData[$replaceKey])) {
+                    // _re_replace config string is also set
+                    $fieldREs[$replaceField] = array(
+                        'pattern' => $pattern,
+                        'replace' => $feedData[$replaceKey],
+                    );
                 }
             }
         }
@@ -52,14 +78,9 @@ class StripGTFSToDB {
             'zip'        => $zipFile,
             'db'         => DATA_DIR."/gtfs/gtfs-$feedIndex.sqlite",
             'routes'     => $routeFilter,
-            'fieldRemap' => array(),
+            'fieldRemap' => $fieldRemaps,
+            'fieldREs'   => $fieldREs,
         );
-        if ($agencyRemap) {
-            $this->config[$feedIndex]['fieldRemap']['agency_id'] = $agencyRemap;
-        }
-        if ($routeRemap) {
-            $this->config[$feedIndex]['fieldRemap']['route_id'] = $routeRemap;
-        }
     }
     
     public function convert() {
@@ -98,8 +119,8 @@ class StripGTFSToDB {
                 }
                 
                 foreach ($tableMappings as $tableName => $tableConfig) {
-                    $this->notice("-- populating table $tableName");
-                
+                    $this->notice("-- creating table $tableName");
+                    
                     $fields = array();
                     foreach ($tableConfig['fields'] as $field => $type) {
                         $fields[] = "$field $type";
@@ -108,17 +129,24 @@ class StripGTFSToDB {
                         $fields[] = $tableConfig['constraint'];
                     }
                 
-                    $rows = $this->readCSVArray($zip, $tableConfig['file'], $agencyConfig['fieldRemap'], $filter, $tableConfig['addToFilter']);
-                    
                     if ($db->exec("CREATE TABLE $tableName (".implode(', ', $fields).")") === FALSE) {
                         $this->notice("-- f");
                         throw new Exception("Failed to create table '$tableName': ".print_r($db->errorInfo(), true));
                     }
+                }
+                
+                foreach ($tableMappings as $tableName => $tableConfig) {
+                    $this->notice("-- populating table $tableName");
+                
+                    $rows = $this->readCSVArray($zip, $tableConfig['file'], 
+                      $agencyConfig['fieldRemap'], $agencyConfig['fieldREs'], 
+                      $filter, $tableConfig['addToFilter']);
+                    
                     $this->writeToDatabase($db, $tableName, $tableConfig, $rows);
                 }
               
                 if (!$db->commit()) {
-                      throw new Exception("Failed to commit transaction: ".print_r($db->errorInfo(), true));
+                    throw new Exception("Failed to commit transaction: ".print_r($db->errorInfo(), true));
                 }
             }
             
@@ -136,7 +164,7 @@ class StripGTFSToDB {
     // Helper functions
     //
     
-    function readCSVArray($zip, $file, $fieldRemap, &$filter=array(), $addToFilter=array()) {
+    function readCSVArray($zip, $file, $fieldRemap, $fieldREs, &$filter=array(), $addToFilter=array()) {
         $rows = array();
         $fieldNames = array();
           
@@ -165,12 +193,19 @@ class StripGTFSToDB {
             $row = array();
             
             foreach ($fieldNames as $index => $fieldName) {
-                // Fix agency ids so they won't cause collisions:
-                if (isset($fieldRemap[$fieldName], $fpArray[$index], $fieldRemap[$fieldName][$fpArray[$index]])) {
-                    $row[$fieldName] = $fieldRemap[$fieldName][$fpArray[$index]];
-                } else {
-                    $row[$fieldName] = isset($fpArray[$index]) ? $fpArray[$index] : '';
+                $value = isset($fpArray[$index]) ? $fpArray[$index] : '';
+                
+                // Run regular expression matches and then field remaps, if set
+                if (isset($fieldREs[$fieldName])) {
+                    $value = preg_replace($fieldREs[$fieldName]['pattern'], $fieldREs[$fieldName]['replace'], $value);
+                    //error_log('replaced "'.(isset($fpArray[$index]) ? $fpArray[$index] : '').'" with "'.$value.'"');
                 }
+                
+                if (isset($fieldRemap[$fieldName], $fpArray[$index], $fieldRemap[$fieldName][$fpArray[$index]])) {
+                    $value = $fieldRemap[$fieldName][$fpArray[$index]];
+                }
+                
+                $row[$fieldName] = $value;
             }
             
             $rowIsValid = true;
@@ -228,8 +263,12 @@ class StripGTFSToDB {
                 $values[] = $value;
             }
             if (!$stmt->execute($values)) {
-                throw new Exception("failed to insert row '".implode(', ', $values)."' ".
-                    print_r($stmt->errorInfo(), true));
+                $info = $stmt->errorInfo();
+                if ($info[0] == '23000') {
+                    $this->notice("        -- skipping row '".implode(', ', $values)."': ".$info[2]);
+                } else {
+                    throw new Exception("failed to insert row '".implode(', ', $values)."' ".$info[2]);
+                }
             }
         }
         
@@ -263,7 +302,7 @@ class StripGTFSToDB {
                     'route_color'      => 'TEXT',
                 ),
                 'constraint'  => '',
-                'addToFilter' => array('agency_id'),
+                'addToFilter' => array('agency_id', 'route_id'),
             ),
             'trips' => array(
                 'file' => 'trips.txt',
@@ -315,19 +354,6 @@ class StripGTFSToDB {
                 'constraint'  => '',
                 'addToFilter' => array(),
             ),
-            'stops' => array(
-                'file' => 'stops.txt',
-                'fields' => array(
-                    'stop_id'   => 'TEXT NOT NULL PRIMARY KEY',
-                    'stop_code' => 'TEXT',
-                    'stop_name' => 'TEXT',
-                    'stop_desc' => 'TEXT',
-                    'stop_lat'  => 'REAL',
-                    'stop_lon'  => 'REAL',
-                ),
-                'constraint'  => '',
-                'addToFilter' => array(),
-            ),
             'stop_times' => array(
                 'file' => 'stop_times.txt',
                 'fields' => array(
@@ -341,6 +367,19 @@ class StripGTFSToDB {
                 ),
                 'constraint'  => 'UNIQUE (trip_id, stop_sequence)',
                 'addToFilter' => array('stop_id'),
+            ),
+            'stops' => array(
+                'file' => 'stops.txt',
+                'fields' => array(
+                    'stop_id'   => 'TEXT NOT NULL PRIMARY KEY',
+                    'stop_code' => 'TEXT',
+                    'stop_name' => 'TEXT',
+                    'stop_desc' => 'TEXT',
+                    'stop_lat'  => 'REAL',
+                    'stop_lon'  => 'REAL',
+                ),
+                'constraint'  => 'UNIQUE (stop_id)',
+                'addToFilter' => array(),
             ),
         );
     }
