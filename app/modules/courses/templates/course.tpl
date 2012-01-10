@@ -6,7 +6,7 @@
 {/if}
 <ul id="tabs">
 <li class="active"> <a href="{$linkToOtherTab}"> Updates</a></li>
-<li> <a href="{$linkToOtherTab}">Resources</a></li>
+<li> <a href="{$linkToResourcesTab}">Resources</a></li>
 </ul>
 <div id="tabbodies">
 <div class="tab body">

@@ -6,9 +6,17 @@ class CoursesDataModel extends DataModel {
 
     const CURRENT_TERM = 1;
     const ALL_TERMS = 2;
+    protected $type;
     
     protected $retrievers;
     
+    public function getType() {
+    	return $this->type;
+    }
+    
+    public function setType($type) {
+    	$this->type = $type;
+    }
     public function getDownLoadTypeContent(MoodleDownLoadCourseContent $content, $courseID) {
         $this->retriever = $this->retrievers['content'];
     	$cache = $this->getRetriever()->getCache();
@@ -41,21 +49,22 @@ class CoursesDataModel extends DataModel {
     public function getPageTypeContent(MoodlePageCourseContent $content) {
         $this->retriever = $this->retrievers['content'];
         if ($pageUrl = $content->getFileurl()) {
-            $this->setOption('action', 'getPageContent');
-            $this->setOption('contentUrl', $content->getFileurl());
+        	$this->retriever->clearInternalCache();
+        	
+            $this->retriever->setOption('action', 'getPageContent');
+            $this->retriever->setOption('contentUrl', $pageUrl);
             
             $this->retriever->setParser(new DOMDataParser());
-            $content = '';
-            if ( ($dom = $this->getData()) && ($dom instanceOf DOMDocument)) {
-                if ($element = $dom->getElementsByTagName('body')->item(0)) {
-                    $content = $dom->saveXML($element);
-                    $content = preg_replace("#</?body.*?".">#", "", $content);
+            $context = '';
+            if ( ($dom = $this->retriever->getData()) && ($dom instanceOf DOMDocument)) {
+            	if ($element = $dom->getElementsByTagName('body')->item(0)) {
+                    $context = $dom->saveXML($element);
+                    $context = preg_replace("#</?body.*?".">#", "", $context);
                 } else {
-                    $content = $this->getResponse();
+                    $context = $this->retriever->getResponse();
                 }
             }
-            
-            return $content;
+            return $context;
         }
         return '';
     }
@@ -83,10 +92,19 @@ class CoursesDataModel extends DataModel {
         /* what are we searching? */
     }
     
-    public function getContentById($content){
+    public function getContentById($content, $contentId){
     	if(isset($content)){
-    		
+	    	if ($this->canRetrieve('content')) {
+	            return $this->retrievers['content']->getContentById($content,$contentId);
+	        }
+    	}else{
+    		return '';
     	}
+    }
+    public function getResource($courseID){
+        if ($this->canRetrieve('content')) {
+            return $this->retrievers['content']->getCourseContent($courseID, $this->type);
+        }
     }
     //returns a Course object (may call all 3 retrievers to get the data)
     public function getCourse($type, $courseID) {
@@ -96,7 +114,7 @@ class CoursesDataModel extends DataModel {
     }
     
     //gets grades for this user for the term (both registration and content)
-    public function getGrades(CourseTerm $term) {
+    public function getGrades(CourseTegetCourseContentrm $term) {
         
     }
     

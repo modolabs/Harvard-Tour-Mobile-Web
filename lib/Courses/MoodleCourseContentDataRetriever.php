@@ -45,7 +45,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
                 break;
         }
     }
-	
+
     protected function initRequest() {
 
         $baseUrl = sprintf("http%s://%s/webservice/rest/server.php",
@@ -108,39 +108,65 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
     public function getAvailableTerms() {
         
     }
-    public function getCourseContentById($courseRetrieverID,$contentId=''){
+    public function getCourseContent($courseRetrieverID,$type=''){
         if ($courseRetrieverID) {
             $this->clearInternalCache();
             $this->setOption('action', 'getCourseResource');
             $this->setOption('courseID', $courseRetrieverID);
             if ($course = $this->getData()) {
             	$courseContents = array();
-            	if(empty($contentId) && !$contentId){
-	            	foreach ($course as $courseContentObj){
-	            	    if($courseContentObj instanceof DownLoadCourseContent){
-	            	    	$courseContentObj->setType('download');
-	            			$courseContents['downLoad'][] = $courseContentObj;
-	            		}
-	            	    if($courseContentObj instanceof LinkCourseContent){
-	            	    	$courseContentObj->setType('link');
-	            			$courseContents['link'][] = $courseContentObj;
-	            		}
-	            	    if($courseContentObj instanceof PageCourseContent){
-	            	    	$courseContentObj->setType('page');
-	            			$courseContents['page'][] = $courseContentObj;
-	            		}
-	            	}
-            	}else{
-            		foreach ($course as $courseContentObj){
-            			if($courseContentObj->getId() == $contentId){
-            				$courseContents = $courseContentObj;
+            	switch ($type){
+            		case 'topic':
+            			foreach ($course as $courseContentObj){
+            				$section = $courseContentObj->getProperty('section');
+            				if(isset($section['name'])){
+            					$courseContents[$section['name']][] = $courseContentObj;
+            				}
             			}
-            		}
+            			//$sortCourseContents = array();
+            			foreach ($courseContents as $topic => $courseContent){
+	            			$courseContent = $this->sortCourseContent($courseContent, 'publishedDate');
+	            			$sortCourseContents[$topic] = $courseContent;
+            			}
+            			return $sortCourseContents;
+            			break;
+            		case 'type':
+	            		foreach ($course as $courseContentObj){
+		            	    if($courseContentObj instanceof DownLoadCourseContent){
+		            	    	$courseContentObj->setType('download');
+		            			$courseContents['downLoad'][] = $courseContentObj;
+		            		}
+		            	    if($courseContentObj instanceof LinkCourseContent){
+		            	    	$courseContentObj->setType('link');
+		            			$courseContents['link'][] = $courseContentObj;
+		            		}
+		            	    if($courseContentObj instanceof PageCourseContent){
+		            	    	$courseContentObj->setType('page');
+		            			$courseContents['page'][] = $courseContentObj;
+		            		}
+		            	}
+            			break;
+            		case 'date':
+            			$courseContents[] = $this->sortCourseContent($course, 'publishedDate');
+            			return $courseContents;
+            			break;
+            		default:
+            			return $course;
+            			break;
             	}
-            	return $courseContents;
+            	return $course;
             }
         }
         return '';
+    }
+    public function getContentById($contents, $contentId){
+    	if($contents){
+    		foreach ($contents as $content){
+    			if($content->getId() == $contentId){
+    				return $content;
+    			}
+    		}
+    	}
     }
     public function getCourseById($courseID) {
 
@@ -314,10 +340,9 @@ class MoodleCourseContentDataParser extends dataParser {
             
             if (isset($value['modules']) && $value['modules'] || isset($value['contents']) && $value['contents']) {
                 $moduleValue = isset($value['modules'])?$value['modules']:$value['contents'];
-                $properties['section'] = $value;
                 foreach ($moduleValue as $module) {
                     $contentType = null;
-                    if ($module['visible'] && isset($module['modname']) && $module['modname']) {
+                    if ($module ['visible'] && isset($module['modname']) && $module['modname']) {
                         switch ($module['modname']) {
                             case 'resource':
                             case 'folder':
@@ -336,6 +361,9 @@ class MoodleCourseContentDataParser extends dataParser {
                                 break;
                         }
                         if ($contentType) {
+                        	$unsetString = isset($value['modules'])? 'modules' : 'contents';
+                        	unset($value[$unsetString]);
+                        	$properties['section'] = $value;
                             if(isset($module['name'])  && $module['name']){
                         		$contentType->setTitle($module['name']);
                         	}
