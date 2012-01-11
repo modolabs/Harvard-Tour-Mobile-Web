@@ -1,4 +1,6 @@
 <?php
+
+includePackage('Locations');
 class LocationsAPIModule extends APIModule {
     protected $id = 'locations';
     

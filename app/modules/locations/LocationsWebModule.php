@@ -1,5 +1,6 @@
 <?php
 
+includePackage('Locations');
 class LocationsWebModule extends WebModule {
     protected $id = 'locations';
     
