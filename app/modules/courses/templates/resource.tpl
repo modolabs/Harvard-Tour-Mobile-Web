@@ -11,12 +11,16 @@
 <div style="padding:5px;">
 <br/>
 <br/>
-<a>By topic</a>&nbsp;&nbsp;&nbsp;
-<a>By Date</a>
+<a <a href="{$linkByTopic}">By topic</a>&nbsp;&nbsp;&nbsp;
+<a <a href="{$linkByDate}">By Date</a>
 </div>
-<div id="tabbodies">
+<div style = "margin-left:15px;" id="tabbodies">
+  {foreach $resources as $itemname =>$item}
+	{if $itemname}<h3>{$itemname}</h3> <div style=""><a href="{$seeAllLinks["$itemname"]}">see all {count($item)}</a></div>{/if}
 <div class="tab body">
-  {include file="findInclude:common/templates/navlist.tpl" navlistItems=$contents subTitleNewline=true}
+		{include file="findInclude:common/templates/navlist.tpl" navlistItems=$item}
 </div>
+	<br/>
+  {/foreach}
 </div>
 {include file="findInclude:common/templates/footer.tpl"}

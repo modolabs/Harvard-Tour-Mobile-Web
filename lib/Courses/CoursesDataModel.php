@@ -19,20 +19,20 @@ class CoursesDataModel extends DataModel {
     }
     public function getDownLoadTypeContent(MoodleDownLoadCourseContent $content, $courseID) {
         $this->retriever = $this->retrievers['content'];
-    	$cache = $this->getRetriever()->getCache();
+    	$cache = $this->retriever->getCache();
         $cacheKey = md5($content->getFileUrl()) . '.' .$content->getFileType();
         $cacheGroup = isset($this->initArgs['INDEX']) ? $this->initArgs['INDEX'] : '';
         $cacheGroup .= '-' . $courseID;
         $cache->setCacheGroup($cacheGroup);
-        $cache->setSerialize(false);
+        $cache->setSerialize(FALSE);
         
         $fileFullPath = $cache->getFullPath($cacheKey);
         if (!$data = $cache->get($cacheKey)) {
-            $this->clearInternalCache();
-            $this->setOption('action', 'downLoadFile');
-            $this->setOption('contentUrl', $content->getFileUrl());
+            $this->retriever->clearInternalCache();
+            $this->retriever->setOption('action', 'downLoadFile');
+            $this->retriever->setOption('contentUrl', $content->getFileUrl());
             $cache->setCacheLifetime(500);
-            if ($response = $this->getRetriever()->retrieveResponse()) {
+            if ($response = $this->retriever->retrieveResponse()) {
                 if (!$response instanceOf DataResponse) {
                     throw new KurogoDataException("Response must be instance of DataResponse");
                 }

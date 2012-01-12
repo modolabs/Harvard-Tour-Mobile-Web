@@ -36,6 +36,17 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         return $this->token;
     }
     
+    // the public function return protected function retrieveResponse() result
+    // calling in coursesDataModel getDownLoadTypeContent
+    public function retrieveResponse() {
+        
+        $action = $this->getOption('action');
+        $response = parent::retrieveResponse();
+        
+        $response->setContext('action', $action);
+        return $response;
+    }
+    
     public function setOption($option, $value) {
         parent::setOption($option, $value);
         switch ($option)
@@ -337,7 +348,6 @@ class MoodleCourseContentDataParser extends dataParser {
         $CourseId = $this->getOption('courseID');
         foreach ($data as $value) {
             $properties = array();
-            
             if (isset($value['modules']) && $value['modules'] || isset($value['contents']) && $value['contents']) {
                 $moduleValue = isset($value['modules'])?$value['modules']:$value['contents'];
                 foreach ($moduleValue as $module) {

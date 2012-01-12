@@ -36,11 +36,19 @@ class CoursesWebModule extends WebModule {
     }
     
     public function linkForResource($resource, $data = array()){
-    	 $link = array(
+    	$link = array(
             'title' => $resource->getTitle(),
             'subtitle' => $resource->getSubTitle()
         );
-            
+        if($resource->getPublishedDate()){
+	    	if($resource->getAuthor()){
+	    		$link['subtitle'] = 'Updated '. $this->elapsedTime($resource->getPublishedDate()->format('U')) .' by '.$resource->getAuthor();
+	    	}else{
+	    		$link['subtitle'] = 'Updated '. $this->elapsedTime($resource->getPublishedDate()->format('U'));
+	    	}
+	    } else {
+	    	$link['subtitle'] = $resource->getSubTitle();
+	    } 
         if ($contentID = $resource->getGUID()) {
             $type = $resource->getType();
             
@@ -53,7 +61,7 @@ class CoursesWebModule extends WebModule {
                     $options[$field] = $data[$field];
                 }
             }
-            $link['url'] = ($resource->getType() == 'link') ? 
+            $link['url'] = ($resource->getType() == 'link' || $resource->getType() == 'url') ? 
                            $resource->getFileurl() : 
                            $this->buildBreadcrumbURL($resource->getType(), $options, true);
             
@@ -247,15 +255,44 @@ class CoursesWebModule extends WebModule {
                 $this->controller->setType($type);
                 $items = $this->controller->getResource($id);
                 $resources = array();
-                foreach ($items as $key => $item){
+                $seeAllLinks = array();
+                foreach ($items as $itemkey => $item){
                 	foreach ($item as $resource){
-                		$resources[$key][] = $this->linkForResource($resource,$options);
+                		if(!isset($resources[$itemkey])) 
+                		$seeAllLinks[$itemkey] = $this->buildBreadcrumbURL('resourceSeeAll', array('id'=> $id, 'type'=>$type,'key'=>urlencode($itemkey)), true);;
+                		
+                		// list three line each item may be can use js hidden item if more than three item
+                		//if(isset($resources[$itemkey]) && count($resources[$itemkey])>=3) continue;
+                		$resources[$itemkey][] = $this->linkForResource($resource,$options);
                 	}
                 }
-                var_dump($resources);
-                exit;
+                $this->assign('seeAllLinks',$seeAllLinks);
+                $this->assign('resources',$resources);
+                //$linkToResourcesTab = 
             	$linkToUpdateTab = $this->buildBreadcrumbURL('course', array('id'=> $id, 'type'=>'content'), true);
             	$this->assign('linkToUpdateTab',$linkToUpdateTab);
+            	$linkByTopic = $this->buildBreadcrumbURL('resource', array('id'=> $id, 'type'=>'topic'), true);
+            	$linkByDate = $this->buildBreadcrumbURL('resource', array('id'=> $id, 'type'=>'date'), true);
+            	$this->assign('linkByTopic',$linkByTopic);
+            	$this->assign('linkByDate',$linkByDate);
+            	break;
+            case 'resourceSeeAll':
+            	$id = $this->getArg('id');
+                $type = $this->getArg('type');
+                $key = urldecode($this->getArg('key'));
+                $options = array(
+                	'courseID' => $id,
+                );
+                $this->controller->setType($type);
+                $items = $this->controller->getResource($id);
+                $resources = array();
+                foreach ($items as $itemkey => $item){
+                	foreach ($item as $resource){
+                		if($key == $itemkey)
+                		$resources[$itemkey][] = $this->linkForResource($resource,$options);
+                	}
+                }
+                $this->assign('resources',$resources);
             	break;
             case 'contents':
             // 	$section = $this->getArg('section');
@@ -296,19 +333,19 @@ class CoursesWebModule extends WebModule {
             	$content = $this->controller->getPageTypeContent($content);
             	$this->assign('content', $content);
             	break;
-            case 'download':
+            case 'file':
                 //$section   = $this->getArg('section');
                 $courseID  = $this->getArg('courseID');
                 $type      = $this->getArg('type');
                 $contentID = $this->getArg('contentID');
                 
                 //$feed = $this->getCourseFeed($section);
-
-                if (!$contentType = $this->controller->getCourseContentById($courseID, $contentID)) {
+				$contents = $this->controller->getResource($courseID);
+                if (!$content = $this->controller->getContentById($contents,$contentID)) {
                     throw new KurogoConfigurationException('not found the course content');
                 }
-                $contentType = $this->controller->getDownLoadTypeContent($contentType['resource'], $courseID);
-                $this->outputFile($contentType);
+                $content = $this->controller->getDownLoadTypeContent($content, $courseID);
+                $this->outputFile($content);
                 break;
             case 'index':
                 $feedTerms = $this->controller->getAvailableTerms();
@@ -317,12 +354,11 @@ class CoursesWebModule extends WebModule {
                 foreach($feedTerms as $term) {
                     $terms[$term->getID()] = $term->getTitle();
                 }
-
                 $term = $this->getArg('term', CoursesDataModel::CURRENT_TERM);
                 if (!$Term = $this->controller->getTerm($term)) {
                     $Term = $this->controller->getCurrentTerm();
                 }
-                                
+
                 if (count($terms)>1) {
                     $this->assign('terms', $terms);
                 } else {
@@ -336,14 +372,13 @@ class CoursesWebModule extends WebModule {
                 $this->assign('hasPersonalizedCourses', $this->controller->canRetrieve('registration') || $this->controller->canRetrieve('content'));
                 if ($this->isLoggedIn()) {                
                     if ($items = $this->controller->getCourses('content', $options)) {
-                        foreach ($items as $item) {
+                    	foreach ($items as $item) {
                             $course = $this->linkForCourse($item, 'content');
                             $courses[] = $course;
                         }
                     }
                     $this->assign('courses', $courses);
                 }
-                
                 // do we have a catalog?  catelog just demo and XML file copy from LMS //delete this line after look
                 $catalogItems = array();
                 if ($this->controller->canRetrieve('catalog')) {
