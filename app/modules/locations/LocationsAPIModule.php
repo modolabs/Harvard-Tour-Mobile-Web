@@ -47,7 +47,7 @@ class LocationsAPIModule extends APIModule {
                     $event['starttime'] = $item->get_start();
                     $event['endtime'] = $item->get_end();
                     $event['description'] = $item->get_description();
-                    $event['status'] = $item->getRange()->contains(new TimeRange(time()));
+                    $event['status'] = $item->getRange()->contains(new TimeRange(time()))?"open":"closed";
                     $events[] = $event;
                 }
             	$response = $events;
