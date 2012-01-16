@@ -458,7 +458,6 @@ class TransitDataView {
               if (isset($staticRoutes[$routeID])) {
                 if (!$routeInfo['running']) {
                   $routes[$routeID] = $staticRoutes[$routeID];
-                  //$routes[$routeID]['running'] = false;
                 } else {
                   // static name is better
                   $routes[$routeID]['name'] = $staticRoutes[$routeID]['name'];

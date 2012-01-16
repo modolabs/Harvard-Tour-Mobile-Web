@@ -75,15 +75,16 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
       $result = $this->query($sql, $params);
       if (!$result) {
         Kurogo::log(LOG_ERR, "error fetching stop: ".print_r($db->errorInfo(), true), 'transit');
+      } else {
+        $row = $result->fetch(PDO::FETCH_ASSOC);
+        $this->addStop(new TransitStop(
+          $row['stop_id'],
+          $row['stop_name'], // may be null
+          $row['stop_desc'], // may be null
+          $row['stop_lat'],
+          $row['stop_lon']
+          ));
       }
-      $row = $result->fetch(PDO::FETCH_ASSOC);
-      $this->addStop(new TransitStop(
-        $row['stop_id'],
-        $row['stop_name'], // may be null
-        $row['stop_desc'], // may be null
-        $row['stop_lat'],
-        $row['stop_lon']
-        ));
     }
     
     return parent::getStop($id);
@@ -105,6 +106,8 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
   }
   
   public function getStopInfo($stopID) {
+    $stopInfo = array();
+    
     // get all route IDs associated with this stop.
     $now = TransitTime::getCurrentTime();
     $sql = "SELECT DISTINCT t.route_id AS route_id"
@@ -115,34 +118,34 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
     $result = $this->query($sql, $params);
     if (!$result) {
       Kurogo::log(LOG_ERR, "error fetching stop info: ".print_r($db->errorInfo(), true), 'transit');
-    }
-
-    // rest of this function is mostly like the parent
-    // but we call this->getRoute and this->getStop
-    $routePredictions = array();
-    while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-      $routeID = $row['route_id'];
-      $route = $this->getRoute($routeID);
-      $this->updatePredictionData($routeID);
+    } else {
+      // rest of this function is mostly like the parent
+      // but we call this->getRoute and this->getStop
+      $routePredictions = array();
+      while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+        $routeID = $row['route_id'];
+        $route = $this->getRoute($routeID);
+        $this->updatePredictionData($routeID);
+        
+        $routePredictions[$routeID]['predictions'] = $route->getPredictionsForStop($stopID, $now);
+        $routePredictions[$routeID]['running'] = $route->isRunning($now, $inService) && $inService;
+        $routePredictions[$routeID]['name'] = $route->getName();
+        $routePredictions[$routeID]['agency'] = $route->getAgencyID();
+        $routePredictions[$routeID]['live'] = $this->isLive();
+      }
+  
+      $stop = $this->getStop($stopID);    
+      $stopInfo = array(
+        'name'        => $stop->getName(),
+        'description' => $stop->getDescription(),
+        'coordinates' => $stop->getCoordinates(),
+        'stopIconURL' => $this->getMapIconUrlForRouteStopPin(),
+        'routes'      => $routePredictions,
+      );
       
-      $routePredictions[$routeID]['predictions'] = $route->getPredictionsForStop($stopID, $now);
-      $routePredictions[$routeID]['running'] = $route->isRunning($now, $inService) && $inService;
-      $routePredictions[$routeID]['name'] = $route->getName();
-      $routePredictions[$routeID]['agency'] = $route->getAgencyID();
-      $routePredictions[$routeID]['live'] = $this->isLive();
+      $this->applyStopInfoOverrides($stopID, $stopInfo);
     }
-
-    $stop = $this->getStop($stopID);    
-    $stopInfo = array(
-      'name'        => $stop->getName(),
-      'description' => $stop->getDescription(),
-      'coordinates' => $stop->getCoordinates(),
-      'stopIconURL' => $this->getMapIconUrlForRouteStopPin(),
-      'routes'      => $routePredictions,
-    );
     
-    $this->applyStopInfoOverrides($stopID, $stopInfo);
-
     return $stopInfo;
   }
   
@@ -175,16 +178,17 @@ class GTFSDatabaseTransitDataParser extends TransitDataParser {
     $result = $this->query($sql);
     if (!$result) {
       Kurogo::log(LOG_ERR, 'could not load routes: '.print_r($db->errorInfo(), true), 'transit');
-    }
-    while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-      $route = new GTFSDatabaseTransitRoute(
-        $row['route_id'],
-        $this->agency,
-        $this->getRouteName($row),
-        $row['route_desc'] // may be null
-        );
-  
-      $this->addRoute($route);
+    } else {
+      while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+        $route = new GTFSDatabaseTransitRoute(
+          $row['route_id'],
+          $this->agency,
+          $this->getRouteName($row),
+          $row['route_desc'] // may be null
+          );
+    
+        $this->addRoute($route);
+      }
     }
   }
   
@@ -617,17 +621,21 @@ class GTFSDatabaseTransitSegment extends TransitSegment {
     $result = $this->route->query($sql, $params);
     $firstTrip = 999999;
     $firstFrequency = 0;
-    while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-      $startTT = TransitTime::createFromString($row['start_time']);
-      $endTT = TransitTime::createFromString($row['end_time']);
-      $frequency = $row['headway_secs'];
-      
-      if ($startTT < $firstTrip) {
-        $firstTrip = $startTT;
-        $firstFrequency = intval($frequency);
+    if (!$result) {
+      Kurogo::log(LOG_ERR, 'could not load frequencies: '.print_r($db->errorInfo(), true), 'transit');
+    } else {
+      while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+        $startTT = TransitTime::createFromString($row['start_time']);
+        $endTT = TransitTime::createFromString($row['end_time']);
+        $frequency = $row['headway_secs'];
+        
+        if ($startTT < $firstTrip) {
+          $firstTrip = $startTT;
+          $firstFrequency = intval($frequency);
+        }
+  
+        $this->addFrequency($startTT, $endTT, $frequency);
       }
-
-      $this->addFrequency($startTT, $endTT, $frequency);
     }
 
     if ($firstTrip != 999999) {
@@ -642,18 +650,24 @@ class GTFSDatabaseTransitSegment extends TransitSegment {
       $sql = 'SELECT MIN(stop_sequence) FROM stop_times WHERE trip_id = ?';
       $params = array($this->getID());
       $result = $this->route->query($sql, $params);
-      if ($row = $result->fetch(PDO::FETCH_NUM)) {
-        $sequence = $row[0];
-        $sql = 'SELECT departure_time'
-              .'  FROM stop_times'
-              .' WHERE stop_sequence = ?'
-              .'   AND trip_id = ?';
-        $params = array($sequence, $this->getID());
-        $result = $this->route->query($sql, $params);
-        if (!$row = $result->fetch(PDO::FETCH_ASSOC)) {
-          return 0;
+      if ($result) {
+        if ($row = $result->fetch(PDO::FETCH_NUM)) {
+          $sequence = $row[0];
+          $sql = 'SELECT departure_time'
+                .'  FROM stop_times'
+                .' WHERE stop_sequence = ?'
+                .'   AND trip_id = ?';
+          $params = array($sequence, $this->getID());
+          $result = $this->route->query($sql, $params);
+          if (!$result) {
+            Kurogo::log(LOG_ERR, 'could not load stop times: '.print_r($db->errorInfo(), true), 'transit');
+          } else {
+            if (!$row = $result->fetch(PDO::FETCH_ASSOC)) {
+              return 0;
+            }
+            $this->firstStopTime = $row['departure_time'];
+          }
         }
-        $this->firstStopTime = $row['departure_time'];
       }
     }
   }
@@ -722,10 +736,14 @@ class GTFSDatabaseTransitSegment extends TransitSegment {
             .' ORDER BY stop_sequence DESC'; // not sure if it's better to sort on departure_time
       $params = array($this->getID());
       $result = $this->route->query($sql, $params);
-      $firstTT = TransitTime::createFromString($this->firstStopTime);
-      $lastRow = $result->fetch(PDO::FETCH_ASSOC); // discard rest of results
-      $lastTT = TransitTime::createFromString($lastRow['departure_time']);
-      return TransitTime::isTimeInRange($time, $firstTT, $lastTT);
+      if (!$result) {
+        Kurogo::log(LOG_ERR, 'could not load stop times: '.print_r($db->errorInfo(), true), 'transit');
+      } else {
+        $firstTT = TransitTime::createFromString($this->firstStopTime);
+        $lastRow = $result->fetch(PDO::FETCH_ASSOC); // discard rest of results
+        $lastTT = TransitTime::createFromString($lastRow['departure_time']);
+        return TransitTime::isTimeInRange($time, $firstTT, $lastTT);
+      }
     }
     return false;
   }
@@ -740,18 +758,22 @@ class GTFSDatabaseTransitSegment extends TransitSegment {
             .' ORDER BY stop_sequence';
       $params = array($this->getID());
       $result = $this->route->query($sql, $params);
-      while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-        $stopIndex = intval($row['stop_sequence']);
-        $arrivesTT = TransitTime::createFromString($row['arrival_time']);
-        $departsTT = TransitTime::createFromString($row['departure_time']);
-        $stopInfo = array(
-          'stopID' => $row['stop_id'],
-          'i' => $stopIndex,
-          'arrives' => $arrivesTT,
-          'departs' => $departsTT,
-          'hasTiming' => true,
-          );
-        $this->stops[] = $stopInfo;
+      if (!$result) {
+        Kurogo::log(LOG_ERR, 'could not load stops: '.print_r($db->errorInfo(), true), 'transit');
+      } else {
+        while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+          $stopIndex = intval($row['stop_sequence']);
+          $arrivesTT = TransitTime::createFromString($row['arrival_time']);
+          $departsTT = TransitTime::createFromString($row['departure_time']);
+          $stopInfo = array(
+            'stopID' => $row['stop_id'],
+            'i' => $stopIndex,
+            'arrives' => $arrivesTT,
+            'departs' => $departsTT,
+            'hasTiming' => true,
+            );
+          $this->stops[] = $stopInfo;
+        }
       }
     }
     
@@ -899,20 +921,24 @@ class GTFSDatabaseTransitRoute extends TransitRoute {
             ."(c.$dayOfWeek = 1 AND c.start_date <= ? AND c.end_date >= ?))";
       $result = $this->query($sql, $params);
 
-      while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-        $serviceID = $row['service_id'];
-        $direction = ($row['direction_id'] === NULL) ? 'loop' : $row['direction_id'];
-        if (!isset($services[$serviceID])) {
-          $services[$serviceID] = new GTFSDatabaseTransitService($serviceID);
+      if (!$result) {
+        Kurogo::log(LOG_ERR, 'could not load directions: '.print_r($db->errorInfo(), true), 'transit');
+      } else {
+        while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+          $serviceID = $row['service_id'];
+          $direction = ($row['direction_id'] === NULL) ? 'loop' : $row['direction_id'];
+          if (!isset($services[$serviceID])) {
+            $services[$serviceID] = new GTFSDatabaseTransitService($serviceID);
+          }
+          $segment = new GTFSDatabaseTransitSegment(
+            $row['trip_id'],
+            $row['trip_headsign'],
+            $services[$serviceID],
+            $direction,
+            $this
+            );
+          $this->addSegment($segment);
         }
-        $segment = new GTFSDatabaseTransitSegment(
-          $row['trip_id'],
-          $row['trip_headsign'],
-          $services[$serviceID],
-          $direction,
-          $this
-          );
-        $this->addSegment($segment);
       }
     }
     
