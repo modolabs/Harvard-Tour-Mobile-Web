@@ -264,6 +264,9 @@ class CoursesWebModule extends WebModule {
                 	'courseID' => $id,
                 );
                 $this->controller->setType($type);
+                $course = $this->controller->getCourse('content', $id);
+                $this->assign('title', $course->getTitle());
+
                 $resources = array();
                 $seeAllLinks = array();
                 if($items = $this->controller->getResource($id)){
