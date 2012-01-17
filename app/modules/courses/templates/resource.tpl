@@ -14,12 +14,10 @@
 
 <div id="tabbodies">
 <div class="tab body">
-
-<ul class="nonfocal">
-    <li><a href="{$linkByTopic}">By topic</a>
-    <li><a href="{$linkByDate}">By Date</a>
+<ul class="tabstrip twotabs">
+<li{if $type == 'topic'} class="active"{/if}><a href="{$linkByTopic}">By topic</a>
+<li{if $type == 'date'} class="active"{/if}><a href="{$linkByDate}">By Date</a>
 </ul>
-
 </div>
 </div>
 
