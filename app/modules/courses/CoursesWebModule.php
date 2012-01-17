@@ -26,7 +26,7 @@ class CoursesWebModule extends WebModule {
             }
             $link['url'] = ($content->getType() == 'link') ? 
                            $content->getFileurl() : 
-                           $this->buildBreadcrumbURL($content->getType(), $options, true);
+                           $this->buildBreadcrumbURL($content->getType(), $options, false);
             
         } elseif ($url = $content->getUrl()) {
             $link['url'] = $url;
@@ -63,7 +63,7 @@ class CoursesWebModule extends WebModule {
             }
             $link['url'] = ($resource->getType() == 'link' || $resource->getType() == 'url') ? 
                            $resource->getFileurl() : 
-                           $this->buildBreadcrumbURL($resource->getType(), $options, true);
+                           $this->buildBreadcrumbURL($resource->getType(), $options, false);
             
         } elseif ($url = $resource->getUrl()) {
             $link['url'] = $url;
@@ -100,7 +100,7 @@ class CoursesWebModule extends WebModule {
 	    	}
 	    	$link['url'] = ($content->getType() == 'url') ? 
 	        $content->getFileurl() : 
-	        $this->buildBreadcrumbURL($content->getType(), $options, true);
+	        $this->buildBreadcrumbURL($content->getType(), $options, false);
     	} elseif ($url = $content->getUrl()) {
             $link['url'] = $url;
         }
@@ -110,7 +110,7 @@ class CoursesWebModule extends WebModule {
     public function linkForCourse(Course $course, $type) {
         $link = array(
             'title' => $course->getTitle(),
-            'url'   => $this->buildBreadcrumbURL('course', array('type'=>$type, 'id'=> $course->getID()), true)
+            'url'   => $this->buildBreadcrumbURL('course', array('type'=>$type, 'id'=> $course->getID()), false)
         );
 
         switch ($type)
@@ -144,8 +144,14 @@ class CoursesWebModule extends WebModule {
     }
     
     protected function initialize() {
-    
-        $this->feeds = $this->loadFeedData();
+    	$feeds = $this->loadFeedData();
+    	
+        if (isset($feeds['catalog'])) {
+	        $catalogFeed = $this->getModuleSections('catalog');
+	        $feeds['catalog'] = array_merge($feeds['catalog'], $catalogFeed);
+        }
+        
+        $this->feeds = $feeds;
         $this->controller = CoursesDataModel::factory('CoursesDataModel', $this->feeds);
     }
     
@@ -157,7 +163,7 @@ class CoursesWebModule extends WebModule {
                     foreach ($areas as $CourseArea) {
                         $areasList[] = array(
                             'title'=>$CourseArea->getTitle(),
-                            'url'=>$this->buildBreadcrumbURL('area',array('area'=>$CourseArea->getCode()), true)
+                            'url'=>$this->buildBreadcrumbURL('area',array('area'=>$CourseArea->getCode()), false)
                         );
                     }
                     $this->assign('areas', $areasList);
@@ -216,12 +222,15 @@ class CoursesWebModule extends WebModule {
                 }
 				
                 $items = $this->controller->getLastUpdate($id);
+                $contents = array();
                 foreach ($items as $item){
                 	$contents[] = $this->linkForUpdates($item, array('courseID' => $id));
                 }
                 $this->assign('contents', $contents);
                 
-                $linkToResourcesTab = $this->buildBreadcrumbURL('resource',array('id'=> $id,'type'=>'topic'), true);
+                $linkToInfoTab = $this->buildBreadcrumbURL('info',array('id'=> $id), false);
+                $this->assign('linkToInfoTab',$linkToInfoTab);
+                $linkToResourcesTab = $this->buildBreadcrumbURL('resource',array('id'=> $id,'type'=>'topic'), false);
                 $this->assign('linkToResourcesTab',$linkToResourcesTab);
                              /*              
                 $contentTypes = array();
@@ -253,26 +262,26 @@ class CoursesWebModule extends WebModule {
                 	'courseID' => $id,
                 );
                 $this->controller->setType($type);
-                $items = $this->controller->getResource($id);
                 $resources = array();
                 $seeAllLinks = array();
-                foreach ($items as $itemkey => $item){
-                	foreach ($item as $resource){
-                		if(!isset($resources[$itemkey])) 
-                		$seeAllLinks[$itemkey] = $this->buildBreadcrumbURL('resourceSeeAll', array('id'=> $id, 'type'=>$type,'key'=>urlencode($itemkey)), true);;
-                		
-                		// list three line each item may be can use js hidden item if more than three item
-                		//if(isset($resources[$itemkey]) && count($resources[$itemkey])>=3) continue;
-                		$resources[$itemkey][] = $this->linkForResource($resource,$options);
-                	}
+                if($items = $this->controller->getResource($id)){
+	                foreach ($items as $itemkey => $item){
+	                	foreach ($item as $resource){
+	                		if(!isset($resources[$itemkey])) 
+	                		$seeAllLinks[$itemkey] = $this->buildBreadcrumbURL('resourceSeeAll', array('id'=> $id, 'type'=>$type,'key'=>urlencode($itemkey)), false);;
+	                		
+	                		// list three line each item may be can use js hidden item if more than three item
+	                		//if(isset($resources[$itemkey]) && count($resources[$itemkey])>=3) continue;
+	                		$resources[$itemkey][] = $this->linkForResource($resource,$options);
+	                	}
+	                }
+	                $this->assign('seeAllLinks',$seeAllLinks);
+	                $this->assign('resources',$resources);
                 }
-                $this->assign('seeAllLinks',$seeAllLinks);
-                $this->assign('resources',$resources);
-                //$linkToResourcesTab = 
-            	$linkToUpdateTab = $this->buildBreadcrumbURL('course', array('id'=> $id, 'type'=>'content'), true);
+            	$linkToUpdateTab = $this->buildBreadcrumbURL('course', array('id'=> $id, 'type'=>'content'), false);
             	$this->assign('linkToUpdateTab',$linkToUpdateTab);
-            	$linkByTopic = $this->buildBreadcrumbURL('resource', array('id'=> $id, 'type'=>'topic'), true);
-            	$linkByDate = $this->buildBreadcrumbURL('resource', array('id'=> $id, 'type'=>'date'), true);
+            	$linkByTopic = $this->buildBreadcrumbURL('resource', array('id'=> $id, 'type'=>'topic'), false);
+            	$linkByDate = $this->buildBreadcrumbURL('resource', array('id'=> $id, 'type'=>'date'), false);
             	$this->assign('linkByTopic',$linkByTopic);
             	$this->assign('linkByDate',$linkByDate);
             	break;
@@ -334,18 +343,24 @@ class CoursesWebModule extends WebModule {
             	$this->assign('content', $content);
             	break;
             case 'file':
-                //$section   = $this->getArg('section');
                 $courseID  = $this->getArg('courseID');
                 $type      = $this->getArg('type');
                 $contentID = $this->getArg('contentID');
                 
-                //$feed = $this->getCourseFeed($section);
 				$contents = $this->controller->getResource($courseID);
                 if (!$content = $this->controller->getContentById($contents,$contentID)) {
                     throw new KurogoConfigurationException('not found the course content');
                 }
-                $content = $this->controller->getDownLoadTypeContent($content, $courseID);
-                $this->outputFile($content);
+                $options[] = array(
+                		'url' => $this->controller->getFileUrl($content),
+                		'title' => 'Download: ' . $content->getFileName(),
+                		'subtitle' => 'FileSize:' . round($content->getFileSize()/1024,2) .'Kb',
+                );
+                // about the fileSize may i add function about clac filesize in CoursesDatamodel or in some file?
+                $this->assign('options',$options);
+                $url = $this->controller->getDownLoadTypeContent($content, $courseID);
+                $this->assign('url',$url);
+                //$this->outputFile($content);
                 break;
             case 'index':
                 $feedTerms = $this->controller->getAvailableTerms();

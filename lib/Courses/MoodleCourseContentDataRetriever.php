@@ -32,7 +32,8 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         return $this->userID;
     }
 
-    protected function getToken() {
+    //CoursesDATAModel function getFileUrl need use token
+    public function getToken() {
         return $this->token;
     }
     

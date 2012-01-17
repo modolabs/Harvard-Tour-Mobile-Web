@@ -31,7 +31,6 @@ class TestCourseCatalogDataRetriever extends URLDataRetriever implements CourseC
     public function getCatalogAreas($area) {
         if ($this->areasFeed && isset($this->areasFeed['BASE_URL']) && $this->areasFeed['BASE_URL']) {
             $args = $this->areasFeed;
-            
             $this->setBaseURL($args['BASE_URL']);
             
             //set the dynamic parser
@@ -78,7 +77,6 @@ class TestCourseCatalogDataRetriever extends URLDataRetriever implements CourseC
     protected function init($args) {
     
         parent::init($args);
-        
         if (isset($args['courses']) && $args['courses']) {
             $this->coursesFeed = $args['courses'];
         }

@@ -18,6 +18,7 @@ class CoursesDataModel extends DataModel {
     	$this->type = $type;
     }
     public function getDownLoadTypeContent(MoodleDownLoadCourseContent $content, $courseID) {
+    	// not output file just show url 
         $this->retriever = $this->retrievers['content'];
     	$cache = $this->retriever->getCache();
         $cacheKey = md5($content->getFileUrl()) . '.' .$content->getFileType();
@@ -44,6 +45,16 @@ class CoursesDataModel extends DataModel {
             $content->setCacheFile($fileFullPath);
         }
         return $content;
+        
+    }
+    public function getFileUrl($content){
+        if(isset($content)){
+	    	if ($this->canRetrieve('content')) {
+	            return $content->getFileUrl()."&token={$this->retrievers['content']->getToken()}";
+	        }
+    	}else{
+    		return '';
+    	}
     }
     
     public function getPageTypeContent(MoodlePageCourseContent $content) {
@@ -172,7 +183,6 @@ class CoursesDataModel extends DataModel {
                 $area = $area->getArea($areaCode);
             }
         }
-        
         return $area;
     }
 
