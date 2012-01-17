@@ -220,6 +220,8 @@ class CoursesWebModule extends WebModule {
                 if (!$course = $this->controller->getCourse($type, $id)) {
                     $this->redirectTo('index');
                 }
+
+                $this->assign('title', $course->getTitle());
 				
                 $items = $this->controller->getLastUpdate($id);
                 $contents = array();
