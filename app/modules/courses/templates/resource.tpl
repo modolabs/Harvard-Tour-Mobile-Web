@@ -1,6 +1,6 @@
 {include file="findInclude:common/templates/header.tpl"}
 
-<h2>{$title}</h2>
+{include file="findInclude:modules/courses/templates/coursedetailhead.tpl"}
 
 {if $contentTypes}
     <h2 class="nonfocal">{"CONTENT_TYPE_TITLE"|getLocalizedString}</h2>

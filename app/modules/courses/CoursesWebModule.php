@@ -127,11 +127,40 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
     
-    function outputFile(DownLoadCourseContent $content) {
-        $file = $content->getCacheFile();
-        header('Content-type: '.mime_type($file));
-        readfile($file);
-        exit;
+	/**
+	* assign term function
+	* this function need improvment this term in some case is select area
+	* @author saturn
+	*
+	*/
+    public function assignTerm(){
+        $feedTerms = $this->controller->getAvailableTerms();
+        $terms = array();
+        foreach($feedTerms as $term) {
+        	$terms[$term->getID()] = $term->getTitle();
+        }
+        $term = $this->getArg('term', CoursesDataModel::CURRENT_TERM);
+    	if (!$Term = $this->controller->getTerm($term)) {
+        	$Term = $this->controller->getCurrentTerm();
+        }
+        
+        if (count($terms)>1) {
+        	$this->assign('terms', $terms);
+        } else {
+        	$this->assign('termTitle', current($terms));
+        }
+        return $Term;
+    }
+   	/**
+	* assign course title function 
+	* $id is course id
+	* @author saturn
+	*
+	*/
+    public function assignCourseTitle($id){
+    		//$course is courseID
+    		$course = $this->controller->getCourse('content', $id);
+    		$this->assign('title', $course->getTitle());
     }
     
     protected function getFeedTitle($feed) {
@@ -156,6 +185,7 @@ class CoursesWebModule extends WebModule {
     }
     
     protected function initializeForPage() {
+        
         switch($this->page) {
             case 'catalog':
                 if ($areas = $this->controller->getCatalogAreas()) {
@@ -220,7 +250,9 @@ class CoursesWebModule extends WebModule {
                 if (!$course = $this->controller->getCourse($type, $id)) {
                     $this->redirectTo('index');
                 }
-
+				
+                $this->assignCourseTitle($id);
+                $this->assignTerm();
                 $this->assign('title', $course->getTitle());
 				
                 $items = $this->controller->getLastUpdate($id);
@@ -264,8 +296,9 @@ class CoursesWebModule extends WebModule {
                 	'courseID' => $id,
                 );
                 $this->controller->setType($type);
-                $course = $this->controller->getCourse('content', $id);
-                $this->assign('title', $course->getTitle());
+                
+                $this->assignCourseTitle($id);
+                $this->assignTerm();
 
                 $resources = array();
                 $seeAllLinks = array();
@@ -359,9 +392,21 @@ class CoursesWebModule extends WebModule {
                 }
                 $options[] = array(
                 		'url' => $this->controller->getFileUrl($content),
-                		'title' => 'Download: ' . $content->getFileName(),
+                		'title' => $content->getFileName(),
                 		'subtitle' => 'FileSize:' . round($content->getFileSize()/1024,2) .'Kb',
                 );
+                if($content->getPublishedDate()){
+		    		if($content->getAuthor()){
+		    			$uploadDate = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U')) .' by '.$content->getAuthor();
+		    		}else{
+		    			$uploadDate = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U'));
+		    		}
+	    		} else {
+	    			$uploadDate = $content->getSubTitle();
+	    		}
+	    		$this->assign('itemName',$content->getTitle());
+	    		$this->assign('uploadDate',$uploadDate);
+	    		$this->assign('description',$content->getDescription());
                 // about the fileSize may i add function about clac filesize in CoursesDatamodel or in some file?
                 $this->assign('options',$options);
                 $url = $this->controller->getDownLoadTypeContent($content, $courseID);
@@ -369,23 +414,7 @@ class CoursesWebModule extends WebModule {
                 //$this->outputFile($content);
                 break;
             case 'index':
-                $feedTerms = $this->controller->getAvailableTerms();
-                $terms = array();
-                
-                foreach($feedTerms as $term) {
-                    $terms[$term->getID()] = $term->getTitle();
-                }
-                $term = $this->getArg('term', CoursesDataModel::CURRENT_TERM);
-                if (!$Term = $this->controller->getTerm($term)) {
-                    $Term = $this->controller->getCurrentTerm();
-                }
-
-                if (count($terms)>1) {
-                    $this->assign('terms', $terms);
-                } else {
-                    $this->assign('termTitle', current($terms));
-                }
-                
+                $Term = $this->assignTerm();
                 $courses = array();
                 $options = array(
                     'term'=>$Term
