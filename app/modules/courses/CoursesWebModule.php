@@ -234,6 +234,19 @@ class CoursesWebModule extends WebModule {
             	
             	$linkToResourcesTab = $this->buildBreadcrumbURL('resource',array('id'=> $id,'type'=>'topic'), false);
                 $this->assign('linkToResourcesTab',$linkToResourcesTab);
+            	break;
+        	case 'userlist':
+        		$id = $this->getArg('id');
+        		$users = $this->controller->getUsersByCourseId('content',$id);
+        		$links = array();
+        		foreach ($users as $user){
+        			$link['title'] =  $user->getFullName();
+        			$link['url'] = '#';
+        			$links[] = $link;
+        			unset($link); 		
+        		}
+        		$this->assign('links',$links);
+        		break;
             case 'catalog':
                 if ($areas = $this->controller->getCatalogAreas()) {
                     $areasList = array();
@@ -338,8 +351,7 @@ class CoursesWebModule extends WebModule {
                 */
                 break;
             case 'resource':
-            	$id =            // 	$section = $this->getArg('section');
-            	 $this->getArg('id');
+            	$id = $this->getArg('id');
                 $type = $this->getArg('type');
                 $options = array(
                 	'courseID' => $id,
@@ -375,6 +387,8 @@ class CoursesWebModule extends WebModule {
                 $this->assign('linkToInfoTab',$linkToInfoTab);
             	$this->assign('type', $type);
             	break;
+            case 'userlist':
+            	
             case 'resourceSeeAll':
             	$id = $this->getArg('id');
                 $type = $this->getArg('type');
