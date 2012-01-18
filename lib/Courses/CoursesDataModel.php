@@ -138,6 +138,11 @@ class CoursesDataModel extends DataModel {
         return array();
     }
     
+    public function getUsersByCourseId($type,$courseId){
+        if ($this->canRetrieve($type)) {
+            return $this->retrievers[$type]->getUsersByCourseId($courseId);
+        }
+    }
     public function canRetrieve($type) {
         if (isset($this->retrievers[$type]) && $this->retrievers[$type]) {
             return true;

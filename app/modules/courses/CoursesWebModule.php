@@ -6,6 +6,27 @@ class CoursesWebModule extends WebModule {
     protected $controller;
     protected $courses;
     
+    protected function linkforInfo($courseId,$description){
+    	$links = array();
+    	foreach(array('Roster', 'Course materials', 'Drop Class', 'Description') as $title){
+    		$link['title'] = $title;
+    		if($title == 'Roster'){
+    			$link['url'] = $this->buildBreadcrumbURL('userlist', array('id'=>$courseId), false);
+    		}
+    		if($title == 'Course materials'){
+    			$link['url'] = '#';
+    		}//waiting
+    		if($title == 'Drop Class'){
+    			$link['url'] = '#';
+    		}//waiting
+    		if($title == 'Description'){
+    			$link['subtitle'] = $description;
+    		}
+    		$links[] = $link;
+    		unset($link);
+    	}
+    	return $links;
+    }
     protected function linkForContent($content, $data = array()) {
         $link = array(
             'title' => $content->getTitle(),
@@ -185,8 +206,34 @@ class CoursesWebModule extends WebModule {
     }
     
     protected function initializeForPage() {
-        
         switch($this->page) {
+        	case 'info':
+        		$id = $this->getArg('id');
+        		$this->assignCourseTitle($id);
+                $this->assignTerm();
+                //get single Course
+                $course = $this->controller->getCourse('content',$id);
+                $courseNumber = $course->getCourseNumber();
+                
+                $users = $this->controller->getUsersByCourseId('content',$id);
+                $instructorLish = array();
+                foreach ($users as $user){
+                	$roles = $user->getRoles();
+                	if($roles[0]['roleid'] == 3){ // if rileId eq 3 is Teacher in moodle
+                		$instructorLish[]['title'] =  $user->getFullName();
+                	}
+                }
+                $this->assign('instructorLish',$instructorLish);
+                
+                $links = $this->linkforInfo($id,'description');// waiting description
+                $this->assign('links',$links);                
+                $this->assign('description','waiting description');
+                
+                $linkToUpdateTab = $this->buildBreadcrumbURL('course', array('id'=> $id, 'type'=>'content'), false);
+            	$this->assign('linkToUpdateTab',$linkToUpdateTab);
+            	
+            	$linkToResourcesTab = $this->buildBreadcrumbURL('resource',array('id'=> $id,'type'=>'topic'), false);
+                $this->assign('linkToResourcesTab',$linkToResourcesTab);
             case 'catalog':
                 if ($areas = $this->controller->getCatalogAreas()) {
                     $areasList = array();
@@ -243,7 +290,6 @@ class CoursesWebModule extends WebModule {
                 break;
             
             case 'course':
-            
                 $id = $this->getArg('id');
                 $type = $this->getArg('type');
                 
@@ -266,6 +312,8 @@ class CoursesWebModule extends WebModule {
                 $this->assign('linkToInfoTab',$linkToInfoTab);
                 $linkToResourcesTab = $this->buildBreadcrumbURL('resource',array('id'=> $id,'type'=>'topic'), false);
                 $this->assign('linkToResourcesTab',$linkToResourcesTab);
+                $linkToInfoTab = $this->buildBreadcrumbURL('info',array('id'=> $id), false);
+                $this->assign('linkToInfoTab',$linkToInfoTab);
                              /*              
                 $contentTypes = array();
                 if ($contents = $this->course->getCourseContentById($id)) {
@@ -290,7 +338,8 @@ class CoursesWebModule extends WebModule {
                 */
                 break;
             case 'resource':
-            	$id = $this->getArg('id');
+            	$id =            // 	$section = $this->getArg('section');
+            	 $this->getArg('id');
                 $type = $this->getArg('type');
                 $options = array(
                 	'courseID' => $id,
@@ -322,6 +371,8 @@ class CoursesWebModule extends WebModule {
             	$linkByDate = $this->buildBreadcrumbURL('resource', array('id'=> $id, 'type'=>'date'), false);
             	$this->assign('linkByTopic',$linkByTopic);
             	$this->assign('linkByDate',$linkByDate);
+            	$linkToInfoTab = $this->buildBreadcrumbURL('info',array('id'=> $id), false);
+                $this->assign('linkToInfoTab',$linkToInfoTab);
             	break;
             case 'resourceSeeAll':
             	$id = $this->getArg('id');

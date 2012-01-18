@@ -10,6 +10,7 @@
 <ul id="tabs" class="nonfocal">
     <li><a href="{$linkToUpdateTab}"> Updates</a></li>
     <li class="active"><a href="{$linkToResourcesTab}">Resources</a></li>
+    <li> <a href="{$linkToInfoTab}"> Info</li>
 </ul>
 
 <div id="tabbodies">

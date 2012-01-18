@@ -5,7 +5,7 @@
 <div style="margin:25px;">
 {$itemName}
 <br/>
-{if publisheddate}
+{if $uploadDate}
 <span class="smallprint">{$uploadDate}</span>
 {/if}
 <br/>

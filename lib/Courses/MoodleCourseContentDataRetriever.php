@@ -72,6 +72,10 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         $postData = array();
         $action = $this->getOption('action');
         switch ($action) {
+        	case 'getUsersByCourseId':
+                $this->addParameter('wsfunction', 'core_enrol_get_enrolled_users');
+                $postData['courseid'] = $this->getOption('courseID');
+                break;      		
             case 'getCourses':
                 $this->addParameter('wsfunction', 'core_enrol_get_users_courses');
                 $postData['userid'] = $this->getOption('userID');
@@ -190,6 +194,13 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         }
     }
     
+    public function getUsersByCourseId($courseId){
+    	$this->clearInternalCache();
+    	$this->setOption('action', 'getUsersByCourseId');
+    	$this->setOption('courseID', $courseId);
+    	$courses = $this->getData();
+    	return $courses;
+    }
     public function getGrades($options) {
         
     }
@@ -304,6 +315,13 @@ class MoodleCourseContentDataParser extends dataParser {
             }
             
             switch ($action) {
+            	case 'getUsersByCourseId':
+                    foreach ($data as $value) {
+                        if ($user = $this->parseUser($value)) {
+                            $items[] = $user;
+                        }
+                    }
+            		break;
                 case 'getCourses':
                 case 'getCourse':
                     foreach ($data as $value) {
@@ -344,6 +362,15 @@ class MoodleCourseContentDataParser extends dataParser {
         return $course;
     }
     
+    protected function parseUser($data){
+		$User = new CourseUser();
+		$User->setId($data['id']);
+		$User->setEmail($data['email']);
+		$User->setRoles($data['roles']);
+		$User->setFullName($data['fullname']);
+		$User->setEnrolledCourses($data['enrolledcourses']);
+		return $User;
+    }
     protected function parseCourseContent($data) {
         $contentTypes = array();
         $CourseId = $this->getOption('courseID');
@@ -559,4 +586,47 @@ class MoodlePageCourseContent extends PageCourseContent {
         
         return $subTitle;
     }
+}
+class CourseUser {
+	protected $id;
+	protected $fullname;
+	protected $email;
+	protected $roles;
+	protected $enrolledCourses; 
+	
+	public function getId() {
+		return $this->id;
+	}
+	
+	public function setId($id) {
+		$this->id = $id;
+	}
+	public function getFullName() {
+		return $this->fullname;
+	}
+	
+	public function setFullName($fullname) {
+		$this->fullname = $fullname;
+	}
+	public function getEmail() {
+		return $this->email;
+	}
+	
+	public function setEmail($email) {
+		$this->email = $email;
+	}
+	public function getRoles() {
+		return $this->roles;
+	}
+	
+	public function setRoles($roles) {
+		$this->roles = $roles;
+	}
+	public function getEnrolledCourses() {
+		return $this->enrolledCourses;
+	}
+	
+	public function setEnrolledCourses($enrolledCourses) {
+		$this->enrolledCourses = $enrolledCourses;
+	}
 }
