@@ -13,15 +13,13 @@
     <li> <a href="{$linkToInfoTab}"> Info</li>
 </ul>
 
-<div id="tabbodies">
-<div class="tab body">
+<div id="tabbodies"></div>
 
-<ul class="nonfocal">
-    <li><a href="{$linkByTopic}">By topic</a>
-    <li><a href="{$linkByDate}">By Date</a>
+<div class="nonfocal">
+<ul class="tabstrip twotabs">
+<li{if $type == 'topic'} class="active"{/if}><a href="{$linkByTopic}">By topic</a>
+<li{if $type == 'date'} class="active"{/if}><a href="{$linkByDate}">By Date</a>
 </ul>
-
-</div>
 </div>
 
 {foreach $resources as $itemname =>$item}

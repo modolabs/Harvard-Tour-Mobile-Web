@@ -373,6 +373,7 @@ class CoursesWebModule extends WebModule {
             	$this->assign('linkByDate',$linkByDate);
             	$linkToInfoTab = $this->buildBreadcrumbURL('info',array('id'=> $id), false);
                 $this->assign('linkToInfoTab',$linkToInfoTab);
+            	$this->assign('type', $type);
             	break;
             case 'resourceSeeAll':
             	$id = $this->getArg('id');
