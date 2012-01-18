@@ -7,13 +7,15 @@
     {include file="findInclude:common/templates/navlist.tpl" navlistItems=$contentTypes} 
 {/if}
 
-<ul id="tabs" class="nonfocal">
-    <li><a href="{$linkToUpdateTab}"> Updates</a></li>
-    <li class="active"><a href="{$linkToResourcesTab}">Resources</a></li>
-    <li> <a href="{$linkToInfoTab}"> Info</li>
-</ul>
 
-<div id="tabbodies"></div>
+<div id="tabscontainer">
+    <ul id="tabs" class="smalltabs">
+        <li><a href="{$linkToUpdateTab}"> Updates</a></li>
+        <li class="active"><a href="{$linkToResourcesTab}">Resources</a></li>
+        <li> <a href="{$linkToInfoTab}"> Info</li>
+    </ul>
+    <div id="tabbodies"></div>
+</div>
 
 <div class="nonfocal">
 <ul class="tabstrip twotabs">

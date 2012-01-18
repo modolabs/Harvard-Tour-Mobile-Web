@@ -225,6 +225,14 @@ class CoursesWebModule extends WebModule {
                 }
                 $this->assign('instructorLish',$instructorLish);
                 
+                //get the map locations data
+                $map = Kurogo::moduleLinkForValue('map', $courseNumber, $this);
+                // change tile for the map link
+                $mapLink['title'] = $courseNumber;
+                $mapLink['url'] = $map['url'];
+                $mapLink['class'] = 'map';
+                $this->assign('location', array($mapLink));
+                
                 $links = $this->linkforInfo($id,'description');// waiting description
                 $this->assign('links',$links);                
                 $this->assign('description','waiting description');
