@@ -17,7 +17,7 @@ class CoursesWebModule extends WebModule {
     			$link['url'] = '#';
     		}//waiting
     		if($title == 'Drop Class'){
-    			$link['url'] = '#';
+    			$link['url'] = $this->buildBreadcrumbURL('dropclass', array('id'=>$courseId), false);
     		}//waiting
     		if($title == 'Description'){
     			$link['subtitle'] = $description;
@@ -254,6 +254,18 @@ class CoursesWebModule extends WebModule {
         		}
         		$this->assign('links',$links);
         		break;
+        	case 'dropclass';
+        		$id = $this->getArg('id');
+        		$course = $this->controller->getCourse('content', $id);
+        		$notification = $this->getLocalizedString('NOTIFICATION',$course->getTitle());
+        		
+        		$links = array(
+        			array('title'=>$notification),
+        			array('title'=>$this->getLocalizedString('YES_STRING'),'url'=>'#'),
+        			array('title'=>$this->getLocalizedString('CANCEL'),'url'=>'#')
+        		);
+				$this->assign('links',$links);
+        	break;
             case 'catalog':
                 if ($areas = $this->controller->getCatalogAreas()) {
                     $areasList = array();
