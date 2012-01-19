@@ -29,7 +29,25 @@ class PeopleWebModule extends WebModule {
         parse_str($aBookmark, $params);
         return $this->buildBreadcrumbURL('detail', $params, true);
     }
+    public function linkForValue($value, $callingObject, $peopleObject)
+    {
+        $flag = $peopleObject instanceof CourseUser;//from course module
+		
+        if($flag){
+        	$page = 'search';
+        	$urlParams = array(
+        			'filter' => $peopleObject->getFullName(),
+        	);
+        }else{
+        	return false;
+        }
 
+        return array(
+            'title' => $value,
+            'class' => 'people', // css class to show map icon in table rows
+            'url'   => $this->buildBreadcrumbURL($page, $urlParams, false),
+        );
+    }
     protected function getTitleForBookmark($aBookmark) {
         parse_str($aBookmark, $params);
         $titles = array($params['title']);

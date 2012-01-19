@@ -220,7 +220,8 @@ class CoursesWebModule extends WebModule {
                 foreach ($users as $user){
                 	$roles = $user->getRoles();
                 	if($roles[0]['roleid'] == 3){ // if rileId eq 3 is Teacher in moodle
-                		$instructorLish[]['title'] =  $user->getFullName();
+                		$value = $user->getFullName();
+                		$instructorLish[] = Kurogo::moduleLinkForValue('people', $value, $this, $user);
                 	}
                 }
                 $this->assign('instructorLish',$instructorLish);
@@ -248,10 +249,8 @@ class CoursesWebModule extends WebModule {
         		$users = $this->controller->getUsersByCourseId('content',$id);
         		$links = array();
         		foreach ($users as $user){
-        			$link['title'] =  $user->getFullName();
-        			$link['url'] = '#';
-        			$links[] = $link;
-        			unset($link); 		
+        			$value = $user->getFullName();
+        			$links[] = Kurogo::moduleLinkForValue('people', $value, $this, $user);
         		}
         		$this->assign('links',$links);
         		break;
@@ -395,8 +394,6 @@ class CoursesWebModule extends WebModule {
                 $this->assign('linkToInfoTab',$linkToInfoTab);
             	$this->assign('type', $type);
             	break;
-            case 'userlist':
-            	
             case 'resourceSeeAll':
             	$id = $this->getArg('id');
                 $type = $this->getArg('type');

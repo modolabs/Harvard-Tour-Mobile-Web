@@ -587,13 +587,16 @@ class MoodlePageCourseContent extends PageCourseContent {
         return $subTitle;
     }
 }
-class CourseUser {
+class CourseUser implements KurogoObject{
 	protected $id;
 	protected $fullname;
 	protected $email;
 	protected $roles;
 	protected $enrolledCourses; 
 	
+	public function filterItem($filters){
+		return $filters;
+	}
 	public function getId() {
 		return $this->id;
 	}

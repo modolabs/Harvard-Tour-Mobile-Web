@@ -22,9 +22,5 @@
 {include file="findInclude:common/templates/navlist.tpl" navlistItems=$links subTitleNewline=true}
 {/if}
 
-<ul class="nav">
-<li>Optional description field: {$description}</li>
-</ul>
-
 
 {include file="findInclude:common/templates/footer.tpl"}
