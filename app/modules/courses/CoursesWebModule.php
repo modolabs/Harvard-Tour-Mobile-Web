@@ -6,7 +6,7 @@ class CoursesWebModule extends WebModule {
     protected $controller;
     protected $courses;
     
-    protected function linkforInfo($courseId,$description){
+    protected function linkforInfo($courseId, $description){
     	$links = array();
     	foreach(array('Roster', 'Course materials', 'Drop Class', 'Description') as $title){
     		$link['title'] = $title;
@@ -16,8 +16,12 @@ class CoursesWebModule extends WebModule {
     		if($title == 'Course materials'){
     			$link['url'] = '#';
     		}//waiting
-    		if($title == 'Drop Class'){
-    			$link['url'] = $this->buildBreadcrumbURL('dropclass', array('id'=>$courseId), false);
+    		if($title == 'Drop Class') {
+    		    if ($this->controller->canRetrieve('registation')) {
+    		        $link['url'] = $this->buildBreadcrumbURL('dropclass', array('id'=>$courseId), false);
+    		    } else {
+    		        continue;
+    		    }
     		}//waiting
     		if($title == 'Description'){
     			$link['subtitle'] = $description;
@@ -234,7 +238,7 @@ class CoursesWebModule extends WebModule {
                 $mapLink['class'] = 'map';
                 $this->assign('location', array($mapLink));
                 
-                $links = $this->linkforInfo($id,'description');// waiting description
+                $links = $this->linkforInfo($id, 'description');// waiting description
                 $this->assign('links',$links);                
                 $this->assign('description','waiting description');
                 
@@ -243,6 +247,7 @@ class CoursesWebModule extends WebModule {
             	
             	$linkToResourcesTab = $this->buildBreadcrumbURL('resource',array('id'=> $id,'type'=>'topic'), false);
                 $this->assign('linkToResourcesTab',$linkToResourcesTab);
+                
             	break;
         	case 'userlist':
         		$id = $this->getArg('id');
