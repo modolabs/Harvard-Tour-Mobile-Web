@@ -11,7 +11,7 @@ class CoursesWebModule extends WebModule {
     	foreach(array('Roster', 'Course materials', 'Drop Class', 'Description') as $title){
     		$link['title'] = $title;
     		if($title == 'Roster'){
-    			$link['url'] = $this->buildBreadcrumbURL('userlist', array('id'=>$courseId), true);
+    			$link['url'] = $this->buildBreadcrumbURL('roster', array('id'=>$courseId), true);
     		}
     		if($title == 'Course materials'){
     			$link['url'] = '#';
@@ -250,7 +250,7 @@ class CoursesWebModule extends WebModule {
                 $this->assign('linkToResourcesTab',$linkToResourcesTab);
                 
             	break;
-        	case 'userlist':
+        	case 'roster':
         		$id = $this->getArg('id');
         		$users = $this->controller->getUsersByCourseId('content',$id);
         		$links = array();
