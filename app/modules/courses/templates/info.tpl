@@ -4,7 +4,7 @@
 
 <div id="tabscontainer">
     <ul id="tabs" class="smalltabs">
-        <li> <a href="{$linkToOtherTab}"> Updates</a></li>
+        <li> <a href="{$linkToUpdateTab}"> Updates</a></li>
         <li> <a href="{$linkToResourcesTab}">Resources</a></li>
         <li class="active"> <a href="{$linkToInfoTab}"> Info</li>
     </ul>
