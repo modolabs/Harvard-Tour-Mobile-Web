@@ -493,6 +493,32 @@ class MoodleCourseContentDataParser extends dataParser {
 }
 
 class MoodleCourseContentCourse extends CourseContentCourse {
+	public function getStudents(){
+		if ($retriever = $this->getRetriever()) {
+			$users = $retriever->getUsersByCourseId($this->getID());
+			$Student = array();
+		    foreach ($users as $user){
+            	$roles = $user->getRoles();
+	            if($roles[0]['roleid'] == 5){ // if rileId eq 5 is Teacher in moodle
+	            	$Student[] = $user;
+	            }
+            }
+			return $Student;
+		}
+	}
+	public function getInstructors(){
+		if ($retriever = $this->getRetriever()) {
+			$users = $retriever->getUsersByCourseId($this->getID());
+			$instructorLish = array();
+		    foreach ($users as $user){
+            	$roles = $user->getRoles();
+	            if($roles[0]['roleid'] == 3){ // if rileId eq 3 is Teacher in moodle
+	            	$instructorList[] = $user;
+	            }
+            }
+			return $instructorList;
+		}		
+	}
     public function getLastUpdate() {
         if ($courseContents = $this->getUpdates()) {
             $courseContents = $this->sortCourseContent($courseContents, 'publishedDate');

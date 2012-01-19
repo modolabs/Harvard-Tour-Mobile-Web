@@ -219,17 +219,21 @@ class CoursesWebModule extends WebModule {
                 //get single Course
                 $course = $this->controller->getCourse('content',$id);
                 $courseNumber = $course->getCourseNumber();
+                $instructorList = array();
+                $instructorList = $course->getInstructors();
                 
-                $users = $this->controller->getUsersByCourseId('content',$id);
-                $instructorLish = array();
-                foreach ($users as $user){
-                	$roles = $user->getRoles();
-                	if($roles[0]['roleid'] == 3){ // if rileId eq 3 is Teacher in moodle
-                		$value = $user->getFullName();
-                		$instructorLish[] = Kurogo::moduleLinkForValue('people', $value, $this, $user);
+                $instructorLinks = array();
+                foreach ($instructorList as $instructor){
+                	$value = $instructor->getFullName();
+                	$link = Kurogo::moduleLinkForValue('people', $value, $this, $instructor);
+                	if(!$link){
+                		$link = array(
+                				'title' => $value,
+                		);
                 	}
+                	$instructorLinks[] = $link;
                 }
-                $this->assign('instructorLish',$instructorLish);
+                $this->assign('instructorLinks',$instructorLinks);
                 
                 //get the map locations data
                 $map = Kurogo::moduleLinkForValue('map', $courseNumber, $this);
@@ -252,11 +256,18 @@ class CoursesWebModule extends WebModule {
             	break;
         	case 'roster':
         		$id = $this->getArg('id');
-        		$users = $this->controller->getUsersByCourseId('content',$id);
+        		$course = $this->controller->getCourse('content',$id);
+        		$students = $course->getStudents();
         		$links = array();
-        		foreach ($users as $user){
-        			$value = $user->getFullName();
-        			$links[] = Kurogo::moduleLinkForValue('people', $value, $this, $user);
+        		foreach ($students as $student){
+        			$value = $student->getFullName();
+        			$link = Kurogo::moduleLinkForValue('people', $value, $this, $student);
+        			if(!$link){
+        				$link = array(
+                			'title' => $value,
+                		);	
+        			}
+        			$links[] = $link;
         		}
         		$this->assign('links',$links);
         		break;

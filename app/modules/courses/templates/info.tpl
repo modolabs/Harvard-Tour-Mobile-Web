@@ -16,7 +16,7 @@
 <div class="nonfocal">
     <h2>Instructor(s)</h2>
 </div>
-{include file="findInclude:common/templates/navlist.tpl" navlistItems=$instructorLish accessKey=false subTitleNewline=$contactsSubTitleNewline}
+{include file="findInclude:common/templates/navlist.tpl" navlistItems=$instructorLinks accessKey=false subTitleNewline=$contactsSubTitleNewline}
 
 {if $links}
 {include file="findInclude:common/templates/navlist.tpl" navlistItems=$links subTitleNewline=true}
