@@ -1,417 +1,465 @@
 <?php
 
 class TranslocTransitDataParser extends TransitDataParser {
-  private static $daemonCacheMode = false;
-  private static $caches = array();
-  private $routeColors = array();
-  private $translocHostname = '';
-  
-  static private function argVal($array, $key, $default='') {
-    return isset($array[$key]) ? $array[$key] : $default;
-  }
-  
-  function __construct($args, $overrides, $whitelist, $daemonMode=false) {
-    parent::__construct($args, $overrides, $whitelist, $daemonMode);
-    self::$daemonCacheMode = $daemonMode;
-  }
-
-  protected function isLive() {
-    return true;
-  }
-  
-  protected function getMapIconUrlForRouteStop($routeID) {
-    return Kurogo::getSiteVar('TRANSLOC_MARKERS_URL').http_build_query(array(
-      'm' => 'stop',
-      'c' => $this->getRouteColor($routeID),
-    ));
-  }
- 
-  protected function getMapIconUrlForRouteVehicle($routeID, $vehicle=null) {
-    return Kurogo::getSiteVar('TRANSLOC_MARKERS_URL').http_build_query(array(
-      'm' => 'bus',
-      'c' => $this->getRouteColor($routeID),
-      'h' => $this->getDirectionForHeading(self::argVal($vehicle, 'heading', 4)),
-    ));
-  }
-
-  protected function getMapMarkersForVehicles($vehicles) {
-    $query = '';
+    private static $daemonCacheMode = false;
+    private static $caches = array();
+    private $routeColors = array();
+    private $agencyIDs = array();
+    const TRANSLOC_API_VERSION = '1.1';
     
-    foreach ($vehicles as $vehicle) {
-      if ($vehicle['lat'] && $vehicle['lon']) {
-        $query .= '&'.http_build_query(array(
-          'markers' => "icon:{$vehicle['iconURL']}|{$vehicle['lat']},{$vehicle['lon']}",
+    static private function argVal($array, $key, $default='') {
+        return is_array($array) && isset($array[$key]) ? $array[$key] : $default;
+    }
+    
+    function __construct($args, $overrides, $whitelist, $daemonMode=false) {
+        parent::__construct($args, $overrides, $whitelist, $daemonMode);
+        self::$daemonCacheMode = $daemonMode;
+    }
+  
+    protected function isLive() {
+        return true;
+    }
+    
+    protected function getMapIconUrlForRouteStop($routeID) {
+        return Kurogo::getSiteVar('TRANSLOC_MARKERS_URL').http_build_query(array(
+            'm' => 'stop',
+            'c' => $this->getRouteColor($routeID),
         ));
-      }
     }
-    
-    return $query;
-  }
-  
-  protected function getRouteColor($routeID) {
-    if (isset($this->routeColors[$routeID])) {
-      return $this->routeColors[$routeID];
-    } else {
-      return parent::getRouteColor($routeID);
-    }
-  }
-
-  public function getNewsForRoutes() {
-    $news = array();
-    
-    $newsInfo = self::getData($this->translocHostname, 'announcements');
-    
-    foreach (self::argVal($newsInfo, 'agencies', array()) as $agencyNews) {
-      foreach (self::argVal($agencyNews, 'announcements', array()) as $routeNews) {
-        if (!isset($routeNews['id'])) { continue; }
-        
-        $news[$routeNews['id']] = array(
-          'agency' => self::argVal($agencyNews, 'name'),
-          'title'  => self::argVal($routeNews, 'title'),
-          'date'   => strtotime(self::argVal($routeNews, 'date')),
-          'urgent' => self::argVal($routeNews, 'urgent'),
-          'html'   => self::argVal($routeNews, 'html'),
-        );
-      }
-    }
-    
-    return $news;
-  }
-  
-  protected function getServiceName() {
-    return 'Translöc';
-  }
-  
-  protected function getServiceId() {
-    return 'transloc';
-  }
-  
-  protected function getServiceLink() {
-    return isset($this->args['serviceURL']) ? $this->args['serviceURL'] : 'http://www.transloc.com/';
-  }
-
-  public function getRouteVehicles($routeID) {
-    $updateInfo = self::getData($this->translocHostname, 'update');
-    
-    $vehicles = array();
-    foreach ($updateInfo['vehicles'] as $vehicleInfo) {
-      if ($vehicleInfo['r'] != $routeID) { continue; }
-      
-      if ($this->routeIsRunning($routeID) && isset($vehicleInfo['id'])) {
-        $latLon = self::argVal($vehicleInfo, 'll', false);
-        if ($latLon) {
-          $vehicles[$vehicleInfo['id']] = array(
-            'secsSinceReport' => self::argVal($vehicleInfo, 't', PHP_INT_MAX),
-            'lat'             => self::argVal($latLon, 0),
-            'lon'             => self::argVal($latLon, 1),
-            'heading'         => self::argVal($vehicleInfo, 'h', 0),
-            'nextStop'        => self::argVal($vehicleInfo, 'next_stop'),
-            'agencyID'        => $this->getRoute($routeID)->getAgencyID(),
-            'routeID'         => $routeID,
-          );
-          if (isset($vehicleInfo['s'])) {
-            $vehicles[$vehicleInfo['id']]['speed'] = $vehicleInfo['s'];
-          }
-          $vehicles[$vehicleInfo['id']]['iconURL'] = 
-            $this->getMapIconUrlForRouteVehicle($routeID, $vehicles[$vehicleInfo['id']]);
-        }
-      } else {
-        Kurogo::log(LOG_WARNING, "inactive route $routeID has active vehicle {$vehicleInfo['id']}", 'transit');
-      }
-    }
-    return $vehicles;
-  }
-  
-  private function filterPredictions($prediction) {
-    return ($prediction - time()) > 9;
-  }
-
-  protected function loadData() {
-    $this->translocHostname = $this->args['hostname'];
-  
-    $setupInfo = self::getData($this->translocHostname, 'setup');
-        
-    $segments = array();
-    foreach (self::argVal($setupInfo, 'segments', array()) as $segmentInfo) {
-      if (isset($segmentInfo['id'], $segmentInfo['points'])) {
-        $segments[$segmentInfo['id']] = Polyline::decodeToArray($segmentInfo['points']);
-      }
-    }
-    
-    $mergedSegments = array();
-    foreach (self::argVal($setupInfo, 'agencies', array()) as $agency) {
-      foreach (self::argVal($agency, 'routes', array()) as $i => $routeInfo) {
-        if (!isset($routeInfo['id'])) { continue; }
-      
-        $routeID = $routeInfo['id'];
-        
-        if ($this->whitelist && !in_array($routeID, $this->whitelist)) {
-          continue;  // skip entries not on whitelist
-        }
-      
-        $this->addRoute(new TransitRoute(
-          $routeID, 
-          $agency['name'], 
-          self::argVal($routeInfo, 'long_name'), 
-          '' // will be overridden
+   
+    protected function getMapIconUrlForRouteVehicle($routeID, $vehicle=null) {
+        return Kurogo::getSiteVar('TRANSLOC_MARKERS_URL').http_build_query(array(
+            'm' => 'bus',
+            'c' => $this->getRouteColor($routeID),
+            'h' => $this->getDirectionForHeading(self::argVal($vehicle, 'heading', 4)),
         ));
-
-        $this->routeColors[$routeID] = self::argVal($routeInfo, 'color', parent::getRouteColor($routeID));
-        
-        $path = array();
-        foreach (self::argVal($routeInfo, 'segments', array()) as $segmentNum) {
-          $segmentNum = intval($segmentNum);
-          
-          $segmentPath = $segments[abs($segmentNum)];
-          if ($segmentNum < 0) {
-            $segmentPath = array_reverse($segmentPath);
-          }
-          
-          $path = array_merge($path, $segmentPath);
-        }
-        $this->getRoute($routeID)->addPath(new TransitPath('loop', $path));
-        
-        // special service type
-        $routeService = new TransitService("{$routeID}_service", true);
-        
-        // segments will be filled in below by the stop config
-        $mergedSegments[$routeID] = new TranslocTransitSegment(
-          'loop',
-          '',
-          $routeService,
-          'loop',
-          $this->translocHostname, 
-          $routeID
-        );
-      }
     }
-
-    $updateInfo = self::getData($this->translocHostname, 'update');
-    if (isset($updateInfo['time'])) {
-      $baseTime = intval($updateInfo['time']);
-      
-      $arrivalTimes = self::getData($this->translocHostname, 'arrivals');
   
-      $stopPredictions = array();
-      foreach ($arrivalTimes as $arrivalInfo) {
-        if (!isset($arrivalInfo['route_id']) || !isset($arrivalInfo['stop_id'])) { continue; }
+    protected function getMapMarkersForVehicles($vehicles) {
+        $query = '';
         
-        $routeID = $arrivalInfo['route_id'];
-        $stopID = $arrivalInfo['stop_id'];
-        
-        if (!isset($stopPredictions[$routeID])) {
-          $stopPredictions[$routeID] = array();
-        }
-        if (!isset($stopPredictions[$routeID][$stopID])) {
-          $stopPredictions[$routeID][$stopID] = array();
+        foreach ($vehicles as $vehicle) {
+            if ($vehicle['lat'] && $vehicle['lon']) {
+                $query .= '&'.http_build_query(array(
+                    'markers' => "icon:{$vehicle['iconURL']}|{$vehicle['lat']},{$vehicle['lon']}",
+                ));
+            }
         }
         
-        if (isset($arrivalInfo['timestamp'])) {
-          $stopPredictions[$routeID][$stopID][] = intval($arrivalInfo['timestamp']);
-        }
-      }  
+        return $query;
     }
     
-    $stopsInfo = self::getData($this->translocHostname, 'stops');
-    foreach ($stopsInfo['stops'] as $stopInfo) {
-      if (isset($stopInfo['id'])) {
-        $latLon = self::argVal($stopInfo, 'll');
-        
-        $this->addStop(new TransitStop(
-          $stopInfo['id'], 
-          self::argVal($stopInfo, 'name'), 
-          '', 
-          self::argVal($latLon, 0, 0), 
-          self::argVal($latLon, 1, 0)
-        ));
-      }
-    }
-    foreach (self::argVal($stopsInfo, 'routes', array()) as $routeInfo) {
-      $routeID = $routeInfo['id'];
-      
-      if (!isset($mergedSegments[$routeID])) {
-        Kurogo::log(LOG_WARNING, "Skipping unknown route '{$routeInfo['id']}'", 'transit');
-        continue;
-      }
-      
-      foreach(self::argVal($routeInfo, 'stops', array()) as $stopIndex => $stopID) {
-        $predictions = array();
-        if (isset($stopPredictions[$routeID], $stopPredictions[$routeID][$stopID])) {
-          sort($stopPredictions[$routeID][$stopID]);
-          
-          $predictions = array_filter($stopPredictions[$routeID][$stopID], 
-            array($this, 'filterPredictions')); 
-        }
-        
-        $mergedSegments[$routeID]->addStop($stopID, $stopIndex);
-        $mergedSegments[$routeID]->setStopPredictions($stopID, $predictions);
-      }
-    }
-    
-    foreach ($mergedSegments as $routeID => $segment) {
-      $this->getRoute($routeID)->addSegment($segment);
-    }
-  }
-  
-  private static function getTimeoutForCommand($action) {
-    switch ($action) {
-      case 'arrivals':
-      case 'update':
-        return Kurogo::getOptionalSiteVar('TRANSLOC_UPDATE_REQUEST_TIMEOUT', 2);
-
-      case 'announcements':
-      case 'setup': 
-      case 'stops':
-      default:
-        return Kurogo::getOptionalSiteVar('TRANSLOC_ROUTE_REQUEST_TIMEOUT', 5);
-    }
-    return 5;
-  }
-
-  private static function getCacheForCommand($action) {
-    $cacheKey = $action;
-    
-    if (!isset(self::$caches[$cacheKey])) {
-      $cacheTimeout = 20;
-      $suffix = 'json';
-
-      switch ($action) {
-        case 'setup': 
-        case 'stops':
-          $cacheTimeout = Kurogo::getOptionalSiteVar('TRANSLOC_ROUTE_CACHE_TIMEOUT', 3600);
-          break;
- 
-        case 'arrivals':
-        case 'update':
-          $cacheTimeout = Kurogo::getOptionalSiteVar('TRANSLOC_UPDATE_CACHE_TIMEOUT', 2);
-          break;
-          
-        case 'announcements':
-          $cacheTimeout = Kurogo::getOptionalSiteVar('TRANSLOC_ANNOUNCEMENT_CACHE_TIMEOUT', 120);
-          break;          
-     }
-  
-      // daemons should load cached files aggressively to beat user page loads
-      if (self::$daemonCacheMode) {
-        $cacheTimeout -= 300;
-        if ($cacheTimeout < 0) { $cacheTimeout = 0; }
-      }
-      
-      self::$caches[$cacheKey] = new DiskCache(
-        Kurogo::getSiteVar('TRANSLOC_CACHE_DIR'), $cacheTimeout, TRUE);
-      self::$caches[$cacheKey]->preserveFormat();
-      self::$caches[$cacheKey]->setSuffix(".$cacheKey.$suffix");
-    }
-    
-    return self::$caches[$cacheKey];
-  }
-  
-  private static function getData($hostname, $action) {
-    $cache = self::getCacheForCommand($action);
-    $cacheName = $hostname;
-    
-    $results = false;
-    if ($cache->isFresh($cacheName)) {
-      $results = json_decode($cache->read($cacheName), true);
-      
-    } else {
-      $params = array('v' => 1); // version 1 of api
-      if ($action == 'update') {
-        $params['nextstops'] = 'true';
-      } else if ($action == 'announcements') {
-        $params['contents'] = 'true';
-      }
-      
-      $url = sprintf(Kurogo::getSiteVar('TRANSLOC_SERVICE_URL_FORMAT'), 
-        $hostname, $action).http_build_query($params);
-
-      //error_log("TranslocTransitDataParser requesting $url", 0);
-      $streamContext = stream_context_create(array(
-        'http' => array(
-          'timeout' => floatval(self::getTimeoutForCommand($action)),
-        ),
-      ));
-      $contents = file_get_contents($url, false, $streamContext);
-      
-      if ($contents === false) {
-        Kurogo::log(LOG_ERR, "Error reading '$url', reading expired cache", 'transit');
-        $results = json_decode($cache->read($cacheName), true);
-        
-      } else {
-        $results = json_decode($contents, true);
-        if ($results) {
-          //error_log("TranslocTransitDataParser got data", 0);
-          $cache->write($contents, $cacheName);
-          
+    protected function getRouteColor($routeID) {
+        if (isset($this->routeColors[$routeID])) {
+            return $this->routeColors[$routeID];
         } else {
-          Kurogo::log(LOG_WARNING, "Error parsing JSON from '$url', reading expired cache", 'transit');
-          $results = json_decode($cache->read($cacheName), true);
+            return parent::getRouteColor($routeID);
         }
-      }
     }
-    
-    //error_log(print_r($results, true));
-    return $results ? $results : array();
-  }
   
-  public function getRouteInfo($routeID, $time=null) {
-    $routeInfo = parent::getRouteInfo($routeID, $time);
-    $updateInfo = self::getData($this->translocHostname, 'update');
-
-    $runningStops = array();
+    public function getNewsForRoutes() {
+        $news = array();
+        /*
+        $newsInfo = $this->getData('announcements');
+        
+        foreach (self::argVal($newsInfo, 'agencies', array()) as $agencyNews) {
+            foreach (self::argVal($agencyNews, 'announcements', array()) as $routeNews) {
+                if (!isset($routeNews['id'])) { continue; }
+                
+                $news[$routeNews['id']] = array(
+                    'agency' => self::argVal($agencyNews, 'name'),
+                    'title'  => self::argVal($routeNews, 'title'),
+                    'date'   => strtotime(self::argVal($routeNews, 'date')),
+                    'urgent' => self::argVal($routeNews, 'urgent'),
+                    'html'   => self::argVal($routeNews, 'html'),
+                );
+            }
+        }*/
+        
+        return $news;
+    }
     
-    if (isset($updateInfo['vehicles'])) {
-      foreach ($updateInfo['vehicles'] as $vehicleInfo) {
-        if (isset($vehicleInfo['r'], $vehicleInfo['next_stop']) && $vehicleInfo['r'] == $routeID) {
-          $runningStops[$vehicleInfo['next_stop']] = true;
+    protected function getServiceName() {
+        return 'TransLōc';
+    }
+    
+    protected function getServiceId() {
+        return 'transloc';
+    }
+    
+    protected function getServiceLink() {
+      return isset($this->args['serviceURL']) ? $this->args['serviceURL'] : 'http://www.transloc.com/';
+    }
+  
+    public function getRouteVehicles($routeID) {
+        $vehicles = array();
+        $translocAgencyVehiclesInfo = $this->getData('vehicles');
+        foreach ($translocAgencyVehiclesInfo as $agencyID => $vehiclesInfo) {
+            foreach ($vehiclesInfo as $vehicleInfo) {
+                if ($routeID != self::argVal($vehicleInfo, 'route_id')) { continue; }
+                
+                $coords = self::argVal($vehicleInfo, 'location', false);
+                if (!$coords) { continue; }
+                
+                $nextStop = null;
+                if (isset($vehicleInfo['arrival_estimates']) && $vehicleInfo['arrival_estimates']) {
+                    $firstEstimate = reset($vehicleInfo['arrival_estimates']);
+                    $nextStop = self::argVal($firstEstimate, 'stop_id', null);
+                }
+                
+                $lastReport = new DateTime(self::argVal($vehicleInfo, 'last_updated_on'));
+                $secsSinceReport = time() - intval($lastReport->format('U'));
+                
+                $vehicles[$vehicleInfo['vehicle_id']] = array(
+                    'secsSinceReport' => $secsSinceReport,
+                    'lat'             => self::argVal($coords, 'lat'),
+                    'lon'             => self::argVal($coords, 'lng'),
+                    'heading'         => self::argVal($vehicleInfo, 'heading', 0),
+                    'nextStop'        => $nextStop,
+                    'agencyID'        => $agencyID,
+                    'routeID'         => $routeID,
+                );
+                if (isset($vehicleInfo['speed'])) {
+                    $vehicles[$vehicleInfo['vehicle_id']]['speed'] = $vehicleInfo['speed'];
+                }
+                $vehicles[$vehicleInfo['vehicle_id']]['iconURL'] = 
+                    $this->getMapIconUrlForRouteVehicle($routeID, $vehicles[$vehicleInfo['vehicle_id']]);
+            }
         }
-      }
+        return $vehicles;
     }
-
-    // Add upcoming stop information
-    foreach ($routeInfo['stops'] as $stopID => $stopInfo) {
-      $routeInfo['stops'][$stopID]['upcoming'] = isset($runningStops[$stopID]);
-    }
-    return $routeInfo;
-  }
-
-  public static function translocRouteIsRunning($hostname, $routeID) {
-    $updateInfo = self::getData($hostname, 'update');
-    $activeRoutes = is_array(self::argVal($updateInfo, 'active_routes', false)) ? 
-      $updateInfo['active_routes'] : array();
     
-    return in_array($routeID, $activeRoutes);
-  }
+    private function filterPredictions($prediction) {
+        return (intval($prediction) - time()) > 9;
+    }
+    
+    private function getAgencyName($agencyID) {
+        $agencyIDToName = array_flip($this->agencyIDs);
+        return isset($agencyIDToName[$agencyID]) ? $agencyIDToName[$agencyID] : $agencyID;
+    }
+  
+    protected function loadData() {
+        $agencyNames = array(); // all agencies
+        if (isset($this->args['agencies'])) {
+            $agencyNames = array_filter(explode(',', $this->args['agencies']));
+        }
+        
+        $translocAgenciesInfo = $this->getData('agencies');
+        
+        $this->agencyIDs = array();
+        foreach ($translocAgenciesInfo as $agencyInfo) {
+            $agencyName = self::argVal($agencyInfo, 'name');
+            if (!$agencyNames || in_array($agencyName, $agencyNames)) {
+                $this->agencyIDs[$agencyName] = self::argVal($agencyInfo, 'agency_id');
+            }
+        }
+        
+        // Now that we have $this->agencyIDs we can hit the other APIs:
+        
+        $translocSegmentsInfo = $this->getData('segments');
+
+        $segments = array();
+        foreach ($translocSegmentsInfo as $segmentID => $segmentPolyline) {
+            $segments["segment-$segmentID"] = Polyline::decodeToArray($segmentPolyline);
+        }
+
+        $translocStopsInfo = $this->getData('stops');
+        
+        foreach ($translocStopsInfo as $stopInfo) {
+            $stopID = self::argVal($stopInfo, 'stop_id');
+            $coords = self::argVal($stopInfo, 'location', array());
+            
+            $this->addStop(new TransitStop(
+                $stopID, 
+                self::argVal($stopInfo, 'name'), 
+                self::argVal($stopInfo, 'description'), 
+                self::argVal($coords, 'lat', 0), 
+                self::argVal($coords, 'lng', 0)
+            ));
+        }
+        
+        $translocAllRoutesInfo = $this->getData('routes');
+
+        $mergedSegments = array();
+        foreach ($translocAllRoutesInfo as $agencyID => $routesInfo) {
+            foreach ($routesInfo as $routeInfo) {
+                $routeID = self::argVal($routeInfo, 'route_id');
+                
+                if ($this->whitelist && !in_array($routeID, $this->whitelist)) {
+                    continue;  // skip entries not on whitelist
+                }
+                
+                $this->addRoute(new TransitRoute(
+                    $routeID, 
+                    $this->getAgencyName($agencyID), 
+                    self::argVal($routeInfo, 'long_name'), 
+                    self::argVal($routeInfo, 'description')
+                ));
+                
+                $this->routeColors[$routeID] = self::argVal($routeInfo, 'color', parent::getRouteColor($routeID));
+                
+                $path = array();
+                foreach ($routeInfo['segments'] as $segmentInfo) {
+                    // FIXME!
+                    if (is_string($segmentInfo)) {
+                        $segmentPath = $segments["segment-{$segmentInfo}"];
+                        $path = array_merge($path, $segmentPath);
+                        
+                    } else if (isset($segmentInfo['segment_id'], $segmentInfo['direction'])) {
+                        $segmentPath = $segments["segment-{$segmentInfo['segment_id']}"];
+                        if ($segmentInfo['direction'] != 'forward') {
+                            $segmentPath = array_reverse($segmentPath);
+                        }
+                        $path = array_merge($path, $segmentPath);
+                    }
+                }
+                $this->getRoute($routeID)->addPath(new TransitPath('loop', $path));
+                
+                $routeService = new TranslocTransitService("{$routeID}_service", $routeID, $this);
+                
+                $mergedSegments[$routeID] = new TranslocTransitSegment(
+                    'loop',
+                    '',
+                    $routeService,
+                    'loop',
+                    $routeID,
+                    $this
+                );
+                
+                foreach ($routeInfo['stops'] as $stopIndex => $stopID) {
+                    $mergedSegments[$routeID]->addStop($stopID, $stopIndex);
+                }
+            }
+        }
+        
+        $translocStopsArrivalsInfo = $this->getData('arrival-estimates');
+
+        $stopPredictions = array();
+        foreach ($translocStopsArrivalsInfo as $stopArrivalsInfo) {
+            $agencyID = self::argVal($stopArrivalsInfo, 'agency_id');
+            $stopID = self::argVal($stopArrivalsInfo, 'stop_id');
+            $arrivals = self::argVal($stopArrivalsInfo, 'arrivals', array());
+            
+            foreach ($arrivals as $arrival) {
+                $routeID = self::argVal($arrival, 'route_id');
+                
+                if (!isset($stopPredictions[$routeID])) {
+                    $stopPredictions[$routeID] = array();
+                }
+                if (!isset($stopPredictions[$routeID][$stopID])) {
+                    $stopPredictions[$routeID][$stopID] = array();
+                }
+                if (isset($arrivalInfo['arrival_at'])) {
+                    $datetime = new DateTime($arrivalInfo['arrival_at']);
+                    $stopPredictions[$routeID][$stopID][] = $datetime->format('U');
+                }
+            }
+        }
+        
+        foreach ($translocStopsInfo as $stopInfo) {
+            foreach (self::argVal($stopInfo, 'routes', array()) as $routeID) {
+                if (!isset($mergedSegments[$routeID])) { continue; }
+                
+                $predictions = array();
+                if (isset($stopPredictions[$routeID], $stopPredictions[$routeID][$stopID])) {
+                    sort($stopPredictions[$routeID][$stopID]);
+                  
+                    $predictions = array_filter($stopPredictions[$routeID][$stopID], 
+                        array($this, 'filterPredictions')); 
+                }
+                
+                $mergedSegments[$routeID]->setStopPredictions($stopID, $predictions);
+            }
+        }
+        
+        foreach ($mergedSegments as $routeID => $segment) {
+            $this->getRoute($routeID)->addSegment($segment);
+        }
+    }
+    
+    private static function getTimeoutForCommand($action) {
+        switch ($action) {
+            case 'agencies':
+            case 'announcements':
+            case 'routes':
+            case 'segments':
+            case 'stops':
+                return Kurogo::getOptionalSiteVar('TRANSLOC_ROUTE_REQUEST_TIMEOUT', 5);
+      
+            case 'arrival-estimates':
+            case 'vehicles':
+                return Kurogo::getOptionalSiteVar('TRANSLOC_UPDATE_REQUEST_TIMEOUT', 2);
+        }
+        return 10; // unknown command
+    }
+  
+    private static function getCacheForCommand($action) {
+        $cacheKey = $action;
+        
+        if (!isset(self::$caches[$cacheKey])) {
+            $cacheTimeout = 20;
+            $suffix = 'json';
+            
+            switch ($action) {
+                case 'agencies':
+                case 'routes':
+                case 'segments':
+                case 'stops':
+                    $cacheTimeout = Kurogo::getOptionalSiteVar('TRANSLOC_ROUTE_CACHE_TIMEOUT', 3600);
+                    $cacheKey = 'config';
+                    break;
+         
+                case 'arrival-estimates':
+                case 'vehicles':
+                    $cacheTimeout = Kurogo::getOptionalSiteVar('TRANSLOC_UPDATE_CACHE_TIMEOUT', 6);
+                    $cacheKey = 'update';
+                    break;
+                  
+                case 'announcements':
+                    $cacheTimeout = Kurogo::getOptionalSiteVar('TRANSLOC_ANNOUNCEMENT_CACHE_TIMEOUT', 120);
+                    $cacheKey = 'news';
+                    break;
+            }
+        
+            // daemons should load cached files aggressively to beat user page loads
+            if (self::$daemonCacheMode) {
+                $cacheTimeout -= 300;
+                if ($cacheTimeout < 0) { $cacheTimeout = 0; }
+            }
+            
+            self::$caches[$cacheKey] = new DiskCache(
+                Kurogo::getSiteVar('TRANSLOC_CACHE_DIR'), $cacheTimeout, TRUE);
+            self::$caches[$cacheKey]->preserveFormat();
+            self::$caches[$cacheKey]->setSuffix(".$suffix");
+        }
+        
+        return self::$caches[$cacheKey];
+    }
+    
+    private function getData($action, $params=array()) {
+      $cache = self::getCacheForCommand($action);
+      $cacheName = implode('+', array_flip($this->agencyIDs)).".$action";
+      
+      $results = false;
+      if ($cache->isFresh($cacheName)) {
+          $results = json_decode($cache->read($cacheName), true);
+          
+      } else {
+          if ($action != 'agencies') {
+              $params['agencies'] = implode(',', $this->agencyIDs);
+          }
+          
+          $url = Kurogo::getSiteVar('TRANSLOC_SERVICE_URL').self::TRANSLOC_API_VERSION.
+              "/{$action}.json?".http_build_query($params);
+          
+          error_log("TranslocTransitDataParser requesting $url", 0);
+          $streamContext = stream_context_create(array(
+              'http' => array(
+                  'timeout' => floatval(self::getTimeoutForCommand($action)),
+              ),
+          ));
+          $contents = file_get_contents($url, false, $streamContext);
+          
+          if ($contents === false) {
+              Kurogo::log(LOG_ERR, "Error reading '$url', reading expired cache", 'transit');
+              $results = json_decode($cache->read($cacheName), true);
+            
+          } else {
+              $results = json_decode($contents, true);
+              if ($results && isset($results['data'])) {
+                  //error_log("TranslocTransitDataParser got data", 0);
+                  $cache->write($contents, $cacheName);
+                
+              } else {
+                  Kurogo::log(LOG_WARNING, "Error parsing JSON from '$url', reading expired cache", 'transit');
+                  $results = json_decode($cache->read($cacheName), true);
+              }
+          }
+      }
+      
+      //error_log(print_r($results, true));
+      return $results && isset($results['data']) ? $results['data'] : array();
+    }
+    
+    public function getRouteInfo($routeID, $time=null) {
+        $routeInfo = parent::getRouteInfo($routeID, $time);
+        
+        $runningStops = array();
+        $agencyVehiclesInfo = $this->getData('vehicles');
+        foreach ($agencyVehiclesInfo as $agencyID => $vehiclesInfo) {
+            foreach ($vehiclesInfo as $vehicleInfo) {
+                if ($routeID != self::argVal($vehicleInfo, 'route_id')) { continue; }
+                
+                $arrivalEstimates = self::argVal($vehicleInfo, 'arrival_estimates', array());
+                foreach ($arrivalEstimates as $arrivalEstimate) {
+                    $runningStops[$arrivalEstimate['stop_id']] = true;
+                }
+            }
+        }
+        
+        // Add upcoming stop information
+        foreach ($routeInfo['stops'] as $stopID => $stopInfo) {
+          $routeInfo['stops'][$stopID]['upcoming'] = isset($runningStops[$stopID]);
+        }
+        
+        return $routeInfo;
+    }
+  
+    public function translocRouteIsRunning($routeID) {
+        // Are there any vehicles?
+        $translocAgencyVehiclesInfo = $this->getData('vehicles');
+        foreach ($translocAgencyVehiclesInfo as $agencyID => $vehiclesInfo) {
+            foreach ($vehiclesInfo as $vehicleInfo) {
+                if ($routeID != self::argVal($vehicleInfo, 'route_id')) { continue; }
+                
+                if (self::argVal($vehicleInfo, 'location')) {
+                    return true;
+                }
+            }
+        }
+        
+        // no vehicles, check arrival estimates
+        $translocStopsArrivalsInfo = $this->getData('arrival-estimates');
+        foreach ($translocStopsArrivalsInfo as $stopArrivalsInfo) {
+            foreach (self::argVal($stopArrivalsInfo, 'arrivals', array()) as $arrival) {
+                if ($routeID == self::argVal($arrival, 'route_id')) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
 }
 
 // Special version of the TransitService class
 class TranslocTransitService extends TransitService {
-  private $routeID = null;
-  private $hostname = null;
-
-  function __construct($id, $hostname, $routeID) {
-    parent::__construct($id);
-    $this->hostname = $hostname;
-    $this->routeID = $routeID;
-  }
-
-  public function isRunning($time) {
-    return TranslocTransitDataParser::translocRouteIsRunning($this->hostname, $this->routeID);
-  }
+    private $routeID = null;
+    private $parser = null;
+  
+    function __construct($id, $routeID, $parser) {
+        parent::__construct($id);
+        $this->routeID = $routeID;
+        $this->parser = $parser;
+    }
+  
+    public function isRunning($time) {
+        return $this->parser->translocRouteIsRunning($this->routeID);
+    }
 }
 
 // Special version of the TransitSegment class
 class TranslocTransitSegment extends TransitSegment {
-  private $routeID = null;
-  private $hostname = null;
-
-  function __construct($id, $name, $service, $direction, $hostname, $routeID) {
-    parent::__construct($id, $name, $service, $direction);
-    $this->hostname = $hostname;
-    $this->routeID = $routeID;
-  }
-
-  public function isRunning($time) {
-    return TranslocTransitDataParser::translocRouteIsRunning($this->hostname, $this->routeID);
-  }
+    private $routeID = null;
+    private $parser = null;
+    
+    function __construct($id, $name, $service, $direction, $routeID, $parser) {
+        parent::__construct($id, $name, $service, $direction);
+        $this->routeID = $routeID;
+        $this->parser = $parser;
+    }
+  
+    public function isRunning($time) {
+        return $this->parser->translocRouteIsRunning($this->routeID);
+    }
 }

@@ -503,7 +503,7 @@ class TransitWebModule extends WebModule {
         'var mapPaths = '.json_encode($paths).";\n".
         'var mapPathColor = "'.$pathColor."\";\n".
         'var markerUpdateURL = "'.$markerUpdateURL."\";\n".
-        'var markerUpdateFrequency = '.$this->getOptionalModuleVar('MAP_MARKER_UPDATE_FREQ', 2).";\n".
+        'var markerUpdateFrequency = '.$this->getOptionalModuleVar('MAP_MARKER_UPDATE_FREQ', 4).";\n".
         'var userLocationMarkerURL = "'.FULL_URL_PREFIX."modules/map/images/map-location@2x.png\";\n".
         'var isFullscreen = '.($this->page == 'fullscreen' ? 'true' : 'false').";\n".
         'var fitMapToScreen = '.($fitMapToScreen ? 'true' : 'false').";\n"
