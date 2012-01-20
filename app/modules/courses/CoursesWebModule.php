@@ -6,18 +6,22 @@ class CoursesWebModule extends WebModule {
     protected $controller;
     protected $courses;
     
-    protected function linkforInfo($courseId,$description){
+    protected function linkforInfo($courseId, $description){
     	$links = array();
     	foreach(array('Roster', 'Course materials', 'Drop Class', 'Description') as $title){
     		$link['title'] = $title;
     		if($title == 'Roster'){
-    			$link['url'] = $this->buildBreadcrumbURL('userlist', array('id'=>$courseId), false);
+    			$link['url'] = $this->buildBreadcrumbURL('roster', array('id'=>$courseId), true);
     		}
     		if($title == 'Course materials'){
     			$link['url'] = '#';
     		}//waiting
-    		if($title == 'Drop Class'){
-    			$link['url'] = $this->buildBreadcrumbURL('dropclass', array('id'=>$courseId), false);
+    		if($title == 'Drop Class') {
+    		    if ($this->controller->canRetrieve('registation')) {
+    		        $link['url'] = $this->buildBreadcrumbURL('dropclass', array('id'=>$courseId), true);
+    		    } else {
+    		        continue;
+    		    }
     		}//waiting
     		if($title == 'Description'){
     			$link['subtitle'] = $description;
@@ -121,7 +125,7 @@ class CoursesWebModule extends WebModule {
 	    	}
 	    	$link['url'] = ($content->getType() == 'url') ? 
 	        $content->getFileurl() : 
-	        $this->buildBreadcrumbURL($content->getType(), $options, false);
+	        $this->buildBreadcrumbURL($content->getType(), $options, true);
     	} elseif ($url = $content->getUrl()) {
             $link['url'] = $url;
         }
@@ -182,6 +186,7 @@ class CoursesWebModule extends WebModule {
     		//$course is courseID
     		$course = $this->controller->getCourse('content', $id);
     		$this->assign('title', $course->getTitle());
+    		$this->setPageTitles($course->getTitle());
     }
     
     protected function getFeedTitle($feed) {
@@ -214,17 +219,21 @@ class CoursesWebModule extends WebModule {
                 //get single Course
                 $course = $this->controller->getCourse('content',$id);
                 $courseNumber = $course->getCourseNumber();
+                $instructorList = array();
+                $instructorList = $course->getInstructors();
                 
-                $users = $this->controller->getUsersByCourseId('content',$id);
-                $instructorLish = array();
-                foreach ($users as $user){
-                	$roles = $user->getRoles();
-                	if($roles[0]['roleid'] == 3){ // if rileId eq 3 is Teacher in moodle
-                		$value = $user->getFullName();
-                		$instructorLish[] = Kurogo::moduleLinkForValue('people', $value, $this, $user);
+                $instructorLinks = array();
+                foreach ($instructorList as $instructor){
+                	$value = $instructor->getFullName();
+                	$link = Kurogo::moduleLinkForValue('people', $value, $this, $instructor);
+                	if(!$link){
+                		$link = array(
+                				'title' => $value,
+                		);
                 	}
+                	$instructorLinks[] = $link;
                 }
-                $this->assign('instructorLish',$instructorLish);
+                $this->assign('instructorLinks',$instructorLinks);
                 
                 //get the map locations data
                 $map = Kurogo::moduleLinkForValue('map', $courseNumber, $this);
@@ -234,7 +243,7 @@ class CoursesWebModule extends WebModule {
                 $mapLink['class'] = 'map';
                 $this->assign('location', array($mapLink));
                 
-                $links = $this->linkforInfo($id,'description');// waiting description
+                $links = $this->linkforInfo($id, 'description');// waiting description
                 $this->assign('links',$links);                
                 $this->assign('description','waiting description');
                 
@@ -243,14 +252,22 @@ class CoursesWebModule extends WebModule {
             	
             	$linkToResourcesTab = $this->buildBreadcrumbURL('resource',array('id'=> $id,'type'=>'topic'), false);
                 $this->assign('linkToResourcesTab',$linkToResourcesTab);
+                
             	break;
-        	case 'userlist':
+        	case 'roster':
         		$id = $this->getArg('id');
-        		$users = $this->controller->getUsersByCourseId('content',$id);
+        		$course = $this->controller->getCourse('content',$id);
+        		$students = $course->getStudents();
         		$links = array();
-        		foreach ($users as $user){
-        			$value = $user->getFullName();
-        			$links[] = Kurogo::moduleLinkForValue('people', $value, $this, $user);
+        		foreach ($students as $student){
+        			$value = $student->getFullName();
+        			$link = Kurogo::moduleLinkForValue('people', $value, $this, $student);
+        			if(!$link){
+        				$link = array(
+                			'title' => $value,
+                		);	
+        			}
+        			$links[] = $link;
         		}
         		$this->assign('links',$links);
         		break;
@@ -265,7 +282,8 @@ class CoursesWebModule extends WebModule {
         			array('title'=>$this->getLocalizedString('CANCEL'),'url'=>'#')
         		);
 				$this->assign('links',$links);
-        	break;
+        	    break;
+        	    
             case 'catalog':
                 if ($areas = $this->controller->getCatalogAreas()) {
                     $areasList = array();
@@ -344,8 +362,8 @@ class CoursesWebModule extends WebModule {
                 $this->assign('linkToInfoTab',$linkToInfoTab);
                 $linkToResourcesTab = $this->buildBreadcrumbURL('resource',array('id'=> $id,'type'=>'topic'), false);
                 $this->assign('linkToResourcesTab',$linkToResourcesTab);
-                $linkToInfoTab = $this->buildBreadcrumbURL('info',array('id'=> $id), false);
-                $this->assign('linkToInfoTab',$linkToInfoTab);
+                //$linkToInfoTab = $this->buildBreadcrumbURL('info',array('id'=> $id), false);
+                //$this->assign('linkToInfoTab',$linkToInfoTab);
                              /*              
                 $contentTypes = array();
                 if ($contents = $this->course->getCourseContentById($id)) {

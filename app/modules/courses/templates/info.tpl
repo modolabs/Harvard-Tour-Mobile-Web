@@ -4,7 +4,7 @@
 
 <div id="tabscontainer">
     <ul id="tabs" class="smalltabs">
-        <li> <a href="{$linkToOtherTab}"> Updates</a></li>
+        <li> <a href="{$linkToUpdateTab}"> Updates</a></li>
         <li> <a href="{$linkToResourcesTab}">Resources</a></li>
         <li class="active"> <a href="{$linkToInfoTab}"> Info</li>
     </ul>
@@ -16,7 +16,7 @@
 <div class="nonfocal">
     <h2>Instructor(s)</h2>
 </div>
-{include file="findInclude:common/templates/navlist.tpl" navlistItems=$instructorLish accessKey=false subTitleNewline=$contactsSubTitleNewline}
+{include file="findInclude:common/templates/navlist.tpl" navlistItems=$instructorLinks accessKey=false subTitleNewline=$contactsSubTitleNewline}
 
 {if $links}
 {include file="findInclude:common/templates/navlist.tpl" navlistItems=$links subTitleNewline=true}
