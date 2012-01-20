@@ -220,7 +220,13 @@ class CoursesWebModule extends WebModule {
                 $instructorLinks = array();
                 foreach ($instructorList as $instructor){
                 	$value = $instructor->getFullName();
-                	$instructorLinks[] = Kurogo::moduleLinkForValue('people', $value, $this, $instructor);
+                	$link = Kurogo::moduleLinkForValue('people', $value, $this, $instructor);
+                	if(!$link){
+                		$link = array(
+                				'title' => $value,
+                		);
+                	}
+                	$instructorLinks[] = $link;
                 }
                 $this->assign('instructorLinks',$instructorLinks);
                 
@@ -249,7 +255,13 @@ class CoursesWebModule extends WebModule {
         		$links = array();
         		foreach ($students as $student){
         			$value = $student->getFullName();
-        			$links[] = Kurogo::moduleLinkForValue('people', $value, $this, $student);
+        			$link = Kurogo::moduleLinkForValue('people', $value, $this, $student);
+        			if(!$link){
+        				$link = array(
+                			'title' => $value,
+                		);	
+        			}
+        			$links[] = $link;
         		}
         		$this->assign('links',$links);
         		break;
