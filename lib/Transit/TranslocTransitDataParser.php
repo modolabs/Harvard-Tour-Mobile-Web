@@ -180,7 +180,7 @@ class TranslocTransitDataParser extends TransitDataParser {
         
         $translocAllRoutesInfo = $this->getData('routes');
 
-        $mergedSegments = array();
+        $routeSegments = array();
         foreach ($translocAllRoutesInfo as $agencyID => $routesInfo) {
             foreach ($routesInfo as $routeInfo) {
                 $routeID = self::argVal($routeInfo, 'route_id');
@@ -198,26 +198,9 @@ class TranslocTransitDataParser extends TransitDataParser {
                 
                 $this->routeColors[$routeID] = self::argVal($routeInfo, 'color', parent::getRouteColor($routeID));
                 
-                $path = array();
-                foreach ($routeInfo['segments'] as $segmentInfo) {
-                    // FIXME!
-                    if (is_string($segmentInfo)) {
-                        $segmentPath = $segments["segment-{$segmentInfo}"];
-                        $path = array_merge($path, $segmentPath);
-                        
-                    } else if (isset($segmentInfo['segment_id'], $segmentInfo['direction'])) {
-                        $segmentPath = $segments["segment-{$segmentInfo['segment_id']}"];
-                        if ($segmentInfo['direction'] != 'forward') {
-                            $segmentPath = array_reverse($segmentPath);
-                        }
-                        $path = array_merge($path, $segmentPath);
-                    }
-                }
-                $this->getRoute($routeID)->addPath(new TransitPath('loop', $path));
-                
                 $routeService = new TranslocTransitService("{$routeID}_service", $routeID, $this);
                 
-                $mergedSegments[$routeID] = new TranslocTransitSegment(
+                $routeSegments[$routeID] = new TranslocTransitSegment(
                     'loop',
                     '',
                     $routeService,
@@ -225,16 +208,33 @@ class TranslocTransitDataParser extends TransitDataParser {
                     $routeID,
                     $this
                 );
-                
                 foreach ($routeInfo['stops'] as $stopIndex => $stopID) {
-                    $mergedSegments[$routeID]->addStop($stopID, $stopIndex);
+                    $routeSegments[$routeID]->addStop($stopID, $stopIndex);
+                }
+                
+                foreach ($routeInfo['segments'] as $segmentInfo) {
+                    $segmentID = 'loop';
+                
+                    // FIXME!
+                    if (is_string($segmentInfo)) {
+                        $segmentID = "segment-{$segmentInfo}";
+                        $segmentPath = $segments[$segmentID];
+                        
+                    } else if (isset($segmentInfo['segment_id'], $segmentInfo['direction'])) {
+                        $segmentID = "segment-{$segmentInfo['segment_id']}";
+                        $segmentPath = $segments[$segmentID];
+                        if ($segmentInfo['direction'] != 'forward') {
+                            $segmentPath = array_reverse($segmentPath);
+                        }
+                    }
+                    $this->getRoute($routeID)->addPath(new TransitPath($segmentID, $segmentPath));
                 }
             }
         }
         
         $translocStopsArrivalsInfo = $this->getData('arrival-estimates');
 
-        $stopPredictions = array();
+        $routeStopPredictions = array();
         foreach ($translocStopsArrivalsInfo as $stopArrivalsInfo) {
             $agencyID = self::argVal($stopArrivalsInfo, 'agency_id');
             $stopID = self::argVal($stopArrivalsInfo, 'stop_id');
@@ -243,36 +243,30 @@ class TranslocTransitDataParser extends TransitDataParser {
             foreach ($arrivals as $arrival) {
                 $routeID = self::argVal($arrival, 'route_id');
                 
-                if (!isset($stopPredictions[$routeID])) {
-                    $stopPredictions[$routeID] = array();
-                }
-                if (!isset($stopPredictions[$routeID][$stopID])) {
-                    $stopPredictions[$routeID][$stopID] = array();
-                }
-                if (isset($arrivalInfo['arrival_at'])) {
-                    $datetime = new DateTime($arrivalInfo['arrival_at']);
-                    $stopPredictions[$routeID][$stopID][] = $datetime->format('U');
+                if (isset($arrival['arrival_at'])) {
+                    if (!isset($routeStopPredictions[$routeID])) {
+                        $routeStopPredictions[$routeID] = array();
+                    }
+                    if (!isset($routeStopPredictions[$routeID][$stopID])) {
+                        $routeStopPredictions[$routeID][$stopID] = array();
+                    }
+                    
+                    $datetime = new DateTime($arrival['arrival_at']);
+                    $routeStopPredictions[$routeID][$stopID][] = $datetime->format('U');
                 }
             }
         }
         
-        foreach ($translocStopsInfo as $stopInfo) {
-            foreach (self::argVal($stopInfo, 'routes', array()) as $routeID) {
-                if (!isset($mergedSegments[$routeID])) { continue; }
-                
-                $predictions = array();
-                if (isset($stopPredictions[$routeID], $stopPredictions[$routeID][$stopID])) {
-                    sort($stopPredictions[$routeID][$stopID]);
-                  
-                    $predictions = array_filter($stopPredictions[$routeID][$stopID], 
-                        array($this, 'filterPredictions')); 
-                }
-                
-                $mergedSegments[$routeID]->setStopPredictions($stopID, $predictions);
+        foreach ($routeStopPredictions as $routeID => $stopPredictions) {
+            if (!isset($routeSegments[$routeID])) { continue; }
+            
+            foreach ($stopPredictions as $stopID => $predictions) {
+                sort($predictions);
+                $routeSegments[$routeID]->setStopPredictions($stopID, $predictions);
             }
         }
         
-        foreach ($mergedSegments as $routeID => $segment) {
+        foreach ($routeSegments as $routeID => $segment) {
             $this->getRoute($routeID)->addSegment($segment);
         }
     }
@@ -338,10 +332,15 @@ class TranslocTransitDataParser extends TransitDataParser {
     
     private function getData($action, $params=array()) {
       $cache = self::getCacheForCommand($action);
-      $cacheName = implode('+', array_flip($this->agencyIDs)).".$action";
+      
+      $cacheName = $action;
+      if ($action != 'agencies') {
+          $cacheName = implode('+', array_flip($this->agencyIDs)).".$cacheName";
+      }
       
       $results = false;
       if ($cache->isFresh($cacheName)) {
+          //error_log("TranslocTransitDataParser has cache for $cacheName");
           $results = json_decode($cache->read($cacheName), true);
           
       } else {
@@ -350,7 +349,7 @@ class TranslocTransitDataParser extends TransitDataParser {
           }
           
           $url = Kurogo::getSiteVar('TRANSLOC_SERVICE_URL').self::TRANSLOC_API_VERSION.
-              "/{$action}.json?".http_build_query($params);
+              "/{$action}.json".(count($params) ? '?'.http_build_query($params) : '');
           
           error_log("TranslocTransitDataParser requesting $url", 0);
           $streamContext = stream_context_create(array(
@@ -384,22 +383,31 @@ class TranslocTransitDataParser extends TransitDataParser {
     public function getRouteInfo($routeID, $time=null) {
         $routeInfo = parent::getRouteInfo($routeID, $time);
         
-        $runningStops = array();
+        $upcomingVehicleStops = array();
         $agencyVehiclesInfo = $this->getData('vehicles');
         foreach ($agencyVehiclesInfo as $agencyID => $vehiclesInfo) {
             foreach ($vehiclesInfo as $vehicleInfo) {
                 if ($routeID != self::argVal($vehicleInfo, 'route_id')) { continue; }
                 
+                $vehicleStopTimes = array();
                 $arrivalEstimates = self::argVal($vehicleInfo, 'arrival_estimates', array());
                 foreach ($arrivalEstimates as $arrivalEstimate) {
-                    $runningStops[$arrivalEstimate['stop_id']] = true;
+                    if ($routeID != self::argVal($arrivalEstimate, 'route_id')) { continue; }
+                    
+                    $datetime = new DateTime($arrivalEstimate['arrival_at']);
+                    $vehicleStopTimes[intval($datetime->format('U'))] = $arrivalEstimate['stop_id'];
+                }
+                if (count($vehicleStopTimes)) {
+                    // remember the first stop vehicle is making
+                    ksort($vehicleStopTimes);
+                    $upcomingVehicleStops[array_shift($vehicleStopTimes)] = true; 
                 }
             }
         }
         
         // Add upcoming stop information
         foreach ($routeInfo['stops'] as $stopID => $stopInfo) {
-          $routeInfo['stops'][$stopID]['upcoming'] = isset($runningStops[$stopID]);
+          $routeInfo['stops'][$stopID]['upcoming'] = isset($upcomingVehicleStops[$stopID]);
         }
         
         return $routeInfo;
