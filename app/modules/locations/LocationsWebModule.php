@@ -96,7 +96,9 @@ class LocationsWebModule extends WebModule {
         $feed = $this->getLocationFeed($id);
 
         $status = "";
-        $subtitle = $feed->getSubtitle();
+        if ($subtitle = $feed->getSubtitle()) {
+            $subtitle .= "<br />";
+        }
         
         $currentEvents = $feed->getCurrentEvents();
         $nextEvent = $feed->getNextEvent(true);
@@ -108,12 +110,12 @@ class LocationsWebModule extends WebModule {
             foreach ($currentEvents as $event) {
                 $events[] = $event->get_summary() . ': ' . $this->timeText($event, true);
             }
-            $subtitle .= "<br />" . implode("<br />", $events);
+            $subtitle .= implode("<br />", $events);
         } else {
             $status = 'closed';
             if ($nextEvent) {
                 $statusString = $this->getLocalizedString('STATUS_OPEN_STRING') . DateFormatter::formatDate($nextEvent->get_start(), DateFormatter::NO_STYLE, DateFormatter::SHORT_STYLE);
-                $subtitle .= "<br />" . $this->getLocalizedString('NEXT_EVENT') . $nextEvent->get_summary() . ': ' . $this->timeText($nextEvent);
+                $subtitle .= $this->getLocalizedString('NEXT_EVENT') . $nextEvent->get_summary() . ': ' . $this->timeText($nextEvent);
             }
         }
                 
