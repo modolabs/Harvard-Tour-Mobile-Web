@@ -190,6 +190,7 @@ class LocationsWebModule extends WebModule {
                 $next    = strtotime("+1 day", $current);
                 $prev    = strtotime("-1 day", $current);
                 $feed = $this->getLocationFeed($id);
+                $feed->setTime($current);
                 
                 // get title, subtitle and maplocation
                 $title = $feed->getTitle();
@@ -222,16 +223,12 @@ class LocationsWebModule extends WebModule {
                 
                 $dayRange = new DayRange(time());
                 
-                $map = Kurogo::moduleLinkForValue('map', $mapLocation, $this);
-                // change tile for the map link
-                $mapLink['title'] = $subtitle;
-                $mapLink['url'] = $map['url'];
-                $mapLink['class'] = 'map';
+                if ($mapLocation) {
+                    $this->assign('location', array(Kurogo::moduleLinkForValue('map', $mapLocation, $this)));
+                }
 
                 $this->assign('title', $title);
                 $this->assign('description', $feed->getDescription());
-                $this->assign('location',array($mapLink));
-                $this->assign('mapLink', $mapLink);
                 $this->assign('current', $current);
                 $this->assign('events', $events);
                 $this->assign('next',    $next);
@@ -239,7 +236,7 @@ class LocationsWebModule extends WebModule {
                 $this->assign('nextURL', $nextURL);
                 $this->assign('prevURL', $prevURL);
                 $this->assign('titleDateFormat', $this->getLocalizedString('MEDIUM_DATE_FORMAT'));
-                $this->assign('linkDateFormat', $this->getLocalizedString('SHORT_DATE_FORMAT'));
+                $this->assign('linkDateFormat', $this->getLocalizedString('SHORT_DAY_FORMAT'));
                 $this->assign('isToday', $dayRange->contains(new TimeRange($current)));
                 
                 break;
@@ -249,6 +246,7 @@ class LocationsWebModule extends WebModule {
                 
                 $feed = $this->getLocationFeed($section);
                 $time = $this->getArg('time', time(), FILTER_VALIDATE_INT);
+                $feed->setTime($time);
                 
                 if ($event = $feed->getItem($id, $time)) {
                     $this->assign('event', $event);
