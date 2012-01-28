@@ -31,7 +31,7 @@ class LocationsDataModel extends CalendarDataModel {
         $calendar = $this->getCalendar();
         $startTimestamp = $this->startTimestamp() ? $this->startTimestamp() : CalendarDataController::START_TIME_LIMIT;
         $endTimestamp = $this->endTimestamp() ? $this->endTimestamp() : CalendarDataController::END_TIME_LIMIT;
-        $range = new TimeRange($this->startTimestamp(), $this->endTimestamp());
+        $range = new TimeRange($startTimestamp, $endTimestamp);
         
         return $calendar->getEventsInRange($range);
     }
@@ -51,5 +51,16 @@ class LocationsDataModel extends CalendarDataModel {
 
     public function getSubtitle() {
         return $this->subtitle;
+    }
+
+    /**
+     * setTime 
+     * used for passing time to retriever
+     * 
+     * @access public
+     * @return void
+     */
+    public function setTime($time) {
+        $this->setOption('time', $time);
     }
 }
