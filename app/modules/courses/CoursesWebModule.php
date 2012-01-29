@@ -322,7 +322,7 @@ class CoursesWebModule extends WebModule {
                 }
 
                 $areas = explode("|", $area);
-                $courses = $this->controller->getCatalogCourses(array('area' => end($areas)));
+                $courses = $this->controller->getCourses('Catalog',array('area' => end($areas)));
                 $coursesList = array();
  
                 foreach ($courses as $Course) {
