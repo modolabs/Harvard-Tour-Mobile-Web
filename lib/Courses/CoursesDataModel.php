@@ -194,11 +194,10 @@ class CoursesDataModel extends DataModel {
             throw new KurogoException("Data Retriever " . get_class($retriever) . " must conform to $interface");
         }
     }
-    
     protected function init($args) {
         $this->initArgs = $args;
         if (isset($args['catalog'])) {
-            includePackage('Courses','CourseCatalog');
+        	includePackage('Courses','CourseCatalog');
             $arg = $args['catalog'];
             $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
             $catalogRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
@@ -206,7 +205,7 @@ class CoursesDataModel extends DataModel {
         }
         
         if (isset($args['registation'])) {
-            includePackage('Courses','CourseRegistration');
+        	includePackage('Courses','CourseRegistration');
             $arg = $args['registation'];
             $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
             $registationRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
@@ -214,7 +213,7 @@ class CoursesDataModel extends DataModel {
         }
         
         if (isset($args['content'])) {
-            includePackage('Courses','CourseContent');
+        	includePackage('Courses','CourseContent');
             $arg = $args['content'];
             $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
             $contentRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);

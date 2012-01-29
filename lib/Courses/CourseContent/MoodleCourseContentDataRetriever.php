@@ -72,6 +72,10 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         $postData = array();
         $action = $this->getOption('action');
         switch ($action) {
+        	case 'getUserProfiles':
+        		$this->addParameter('wsfunction', 'core_user_get_course_user_profiles');
+        		$postData['userlist'] = $this->getOption('users');
+        		break;
         	case 'getUsersByCourseId':
                 $this->addParameter('wsfunction', 'core_enrol_get_enrolled_users');
                 $postData['courseid'] = $this->getOption('courseID');
@@ -85,11 +89,6 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
                 $this->setCacheGroup($this->getOption('courseID'));
                 $postData['courseid'] = $this->getOption('courseID');
                 break;
-            case 'getCourseResource':
-                $this->addParameter('wsfunction', 'core_course_get_contents');
-                $this->setCacheGroup($this->getOption('courseID'));
-                $postData['courseid'] = $this->getOption('courseID');
-                break;  
             case 'downLoadFile':
             case 'getPageContent':
                 $this->setBaseURL($this->getOption('contentUrl'));
@@ -106,6 +105,15 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         }
     }
     
+    public function getUserProfiles($users){
+    	$this->clearInternalCache();
+    	$this->setOption('action', 'getUserProfiles');
+        $this->setOption('users', $users);
+
+        $profiles = $this->getData();
+        var_dump($profiles);
+        exit;
+    }
     public function getCourses($options = array()) {
         $this->clearInternalCache();
 
@@ -127,7 +135,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
     public function getCourseContent($courseRetrieverID,$type=''){
         if ($courseRetrieverID) {
             $this->clearInternalCache();
-            $this->setOption('action', 'getCourseResource');
+            $this->setOption('action', 'getCourseContent');
             $this->setOption('courseID', $courseRetrieverID);
             if ($course = $this->getData()) {
             	$courseContents = array();
@@ -315,6 +323,13 @@ class MoodleCourseContentDataParser extends dataParser {
             }
             
             switch ($action) {
+            	case 'getUserProfiles':
+                    foreach ($data as $value) {
+                        if ($user = $this->parseUser($value)) {
+                            $items[] = $user;
+                        }
+                    }
+            		break;
             	case 'getUsersByCourseId':
                     foreach ($data as $value) {
                         if ($user = $this->parseUser($value)) {
@@ -330,7 +345,6 @@ class MoodleCourseContentDataParser extends dataParser {
                         }
                     }
                     break;
-                case 'getCourseResource':
                 case 'getCourseContent':
                     $items = $this->parseCourseContent($data);
                     break;
@@ -497,12 +511,23 @@ class MoodleCourseContentCourse extends CourseContentCourse {
 		if ($retriever = $this->getRetriever()) {
 			$users = $retriever->getUsersByCourseId($this->getID());
 			$Student = array();
+			$Students = array();
 		    foreach ($users as $user){
             	$roles = $user->getRoles();
 	            if($roles[0]['roleid'] == 5){ // if rileId eq 5 is Teacher in moodle
 	            	$Student[] = $user;
 	            }
+		    	/*
+		    	 
+		    	if(1){
+		    	$Student['userid'] = $user->getId();
+		    	$Student['courseid'] = $this->getId();
+		    	$Students[] = $Student;
+		    	}
+		    	 */
             }
+            //var_dump($retriever->getUserProfiles($Students));
+            //exit;
 			return $Student;
 		}
 	}
