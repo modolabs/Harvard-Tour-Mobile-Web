@@ -56,28 +56,6 @@ class TranslocTransitDataParser extends TransitDataParser {
             return parent::getRouteColor($routeID);
         }
     }
-  
-    public function getNewsForRoutes() {
-        $news = array();
-        /*
-        $newsInfo = $this->getData('announcements');
-        
-        foreach (self::argVal($newsInfo, 'agencies', array()) as $agencyNews) {
-            foreach (self::argVal($agencyNews, 'announcements', array()) as $routeNews) {
-                if (!isset($routeNews['id'])) { continue; }
-                
-                $news[$routeNews['id']] = array(
-                    'agency' => self::argVal($agencyNews, 'name'),
-                    'title'  => self::argVal($routeNews, 'title'),
-                    'date'   => strtotime(self::argVal($routeNews, 'date')),
-                    'urgent' => self::argVal($routeNews, 'urgent'),
-                    'html'   => self::argVal($routeNews, 'html'),
-                );
-            }
-        }*/
-        
-        return $news;
-    }
     
     protected function getServiceName() {
         return 'TransLōc';

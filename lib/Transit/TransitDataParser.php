@@ -59,11 +59,6 @@ abstract class TransitDataParser {
     return array();
   }
   
-  public function getNewsForRoutes() {
-    // override if the parser can get news items
-    return array();
-  }
-  
   protected function getServiceId() {
     return '';
   }

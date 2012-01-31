@@ -391,31 +391,6 @@ class TransitDataView {
     return $vehicles;
   }
   
-  public function getNewsForRoutes() {
-    $allNews = array();
-    
-    foreach ($this->parsers as $parser) {
-      $news = array();
-
-      if ($parser['live']) {
-        $news = $this->remapNews($parser['system'], $parser['live']->getNewsForRoutes());
-      }
-      
-      if ($parser['static']) {
-        $staticNews = $this->remapNews($parser['system'], $parser['static']->getNewsForRoutes());
-        if (!count($news)) {
-          $news = $staticNews;
-        
-        } else if (count($staticNews)) {
-          $news = $news + $staticNews;
-        }
-      }
-      $allNews += $news;
-    }
-    
-    return $allNews;
-  }
-  
   public function getServiceInfoForRoute($globalRouteID) {
     $info = false;
     
@@ -556,16 +531,6 @@ class TransitDataView {
     }
     
     return $mappedRoutes;
-  }
-  
-  private function remapNews($system, $news) {
-    $mappedNews = array();
-    
-    foreach ($news as $routeID => $newsItems) {
-      $mappedNews[$this->getGlobalID($system, $routeID)] = $newsItems;
-    }
-    
-    return $mappedNews;
   }
 
   private function parserForRoute($system, $routeID) {
