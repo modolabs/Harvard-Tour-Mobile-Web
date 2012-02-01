@@ -254,8 +254,9 @@ class MapWebModule extends WebModule {
             $mapSearchClass = $this->getOptionalModuleVar('MAP_EXTERNAL_SEARCH_CLASS', $mapSearchClass);
         }
         $mapSearch = new $mapSearchClass($this->getFeedData());
-        $mapSearch->setFeedGroup($this->feedGroup);
-        $mapSearch->init($this->getDataForGroup($this->feedGroup));
+        $group = isset($options['group']) ? $options['group'] : $this->feedGroup;
+        $mapSearch->setFeedGroup($group);
+        $mapSearch->init($this->getDataForGroup($group));
         if ($mapSearch instanceof GoogleMapSearch && $mapSearch->isPlaces()) {
             $this->assign('poweredByGoogle', true);
             $this->redirectSearch = false;
@@ -269,10 +270,11 @@ class MapWebModule extends WebModule {
             $index = $params['featureindex'];
             $feedId = $params['feed'];
             $dataController = $this->getDataModel($feedId);
-            $placemarks = $dataController->selectPlacemark($index);
-            if (count($placemarks)) {
-                return array($placemarks[0]->getTitle(), $dataController->getTitle());
+            $placemark = $dataController->selectPlacemark($index);
+            if (is_array($placemark)) { // MapDataModel always returns arrays of placemarks
+                $placemark = $placemark[0];
             }
+            return array($placemark->getTitle(), $dataController->getTitle());
         
         } else if (isset($params['title'])) {
             $result = array($params['title']);
@@ -864,13 +866,23 @@ class MapWebModule extends WebModule {
         if ($feedId) {
             $dataModel = $this->getDataModel($feedId);
             $category = $this->getArg('category', null);
+            $featureIndex = $this->getArg('featureindex', null);
+            //$selectedCategory = null;
             if ($category !== null) {
-                $dataModel->findCategory($category);
+                $selectedCategory = $dataModel->findCategory($category);
             }
             if ($this->placemarkId !== null) {
                 $dataModel->setPlacemarkId($this->placemarkId);
             }
-            $placemarks = $dataModel->placemarks();
+            //if ($selectedCategory) {
+            //    $placemarks = $selectedCategory->placemarks();
+            //} else {
+                $placemarks = $dataModel->placemarks();
+            //}
+            if ($featureIndex !== null && intval($featureIndex) < count($placemarks)) {
+                $placemarks = array_slice($placemarks, intval($featureIndex), 1);
+            }
+            
             if ($placemarks) {
                 return $placemarks;
             }
@@ -968,7 +980,8 @@ class MapWebModule extends WebModule {
         $this->addInlineJavascriptFooter(
             "var COOKIE_PATH = '".COOKIE_PATH."';\n".
             "var BOOKMARK_LIFESPAN = ".$this->getBookmarkLifespan().";\n".
-            "var CONFIG_MODULE = '{$this->configModule}';");
+            "var CONFIG_MODULE = '{$this->configModule}';\n".
+            'var NO_RESULTS_FOUND = "'.$this->getLocalizedString('NO_RESULTS').'";');
         $this->addInlineJavascriptFooter($baseMap->getFooterScript());
 
         $this->configureUserLocation();
