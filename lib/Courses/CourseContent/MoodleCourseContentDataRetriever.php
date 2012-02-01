@@ -179,6 +179,18 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
     		}
     	}
     }
+    
+    public function getCourseByCommonID($commonID, $options) {
+        $courses = $this->getCourses($options);
+        foreach ($courses as $course) {
+            if ($course->getCommonID()==$commonID) {
+                return $course;
+            }
+        }
+        
+        return null;
+    }
+    
     public function getCourseById($courseID) {
 
         $courses = $this->getCourses();
@@ -291,10 +303,14 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
             $this->setUserID($args['USERID']);
         }
         
+        if (isset($args['COMMON_ID'])) {
+            $this->commonID_field = $args['COMMON_ID'];
+        }
     }
 }
 
 class MoodleCourseContentDataParser extends dataParser {
+    protected $commonID_field='courseNumber';
     
     public function clearInternalCache() {
         parent::clearInternalCache();
@@ -355,6 +371,7 @@ class MoodleCourseContentDataParser extends dataParser {
         $course->setRetriever($this->getResponseRetriever());
         $course->setID($data['id']);
         $course->setTitle($data['shortname']);
+        $course->setCommonIDField($this->commonID_field);
         $course->setCourseNumber($data['idnumber']);
         if (isset($data['summary'])) {
             $course->setDescription($data['summary']);
@@ -371,6 +388,13 @@ class MoodleCourseContentDataParser extends dataParser {
 		$User->setFullName($data['fullname']);
 		$User->setEnrolledCourses($data['enrolledcourses']);
 		return $User;
+    }
+    
+    public function init($args) {
+        parent::init($args);
+        if (isset($args['COMMON_ID_FIELD'])) {
+            $this->commonID_field = $args['COMMON_ID_FIELD'];
+        }
     }
     protected function parseCourseContent($data) {
         $contentTypes = array();
@@ -552,8 +576,6 @@ class MoodleCourseContentCourse extends CourseContentCourse {
         }
 	}
 	
-
-
     public function getUpdates($options=array()) {
         if ($retriever = $this->getRetriever()) {
             return $retriever->getUpdates($this->getID(), $options);
@@ -564,6 +586,9 @@ class MoodleCourseContentCourse extends CourseContentCourse {
     }
 
     public function getResources($options=array()) {
+        if ($retriever = $this->getRetriever()) {
+            return $retriever->getCourseContent($this->getID());
+        }           
     }
     
     public function getGrades($options=array()) {

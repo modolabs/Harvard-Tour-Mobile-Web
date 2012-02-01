@@ -6,6 +6,10 @@ class CourseTerm {
     protected $title;
     protected $startDate;
     protected $endDate;
+        
+    public function __toString() {
+        return strval($this->id);
+    }
     
     public function setID($id) {
         $this->id = $id;

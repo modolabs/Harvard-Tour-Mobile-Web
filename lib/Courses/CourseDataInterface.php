@@ -15,4 +15,7 @@ interface CourseDataInterface {
     public function getAvailableTerms();
     
     public function getCourseById($courseID);
+
+    public function getCourseByCommonId($courseID, $options);
+
 }

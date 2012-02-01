@@ -14,6 +14,8 @@
 {elseif $hasPersonalizedCourses}
 <div class="nonfocal">
 {"NOT_LOGGED_IN"|getLocalizedString}
+<a href="{$loginLink}">{$loginText}</a>
+
 </div>
 {/if}
 

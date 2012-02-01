@@ -1,13 +1,32 @@
 <?php
 
-abstract class Course implements KurogoObject {
+abstract class Course implements CourseInterface {
 
     protected $id;
+    protected $commonID;
+    protected $commonID_field;
     protected $courseNumber;
     protected $title;
     protected $description;
     protected $term;
     protected $retriever;
+    
+    public function setCommonID($commonID) {
+        $this->commonID = $commonID;
+    }
+
+    public function setCommonIDField($field) {
+        $this->commonID_field = $field;
+    }
+    
+    public function getCommonID() {
+        if ($this->commonID) {
+            return $this->commonID;
+        } elseif ($this->commonID_field) {
+            $field = $this->commonID_field;
+            return $this->$field;
+        }
+    }
     
     public function filterItem($filters) {
         return true;
@@ -61,3 +80,4 @@ abstract class Course implements KurogoObject {
         return $this->term;
     }
 }
+
