@@ -96,12 +96,12 @@ class CoursesDataModel extends DataModel {
             $this->setCoursesRetriever('catalog', $catalogRetriever);
         }
         
-        if (isset($args['registation'])) {
+        if (isset($args['registration'])) {
         	includePackage('Courses','CourseRegistration');
-            $arg = $args['registation'];
+            $arg = $args['registration'];
             $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
             $registationRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
-            $this->setCoursesRetriever('registation', $registationRetriever);
+            $this->setCoursesRetriever('registration', $registationRetriever);
         }
         
         if (isset($args['content'])) {

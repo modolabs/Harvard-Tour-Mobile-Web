@@ -1,4 +1,4 @@
-<h2>{$title}</h2>
+<h2>{$courseTitle}</h2>
 
 
 {if $terms}

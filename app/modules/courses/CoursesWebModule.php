@@ -143,18 +143,21 @@ class CoursesWebModule extends WebModule {
         );
     
         $link = array(
-            'title' => $course->getTitle(),
-            'url'   => $this->buildBreadcrumbURL('course', $options , false)
+            'title' => $course->getTitle()
         );
 
         if ($contentCourse = $course->getCourse('content')) {
+            $page = 'updates';
             if ($lastUpdateContent = $contentCourse->getLastUpdate()) {
                 $link['subtitle'] = $lastUpdateContent->getTitle() . '<br/>'. $this->elapsedTime($lastUpdateContent->getPublishedDate()->format('U'));
             } else {
                 $link['subtitle'] = $this->getLocalizedString('NO_UPDATES');
             }
+        } else {
+            $page = 'info';
         }
         
+        $link['url'] = $this->buildBreadcrumbURL($page, $options , false);
         return $link;
     }
     
@@ -182,19 +185,40 @@ class CoursesWebModule extends WebModule {
         }
         return $Term;
     }
-   	/**
-	* assign course title function 
-	* $id is course id
-	* @author saturn
-	*
-	*/
-    public function assignCourseTitle($id){
-    		//$course is courseID
-    		$course = $this->controller->getCourse('content', $id);
-    		$this->assign('title', $course->getTitle());
-    		$this->setPageTitles($course->getTitle());
-    }
     
+    protected function getCourseFromArgs() {
+
+        $courseID = $this->getArg('courseID');
+        $term = $this->assignTerm();
+        $options = $this->getCourseOptions();
+        
+        if ($course = $this->controller->getCourseByCommonID($courseID, $options)) {
+            $this->assign('courseTitle', $course->getTitle());
+            $courseTabs = array();
+            if ($contentCourse = $course->getCourse('content')) {
+                $courseTabs['updates'] = array(
+                    'title'=>$this->getLocalizedString('COURSE_TAB_UPDATES'),
+                    'url'=> $this->buildBreadcrumbURL('updates', $options, false)
+                );
+
+                $courseTabs['resources'] = array(
+                    'title'=>$this->getLocalizedString('COURSE_TAB_RESOURCES'),
+                    'url'=> $this->buildBreadcrumbURL('resources', $options, false)
+                );
+            }
+
+            $courseTabs['info'] = array(
+                'title'=>$this->getLocalizedString('COURSE_TAB_INFO'),
+                'url'=> $this->buildBreadcrumbURL('info', $options, false)
+            );
+            
+            $this->assign('courseTabs', $courseTabs);
+        }
+    
+        return $course;
+    }
+
+
     protected function getFeedTitle($feed) {
         return isset($this->feeds[$feed]['TITLE']) ? $this->feeds[$feed]['TITLE'] : '';
     }
@@ -216,20 +240,31 @@ class CoursesWebModule extends WebModule {
         $this->controller = CoursesDataModel::factory('CoursesDataModel', $this->feeds);
     }
     
+    protected function getCourseOptions() {
+        $courseID = $this->getArg('courseID');
+        $term = $this->assignTerm();
+        
+        $options = array(
+            'courseID'=>$courseID,
+            'term'=>strval($term)
+        );
+        
+        return $options;
+    }
+    
     protected function initializeForPage() {
         switch($this->page) {
         	case 'info':
-        		$id = $this->getArg('id');
-        		$this->assignCourseTitle($id);
-                $term = $this->assignTerm();
-                //get single Course
-                $course = $this->controller->getCourse('content',$id);
-                $courseNumber = $course->getCourseNumber();
+        	    
+        	    if (!$course = $this->getCourseFromArgs()) {
+        	        $this->redirectTo('index');
+        	    }
+        	    $options = $this->getCourseOptions();
+        	    
                 $instructorList = array();
-                $instructorList = $course->getInstructors();
+                $instructors = $course->getInstructors();
                 
-                $instructorLinks = array();
-                foreach ($instructorList as $instructor){
+                foreach ($instructors as $instructor){
                 	$value = $instructor->getFullName();
                 	$link = Kurogo::moduleLinkForValue('people', $value, $this, $instructor);
                 	if(!$link){
@@ -237,32 +272,31 @@ class CoursesWebModule extends WebModule {
                 				'title' => $value,
                 		);
                 	}
-                	$instructorLinks[] = $link;
+                	$instructorList[] = $link;
                 }
-                $this->assign('instructorLinks',$instructorLinks);
                 
-                //get the map locations data
-                $map = Kurogo::moduleLinkForValue('map', $courseNumber, $this);
-                // change tile for the map link
-                $mapLink['title'] = $courseNumber;
-                $mapLink['url'] = $map['url'];
-                $mapLink['class'] = 'map';
-                $this->assign('location', array($mapLink));
+                $this->assign('instructors',$instructorList);
+                $links = array();
+
+                if ($registrationCourse = $course->getCourse('registration')) {
+                    if ($registrationCourse->canDrop()) {
+                        $links[] = array(
+                            'title'=> $this->getLocalizedString('DROP_COURSE'),
+                            'url' => $this->buildBreadcrumbURL('dropclass', $options, true)
+                        );
+                    }
+    		    }
+    		    
+    		    $this->assign('links', $links);
                 
-                $links = $this->linkforInfo($id, 'description');// waiting description
-                $this->assign('links',$links);                
-                $this->assign('description','waiting description');
-                
-                $linkToUpdateTab = $this->buildBreadcrumbURL('course', array('id'=> $id, 'type'=>'content'), false);
-            	$this->assign('linkToUpdateTab',$linkToUpdateTab);
-            	
-            	$linkToResourcesTab = $this->buildBreadcrumbURL('resource',array('id'=> $id,'type'=>'topic'), false);
-                $this->assign('linkToResourcesTab',$linkToResourcesTab);
                 
             	break;
+
         	case 'roster':
-        		$id = $this->getArg('id');
-        		$course = $this->controller->getCourse('content',$id);
+        	    if (!$course = $this->getCourseByArgs()) {
+        	        $this->redirectTo('course');
+        	    }
+
         		$students = $course->getStudents();
         		$links = array();
         		foreach ($students as $student){
@@ -277,15 +311,24 @@ class CoursesWebModule extends WebModule {
         		}
         		$this->assign('links',$links);
         		break;
-        	case 'dropclass';
-        		$id = $this->getArg('id');
-        		$course = $this->controller->getCourse('content', $id);
-        		$notification = $this->getLocalizedString('NOTIFICATION',$course->getTitle());
         		
-        		$links = array(
-        			array('title'=>$notification),
-        			array('title'=>$this->getLocalizedString('YES_STRING'),'url'=>'#'),
-        			array('title'=>$this->getLocalizedString('CANCEL'),'url'=>'#')
+        	case 'dropclass';
+        	    if (!$course = $this->getCourseFromArgs()) {
+        	        $this->redirectTo('course');
+        	    }
+        	    
+        	    $options = $this->getCourseOptions();
+
+        		$this->assign('dropTitle', $this->getLocalizedString('NOTIFICATION',$course->getTitle()));
+        		
+        		$links = array();
+        		$links[] = array(
+        			    'title'=>$this->getLocalizedString('DROP_CONFIRM'),
+        			    'url'=>$this->buildBreadcrumbURL('dropclass', $options, false)
+        		);
+        		$links[] = array(
+        		    'title'=>$this->getLocalizedString('DROP_CANCEL'),
+        		    'url'=>$this->buildBreadcrumbURL('info', $options, false)
         		);
 				$this->assign('links',$links);
         	    break;
@@ -345,21 +388,14 @@ class CoursesWebModule extends WebModule {
                 
                 break;
             
-            case 'course':
-                $courseID = $this->getArg('courseID');
-                $term = $this->assignTerm();
+            case 'updates':
                 
-                $options = array(
-                    'courseID'=>$courseID,
-                    'term'=>strval($term)
-                );
-                
-                if (!$course = $this->controller->getCourseByCommonID($courseID, $options)) {
+                if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
                 }
 				
                 $this->assign('title', $course->getTitle());
-				
+
                 if ($contentCourse = $course->getCourse('content')) {
                     $items = $contentCourse->getUpdates();
                     $contents = array();
@@ -367,13 +403,17 @@ class CoursesWebModule extends WebModule {
                         $contents[] = $this->linkForUpdate($item, array('courseID' => $courseID));
                     }
                     $this->assign('contents', $contents);
-
                 }
+                    
                 
+
+    /*
                 $linkToInfoTab = $this->buildBreadcrumbURL('info',array('courseID'=> $courseID), false);
                 $this->assign('linkToInfoTab',$linkToInfoTab);
                 $linkToResourcesTab = $this->buildBreadcrumbURL('resources',array('courseID'=> $courseID), false);
                 $this->assign('linkToResourcesTab',$linkToResourcesTab);
+                */
+                
                 //$linkToInfoTab = $this->buildBreadcrumbURL('info',array('id'=> $courseID), false);
                 //$this->assign('linkToInfoTab',$linkToInfoTab);
                              /*              
@@ -400,17 +440,9 @@ class CoursesWebModule extends WebModule {
                 */
                 break;
             case 'resources':
-                $courseID = $this->getArg('courseID');
-                $term = $this->assignTerm();
-                
-                $options = array(
-                    'courseID'=>$courseID,
-                    'term'=>strval($term)
-                );
-                
-                if (!$course = $this->controller->getCourseByCommonID($courseID, $options)) {
-                    $this->redirectTo('index');
-                }
+        	    if (!$course = $this->getCourseByArgs()) {
+        	        $this->redirectTo('course');
+        	    }
 				
                 $this->assign('title', $course->getTitle());
                 
@@ -550,7 +582,6 @@ class CoursesWebModule extends WebModule {
                 );
                 
                 $this->assign('hasPersonalizedCourses', $this->controller->canRetrieve('registration') || $this->controller->canRetrieve('content'));
-                
                 if ($this->isLoggedIn()) {
                     if ($items = $this->controller->getCourses($options)) {
                     	foreach ($items as $item) {

@@ -15,6 +15,10 @@ class CombinedCourse implements CourseInterface
         }        
     }
     
+    public function getInstructors() {
+        return array();
+    }
+    
     public function getCourse($type) {
         return isset($this->courses[$type]) ? $this->courses[$type] : null;
     }
