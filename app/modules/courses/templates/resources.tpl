@@ -8,26 +8,18 @@
 {/if}
 
 
-<div id="tabscontainer">
-    <ul id="tabs" class="smalltabs">
-        <li><a href="{$linkToUpdateTab}"> Updates</a></li>
-        <li class="active"><a href="{$linkToResourcesTab}">Resources</a></li>
-        <li> <a href="{$linkToInfoTab}"> Info</li>
-    </ul>
-    <div id="tabbodies"></div>
-</div>
-
-<div class="nonfocal">
+{capture assign="tabBody"}
 <ul class="tabstrip twotabs">
 <li{if $type == 'topic'} class="active"{/if}><a href="{$linkByTopic}">By topic</a>
 <li{if $type == 'date'} class="active"{/if}><a href="{$linkByDate}">By Date</a>
 </ul>
-</div>
 
 {foreach $resources as $itemname =>$item}
     {if $itemname}<h3 class="nonfocal">{$itemname} {/if}<a href="{$seeAllLinks["$itemname"]}">see all {count($item)}</a></h3>
     {include file="findInclude:common/templates/navlist.tpl" navlistItems=$item}
     <br />
 {/foreach}
+{/capture}
+{include file="findInclude:modules/courses/templates/courseTabs.tpl" tabBody=$tabBody}
 
 {include file="findInclude:common/templates/footer.tpl"}

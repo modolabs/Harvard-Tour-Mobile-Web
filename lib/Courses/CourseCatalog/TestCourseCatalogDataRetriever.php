@@ -51,6 +51,9 @@ class TestCourseCatalogDataRetriever extends URLDataRetriever implements CourseC
         
     }
     
+    public function getCourseByCommonId($courseID, $options) {
+    }
+    
     public function getCourseById($courseNumber) {
         if ($course = $this->getCourses(array('courseNumber' => $courseNumber))) {
             return current($course);

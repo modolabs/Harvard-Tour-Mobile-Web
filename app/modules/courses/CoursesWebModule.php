@@ -61,7 +61,7 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
     
-    public function linkForResource($resource, $data = array()){
+    public function linkForResource($resource, CourseContentCourse $course) {
     	$link = array(
             'title' => $resource->getTitle(),
             'subtitle' => $resource->getSubTitle()
@@ -98,7 +98,7 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
     
-    public function linkForUpdate(CourseContent $content, $data){
+    public function linkForUpdate(CourseContent $content, CourseContentCourse $course) {
     	$type = array('page' => 'Page',
     				  'link' => 'Link',
     				  'file' => 'Download',
@@ -211,7 +211,7 @@ class CoursesWebModule extends WebModule {
                 'title'=>$this->getLocalizedString('COURSE_TAB_INFO'),
                 'url'=> $this->buildBreadcrumbURL('info', $options, false)
             );
-            
+                        
             $this->assign('courseTabs', $courseTabs);
         }
     
@@ -400,7 +400,7 @@ class CoursesWebModule extends WebModule {
                     $items = $contentCourse->getUpdates();
                     $contents = array();
                     foreach ($items as $item){
-                        $contents[] = $this->linkForUpdate($item, array('courseID' => $courseID));
+                        $contents[] = $this->linkForUpdate($item, $contentCourse);
                     }
                     $this->assign('contents', $contents);
                 }
@@ -440,9 +440,11 @@ class CoursesWebModule extends WebModule {
                 */
                 break;
             case 'resources':
-        	    if (!$course = $this->getCourseByArgs()) {
+        	    if (!$course = $this->getCourseFromArgs()) {
         	        $this->redirectTo('course');
         	    }
+        	    
+        	    $options = $this->getCourseOptions();
 				
                 $this->assign('title', $course->getTitle());
                 
@@ -450,24 +452,13 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('course');
                 }
                 
-
                 $resources = array();
-                $seeAllLinks = array();
                 $items = $contentCourse->getResources();
                 foreach ($items as $itemkey => $item){
-                    $resources[] = $this->linkForResource($item, $options);
+                    $resources[] = $this->linkForResource($item, $contentCourse);
                 }
                 $this->assign('resources',$resources);
                 
-            	$linkToUpdateTab = $this->buildBreadcrumbURL('course', array('courseID'=> $courseID, 'type'=>'content'), false);
-            	$this->assign('linkToUpdateTab',$linkToUpdateTab);
-            	$linkByTopic = $this->buildBreadcrumbURL('resource', array('courseID'=> $courseID, 'type'=>'topic'), false);
-            	$linkByDate = $this->buildBreadcrumbURL('resource', array('courseID'=> $courseID, 'type'=>'date'), false);
-            	$this->assign('linkByTopic',$linkByTopic);
-            	$this->assign('linkByDate',$linkByDate);
-            	$linkToInfoTab = $this->buildBreadcrumbURL('info',array('courseID'=> $courseID), false);
-                $this->assign('linkToInfoTab',$linkToInfoTab);
-            	$this->assign('type', $type);
             	break;
             case 'resourceSeeAll':
             	$id = $this->getArg('id');

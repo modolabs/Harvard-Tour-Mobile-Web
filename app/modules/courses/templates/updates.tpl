@@ -7,16 +7,9 @@
     {include file="findInclude:common/templates/navlist.tpl" navlistItems=$contentTypes} 
 {/if}
 
-<div id="tabscontainer">
-    <ul id="tabs" class="smalltabs">
-        <li class="active"> <a href="{$linkToOtherTab}">Updates</a></li>
-        <li> <a href="{$linkToResourcesTab}">Resources</a></li>
-        <li> <a href="{$linkToInfoTab}"> Info</li>
-    </ul>
-    <div id="tabbodies">
-        <div class="tabbody">
-        {include file="findInclude:common/templates/navlist.tpl" navlistItems=$contents subTitleNewline=true}
-        </div>
-    </div>
-</div>
+{capture assign=tabBody}
+{include file="findInclude:common/templates/navlist.tpl" navlistItems=$contents subTitleNewline=true}
+{/capture}
+{include file="findInclude:modules/courses/templates/courseTabs.tpl" tabBody=$tabBody}
+
 {include file="findInclude:common/templates/footer.tpl"}
