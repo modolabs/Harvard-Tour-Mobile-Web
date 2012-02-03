@@ -1,50 +1,46 @@
 <?php
 
-class TestCourseCatalogDataRetriever extends URLDataRetriever implements CourseCatalogDataRetriever {
-
-    protected $DEFAULT_PARSER_CLASS='CoursesXMLDataParser';
-    protected $areasFeed;
-    protected $coursesFeed;
+class TestCourseCatalogDataRetriever extends URLDataRetriever implements CourseCatalogDataRetriever
+{
+    protected $areasParser;
+    protected $areasURL;
+    protected $coursesParser;
+    protected $coursesURL;
     
-    public function getCourses($options = array()) {
-        if ($this->coursesFeed && isset($this->coursesFeed['BASE_URL']) && $this->coursesFeed['BASE_URL']) {
-            $args = $this->coursesFeed;
-            
-            $this->setBaseURL($args['BASE_URL']);
-            
-            //set the dynamic parser
-            $args['PARSER_CLASS'] = isset($args['PARSER_CLASS']) && $args['PARSER_CLASS'] ? $args['PARSER_CLASS']: $this->DEFAULT_PARSER_CLASS;
-            $parser = DataParser::factory($args['PARSER_CLASS'], $args);
-            $this->setParser($parser);
-            
-            foreach (array('area', 'courseNumber') as $field) {
-                if (isset($options[$field])) {
-                    $this->setOption($field, $options[$field]);
-                }
-            }
-            
-            $courses = $this->getData();
-            return $courses;
-        }
+    protected function setMode($mode) {
+        $parserVar = $mode . 'Parser';
+        $urlVar = $mode . 'URL';
+        $this->setParser($this->$parserVar);
+        $this->setBaseURL($this->$urlVar);
     }
     
-    public function getCatalogAreas($area) {
-        if ($this->areasFeed && isset($this->areasFeed['BASE_URL']) && $this->areasFeed['BASE_URL']) {
-            $args = $this->areasFeed;
-            $this->setBaseURL($args['BASE_URL']);
-            
-            //set the dynamic parser
-            $args['PARSER_CLASS'] = isset($args['PARSER_CLASS']) && $args['PARSER_CLASS'] ? $args['PARSER_CLASS']: $this->DEFAULT_PARSER_CLASS;
-            $parser = DataParser::factory($args['PARSER_CLASS'], $args);
-            $this->setParser($parser);
-            
-            $this->setOption('area', $area);
-            
-            $areas = $this->getData();
-            return $areas;
+    public function getCourses($options = array()) {
+        $this->setMode('courses');
+        if (isset($options['area'])) {
+            $this->setOption('area', $options['area']);
         }
+
+        if (isset($options['term'])) {
+            $this->setOption('term', $options['term']);
+        }
+            
+        $courses = $this->getData();
+        return $courses;
+    }
+    
+    public function getCatalogArea($area, $parent=null) {
         
-        return array();
+        $this->setMode('areas');
+        $this->setOption('area', $area);
+        $area = $this->getData();
+        return $area;
+    }
+    
+    public function getCatalogAreas($parent=null) {
+        $this->setMode('areas');
+        $this->setOption('parent', $parent);
+        $areas =  $this->getData();
+        return $areas;
     }
     
     public function getAvailableTerms() {
@@ -52,6 +48,10 @@ class TestCourseCatalogDataRetriever extends URLDataRetriever implements CourseC
     }
     
     public function getCourseByCommonId($courseID, $options) {
+        $this->setMode('courses');
+        $this->setOption('courseID', $courseID);
+        $this->setOptions($options);
+        return $this->getData();
     }
     
     public function getCourseById($courseNumber) {
@@ -61,31 +61,18 @@ class TestCourseCatalogDataRetriever extends URLDataRetriever implements CourseC
         return false;
     }
     
-    public function getGrades($options) {
-        
-    }
-
-	private function sortByField($contentA, $contentB) {
-	}
-	
-    protected function sortCourseContent($courseContents, $sort) {
-    }
-    
-    public function getLastUpdate($courseID) {
-    }
-    
-    public function getCourseContent($courseID) {
-    }
-    
     protected function init($args) {
-    
         parent::init($args);
-        if (isset($args['courses']) && $args['courses']) {
-            $this->coursesFeed = $args['courses'];
+        $this->areasParser = DataParser::factory('CourseAreasXMLDataParser', $args);
+        $this->coursesParser = DataParser::factory('CoursesXMLDataParser', $args);
+        if (!isset($args['COURSES_BASE_URL'])) {
+            throw new KurogoConfigurationException("COURSES_BASE_URL not set");
         }
-        
-        if (isset($args['areas']) && $args['areas']) {
-            $this->areasFeed = $args['areas'];
+        $this->coursesURL = $args['COURSES_BASE_URL'];
+
+        if (!isset($args['AREAS_BASE_URL'])) {
+            throw new KurogoConfigurationException("AREAS_BASE_URL not set");
         }
+        $this->areasURL = $args['AREAS_BASE_URL'];
     }
 }

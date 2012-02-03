@@ -1,5 +1,5 @@
 {include file="findInclude:common/templates/header.tpl"}
-
+<h2 class="nonfocal">{$areaTitle}</h2>
 {if $areas}
 {block name="areas"}
   {include file="findInclude:common/templates/navlist.tpl" navlistItems=$areas}

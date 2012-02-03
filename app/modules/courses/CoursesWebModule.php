@@ -135,7 +135,19 @@ class CoursesWebModule extends WebModule {
     
     }
     
-    public function linkForCourse(CourseInterface $course, $options) {
+    protected function linkForCatalogArea(CourseArea $area, $options=array()) {
+        $options = array_merge($options,array(
+            'area'=>$area->getCode()
+            )
+        );
+        $link = array(
+            'title'=> $area->getTitle(),
+            'url'=>$this->buildBreadcrumbURL('area',$options, true)
+        );
+        return $link;
+    }
+    
+    protected function linkForCourse(CourseInterface $course, $options=array()) {
         
         $options = array_merge($options, array(
             'courseID'  => $course->getID()
@@ -229,14 +241,8 @@ class CoursesWebModule extends WebModule {
     }
     
     protected function initialize() {
-    	$feeds = $this->loadFeedData();
     	
-        if (isset($feeds['catalog'])) {
-	        $catalogFeed = $this->getModuleSections('catalog');
-	        $feeds['catalog'] = array_merge($feeds['catalog'], $catalogFeed);
-        }
-        
-        $this->feeds = $feeds;
+        $this->feeds = $this->loadFeedData();
         $this->controller = CoursesDataModel::factory('CoursesDataModel', $this->feeds);
     }
     
@@ -344,44 +350,42 @@ class CoursesWebModule extends WebModule {
                     }
                     $this->assign('areas', $areasList);
                 }
+                $this->assign('catalogHeader', $this->getOptionalModuleVar('catalogHeader','','catalog'));
+                $this->assign('catalogFooter', $this->getOptionalModuleVar('catalogFooter','','catalog'));
                 
                 break;
                 
             case 'area':
                 $baseArea = '';
-                if ($area = $this->getArg('area', '')) {
-                    if ($CourseArea = $this->controller->getCatalogArea($area)) {
-                        $baseArea = $area . '|';
-                        $this->setPageTitles($CourseArea->getTitle());
-                    } else {
-                        $this->redirectTo('index', array());
-                    }
-                } else {
-                    $this->redirectTo('index', array());
+                $area = $this->getArg('area');
+                if (!$CourseArea = $this->controller->getCatalogArea($area)) {
+                    $this->redirectTo('catalog', array());
                 }
 
-                $areas = $this->controller->getCatalogAreas($area);
+                $areas = $CourseArea->getAreas();
                 
                 $areasList = array();
                 foreach ($areas as $CourseArea) {
-                    $areasList[] = array(
-                        'title'=>$CourseArea->getTitle(),
-                        'url'=>$this->buildBreadcrumbURL('area',array('area'=>$baseArea . $CourseArea->getCode()), true)
-                    );
+                    $areasList[] = $this->linkForCatalogArea($CourseArea);
                 }
 
-                $areas = explode("|", $area);
-                $courses = $this->controller->getCourses('Catalog',array('area' => end($areas)));
+                $Term = $this->assignTerm();
+                $courses = array();
+                $options = array(
+                    'term'=>$Term,
+                    'types'=>array('catalog'),
+                    'area'=>$area
+                );
+                
+                $courses = $this->controller->getCourses($options);
                 $coursesList = array();
  
-                foreach ($courses as $Course) {
-                    $coursesList[] = array(
-                        'title'=>$Course->getTitle(),
-                        'subtitle'=>$Course->getCourseNumber(),
-                        'url'=>$this->buildBreadcrumbURL('course',array('id'=> $Course->getCourseNumber(),'catalog'=>$Course->getCatalogNumber()), true)
-                    );
+                foreach ($courses as $item) {
+                    $course = $this->linkForCourse($item, array('term'=>strval($Term)));
+                    $coursesList[] = $course;
                 }
-                
+
+                $this->assign('areaTitle', $CourseArea->getTitle());                
                 $this->assign('description', $CourseArea->getDescription());
                 $this->assign('areas', $areasList);
                 $this->assign('courses', $coursesList);

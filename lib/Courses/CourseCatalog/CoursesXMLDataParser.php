@@ -16,7 +16,6 @@ class CoursesXMLDataParser extends XMLDataParser {
     
     protected function elementMap() {
         return array(
-            'TERM'=>'term',
             'TERM_CODE'=>'termCode',
             'TITLE'=>'title',
             'DESCRIPTION'=>'description',
@@ -64,7 +63,6 @@ class CoursesXMLDataParser extends XMLDataParser {
         if (isset($elementMap[$name])) {
             $method = 'set' . $elementMap[$name];
             $parent->$method($element->value());
-            return;
         }
         
         switch($name) {
@@ -72,21 +70,18 @@ class CoursesXMLDataParser extends XMLDataParser {
                 $parent->addSection($element);
                 break;
             case 'COURSE':
-                $match = true;
                 if ($area = $this->getOption('area')) {
-                    if ($element->getAreaCode() != $area) {
-                        $match = false;
+                    if ($element->getAreaCode() == $area) {
+                        $this->items[] = $element;
                     }
-                }
-                
-                if ($courseNumber = $this->getOption('courseNumber')) {
-                    if ($element->getCourseNumber() != $courseNumber) {
-                        $match = false;
+                } elseif ($courseID = $this->getOption('courseID')) {
+                    if ($element->getCommonID() == $courseID) {
+                        $this->items = $element;
                     }
-                }
-                if ($match) {
+                } else {
                     $this->items[] = $element;
-                }
+                }                
+                
                 break;
             case 'SCHEDULE':
                 $parent->addScheduleItem($element);
@@ -98,6 +93,7 @@ class CoursesXMLDataParser extends XMLDataParser {
 }
 
 class CourseXMLObject extends CourseCatalogCourse {
+    protected $commonID_field = 'courseNumber';
 }
 
 class CourseSectionXMLObject extends CourseSectionObject {

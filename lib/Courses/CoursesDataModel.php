@@ -49,6 +49,23 @@ class CoursesDataModel extends DataModel {
         }
     }
 
+    public function getRetriever($type=null) {
+        return isset($this->retrievers[$type]) ? $this->retrievers[$type] : null;
+    }
+
+    public function getCatalogAreas() {
+        if ($retriever = $this->getRetriever('catalog')) {
+            return $retriever->getCatalogAreas();
+        }
+    }
+
+    public function getCatalogArea($area) {
+        if ($retriever = $this->getRetriever('catalog')) {
+            return $retriever->getCatalogArea($area);
+        }
+    }
+
+
     public function getCourses($options) {
         
         $courses = array();

@@ -37,11 +37,16 @@ class CourseAreasXMLDataParser extends XMLDataParser {
             case 'DEPARTMENT':
                 $element->setParent($parent->getCode());
                 $parent->addArea($element);
+                if ($area = $this->getOption('area')) {
+                    if ($element->getCode()==$area) {
+                        $this->items = $element;
+                    }
+                } 
                 break;
             case 'COLLEGE':
                 if ($area = $this->getOption('area')) {
                     if ($element->getCode()==$area) {
-                        $this->items = $element->getAreas();
+                        $this->items = $element;
                     }
                 } else {
                     $this->items[] = $element;
