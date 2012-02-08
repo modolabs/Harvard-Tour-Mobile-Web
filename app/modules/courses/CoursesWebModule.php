@@ -98,7 +98,7 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
     
-    public function linkForUpdate(CourseContent $content, CourseContentCourse $course) {
+    public function linkForUpdate(CourseContent $content, CourseContentCourse $course, $addLabel=false) {
     	$type = array('page' => 'Page',
     				  'link' => 'Link',
     				  'file' => 'Download',
@@ -109,21 +109,22 @@ class CoursesWebModule extends WebModule {
 	                'contentID' => $contentID
 	        );
 	    	$link = array(
-	    			'title' => $type[$content->getType()].': '.$content->getTitle(),
+                'title' => $course->getTitle()
 	    	);
     	    foreach (array('courseID') as $field) {
                 if (isset($data[$field])) {
                     $options[$field] = $data[$field];
                 }
             }
+            $link['subtitle'] = $content->getTitle();
 	    	if($content->getPublishedDate()){
 	    		if($content->getAuthor()){
-	    			$link['subtitle'] = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U')) .' by '.$content->getAuthor();
+                    $link['subtitle'] .= '<br/>Updated '. $this->elapsedTime($content->getPublishedDate()->format('U')) .' by '.$content->getAuthor();
 	    		}else{
-	    			$link['subtitle'] = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U'));
+                    $link['subtitle'] .= '<br/>Updated '. $this->elapsedTime($content->getPublishedDate()->format('U'));
 	    		}
 	    	} else {
-	    		$link['subtitle'] = $content->getSubTitle();
+                $link['subtitle'] .= '<br/>' . $content->getSubTitle();
 	    	}
 	    	$link['url'] = ($content->getType() == 'url') ? 
 	        $content->getFileurl() : 
@@ -198,6 +199,26 @@ class CoursesWebModule extends WebModule {
         return $Term;
     }
     
+    protected function assignIndexTabs(){
+        $courseTabs = array();
+        $courseTabs['index'] = array(
+            'title'=>$this->getLocalizedString('INDEX_TAB_COURSES'),
+            'url'=> $this->buildBreadcrumbURL('index', array(), false)
+        );
+        $courseTabs['allupdates'] = array(
+            'title'=>$this->getLocalizedString('INDEX_TAB_UPDATES'),
+            'url'=> $this->buildBreadcrumbURL('allupdates', array(), false)
+        );
+        //If LMS
+        if (true) {
+            $courseTabs['alltasks'] = array(
+                'title'=>$this->getLocalizedString('INDEX_TAB_TASKS'),
+                'url'=> $this->buildBreadcrumbURL('alltasks', array(), false)
+            );
+        }
+        $this->assign('courseTabs', $courseTabs);
+    }
+
     protected function getCourseFromArgs() {
 
         $courseID = $this->getArg('courseID');
@@ -392,6 +413,22 @@ class CoursesWebModule extends WebModule {
                 
                 break;
             
+            case 'allupdates':
+                $Term = $this->assignTerm();
+                $this->assignIndexTabs();
+
+                $contents = array();
+                $courses = $this->controller->getCourses(array());
+                foreach($courses as $course){
+                    if ($contentCourse = $course->getCourse('content')) {
+                        $items = $contentCourse->getUpdates();
+                        foreach ($items as $item){
+                            $contents[] = $this->linkForUpdate($item, $contentCourse);
+                        }
+                    }
+                }
+                $this->assign('contents', $contents);
+                break;
             case 'updates':
                 
                 if (!$course = $this->getCourseFromArgs()) {
@@ -567,6 +604,10 @@ class CoursesWebModule extends WebModule {
                 $this->assign('url',$url);
                 //$this->outputFile($content);
                 break;
+            case 'alltasks':
+                $Term = $this->assignTerm();
+                $this->assignIndexTabs();
+                break;
                 
             case 'index':
                 $Term = $this->assignTerm();
@@ -576,6 +617,8 @@ class CoursesWebModule extends WebModule {
                     'types'=>array('content','registration')
                 );
                 
+                $this->assignIndexTabs();
+
                 $this->assign('hasPersonalizedCourses', $this->controller->canRetrieve('registration') || $this->controller->canRetrieve('content'));
                 if ($this->isLoggedIn()) {
                     if ($items = $this->controller->getCourses($options)) {

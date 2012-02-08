@@ -5,6 +5,7 @@
 <div class="nonfocal"><h3>{$termTitle}</h3></div>
 {/if}
 
+{capture assign=tabBody}
 {if $courses}
   {include file="findInclude:common/templates/navlist.tpl" navlistItems=$courses subTitleNewline=true}
 {elseif $session_userID}
@@ -22,4 +23,7 @@
 {if $catalogItems}
  {include file="findInclude:common/templates/navlist.tpl" navlistItems=$catalogItems}
 {/if}
+{/capture}
+{include file="findInclude:modules/courses/templates/courseTabs.tpl" tabBody=$tabBody}
+
 {include file="findInclude:common/templates/footer.tpl"}
