@@ -5,7 +5,7 @@ class TranslocTransitDataParser extends TransitDataParser {
     private static $caches = array();
     private $routeColors = array();
     private $agencyIDs = array();
-    const TRANSLOC_API_VERSION = '1.1';
+    const TRANSLOC_API_VERSION = '1.2';
     
     static private function argVal($array, $key, $default='') {
         return is_array($array) && isset($array[$key]) ? $array[$key] : $default;
@@ -157,7 +157,7 @@ class TranslocTransitDataParser extends TransitDataParser {
         }
         
         $translocAllRoutesInfo = $this->getData('routes');
-
+        
         $routeSegments = array();
         foreach ($translocAllRoutesInfo as $agencyID => $routesInfo) {
             foreach ($routesInfo as $routeInfo) {
@@ -192,16 +192,15 @@ class TranslocTransitDataParser extends TransitDataParser {
                 
                 foreach ($routeInfo['segments'] as $segmentInfo) {
                     $segmentID = 'loop';
-                
-                    // FIXME!
+                    
                     if (is_string($segmentInfo)) {
                         $segmentID = "segment-{$segmentInfo}";
                         $segmentPath = $segments[$segmentID];
                         
-                    } else if (isset($segmentInfo['segment_id'], $segmentInfo['direction'])) {
-                        $segmentID = "segment-{$segmentInfo['segment_id']}";
+                    } else if (is_array($segmentInfo) && count($segmentInfo) == 2) {
+                        $segmentID = "segment-".reset($segmentInfo);
                         $segmentPath = $segments[$segmentID];
-                        if ($segmentInfo['direction'] != 'forward') {
+                        if (end($segmentInfo) != 'forward') {
                             $segmentPath = array_reverse($segmentPath);
                         }
                     }
@@ -309,53 +308,53 @@ class TranslocTransitDataParser extends TransitDataParser {
     }
     
     private function getData($action, $params=array()) {
-      $cache = self::getCacheForCommand($action);
-      
-      $cacheName = $action;
-      if ($action != 'agencies') {
-          $cacheName = implode('+', array_flip($this->agencyIDs)).".$cacheName";
-      }
-      
-      $results = false;
-      if ($cache->isFresh($cacheName)) {
-          //error_log("TranslocTransitDataParser has cache for $cacheName");
-          $results = json_decode($cache->read($cacheName), true);
-          
-      } else {
-          if ($action != 'agencies') {
-              $params['agencies'] = implode(',', $this->agencyIDs);
-          }
-          
-          $url = Kurogo::getSiteVar('TRANSLOC_SERVICE_URL').self::TRANSLOC_API_VERSION.
-              "/{$action}.json".(count($params) ? '?'.http_build_query($params) : '');
-          
-          error_log("TranslocTransitDataParser requesting $url", 0);
-          $streamContext = stream_context_create(array(
-              'http' => array(
-                  'timeout' => floatval(self::getTimeoutForCommand($action)),
-              ),
-          ));
-          $contents = file_get_contents($url, false, $streamContext);
-          
-          if ($contents === false) {
-              Kurogo::log(LOG_ERR, "Error reading '$url', reading expired cache", 'transit');
-              $results = json_decode($cache->read($cacheName), true);
+        $cache = self::getCacheForCommand($action);
+        
+        $cacheName = $action;
+        if ($action != 'agencies') {
+            $cacheName = implode('+', array_flip($this->agencyIDs)).".$cacheName";
+        }
+        
+        $results = false;
+        if ($cache->isFresh($cacheName)) {
+            //error_log("TranslocTransitDataParser has cache for $cacheName");
+            $results = json_decode($cache->read($cacheName), true);
             
-          } else {
-              $results = json_decode($contents, true);
-              if ($results && isset($results['data'])) {
-                  //error_log("TranslocTransitDataParser got data", 0);
-                  $cache->write($contents, $cacheName);
-                
-              } else {
-                  Kurogo::log(LOG_WARNING, "Error parsing JSON from '$url', reading expired cache", 'transit');
-                  $results = json_decode($cache->read($cacheName), true);
-              }
-          }
-      }
-      
-      //error_log(print_r($results, true));
-      return $results && isset($results['data']) ? $results['data'] : array();
+        } else {
+            if ($action != 'agencies') {
+                $params['agencies'] = implode(',', $this->agencyIDs);
+            }
+            
+            $url = Kurogo::getSiteVar('TRANSLOC_SERVICE_URL').self::TRANSLOC_API_VERSION.
+                "/{$action}.json".(count($params) ? '?'.http_build_query($params) : '');
+            
+            error_log("TranslocTransitDataParser requesting $url", 0);
+            $streamContext = stream_context_create(array(
+                'http' => array(
+                    'timeout' => floatval(self::getTimeoutForCommand($action)),
+                ),
+            ));
+            $contents = file_get_contents($url, false, $streamContext);
+            
+            if ($contents === false) {
+                Kurogo::log(LOG_ERR, "Error reading '$url', reading expired cache", 'transit');
+                $results = json_decode($cache->read($cacheName), true);
+              
+            } else {
+                $results = json_decode($contents, true);
+                if ($results && isset($results['data'])) {
+                    //error_log("TranslocTransitDataParser got data", 0);
+                    $cache->write($contents, $cacheName);
+                  
+                } else {
+                    Kurogo::log(LOG_WARNING, "Error parsing JSON from '$url', reading expired cache", 'transit');
+                    $results = json_decode($cache->read($cacheName), true);
+                }
+            }
+        }
+        
+        //error_log(print_r($results, true));
+        return $results && isset($results['data']) ? $results['data'] : array();
     }
     
     public function getRouteInfo($routeID, $time=null) {
@@ -392,6 +391,16 @@ class TranslocTransitDataParser extends TransitDataParser {
     }
   
     public function translocRouteIsRunning($routeID) {
+        // Is the route active?
+        $translocAllRoutesInfo = $this->getData('routes');
+        foreach ($translocAllRoutesInfo as $agencyID => $routesInfo) {
+            foreach ($routesInfo as $routeInfo) {
+                if (self::argVal($routeInfo, 'route_id') == $routeID && !self::argVal($routeInfo, 'is_active', false)) {
+                    return false;
+                }
+            }
+        }
+        
         // Are there any vehicles?
         $translocAgencyVehiclesInfo = $this->getData('vehicles');
         foreach ($translocAgencyVehiclesInfo as $agencyID => $vehiclesInfo) {
@@ -430,7 +439,7 @@ class TranslocTransitService extends TransitService {
     }
   
     public function isRunning($time) {
-        return $this->parser->translocRouteIsRunning($this->routeID);
+        return true; // all routes in feed are in service
     }
 }
 
