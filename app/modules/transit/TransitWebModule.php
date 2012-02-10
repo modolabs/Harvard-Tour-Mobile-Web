@@ -27,16 +27,14 @@ class TransitWebModule extends WebModule {
             }
         }
         
-        $indexConfig = $this->loadPageConfigFile('index', 'indexConfig');
-        
         foreach ($this->newsFeeds as $agencyID => $feed) {
             $feed->setStart(0);
             $feed->setLimit(null);
             $items = $feed->items();
             if ($items) {
                 if (!isset($news[$agencyID])) {
-                    $heading = isset($indexConfig['agencies'][$agencyID]) ? 
-                        $indexConfig['agencies'][$agencyID] : $agencyID;
+                    $heading = isset($newsConfig[$agencyID]['TITLE']) ? 
+                        $newsConfig[$agencyID]['TITLE'] : $agencyID;
                     
                     $news[$agencyID] = array(
                         'heading' => $heading,
@@ -494,11 +492,11 @@ class TransitWebModule extends WebModule {
             $markers[$vehicleID] = array(
                 'lat' => $vehicle['lat'],
                 'lon' => $vehicle['lon'],
-                'imageURL' => $vehicle['iconURL'],
+                'iconURL' => $vehicle['iconURL'],
                 'title' => '',
             );
         }
-        $markerUpdateURL = FULL_URL_BASE.API_URL_PREFIX."/{$this->configModule}/vehicleMarkers?id={$routeID}";
+        $markerUpdateURL = FULL_URL_BASE.API_URL_PREFIX."/{$this->configModule}/vehicles?id={$routeID}";
         $this->initMap($staticImage, $markers, $markerUpdateURL, $paths, $routeInfo['color']);
         
         $this->addOnOrientationChange('setOrientation(getOrientation());');
