@@ -1,6 +1,6 @@
 <?php
 
-class DownLoadCourseContent extends CourseContent {
+class DownloadCourseContent extends CourseContent {
     protected $contentType = 'download';
     protected $type;
     protected $filepath;
@@ -40,9 +40,16 @@ class DownLoadCourseContent extends CourseContent {
 		return $this->filesize;
 	}
 	
+	public function getFile() {
+	    $this->retrieveFile($this->getFileurl());
+	}
+	
 	public function setFilesize($filesize) {
 		$this->filesize = $filesize;
 	}
+	
+	
+	
 	public function getFileurl() {
 		return $this->fileurl;
 	}

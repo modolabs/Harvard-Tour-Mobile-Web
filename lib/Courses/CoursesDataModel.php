@@ -31,6 +31,9 @@ class CoursesDataModel extends DataModel {
     public function getCourseByCommonID($courseID, $options) {
         $combinedCourse = new CombinedCourse();
         $ok = false;
+        if (strlen($courseID)==0) {
+            return false;
+        }
         foreach ($this->retrievers as $type=>$retriever) {
             if ($course = $retriever->getCourseByCommonID($courseID, $options)) {
                 $combinedCourse->addCourse($type, $course);

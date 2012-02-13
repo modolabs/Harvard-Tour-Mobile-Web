@@ -101,6 +101,10 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         }
     }
     
+    public function retrieveFile($url) {
+        KurogoDebug::debug($url, true);
+    }
+    
     public function getCourses($options = array()) {
         $this->clearInternalCache();
 
@@ -169,15 +173,6 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
             }
         }
         return '';
-    }
-    public function getContentById($contents, $contentId){
-    	if($contents){
-    		foreach ($contents as $content){
-    			if($content->getId() == $contentId){
-    				return $content;
-    			}
-    		}
-    	}
     }
     
     public function getCourseByCommonID($commonID, $options) {
@@ -594,9 +589,21 @@ class MoodleCourseContentCourse extends CourseContentCourse {
     public function getGrades($options=array()) {
     }
 
+    public function getContentById($id, $options=array()) {
+        if ($retriever = $this->getRetriever()) {
+            $content = $retriever->getCourseContent($this->getID());
+            foreach ($content as $item) {
+                if ($item->getID()==$id) {
+                    return $item;
+                }
+            }
+        }
+        
+        return null;
+    }
 }
 
-class MoodleDownLoadCourseContent extends DownLoadCourseContent {
+class MoodleDownloadCourseContent extends DownloadCourseContent {
     public function getFileType() {
         $ext = '';
             if (!is_null($this->getFilename()) && $this->getFilename()) {
@@ -606,6 +613,16 @@ class MoodleDownLoadCourseContent extends DownLoadCourseContent {
         
         return $ext;
     }
+    
+    public function getFile() {
+        if ($retriever = $this->getRetriever()) {
+            KurogoDebug::Debug($retriever, true);
+        }
+
+        KurogoDebug::Debug($this, true);
+
+    }
+
     public function getSubTitle() {
     
         $subTitle = '';
@@ -640,6 +657,7 @@ class MoodlePageCourseContent extends PageCourseContent {
         return $subTitle;
     }
 }
+/*
 class CourseUser implements KurogoObject{
 	protected $id;
 	protected $fullname;
@@ -685,4 +703,4 @@ class CourseUser implements KurogoObject{
 	public function setEnrolledCourses($enrolledCourses) {
 		$this->enrolledCourses = $enrolledCourses;
 	}
-}
+}*/

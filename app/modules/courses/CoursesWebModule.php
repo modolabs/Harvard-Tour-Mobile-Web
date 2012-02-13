@@ -104,10 +104,11 @@ class CoursesWebModule extends WebModule {
     				  'link' => 'Link',
     				  'file' => 'Download',
     				  'url' => 'Link',
-    				  );
+          );
     	if ($contentID = $content->getGUID()) {
 	    	$options = array(
-	                'contentID' => $contentID
+                'courseID'  => $course->getCommonID(),
+	            'contentID' => $contentID
 	        );
 	    	$link = array(
                 'title' => $course->getTitle()
@@ -561,6 +562,7 @@ class CoursesWebModule extends WebModule {
             	$content = $this->controller->getPageTypeContent($content);
             	$this->assign('content', $content);
             	break;
+
             case 'file':
                 $contentID = $this->getArg('contentID');
                 $courseID = $this->getArg('courseID');
@@ -578,17 +580,21 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('course');
                 }
                 
-//				$contents = $course->getResource($courseID);
                 if (!$content = $contentCourse->getContentById($contentID)) {
                     throw new KurogoDataException($this->getLocalizedString('ERROR_CONTENT_NOT_FOUND'));
                 }
-                
+
+                if ($this->getArg('download')) {
+                    throw new KurogoException('Download of files is not complete');
+                }                                
+                                
                 $options[] = array(
-                		'url' => $this->controller->getFileUrl($content),
+                		'url' => $this->buildBreadcrumbURL($this->page, array_merge($this->args, array('download'=>1)), true),
                 		'title' => $content->getFileName(),
-                		'subtitle' => 'FileSize:' . round($content->getFileSize()/1024,2) .'Kb',
+                		'subtitle' => 'FileSize: ' . number_format($content->getFileSize())
                 );
-                if($content->getPublishedDate()){
+                
+                if ($content->getPublishedDate()){
 		    		if($content->getAuthor()){
 		    			$uploadDate = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U')) .' by '.$content->getAuthor();
 		    		}else{
@@ -597,14 +603,11 @@ class CoursesWebModule extends WebModule {
 	    		} else {
 	    			$uploadDate = $content->getSubTitle();
 	    		}
+	    		
 	    		$this->assign('itemName',$content->getTitle());
 	    		$this->assign('uploadDate',$uploadDate);
-	    		$this->assign('description',$content->getDescription());
-                // about the fileSize may i add function about clac filesize in CoursesDatamodel or in some file?
-                $this->assign('options',$options);
-                $url = $this->controller->getDownLoadTypeContent($content, $courseID);
-                $this->assign('url',$url);
-                //$this->outputFile($content);
+	    		$this->assign('links', $options);
+	    		$this->assign('description',$content->getDescription());                //$this->outputFile($content);
                 break;
             case 'alltasks':
                 $Term = $this->assignTerm();
