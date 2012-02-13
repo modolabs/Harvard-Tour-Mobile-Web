@@ -5,6 +5,7 @@ class CoursesWebModule extends WebModule {
     protected $id = 'courses'; 
     protected $controller;
     protected $courses;
+    protected $hasPersonalizedCourses = false;
     
     protected function linkforInfo($courseId, $description){
     	$links = array();
@@ -205,12 +206,12 @@ class CoursesWebModule extends WebModule {
             'title'=>$this->getLocalizedString('INDEX_TAB_COURSES'),
             'url'=> $this->buildBreadcrumbURL('index', array(), false)
         );
-        $courseTabs['allupdates'] = array(
-            'title'=>$this->getLocalizedString('INDEX_TAB_UPDATES'),
-            'url'=> $this->buildBreadcrumbURL('allupdates', array(), false)
-        );
-        //If LMS
-        if (true) {
+
+        if ($this->hasPersonalizedCourses && $this->isLoggedIn()) {
+            $courseTabs['allupdates'] = array(
+                'title'=>$this->getLocalizedString('INDEX_TAB_UPDATES'),
+                'url'=> $this->buildBreadcrumbURL('allupdates', array(), false)
+            );
             $courseTabs['alltasks'] = array(
                 'title'=>$this->getLocalizedString('INDEX_TAB_TASKS'),
                 'url'=> $this->buildBreadcrumbURL('alltasks', array(), false)
@@ -265,6 +266,7 @@ class CoursesWebModule extends WebModule {
     	
         $this->feeds = $this->loadFeedData();
         $this->controller = CoursesDataModel::factory('CoursesDataModel', $this->feeds);
+        $this->hasPersonalizedCourses =  $this->controller->canRetrieve('registration') || $this->controller->canRetrieve('content');
     }
     
     protected function getCourseOptions() {
@@ -616,10 +618,12 @@ class CoursesWebModule extends WebModule {
                     'term'=>$Term,
                     'types'=>array('content','registration')
                 );
-                
-                $this->assignIndexTabs();
 
-                $this->assign('hasPersonalizedCourses', $this->controller->canRetrieve('registration') || $this->controller->canRetrieve('content'));
+                
+                // assign tabs
+                $this->assignIndexTabs();
+                $this->assign('hasPersonalizedCourses', $this->hasPersonalizedCourses);
+
                 if ($this->isLoggedIn()) {
                     if ($items = $this->controller->getCourses($options)) {
                     	foreach ($items as $item) {
