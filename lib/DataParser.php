@@ -7,17 +7,46 @@
  * A generic class to handle the parsing of external data
  * @package ExternalData
  */
+includePackage('DataParser');
 abstract class DataParser
 {
     abstract public function parseData($data);
+    
     const PARSE_MODE_STRING=1;
     const PARSE_MODE_FILE=2;
+    const PARSE_MODE_RESPONSE=3;
     protected $encoding='utf-8';
-    protected $parseMode=self::PARSE_MODE_STRING;
+    protected $parseMode=self::PARSE_MODE_RESPONSE;
+    protected $initArgs=array();
     protected $debugMode=false;
     protected $totalItems = null;
     protected $haltOnParseErrors = true;
     protected $dataController;
+    protected $options = array();
+    protected $response;
+
+    public function setOption($option, $value) {
+        $this->options[$option] = $value;
+    }
+
+    public function getOption($option) {
+        return isset($this->options[$option]) ? $this->options[$option] : null;
+    }
+    
+    public function setResponse(DataResponse $response) {
+        $this->response = $response;
+    }
+        
+    public function parseResponse(DataResponse $response) {
+        $this->setResponse($response);
+        return $this->parseData($this->response->getResponse());
+    }
+    
+    protected function getResponseRetriever() {
+        if ($this->response) {
+            return $this->response->getRetriever();
+        }
+    }
     
     public function getParseMode() {
         return $this->parseMode;
@@ -27,24 +56,28 @@ abstract class DataParser
         return $this->totalItems;
     }
 
-    public function setDataController(DataController $dataController) {
+    public function setDataController($dataController) {
         $this->dataController = $dataController;
     }
 
     protected function setTotalItems($total) {
         $this->totalItems = $total;
+        if ($this->response) {
+            $this->response->setContext('totalItems', $total);
+        }
     }
     
     public static function factory($parserClass, $args)
     {
+        Kurogo::log(LOG_DEBUG, "Initializing DataParser $parserClass", "data");
         if (!class_exists($parserClass)) {
-            throw new Exception("Parser class $parserClass not defined");
+            throw new KurogoConfigurationException("Parser class $parserClass not defined");
         } 
         
         $parser = new $parserClass;
         
         if (!$parser instanceOf DataParser) {
-            throw new Exception("$parserClass is not a subclass of DataParser");
+            throw new KurogoConfigurationException("$parserClass is not a subclass of DataParser");
         }
         
         $parser->init($args);
@@ -56,11 +89,15 @@ abstract class DataParser
     }
     
     public function init($args) {
+        $this->initArgs = $args;
         if (isset($args['HALT_ON_PARSE_ERRORS'])) {
             $this->haltOnParseErrors($args['HALT_ON_PARSE_ERRORS']);
         }
         
         $this->setDebugMode(Kurogo::getSiteVar('DATA_DEBUG'));
+
+        $cacheClass = isset($args['CACHE_CLASS']) ? $args['CACHE_CLASS'] : 'DataCache';
+        $this->cache = DataCache::factory($cacheClass, $args);
     }
 
     public function setDebugMode($debugMode) {
@@ -77,6 +114,10 @@ abstract class DataParser
 
     public function parseFile($filename) {
         return $this->parseData(file_get_contents($filename));
+    }
+
+    public function clearInternalCache() {
+        $this->setTotalItems(null);
     }
     
 }

@@ -14,11 +14,12 @@ class MapDevice
     // if we fine Google or ArcGIS works badly for certain browsers
     public function pageSupportsDynamicMap($mapClass=null)
     {
-        return ($this->pagetype == 'compliant' ||
-                $this->pagetype == 'tablet')
-            && $this->platform != 'blackberry'
-            && $this->platform != 'bbplus'
-            && $this->platform != 'webos';
+        return $this->pagetype == 'tablet' ||
+            ($this->pagetype == 'compliant' &&
+             $this->platform != 'blackberry' &&
+             $this->platform != 'bbplus' &&
+             $this->platform != 'winphone7' && // not reliable
+             $this->platform != 'webos');
     }
 
     public function staticMapImageFormat()

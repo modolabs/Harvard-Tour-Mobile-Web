@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Kurogo REST API'
-copyright = u'2011, Modo Labs Inc.'
+copyright = u'2012, Modo Labs Inc.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -217,4 +217,7 @@ man_pages = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}
+intersphinx_mapping = {
+    'mobileweb': ('http://kurogo.org/docs/mw/current',
+                  'http://kurogo.org/docs/mw/current/objects.inv')
+}

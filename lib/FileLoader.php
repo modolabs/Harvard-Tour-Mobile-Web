@@ -39,26 +39,40 @@ class FileLoader {
                 if (isset($loaderInfo, $loaderInfo['url'])) {
                     $data = file_get_contents($loaderInfo['url']);
                     if ($data) {
-                        if (file_put_contents($filePath, $data)) {
+                        //use a temp file to prevent race conditions
+                        $tempFile = $filePath . '.' . uniqid();
+                        if (file_put_contents($tempFile, $data)) {
+                            
+                            if (isset($loaderInfo['processMethod'])) {
+                                call_user_func($loaderInfo['processMethod'], $tempFile, $loaderInfo);
+                            }
+
+                            rename($tempFile, $filePath);
                             $path = realpath_exists($filePath);
                             unlink($loaderInfoPath);
+    
                         } else {
-                            error_log("FileLoader failed to save data to '$filePath'");
+                            Kurogo::log(LOG_WARNING,"FileLoader failed to save data to '$filePath'",'data');
                         }
                     } else {
-                        error_log("FileLoader failed to load '{$loaderInfo['url']}'");
+                        Kurogo::log(LOG_WARNING,"FileLoader failed to load '{$loaderInfo['url']}'",'data');
                     }
                 } else {
-                    error_log("FileLoader got invalid loader info");
+                    Kurogo::log(LOG_WARNING,"FileLoader got invalid loader info",'data');
                 }
             } else {
-                error_log("FileLoader could not find loader info at '$loaderInfoPath'");
+                Kurogo::log(LOG_WARNING,"FileLoader could not find loader info for '$file' at '$loaderInfoPath'",'data');
             }
         }
         return $path;
     }
     
     protected static function generateLazyURL($file, $contents, $subdirectory=null) {
+    
+        if (realpath_exists(self::filePath($file, $subdirectory))) {
+            return self::fullURL($file,$subdirectory);
+        }
+        
         $lazyFile = "$file.needsLoad";
         $lazyURL = self::generateURL($lazyFile, $contents, $subdirectory);
         if ($lazyURL) {
@@ -72,14 +86,14 @@ class FileLoader {
         $path = AUTOLOAD_FILE_DIR;
         if (!realpath_exists($path)) {
             if (!mkdir($path, 0755, true)) {
-                error_log("could not create $path");
+                Kurogo::log(LOG_WARNING,"could not create $path",'data');
                 return;
             }
         }
         $subPath = $path."/$subdirectory";
         if (!realpath_exists($subPath)) {
             if (!mkdir($subPath, 0755, true)) {
-                error_log("could not create $subPath");
+                Kurogo::log(LOG_WARNING,"could not create $subPath",'data');
                 return;
             }
         }

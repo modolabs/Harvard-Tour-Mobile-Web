@@ -1,9 +1,9 @@
 {include file="findInclude:modules/admin/templates/header.tpl"}
-<h1>License</h1>
+<h1>{"ADMIN_CREDITS_LICENSE_TITLE"|getLocalizedString}</h1>
 
 <p>
  Copyright (c) 2010 Massachusetts Institute of Technology<br />
- Copyright (c) 2011 Modo Labs, Inc<br />
+ Copyright (c) 2012 Modo Labs, Inc<br />
  
  <p>
  Permission is hereby granted, free of charge, to any person obtaining a copy

@@ -59,15 +59,18 @@ class Watchdog {
 
     protected function _getSafePathREs() {
         if (!$this->safePathREs && defined('SITE_DIR') && defined('THEME_DIR')) {
+            $delimiter = ';';
             $this->safePathREs = array(
-                ';^('.preg_quote(realpath(THEME_DIR)).'|'.
-                      preg_quote(realpath(SITE_DIR)).DIRECTORY_SEPARATOR.'app|'.
-                      preg_quote(realpath(ROOT_DIR)).DIRECTORY_SEPARATOR.'app)'.
-                  DIRECTORY_SEPARATOR.
-                  '(common|modules'.DIRECTORY_SEPARATOR.'[^'.DIRECTORY_SEPARATOR.']+)'.
-                  DIRECTORY_SEPARATOR.
+                $delimiter.
+                '^('.preg_quote(realpath(THEME_DIR), $delimiter).'|'.
+                      preg_quote(realpath(SITE_DIR).DIRECTORY_SEPARATOR, $delimiter).'app|'.
+                      preg_quote(realpath(ROOT_DIR).DIRECTORY_SEPARATOR, $delimiter).'app)'.
+                  preg_quote(DIRECTORY_SEPARATOR, $delimiter).
+                  '(common|modules'.preg_quote(DIRECTORY_SEPARATOR, $delimiter).'[^'.preg_quote(DIRECTORY_SEPARATOR, $delimiter).']+)'.
+                  preg_quote(DIRECTORY_SEPARATOR, $delimiter).
                   '(css|images|javascript)'.
-                  DIRECTORY_SEPARATOR.';',
+                  preg_quote(DIRECTORY_SEPARATOR, $delimiter).
+                $delimiter,
             );
             //error_log('Safe REs: '.print_r($this->safePathREs, true));
         }
@@ -95,7 +98,7 @@ class Watchdog {
                     return $test;
                 }
             }
-            error_log("WARNING! Blocking attempt from ".$_SERVER['REMOTE_ADDR']." to access unsafe path '$test'");
+            Kurogo::log(LOG_WARNING, "WARNING! Blocking attempt from ".$_SERVER['REMOTE_ADDR']." to access unsafe path '$test'", 'security');
        }
         
         // path is invalid or refers to an unsafe file
@@ -111,7 +114,7 @@ class Watchdog {
                     return $test;
                 }
             }
-            error_log("WARNING! Blocking attempt from ".$_SERVER['REMOTE_ADDR']." to access non-Kurogo path '$test'");
+            Kurogo::log(LOG_WARNING, "WARNING! Blocking attempt from ".$_SERVER['REMOTE_ADDR']." to access non-Kurogo path '$test'", 'security');
         }
         
         // path is invalid or outside Kurogo directories

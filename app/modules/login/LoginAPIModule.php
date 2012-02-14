@@ -13,9 +13,13 @@ class LoginAPIModule extends APIModule
         return array(AccessControlList::allAccess());
     }
 
+    public function isEnabled() {
+        return Kurogo::getSiteVar('AUTHENTICATION_ENABLED') && parent::isEnabled();
+    }
+
     public function initializeForCommand() {  
         if (!Kurogo::getSiteVar('AUTHENTICATION_ENABLED')) {
-            throw new Exception("Authentication is not enabled on this site");
+            throw new KurogoConfigurationException("Authentication is not enabled on this site");
         }
         
         switch ($this->command) {

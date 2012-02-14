@@ -11,7 +11,7 @@ function showTab(strID, objTrigger) {
 		show(strID);
 		if(currentTab && (currentTab != objTab)) {
 			hide(currentTab.id);
-			currentTab.style.display = "none";
+			//currentTab.style.display = "none";
 		}
 	}
 	currentTab = objTab; // Remember which is the currently displayed tab
@@ -233,6 +233,7 @@ function showShare() {
 	var iframes = document.getElementsByTagName('iframe');
 	for (var i=0; i<iframes.length; i++) {
 	    iframes[i].style.visibility = 'hidden';
+	    iframes[i].style.height = '0';
 	}
 	window.scrollTo(0,0);
 }
@@ -244,39 +245,22 @@ function hideShare() {
 	var iframes = document.getElementsByTagName('iframe');
 	for (var i=0; i<iframes.length; i++) {
 	    iframes[i].style.visibility = 'visible';
+	    iframes[i].style.height = '';
 	}
 }
 
 // Bookmarks
-function setBookmarkStates(name, item) {
-  var bookmark = document.getElementById("bookmark");
-  var items = getCookieArrayValue(name);
-  for (var i = 0; i < items.length; i++) {
-    if (items[i] == item) {
-      addClass(bookmark, "on");
-      break;
-    }
+function toggleBookmark(name, item, expireseconds, path, bookmarkId) {
+  // facility for module to respond to bookmark state change
+  if (typeof moduleBookmarkWillToggle != 'undefined') {
+    $result = moduleBookmarkWillToggle(name, item, expireseconds, path);
+    if ($result === false) { return; }
   }
-  if (bookmark.addEventListener) {
-    bookmark.addEventListener("touchstart", function() {
-        addClass(bookmark, "pressed");
-    }, false);
-    bookmark.addEventListener("touchend", function() {
-        removeClass(bookmark, "pressed");
-    }, false);
-    
-  } else if (bookmark.attachEvent) {
-    bookmark.attachEvent("ontouchstart", function() {
-        addClass(bookmark, "pressed");
-    });
-    bookmark.attachEvent("ontouchend", function() {
-        removeClass(bookmark, "pressed");
-    });
-  }
-}
 
-function toggleBookmark(name, item, expireseconds, path) {
-  var bookmark = document.getElementById("bookmark");
+  if (!bookmarkId) {
+    bookmarkId = "bookmark";
+  }
+  var bookmark = document.getElementById(bookmarkId);
   toggleClass(bookmark, "on");
   var items = getCookieArrayValue(name);
   var newItems = new Array();
@@ -296,44 +280,52 @@ function toggleBookmark(name, item, expireseconds, path) {
     }
   }
   setCookieArrayValue(name, newItems, expireseconds, path);
+  
+  // facility for module to respond to bookmark state change
+  if (typeof moduleBookmarkToggled != 'undefined') {
+    moduleBookmarkToggled(name, item, expireseconds, path);
+  }
 }
 
 // TODO this needs to handle encoded strings and parameter separators (&amp;)
-function apiRequest(baseURL, params, successCallback, errorCallback) {
-  var urlParts = [];
-  for (var paramName in params) {
-    urlParts.push(paramName + "=" + params[paramName]);
-  }
-  var url = baseURL + "?" + urlParts.join("&");
-  var httpRequest = new XMLHttpRequest();
+if (typeof makeAPICall === 'undefined' && typeof jQuery === 'undefined') {
+  function makeAPICall(type, module, command, data, callback) {
+    var urlParts = [];
+    for (var param in data) {
+      urlParts.push(param + "=" + data[param]);
+    }
+    url = URL_BASE + API_URL_PREFIX + '/' + module + '/' + command + '?' + urlParts.join('&');
+    var handleError = function(errorObj) {}
 
-  httpRequest.open("GET", url, true);
-  httpRequest.onreadystatechange = function() {
-    // TODO better definition of error conditions below
-    if (httpRequest.readyState == 4 && httpRequest.status == 200) {
-      var obj;
-      if (window.JSON) {
-          obj = JSON.parse(httpRequest.responseText);
-          // TODO: catch SyntaxError
-      } else {
-          obj = eval('(' + httpRequest.responseText + ')');
-      }
-      if (obj !== undefined) {
-        if ("error" in obj && obj["error"] !== null) {
-          errorCallback(0, obj["error"]);
-        } else if ("response" in obj) {
-          successCallback(obj["response"]);
+    var httpRequest = new XMLHttpRequest();
+    httpRequest.open("GET", url, true);
+    httpRequest.onreadystatechange = function() {
+      if (httpRequest.readyState == 4 && httpRequest.status == 200) {
+        var obj;
+        if (window.JSON) {
+            obj = JSON.parse(httpRequest.responseText);
+            // TODO: catch SyntaxError
         } else {
-          errorCallback(1, "response not found");
+            obj = eval('(' + httpRequest.responseText + ')');
         }
-      } else {
-        errorCallback(2, "failed to parse response");
+        if (obj !== undefined) {
+          if ("response" in obj) {
+            callback(obj["response"]);
+          }
+
+          if ("error" in obj && obj["error"] !== null) {
+            handleError(obj["error"]);
+          } else {
+            handleError("response not found");
+          }
+        } else {
+          handleError("failed to parse response");
+        }
       }
     }
+    httpRequest.send(null);
   }
-  httpRequest.send(null);
 }
-
 
 
 

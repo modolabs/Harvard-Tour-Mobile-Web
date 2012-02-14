@@ -13,6 +13,7 @@
 class ICSDataParser extends DataParser
 {
     protected $eventClass='ICalEvent';
+    protected $calendarClass='ICalendar';
     protected function unfold($text) {
         return str_replace("\n ", "", $text);
     }
@@ -29,6 +30,10 @@ class ICSDataParser extends DataParser
         if (isset($args['EVENT_CLASS'])) {
             $this->setEventClass($args['EVENT_CLASS']);
         }
+
+        if (isset($args['CALENDAR_CLASS'])) {
+            $this->setCalendarClass($args['CALENDAR_CLASS']);
+        }
         
     }
     
@@ -39,7 +44,7 @@ class ICSDataParser extends DataParser
             'params'=>array()
         );
 
-        if (preg_match('/(.*?)(?!<\\\):(.*)/', $line, $parts)) {
+        if (preg_match('/([^":]*(?:"[^"]*"[^":]*)*):(.*)/', $line, $parts)) {
             $params = explode(';', $parts[1]);
             $contentline['name'] = array_shift($params);
             $contentline['value'] = trim(ICalendar::ical_unescape_text($parts[2]));
@@ -49,7 +54,7 @@ class ICSDataParser extends DataParser
                 $contentline['params'][$param_bits[1]] = str_replace("\"", "", $param_bits[2]);
             }
         } else {
-        	error_log("Found a line $line that may not be valid");
+            Kurogo::log(LOG_WARNING, "Found an invalid ICS line: $line", 'data');
         }
         
         return $contentline;
@@ -59,16 +64,42 @@ class ICSDataParser extends DataParser
     {
     	if ($eventClass) {
     		if (!class_exists($eventClass)) {
-                throw new ICalendarException("Event class $eventClass not defined");
+                throw new KurogoConfigurationException("Event class $eventClass not defined");
     		} 
 			$this->eventClass = $eventClass;
 		}
     }
+
+    public function setCalendarClass($calendarClass)
+    {
+    	if ($calendarClass) {
+    		if (!class_exists($calendarClass)) {
+                throw new KurogoConfigurationException("Calendar class $calendarClass not defined");
+    		} 
+			$this->calendarClass = $calendarClass;
+		}
+    }
+    
+    protected function initEvent() {
+        $event = new $this->eventClass();
+        $event->init($this->initArgs);
+        return $event;
+    }
+
+    protected function initCalendar() {
+        $calendar = new $this->calendarClass();
+        $calendar->init($this->initArgs);
+        return $calendar;
+    }
     
     public function parseData($contents)
     {
-        $calendar = new ICalendar();
+        $calendar = $this->initCalendar();
+        if (!$calendar instanceOf CalendarInterface) {
+            throw new KurogoConfigurationException("Calendar $class $this->calendarClass not a CalendarInterface");
+        }
         $nesting = array();
+        $nestingType = array();
         $contents = str_replace("\r\n", "\n", $contents);
         $lines = explode("\n", $this->unfold($contents));
         foreach ($lines as $line) {
@@ -81,7 +112,8 @@ class ICSDataParser extends DataParser
                 switch ($value) {
                 case 'VEVENT':
                     $addEvent = true;
-                    $nesting[] = new $this->eventClass;
+                    $event = 
+                    $nesting[] = $this->initEvent();
                     break;
                 case 'VCALENDAR':
                     $nesting[] = $calendar;
@@ -111,19 +143,22 @@ class ICSDataParser extends DataParser
                     if ($this->haltOnParseErrors) {
                         throw new ICalendarException('unknown component type ' . $value);
                     } else {
-                        error_log('unknown component type ' . $value);
+                        Kurogo::log(LOG_WARNING, "Unknown ICS type $value", 'data');
                     }
                     break;
+                }
+                if (count($nesting)==count($nestingType)+1) {
+                    $nestingType[] = $value;
                 }
                 break;
             case 'END':
                 $last_object = array_pop($nesting);
-                $last_obj_name = $last_object->get_name();
+                $last_obj_name = array_pop($nestingType);
                 if ($last_obj_name != $value) {
                     if ($this->haltOnParseErrors) {
                         throw new ICalendarException("BEGIN $last_obj_name ended by END $value");
                     } else {
-                        error_log("BEGIN $last_obj_name ended by END $value");
+                        Kurogo::log(LOG_WARNING, "BEGIN $last_obj_name ended by END $value", 'data');
                         $value = null; //throw it away
                     }
                 }
@@ -145,19 +180,24 @@ class ICSDataParser extends DataParser
                 break;
             default:
                 try {
+                    if (empty($nesting))
+                        throw new ICalendarException('Something other than BEGIN at the start of the calendar: '.$line);
+                    
                     end($nesting)->set_attribute($contentname, $value, $params);
-                } catch (Exception $e) {
+                } catch (ICalendarException $e) {
                     if ($this->haltOnParseErrors) {
                         throw $e;
                     }
-                    error_log($e->getMessage());
+                    Kurogo::log(LOG_WARNING, $e->getMessage(), 'data');
                     $addEvent = false;
                 }
                 break;
             }
         }
 
-        $this->setTotalItems(count($calendar->getEvents()));        
+        $events = $calendar->getEvents();
+        Kurogo::log(LOG_DEBUG, "Found ". count($events) . " events", 'data');
+        $this->setTotalItems(count($events));
         return $calendar;
     }
 
