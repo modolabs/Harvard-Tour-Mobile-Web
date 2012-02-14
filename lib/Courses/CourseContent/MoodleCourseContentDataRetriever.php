@@ -172,7 +172,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
             	return $course;
             }
         }
-        return '';
+        return array();
     }
     
     public function getCourseByCommonID($commonID, $options) {
