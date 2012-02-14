@@ -123,16 +123,18 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
     public function getAvailableTerms() {
         
     }
-    public function getCourseContent($courseRetrieverID,$type=''){
+    public function getCourseContent($courseRetrieverID, $options=array()) {
         if ($courseRetrieverID) {
             $this->clearInternalCache();
             $this->setOption('action', 'getCourseContent');
             $this->setOption('courseID', $courseRetrieverID);
-            if ($course = $this->getData()) {
-            	$courseContents = array();
-            	switch ($type){
+            $courseContents = array();
+
+            if ($content = $this->getData()) {
+            	$group = isset($options['group']) ? $options['group'] : null;
+            	switch ($group) {
             		case 'topic':
-            			foreach ($course as $courseContentObj){
+            			foreach ($content as $courseContentObj){
             				$section = $courseContentObj->getProperty('section');
             				if(isset($section['name'])){
             					$courseContents[$section['name']][] = $courseContentObj;
@@ -143,36 +145,24 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
 	            			$courseContent = $this->sortCourseContent($courseContent, 'publishedDate');
 	            			$sortCourseContents[$topic] = $courseContent;
             			}
-            			return $sortCourseContents;
             			break;
+
             		case 'type':
-	            		foreach ($course as $courseContentObj){
-		            	    if($courseContentObj instanceof DownLoadCourseContent){
-		            	    	$courseContentObj->setType('download');
-		            			$courseContents['downLoad'][] = $courseContentObj;
-		            		}
-		            	    if($courseContentObj instanceof LinkCourseContent){
-		            	    	$courseContentObj->setType('link');
-		            			$courseContents['link'][] = $courseContentObj;
-		            		}
-		            	    if($courseContentObj instanceof PageCourseContent){
-		            	    	$courseContentObj->setType('page');
-		            			$courseContents['page'][] = $courseContentObj;
-		            		}
+	            		foreach ($content as $item) {
+	            		    $courseContents[$item->getContentType()][] = $item;
 		            	}
             			break;
             		case 'date':
-            			$courseContents[] = $this->sortCourseContent($course, 'publishedDate');
-            			return $courseContents;
+            			$courseContents[] = $this->sortCourseContent($content, 'publishedDate');
             			break;
             		default:
+            		    KurogoDebug::debug($content, true);
             			return $course;
             			break;
             	}
-            	return $course;
             }
         }
-        return array();
+        return $courseContents;
     }
     
     public function getCourseByCommonID($commonID, $options) {
@@ -582,7 +572,7 @@ class MoodleCourseContentCourse extends CourseContentCourse {
 
     public function getResources($options=array()) {
         if ($retriever = $this->getRetriever()) {
-            return $retriever->getCourseContent($this->getID());
+            return $retriever->getCourseContent($this->getID(), $options);
         }           
     }
     
@@ -591,7 +581,7 @@ class MoodleCourseContentCourse extends CourseContentCourse {
 
     public function getContentById($id, $options=array()) {
         if ($retriever = $this->getRetriever()) {
-            $content = $retriever->getCourseContent($this->getID());
+            $content = $retriever->getCourseContent($this->getID(), $options);
             foreach ($content as $item) {
                 if ($item->getID()==$id) {
                     return $item;

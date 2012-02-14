@@ -1,7 +1,7 @@
 <?php
 
 class DownloadCourseContent extends CourseContent {
-    protected $contentType = 'download';
+    protected $contentType = 'file';
     protected $type;
     protected $filepath;
     protected $filesize;

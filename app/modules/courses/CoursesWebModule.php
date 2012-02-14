@@ -62,6 +62,7 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
     
+    // returns a link for a particular resource
     public function linkForResource($resource, CourseContentCourse $course) {
     	$link = array(
             'title' => $resource->getTitle(),
@@ -99,35 +100,40 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
     
-    public function linkForUpdate(CourseContent $content, CourseContentCourse $course, $addLabel=false) {
-    	$type = array('page' => 'Page',
-    				  'link' => 'Link',
-    				  'file' => 'Download',
-    				  'url' => 'Link',
-          );
+    public function linkForUpdate(CourseContent $content, CourseContentCourse $course, $includeCourseName=false) {
+
     	if ($contentID = $content->getGUID()) {
 	    	$options = array(
                 'courseID'  => $course->getCommonID(),
 	            'contentID' => $contentID
 	        );
 	    	$link = array(
-                'title' => $course->getTitle()
+                'title' => $includeCourseName ? $course->getTitle() : $content->getTitle(),
+                'class' => "content_" . $content->getContentType()
 	    	);
     	    foreach (array('courseID') as $field) {
                 if (isset($data[$field])) {
                     $options[$field] = $data[$field];
                 }
             }
-            $link['subtitle'] = $content->getTitle();
-	    	if($content->getPublishedDate()){
-	    		if($content->getAuthor()){
-                    $link['subtitle'] .= '<br/>Updated '. $this->elapsedTime($content->getPublishedDate()->format('U')) .' by '.$content->getAuthor();
-	    		}else{
-                    $link['subtitle'] .= '<br/>Updated '. $this->elapsedTime($content->getPublishedDate()->format('U'));
-	    		}
-	    	} else {
-                $link['subtitle'] .= '<br/>' . $content->getSubTitle();
+            $subtitle = array();
+            if ($includeCourseName) {
+                $subtitle[] = $content->getTitle();
+            }
+
+            if ($content->getSubtitle()) {
+                $subtitle[] = $content->getSubTitle();
 	    	}
+            
+	    	if ($content->getPublishedDate()){
+	    	    $published = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U'));
+                if ($content->getAuthor()) {
+                    $published .= ' by '.$content->getAuthor();
+                }
+                $subtitle[] = $published;
+            }
+            
+	    	$link['subtitle'] = implode("<br />", $subtitle);
 	    	$link['url'] = ($content->getType() == 'url') ? 
 	        $content->getFileurl() : 
 	        $this->buildBreadcrumbURL($content->getType(), $options, true);
@@ -163,11 +169,21 @@ class CoursesWebModule extends WebModule {
 
         if ($contentCourse = $course->getCourse('content')) {
             $page = 'updates';
+            $subtitle = array();
             if ($lastUpdateContent = $contentCourse->getLastUpdate()) {
-                $link['subtitle'] = $lastUpdateContent->getTitle() . '<br/>'. $this->elapsedTime($lastUpdateContent->getPublishedDate()->format('U'));
+                $subtitle[] = $lastUpdateContent->getTitle();
+                if ($publishedDate = $lastUpdateContent->getPublishedDate()) {
+                    $published = $this->elapsedTime($publishedDate->format('U'));
+                    if ($lastUpdateContent->getAuthor()) {
+                        $published = '<span class="author">'. $lastUpdateContent->getAuthor() .', ' . $published . "</span>";
+                    }
+                    $subtitle[] = $published;
+                }
             } else {
-                $link['subtitle'] = $this->getLocalizedString('NO_UPDATES');
+                $subtitle[] = $this->getLocalizedString('NO_UPDATES');
             }
+            
+            $link['subtitle'] = implode("<br />", $subtitle);
         } else {
             $page = 'info';
         }
@@ -229,6 +245,7 @@ class CoursesWebModule extends WebModule {
         
         if ($course = $this->controller->getCourseByCommonID($courseID, $options)) {
             $this->assign('courseTitle', $course->getTitle());
+            $this->assign('courseID', $course->getID());
             $courseTabs = array();
             if ($contentCourse = $course->getCourse('content')) {
                 $courseTabs['updates'] = array(
@@ -426,12 +443,13 @@ class CoursesWebModule extends WebModule {
                     if ($contentCourse = $course->getCourse('content')) {
                         $items = $contentCourse->getUpdates();
                         foreach ($items as $item){
-                            $contents[] = $this->linkForUpdate($item, $contentCourse);
+                            $contents[] = $this->linkForUpdate($item, $contentCourse, true);
                         }
                     }
                 }
                 $this->assign('contents', $contents);
                 break;
+                
             case 'updates':
                 
                 if (!$course = $this->getCourseFromArgs()) {
@@ -444,66 +462,54 @@ class CoursesWebModule extends WebModule {
                     $items = $contentCourse->getUpdates();
                     $contents = array();
                     foreach ($items as $item){
-                        $contents[] = $this->linkForUpdate($item, $contentCourse);
+                        $contents[] = $this->linkForUpdate($item, $contentCourse, false);
                     }
                     $this->assign('contents', $contents);
                 }
                     
-                
-
-    /*
-                $linkToInfoTab = $this->buildBreadcrumbURL('info',array('courseID'=> $courseID), false);
-                $this->assign('linkToInfoTab',$linkToInfoTab);
-                $linkToResourcesTab = $this->buildBreadcrumbURL('resources',array('courseID'=> $courseID), false);
-                $this->assign('linkToResourcesTab',$linkToResourcesTab);
-                */
-                
-                //$linkToInfoTab = $this->buildBreadcrumbURL('info',array('id'=> $courseID), false);
-                //$this->assign('linkToInfoTab',$linkToInfoTab);
-                             /*              
-                $contentTypes = array();
-                if ($contents = $this->course->getCourseContentById($courseID)) {
-
-                    $options = array(
-                        'id'      => $courseID,
-                    );
-                    $items = array_keys($contents['resource']);
-                    
-                    foreach ($items as $type) {
-                        $options['type'] = $type;
-                    
-                        $contentType = array(
-                            'title' => $this->getLocalizedString(strtoupper($type) .'_TITLE'),
-                            'url'   => $this->buildBreadcrumbURL('contents', $options, true)
-                        );
-                        
-                        $contentTypes[] = $contentType;
-                    }
-                }
-                $this->assign('contentTypes', $contentTypes);
-                */
                 break;
             case 'resources':
         	    if (!$course = $this->getCourseFromArgs()) {
         	        $this->redirectTo('course');
         	    }
-        	    
-        	    $options = $this->getCourseOptions();
-				
-                $this->assign('title', $course->getTitle());
-                
+        	    				                
                 if (!$contentCourse = $course->getCourse('content')) {
                     $this->redirectTo('course');
                 }
+                                
+                //@TODO make this configurable
+                $groupLinks = array();
+                $groups = array('topic','date','type');
+                foreach ($groups as $group) {
+                    $groupOptions = $this->getCourseOptions();
+                    $groupOptions['group'] = $group;
+                    $groupLinks[$group] = $this->buildBreadcrumbURL($this->page, $groupOptions, false);
+                }
+                $this->assign('groupLinks', $groupLinks);
+
+                $group = $this->getArg('group', $groups[0]);
+                $options = array(
+                    'group'=>$group
+                );
                 
                 $resources = array();
-                $items = $contentCourse->getResources();
-                foreach ($items as $itemkey => $item){
-                    $resources[] = $this->linkForResource($item, $contentCourse);
+                $groups = $contentCourse->getResources($options);
+                foreach ($groups as $groupTitle => $items){
+                    $groupItems = array();
+                    foreach ($items as $item) {
+                        $groupItems[] = $this->linkForResource($item, $contentCourse);
+                    }
+                    
+                    $resources[] = array(
+                        'title'=>$groupTitle,
+                        'items'=>$groupItems
+                    );
                 }
+
                 $this->assign('resources',$resources);
-                
+                $this->assign('group', $group);
             	break;
+            	
             case 'resourceSeeAll':
             	$id = $this->getArg('id');
                 $type = $this->getArg('type');

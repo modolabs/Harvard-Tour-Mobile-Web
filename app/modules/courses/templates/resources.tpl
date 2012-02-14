@@ -9,15 +9,16 @@
 
 
 {capture assign="tabBody"}
-<ul class="tabstrip twotabs">
-<li{if $type == 'topic'} class="active"{/if}><a href="{$linkByTopic}">By topic</a>
-<li{if $type == 'date'} class="active"{/if}><a href="{$linkByDate}">By Date</a>
+<ul class="tabstrip threetabs">
+<li{if $group == 'topic'} class="active"{/if}><a href="{$groupLinks.topic}">By topic</a>
+<li{if $group == 'date'} class="active"{/if}><a href="{$groupLinks.date}">By Date</a>
+<li{if $group == 'type'} class="active"{/if}><a href="{$groupLinks.type}">By Type</a>
 </ul>
 
-{foreach $resources as $itemname =>$item}
-    {if $itemname}<h3 class="nonfocal">{$itemname} {/if}<a href="{$seeAllLinks["$itemname"]}">see all {count($item)}</a></h3>
-    {include file="findInclude:common/templates/navlist.tpl" navlistItems=$item}
-    <br />
+{foreach $resources as $group}
+    {if $group.title}<h3 class="nonfocal">{$group.title} {/if}
+    {if $group.url}<a href="{$seeAllLinks["$itemname"]}">see all {count($group.items)}</a>{/if}</h3>
+    {include file="findInclude:common/templates/navlist.tpl" navlistItems=$group.items subTitleNewline=true}
 {/foreach}
 {/capture}
 {include file="findInclude:modules/courses/templates/courseTabs.tpl" tabBody=$tabBody}
