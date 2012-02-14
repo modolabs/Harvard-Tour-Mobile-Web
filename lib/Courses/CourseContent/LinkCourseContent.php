@@ -3,7 +3,8 @@
 class LinkCourseContent extends CourseContent {
     protected $contentType = 'link';
     protected $type;
-    protected $fileurl;
+    protected $url;
+    
     public function getType() {
     	return $this->type;
     }
@@ -12,12 +13,12 @@ class LinkCourseContent extends CourseContent {
     	$this->type = $type;
     }
     
-    public function getFileurl() {
-    	return $this->fileurl;
+    public function getURL() {
+    	return $this->url;
     }
     
-    public function setFileurl($fileurl) {
-    	$this->fileurl = $fileurl;
+    public function setURL($url) {
+    	$this->url = $url;
     }
     
 }

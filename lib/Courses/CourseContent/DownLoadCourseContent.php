@@ -29,6 +29,7 @@ class DownloadCourseContent extends CourseContent {
 	public function setFilename($filename) {
 		$this->filename = $filename;
 	}
+	
 	public function getFilepath() {
 		return $this->filepath;
 	}

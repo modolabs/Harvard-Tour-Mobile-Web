@@ -33,41 +33,13 @@ class CoursesWebModule extends WebModule {
     	return $links;
     }
     
-    protected function linkForContent($content, $data = array()) {
-        $link = array(
-            'title' => $content->getTitle(),
-            'subtitle' => $content->getSubTitle()
-        );
-        
-        if ($contentID = $content->getGUID()) {
-            $type = $content->getType();
-            
-            $options = array(
-                'contentID' => $contentID
-            );
-            
-            foreach (array('section', 'type', 'courseID') as $field) {
-                if (isset($data[$field])) {
-                    $options[$field] = $data[$field];
-                }
-            }
-            $link['url'] = ($content->getType() == 'link') ? 
-                           $content->getFileurl() : 
-                           $this->buildBreadcrumbURL($content->getType(), $options, false);
-            
-        } elseif ($url = $content->getUrl()) {
-            $link['url'] = $url;
-        }
-        
-        return $link;
-    }
-    
     // returns a link for a particular resource
-    public function linkForResource($resource, CourseContentCourse $course) {
+    public function linkForContent($resource, CourseContentCourse $course) {
     	$link = array(
             'title' => $resource->getTitle(),
             'subtitle' => $resource->getSubTitle()
         );
+
         if($resource->getPublishedDate()){
 	    	if($resource->getAuthor()){
 	    		$link['subtitle'] = 'Updated '. $this->elapsedTime($resource->getPublishedDate()->format('U')) .' by '.$resource->getAuthor();
@@ -77,71 +49,51 @@ class CoursesWebModule extends WebModule {
 	    } else {
 	    	$link['subtitle'] = $resource->getSubTitle();
 	    } 
-        if ($contentID = $resource->getGUID()) {
-            $type = $resource->getType();
+
+        $options = $this->getCourseOptions();
+        $options['contentID'] = $resource->getID();
             
-            $options = array(
-                'contentID' => $contentID
-            );
+        $link['url'] = $this->buildBreadcrumbURL('content', $options, true);
             
-            foreach (array('courseID') as $field) {
-                if (isset($data[$field])) {
-                    $options[$field] = $data[$field];
-                }
-            }
-            $link['url'] = ($resource->getType() == 'link' || $resource->getType() == 'url') ? 
-                           $resource->getFileurl() : 
-                           $this->buildBreadcrumbURL($resource->getType(), $options, false);
-            
-        } elseif ($url = $resource->getUrl()) {
-            $link['url'] = $url;
-        }
-        
         return $link;
     }
     
     public function linkForUpdate(CourseContent $content, CourseContentCourse $course, $includeCourseName=false) {
 
-    	if ($contentID = $content->getGUID()) {
-	    	$options = array(
-                'courseID'  => $course->getCommonID(),
-	            'contentID' => $contentID
-	        );
-	    	$link = array(
-                'title' => $includeCourseName ? $course->getTitle() : $content->getTitle(),
-                'class' => "content_" . $content->getContentType()
-	    	);
-    	    foreach (array('courseID') as $field) {
-                if (isset($data[$field])) {
-                    $options[$field] = $data[$field];
-                }
+        $contentID = $content->getID();
+        $options = array(
+            'courseID'  => $course->getCommonID(),
+            'contentID' => $contentID
+        );
+        $link = array(
+            'title' => $includeCourseName ? $course->getTitle() : $content->getTitle(),
+            'class' => "content_" . $content->getContentType()
+        );
+        foreach (array('courseID') as $field) {
+            if (isset($data[$field])) {
+                $options[$field] = $data[$field];
             }
-            $subtitle = array();
-            if ($includeCourseName) {
-                $subtitle[] = $content->getTitle();
-            }
-
-            if ($content->getSubtitle()) {
-                $subtitle[] = $content->getSubTitle();
-	    	}
-            
-	    	if ($content->getPublishedDate()){
-	    	    $published = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U'));
-                if ($content->getAuthor()) {
-                    $published .= ' by '.$content->getAuthor();
-                }
-                $subtitle[] = $published;
-            }
-            
-	    	$link['subtitle'] = implode("<br />", $subtitle);
-	    	$link['url'] = ($content->getType() == 'url') ? 
-	        $content->getFileurl() : 
-	        $this->buildBreadcrumbURL($content->getType(), $options, true);
-    	} elseif ($url = $content->getUrl()) {
-            $link['url'] = $url;
         }
+        $subtitle = array();
+        if ($includeCourseName) {
+            $subtitle[] = $content->getTitle();
+        }
+
+        if ($content->getSubtitle()) {
+            $subtitle[] = $content->getSubTitle();
+        }
+        
+        if ($content->getPublishedDate()){
+            $published = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U'));
+            if ($content->getAuthor()) {
+                $published .= ' by '.$content->getAuthor();
+            }
+            $subtitle[] = $published;
+        }
+        
+        $link['subtitle'] = implode("<br />", $subtitle);
+        $link['url'] = $this->buildBreadcrumbURL('content', $options, true);
         return $link;
-    
     }
     
     protected function linkForCatalogArea(CourseArea $area, $options=array()) {
@@ -190,6 +142,33 @@ class CoursesWebModule extends WebModule {
         
         $link['url'] = $this->buildBreadcrumbURL($page, $options , false);
         return $link;
+    }
+    
+    protected function getContentLinks(CourseContent $content) {
+        $links = array();
+        switch ($content->getContentType()) {
+            case 'link':
+                $links[] = array(
+                    'title'=>'Follow Link',
+                    'subtitle'=>$content->getURL(),
+                    'url'=>$content->getURL()
+                );
+                break;
+            case 'file':
+                $options = $this->getCourseOptions();
+                $options['contentID'] = $content->getID();
+                $links[] = array(
+                    'title'=>'Download File',
+                    'subtitle'=>$content->getFilename(),
+                    'url'=>$this->buildBreadcrumbURL('download', $options, false)
+                );
+                break;
+            
+            default:
+                KurogoDebug::debug($content, true);
+        }
+        
+        return $links;
     }
     
 	/**
@@ -338,9 +317,45 @@ class CoursesWebModule extends WebModule {
                 
                 
             	break;
+            	
+            case 'content':
+            case 'download':
+                $contentID = $this->getArg('contentID');
+                
+        	    if (!$course = $this->getCourseFromArgs()) {
+        	        $this->redirectTo('course');
+        	    }
+        	    				                
+                if (!$contentCourse = $course->getCourse('content')) {
+                    $this->redirectTo('course');
+                }
 
+                if (!$content = $contentCourse->getContentById($contentID)) {
+                    throw new KurogoDataException($this->getLocalizedString('ERROR_CONTENT_NOT_FOUND'));
+                }
+                
+                if ($this->page=='download') {
+                    if ($content->getContentType()=='file') {
+                        $file = $contentCourse->getFileForContent($contentID);
+                        header('Content-type: ' . mime_type($file));
+                        readfile($file);
+                        die();
+                    } else {
+                        throw new KurogoException("Cannot download content of type " . $content->getContentType());
+                    }
+                }
+                
+                $this->assign('contentType', $content->getContentType());
+                $this->assign('contentTitle', $content->getTitle());
+                $this->assign('contentDescription', $content->getDescription());        	    
+
+                $links = $this->getContentLinks($content);
+                $this->assign('links', $links);
+                
+                break;
+            
         	case 'roster':
-        	    if (!$course = $this->getCourseByArgs()) {
+        	    if (!$course = $this->getCourseFromArgs()) {
         	        $this->redirectTo('course');
         	    }
 
@@ -468,6 +483,7 @@ class CoursesWebModule extends WebModule {
                 }
                     
                 break;
+
             case 'resources':
         	    if (!$course = $this->getCourseFromArgs()) {
         	        $this->redirectTo('course');
@@ -497,7 +513,7 @@ class CoursesWebModule extends WebModule {
                 foreach ($groups as $groupTitle => $items){
                     $groupItems = array();
                     foreach ($items as $item) {
-                        $groupItems[] = $this->linkForResource($item, $contentCourse);
+                        $groupItems[] = $this->linkForContent($item, $contentCourse);
                     }
                     
                     $resources[] = array(
@@ -523,14 +539,14 @@ class CoursesWebModule extends WebModule {
                 foreach ($items as $itemkey => $item){
                 	foreach ($item as $resource){
                 		if($key == $itemkey)
-                		$resources[$itemkey][] = $this->linkForResource($resource,$options);
+                		$resources[$itemkey][] = $this->linkForContent($resource,$options);
                 	}
                 }
                 $this->assign('resources',$resources);
             	break;
             	
             case 'contents':
-            // 	$section = $this->getArg('section');
+                KurogoDebug::debug($this, true);
                 $id = $this->getArg('id');
                 //$courseId = $this->getArg('courseId');
                 $type = $this->getArg('type');
@@ -558,6 +574,7 @@ class CoursesWebModule extends WebModule {
                 $this->setPageTitles($this->getLocalizedString(strtoupper($type) .'_TITLE'));
                 $this->assign('contents', $contents);
                 break;
+                
             case 'page':
             	$contentID = $this->getArg('contentID', '');
             	$courseID = $this->getArg('courseID', '');
@@ -570,25 +587,19 @@ class CoursesWebModule extends WebModule {
             	break;
 
             case 'file':
-                $contentID = $this->getArg('contentID');
-                $courseID = $this->getArg('courseID');
-                $term = $this->assignTerm();
-                
-                $options = array(
-                    'term'=>strval($term)
-                );
-                
-                if (!$course = $this->controller->getCourseByCommonID($courseID, $options)) {
-                    $this->redirectTo('index');
-                }
-                
+        	    if (!$course = $this->getCourseFromArgs()) {
+        	        $this->redirectTo('course');
+        	    }
+        	    				                
                 if (!$contentCourse = $course->getCourse('content')) {
                     $this->redirectTo('course');
                 }
-                
+
                 if (!$content = $contentCourse->getContentById($contentID)) {
                     throw new KurogoDataException($this->getLocalizedString('ERROR_CONTENT_NOT_FOUND'));
                 }
+                
+                
 
                 if ($this->getArg('download')) {
                     throw new KurogoException('Download of files is not complete');
@@ -615,6 +626,7 @@ class CoursesWebModule extends WebModule {
 	    		$this->assign('links', $options);
 	    		$this->assign('description',$content->getDescription());                //$this->outputFile($content);
                 break;
+                
             case 'alltasks':
                 $Term = $this->assignTerm();
                 $this->assignIndexTabs();

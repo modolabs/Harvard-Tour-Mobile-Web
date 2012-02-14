@@ -25,6 +25,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
     
     public function clearInternalCache() {
         $this->setMethod('GET');
+        $this->setSaveToFile(false);
         parent::clearInternalCache();
     }
     
@@ -85,9 +86,9 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
                 $this->setCacheGroup($this->getOption('courseID'));
                 $postData['courseid'] = $this->getOption('courseID');
                 break;
-            case 'downLoadFile':
-            case 'getPageContent':
+            case 'downloadFile':
                 $this->setBaseURL($this->getOption('contentUrl'));
+                $this->setSaveToFile(true);
                 $postData['token'] = $this->getToken();
                 break;   	
             default:
@@ -99,10 +100,6 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
             $this->addHeader('Content-type', 'application/x-www-form-urlencoded');
             $this->setData(http_build_query($postData));
         }
-    }
-    
-    public function retrieveFile($url) {
-        KurogoDebug::debug($url, true);
     }
     
     public function getCourses($options = array()) {
@@ -156,8 +153,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
             			$courseContents[] = $this->sortCourseContent($content, 'publishedDate');
             			break;
             		default:
-            		    KurogoDebug::debug($content, true);
-            			return $course;
+            			return $content;
             			break;
             	}
             }
@@ -193,6 +189,25 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
     	$courses = $this->getData();
     	return $courses;
     }
+    
+    public function getFileForUrl($url, $fileName) {
+    	$this->clearInternalCache();
+        //append the token
+        $this->setOption('action','downloadFile');
+        $this->setOption('contentUrl', $url);
+        $this->setOption('fileName', $fileName);
+
+        $response = $this->getResponse();
+        return $response->getResponse();
+    }
+    
+    protected function saveToFile() {
+        if ($this->getOption('action')=='downloadFile') {
+            return $this->getOption('fileName');
+        } 
+        return false;
+    }
+    
     public function getGrades($options) {
         
     }
@@ -340,6 +355,8 @@ class MoodleCourseContentDataParser extends dataParser {
                     throw new KurogoDataException("not defined the action:" . $action);
                     break;
             }
+        } elseif ($action=='downloadFile') {
+            return $this->response->getResponse();
         }
         
         $this->setTotalItems(count($items));
@@ -474,7 +491,7 @@ class MoodleCourseContentDataParser extends dataParser {
                             
                             if($module['modname'] == 'url'){
                             	if(isset($module['contents'][0]['fileurl']) && $module['contents'][0]['fileurl']){
-                            		$contentType->setFileurl($module['contents'][0]['fileurl']);
+                            		$contentType->setURL($module['contents'][0]['fileurl']);
                             	}
                             
                             }
@@ -591,6 +608,17 @@ class MoodleCourseContentCourse extends CourseContentCourse {
         
         return null;
     }
+
+    public function getFileForContent($id, $options=array()) {
+        if ($content = $this->getContentById($id, $options)) {
+            $url = $content->getFileURL();
+            if ($retriever = $this->getRetriever()) {
+                return $retriever->getFileForUrl($url, $id . '_' . $content->getFileName());
+            }
+        }
+        
+        return null;
+    }
 }
 
 class MoodleDownloadCourseContent extends DownloadCourseContent {
@@ -604,15 +632,6 @@ class MoodleDownloadCourseContent extends DownloadCourseContent {
         return $ext;
     }
     
-    public function getFile() {
-        if ($retriever = $this->getRetriever()) {
-            KurogoDebug::Debug($retriever, true);
-        }
-
-        KurogoDebug::Debug($this, true);
-
-    }
-
     public function getSubTitle() {
     
         $subTitle = '';
