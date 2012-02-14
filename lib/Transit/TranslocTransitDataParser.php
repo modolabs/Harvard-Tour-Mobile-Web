@@ -94,7 +94,7 @@ class TranslocTransitDataParser extends TransitDataParser {
                     'lon'             => self::argVal($coords, 'lng'),
                     'heading'         => self::argVal($vehicleInfo, 'heading', 0),
                     'nextStop'        => $nextStop,
-                    'agencyID'        => $agencyID,
+                    'agency'          => $agencyID,
                     'routeID'         => $routeID,
                 );
                 if (isset($vehicleInfo['speed'])) {
@@ -328,7 +328,7 @@ class TranslocTransitDataParser extends TransitDataParser {
             $url = Kurogo::getSiteVar('TRANSLOC_SERVICE_URL').self::TRANSLOC_API_VERSION.
                 "/{$action}.json".(count($params) ? '?'.http_build_query($params) : '');
             
-            error_log("TranslocTransitDataParser requesting $url", 0);
+            //error_log("TranslocTransitDataParser requesting $url", 0);
             $streamContext = stream_context_create(array(
                 'http' => array(
                     'timeout' => floatval(self::getTimeoutForCommand($action)),

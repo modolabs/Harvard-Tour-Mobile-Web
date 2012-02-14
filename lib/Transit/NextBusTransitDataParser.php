@@ -44,7 +44,7 @@ class NextBusTransitDataParser extends TransitDataParser {
           'lat'      => $attributes->getNamedItem('lat')->nodeValue,
           'lon'      => $attributes->getNamedItem('lon')->nodeValue,
           'heading'  => $attributes->getNamedItem('heading')->nodeValue,
-          'agencyID' => $route->getAgencyID(),
+          'agency'   => $route->getAgencyID(),
           'routeID'  => $routeID,
         );
         $vehicles[$vehicleID]['iconURL'] = 

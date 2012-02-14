@@ -88,7 +88,7 @@ class TransitAPIModule extends APIModule {
     protected function formatVehicleInfo($vehicleId, $vehicleInfo) {
         $vehicle = array(
             'id'         => $vehicleId,
-            'agencyId'   => $vehicleInfo['agencyID'],
+            'agency'     => $vehicleInfo['agency'],
             'routeId'    => $vehicleInfo['routeID'],
             'lastSeen'   => time() + $vehicleInfo['secsSinceReport'],
             'heading'    => $vehicleInfo['heading'],

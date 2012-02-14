@@ -387,6 +387,7 @@ class TransitDataView {
     } else if ($parser['static']) {
       $vehicles = $parser['static']->getRouteVehicles($routeID);
     }
+    $vehicles = $this->remapVehicles($parser['system'], $vehicles);
     
     return $vehicles;
   }
@@ -531,6 +532,22 @@ class TransitDataView {
     }
     
     return $mappedRoutes;
+  }
+  
+  private function remapVehicles($system, $vehicles) {
+    $mappedVehicles = array();
+    
+    foreach ($vehicles as $vehicleID => $vehicleInfo) {
+      if (isset($vehicleInfo['routeID'])) {
+        $vehicleInfo['routeID'] = $this->getGlobalID($system, $vehicleInfo['routeID']);
+      }
+      if (isset($vehicleInfo['nextStop'])) {
+        $vehicleInfo['nextStop'] = $this->getGlobalID($system, $vehicleInfo['nextStop']);
+      }
+      $mappedVehicles[$this->getGlobalID($system, $vehicleID)] = $vehicleInfo;
+    }
+    
+    return $mappedVehicles;
   }
 
   private function parserForRoute($system, $routeID) {
