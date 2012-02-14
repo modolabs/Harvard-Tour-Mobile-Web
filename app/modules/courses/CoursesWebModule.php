@@ -521,6 +521,17 @@ class CoursesWebModule extends WebModule {
                 $Term = $this->assignTerm();
                 $this->assignIndexTabs();
 
+                //@TODO make this configurable
+                // maybe make generic for tabbed pages?
+                $groupLinks = array();
+                $groups = array('date','priority','course');
+                foreach ($groups as $group) {
+                    $groupOptions['group'] = $group;
+                    $groupLinks[$group] = $this->buildBreadcrumbURL($this->page, $groupOptions, false);
+                }
+                $this->assign('groupLinks', $groupLinks);
+
+                $group = $this->getArg('group', $groups[0]);
                 $tasks = array();
                 $courses = $this->controller->getCourses(array());
                 foreach($courses as $course){
@@ -532,6 +543,7 @@ class CoursesWebModule extends WebModule {
                     }
                 }
                 $this->assign('tasks', $tasks);
+                $this->assign('group', $group);
                 break;
 
             case 'tasks':
