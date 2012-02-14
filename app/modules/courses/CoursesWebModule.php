@@ -308,6 +308,14 @@ class CoursesWebModule extends WebModule {
         return $options;
     }
     
+    protected function assignGroupLinks($groups, $defaultGroupOptions = array()){
+        foreach ($groups as $group) {
+            $defaultGroupOptions['group'] = $group;
+            $groupLinks[$group] = $this->buildBreadcrumbURL($this->page, $defaultGroupOptions, false);
+        }
+        $this->assign('groupLinks', $groupLinks);
+    }
+
     protected function initializeForPage() {
         switch($this->page) {
         	case 'info':
@@ -522,14 +530,8 @@ class CoursesWebModule extends WebModule {
                 $this->assignIndexTabs();
 
                 //@TODO make this configurable
-                // maybe make generic for tabbed pages?
-                $groupLinks = array();
                 $groups = array('date','priority','course');
-                foreach ($groups as $group) {
-                    $groupOptions['group'] = $group;
-                    $groupLinks[$group] = $this->buildBreadcrumbURL($this->page, $groupOptions, false);
-                }
-                $this->assign('groupLinks', $groupLinks);
+                $this->assignGroupLinks($groups);
 
                 $group = $this->getArg('group', $groups[0]);
                 $tasks = array();
@@ -552,6 +554,12 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index');
                 }
 
+                //@TODO make this configurable
+                $groups = array('date','priority','course');
+                $this->assignGroupLinks($groups, $this->getCourseOptions());
+
+                $group = $this->getArg('group', $groups[0]);
+
                 $tasks = array();
                 if ($contentCourse = $course->getCourse('content')) {
                     $items = $contentCourse->getTasks();
@@ -560,6 +568,7 @@ class CoursesWebModule extends WebModule {
                     }
                 }
                 $this->assign('tasks', $tasks);
+                $this->assign('group', $group);
                 break;
                 
             case 'updates':
@@ -589,14 +598,8 @@ class CoursesWebModule extends WebModule {
                 }
                                 
                 //@TODO make this configurable
-                $groupLinks = array();
                 $groups = array('topic','date','type');
-                foreach ($groups as $group) {
-                    $groupOptions = $this->getCourseOptions();
-                    $groupOptions['group'] = $group;
-                    $groupLinks[$group] = $this->buildBreadcrumbURL($this->page, $groupOptions, false);
-                }
-                $this->assign('groupLinks', $groupLinks);
+                $this->assignGroupLinks($groups, $this->getCourseOptions());
 
                 $group = $this->getArg('group', $groups[0]);
                 $options = array(

@@ -8,6 +8,11 @@
 {/if}
 
 {capture assign=tabBody}
+<ul class="tabstrip threetabs">
+<li{if $group == 'date'} class="active"{/if}><a href="{$groupLinks.date}">By Date</a>
+<li{if $group == 'priority'} class="active"{/if}><a href="{$groupLinks.priority}">By Priority</a>
+<li{if $group == 'course'} class="active"{/if}><a href="{$groupLinks.course}">By Course</a>
+</ul>
 {if $tasks}
 {include file="findInclude:common/templates/navlist.tpl" navlistItems=$tasks subTitleNewline=true}
 {else}
