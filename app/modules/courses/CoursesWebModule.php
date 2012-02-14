@@ -1,6 +1,6 @@
 <?php
 includePackage('Courses');
-
+includePackage('DateTime');
 class CoursesWebModule extends WebModule {
     protected $id = 'courses'; 
     protected $controller;
@@ -31,6 +31,31 @@ class CoursesWebModule extends WebModule {
     		unset($link);
     	}
     	return $links;
+    }
+
+    public function linkForTask($task, CourseContentCourse $course, $includeCourseName=false) {
+    	$link = array(
+            'title' =>$includeCourseName ? $course->getTitle() : $task->getTitle()
+        );
+        
+        $subtitle = array();
+        if ($includeCourseName) {
+            $subtitle[] = $task->getTitle();
+        }
+
+        if($date = $task->getDate()) {
+            $subtitle[] = DateFormatter::formatDate($date, DateFormatter::MEDIUM_STYLE, DateFormatter::NO_STYLE);
+	    } else {
+	    	$subtitle[] = $task->getSubTitle();
+	    } 
+
+        $options = $this->getCourseOptions();
+        $options['taskID'] = $task->getID();
+            
+        $link['url'] = $this->buildBreadcrumbURL('task', $options, true);
+        $link['subtitle'] = implode("<br />", $subtitle);
+            
+        return $link;
     }
     
     // returns a link for a particular resource
@@ -236,6 +261,11 @@ class CoursesWebModule extends WebModule {
                     'title'=>$this->getLocalizedString('COURSE_TAB_RESOURCES'),
                     'url'=> $this->buildBreadcrumbURL('resources', $options, false)
                 );
+
+                $courseTabs['tasks'] = array(
+                    'title'=>$this->getLocalizedString('COURSE_TAB_TASKS'),
+                    'url'=> $this->buildBreadcrumbURL('tasks', $options, false)
+                );
             }
 
             $courseTabs['info'] = array(
@@ -353,6 +383,28 @@ class CoursesWebModule extends WebModule {
                 $this->assign('links', $links);
                 
                 break;
+            case 'task':
+                $taskID = $this->getArg('taskID');
+                
+        	    if (!$course = $this->getCourseFromArgs()) {
+        	        $this->redirectTo('course');
+        	    }
+        	    				                
+                if (!$contentCourse = $course->getCourse('content')) {
+                    $this->redirectTo('course');
+                }
+
+                if (!$task = $contentCourse->getTaskById($taskID)) {
+                    throw new KurogoDataException($this->getLocalizedString('ERROR_TASK_NOT_FOUND'));
+                }
+                                
+                $this->assign('taskTitle', $task->getTitle());
+                $this->assign('taskDescription', $task->getDescription());        	    
+                $this->assign('taskDate', DateFormatter::formatDate($task->getDate(), DateFormatter::MEDIUM_STYLE, DateFormatter::NO_STYLE));
+                $this->assign('taskDueDate', DateFormatter::formatDate($task->getDueDate(), DateFormatter::MEDIUM_STYLE, DateFormatter::NO_STYLE));
+                $this->assign('links', $task->getLinks());
+
+                break;
             
         	case 'roster':
         	    if (!$course = $this->getCourseFromArgs()) {
@@ -464,6 +516,39 @@ class CoursesWebModule extends WebModule {
                 }
                 $this->assign('contents', $contents);
                 break;
+            
+            case 'alltasks':
+                $Term = $this->assignTerm();
+                $this->assignIndexTabs();
+
+                $tasks = array();
+                $courses = $this->controller->getCourses(array());
+                foreach($courses as $course){
+                    if ($contentCourse = $course->getCourse('content')) {
+                        $items = $contentCourse->getTasks();
+                        foreach ($items as $item){
+                            $tasks[] = $this->linkForTask($item, $contentCourse, true);
+                        }
+                    }
+                }
+                $this->assign('tasks', $tasks);
+                break;
+
+            case 'tasks':
+
+                if (!$course = $this->getCourseFromArgs()) {
+                    $this->redirectTo('index');
+                }
+
+                $tasks = array();
+                if ($contentCourse = $course->getCourse('content')) {
+                    $items = $contentCourse->getTasks();
+                    foreach ($items as $item){
+                        $tasks[] = $this->linkForTask($item, $contentCourse);
+                    }
+                }
+                $this->assign('tasks', $tasks);
+                break;
                 
             case 'updates':
                 
@@ -471,8 +556,6 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index');
                 }
 				
-                $this->assign('title', $course->getTitle());
-
                 if ($contentCourse = $course->getCourse('content')) {
                     $items = $contentCourse->getUpdates();
                     $contents = array();
@@ -625,11 +708,6 @@ class CoursesWebModule extends WebModule {
 	    		$this->assign('uploadDate',$uploadDate);
 	    		$this->assign('links', $options);
 	    		$this->assign('description',$content->getDescription());                //$this->outputFile($content);
-                break;
-                
-            case 'alltasks':
-                $Term = $this->assignTerm();
-                $this->assignIndexTabs();
                 break;
                 
             case 'index':
