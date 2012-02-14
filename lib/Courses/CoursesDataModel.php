@@ -7,10 +7,15 @@ class CoursesDataModel extends DataModel {
     const CURRENT_TERM = 1;
     const ALL_TERMS = 2;
     protected $retrievers=array();
+    protected $termsRetriever;
     
     //returns an array of terms. 
     public function getAvailableTerms() {
-        return array(self::getCurrentTerm());
+        if ($this->termsRetriever) {
+            return $this->termsRetriever->getAvailableTerms();
+        } else {
+            return array(self::getCurrentTerm());
+        }
     }
     
     protected function getCurrentTerm() {
@@ -19,7 +24,9 @@ class CoursesDataModel extends DataModel {
     }
     
     public function getTerm($termCode) {
-        if ($termCode==self::CURRENT_TERM) {
+        if ($this->termsRetriever) {
+            return $this->termsRetriever->getTerm($termCode);
+        } elseif ($termCode==self::CURRENT_TERM) {
             return self::getCurrentTerm();
         } else {
             /** @TODO retrieve term values */
@@ -106,6 +113,11 @@ class CoursesDataModel extends DataModel {
             throw new KurogoException("Data Retriever " . get_class($retriever) . " must conform to $interface");
         }
     }
+
+    public function setTermsRetriever(TermsDataRetriever $retriever) {
+        $this->termsRetriever = $retriever;
+    }
+    
     protected function init($args) {
         $this->initArgs = $args;
         if (isset($args['catalog'])) {
@@ -114,6 +126,12 @@ class CoursesDataModel extends DataModel {
             $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
             $catalogRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
             $this->setCoursesRetriever('catalog', $catalogRetriever);
+        }
+
+        if (isset($args['terms'])) {
+            $arg = $args['terms'];
+            $termRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
+            $this->setTermsRetriever($termRetriever);
         }
         
         if (isset($args['registration'])) {
