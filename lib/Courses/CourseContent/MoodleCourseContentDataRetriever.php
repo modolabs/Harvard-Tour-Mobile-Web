@@ -585,6 +585,7 @@ class MoodleCourseContentCourse extends CourseContentCourse {
     }
 
     public function getTasks($options=array()) {
+        return array();
     }
 
     public function getResources($options=array()) {
