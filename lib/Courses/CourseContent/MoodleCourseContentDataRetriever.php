@@ -596,6 +596,17 @@ class MoodleCourseContentCourse extends CourseContentCourse {
     public function getGrades($options=array()) {
     }
 
+    public function getTaskById($id, $options=array()) {
+        $tasks = $this->getTasks($options);
+        foreach ($tasks as $item) {
+            if ($item->getID()==$id) {
+                return $item;
+            }
+        }
+        
+        return null;
+    }
+    
     public function getContentById($id, $options=array()) {
         if ($retriever = $this->getRetriever()) {
             $content = $retriever->getCourseContent($this->getID(), $options);
