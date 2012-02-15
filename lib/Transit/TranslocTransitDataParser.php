@@ -76,8 +76,10 @@ class TranslocTransitDataParser extends TransitDataParser {
             foreach ($vehiclesInfo as $vehicleInfo) {
                 if ($routeID != self::argVal($vehicleInfo, 'route_id')) { continue; }
                 
+                // Is this vehicle being tracked and have a valid location?
                 $coords = self::argVal($vehicleInfo, 'location', false);
-                if (!$coords) { continue; }
+                $trackingStatus = self::argVal($vehicleInfo, 'tracking_status', 'down');
+                if (!$coords || $trackingStatus != 'up') { continue; }
                 
                 $nextStop = null;
                 if (isset($vehicleInfo['arrival_estimates']) && $vehicleInfo['arrival_estimates']) {
