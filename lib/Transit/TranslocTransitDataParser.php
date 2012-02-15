@@ -190,6 +190,7 @@ class TranslocTransitDataParser extends TransitDataParser {
                     $routeSegments[$routeID]->addStop($stopID, $stopIndex);
                 }
                 
+                $paths = array();
                 foreach ($routeInfo['segments'] as $segmentInfo) {
                     $segmentID = 'loop';
                     
@@ -204,6 +205,42 @@ class TranslocTransitDataParser extends TransitDataParser {
                             $segmentPath = array_reverse($segmentPath);
                         }
                     }
+                    $paths[$segmentID] = $segmentPath;
+                }
+                
+                // Reduce path count by matching up pairs.  Large path counts will
+                // prevent Google static maps from displaying properly (URI too long).
+                $foundPair = true;
+                while (count($paths) > 1 && $foundPair) {
+                    $foundPair = false;
+                    $pathSegments = array_keys($paths);
+                    for ($i = 0; $i < count($pathSegments); $i++) {
+                        for ($j = $i + 1; $j < count($pathSegments); $j++) {
+                            $p1 = $paths[$pathSegments[$i]];
+                            $p2 = $paths[$pathSegments[$j]];
+                            
+                            $merged = array();
+                            if (end($p1) == reset($p2)) {
+                                $merged = array_merge($p1, array_slice($p2, 1));
+                                
+                            } else if (end($p2) == reset($p1)) {
+                                $merged = array_merge($p2, array_slice($p1, 1));
+                            }
+                            
+                            if ($merged) {
+                                unset($paths[$pathSegments[$i]]);
+                                unset($paths[$pathSegments[$j]]);
+                                $paths[$pathSegments[$i].'+'.$pathSegments[$j]] = $merged;
+                                $foundPair = true;
+                                break;
+                            }
+                        }
+                        if ($foundPair) { break; }
+                    }
+                }
+                //error_log("Route $routeID path count reduced to ".count($paths));
+                
+                foreach ($paths as $segmentID => $segmentPath) {
                     $this->getRoute($routeID)->addPath(new TransitPath($segmentID, $segmentPath));
                 }
             }
