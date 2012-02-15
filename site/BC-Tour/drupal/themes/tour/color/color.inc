@@ -2,8 +2,8 @@
 
 /****************************************************************
  *
- *  Copyright 2011 The President and Fellows of Harvard College
- *  Copyright 2011 Modo Labs Inc.
+ *  Copyright 2012 The President and Fellows of Harvard College
+ *  Copyright 2012 Modo Labs Inc.
  *
  *****************************************************************/
 
@@ -26,7 +26,7 @@ $info = array(
   // Pre-defined color schemes.
   'schemes' => array(
     'default' => array(
-      'title' => t('Harvard Tour (default)'),
+      'title' => t('Kurogo Tour (default)'),
       'colors' => array(
         'bg' => '#ffffff',
         'link' => '#7d0313',

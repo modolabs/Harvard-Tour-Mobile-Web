@@ -3,13 +3,17 @@
 }
 
 #name-and-slogan {
-  padding-top: 34px;
+  padding-top: 44px;
   margin: 0 0 20px 8px;
 }
 #logo,
 #header .region-header {
-  padding-bottom: 0;
+  padding: 10px 5px 0px 0px;
   margin-bottom: 0;
+}
+#logo img {
+  width: 100px;
+  height: 100px;
 }
 
 #header div.section,
@@ -552,6 +556,7 @@ textarea {
 #search-form input#edit-keys,
 #block-search-form .form-item-search-block-form input {
   font-size: 100%;
+  width: 8.5em;
 }
 .page-admin-structure-block-demo #featured .block-region {
   font-size: 70%;

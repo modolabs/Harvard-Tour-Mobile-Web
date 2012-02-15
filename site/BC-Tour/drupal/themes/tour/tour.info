@@ -1,8 +1,8 @@
-; Copyright 2011 The President and Fellows of Harvard College
-; Copyright 2011 Modo Labs Inc.
+; Copyright 2012 The President and Fellows of Harvard College
+; Copyright 2012 Modo Labs Inc.
 
-name = Harvard Tour
-description = A sub-theme of Bartik for the Harvard Tour.
+name = Kurogo Tour
+description = A sub-theme of Bartik for the Kurogo Tour.
 core = 7.x
 base theme = bartik
 
