@@ -319,9 +319,6 @@ class TransitAPIModule extends APIModule {
               }
               
               $routeVehicles = $view->getRouteVehicles($routeId);
-              if (!$routeVehicles) {
-                  throw new Exception("No such route '$routeId'");
-              }
               
               $response = array();
               foreach($routeVehicles as $vehicleId => $vehicleInfo) {

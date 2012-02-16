@@ -20,19 +20,17 @@ class TranslocTransitDataParser extends TransitDataParser {
         return true;
     }
     
-    protected function getMapIconUrlForRouteStop($routeID) {
-        return Kurogo::getSiteVar('TRANSLOC_MARKERS_URL').http_build_query(array(
-            'm' => 'stop',
-            'c' => $this->getRouteColor($routeID),
-        ));
-    }
-   
     protected function getMapIconUrlForRouteVehicle($routeID, $vehicle=null) {
-        return Kurogo::getSiteVar('TRANSLOC_MARKERS_URL').http_build_query(array(
-            'm' => 'bus',
-            'c' => $this->getRouteColor($routeID),
-            'h' => $this->getDirectionForHeading(self::argVal($vehicle, 'heading', 4)),
-        ));
+        $markerURL = Kurogo::getOptionalSiteVar('TRANSLOC_MARKERS_URL', '');
+        if ($markerURL) {
+            return $markerURL.http_build_query(array(
+                'm' => 'bus',
+                'c' => $this->getRouteColor($routeID),
+                'h' => $this->getDirectionForHeading(self::argVal($vehicle, 'heading', 4)),
+            ));
+        } else {
+            return parent::getMapIconUrlForRouteVehicle($routeID, $vehicle=null);
+        }
     }
   
     protected function getMapMarkersForVehicles($vehicles) {
