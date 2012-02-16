@@ -6,6 +6,7 @@ class CoursesWebModule extends WebModule {
     protected $controller;
     protected $courses;
     protected $hasPersonalizedCourses = false;
+    protected $selectedTerm;
     
     protected function linkforInfo($courseId, $description){
     	$links = array();
@@ -196,27 +197,27 @@ class CoursesWebModule extends WebModule {
         return $links;
     }
     
-	/**
-	* assign term function
-	* this function need improvment this term in some case is select area
-	* @author saturn
-	*
-	*/
     public function assignTerm(){
         $feedTerms = $this->controller->getAvailableTerms();
+
+        if (!$Term = $this->controller->getTerm($this->selectedTerm)) {
+            $Term = $this->controller->getCurrentTerm();
+        }
+
         $terms = array();
         foreach($feedTerms as $term) {
-        	$terms[$term->getID()] = $term->getTitle();
+            $terms[] = array(
+                'value'     => $term->getID(),
+                'title'     => $term->getTitle(),
+                'selected'  => ($Term->getID() == $term->getID()),
+            );
         }
-        $term = $this->getArg('term', CoursesDataModel::CURRENT_TERM);
-    	if (!$Term = $this->controller->getTerm($term)) {
-        	$Term = $this->controller->getCurrentTerm();
-        }
-        
+
         if (count($terms)>1) {
-        	$this->assign('terms', $terms);
+            $this->assign('sections', $terms);
         } else {
-        	$this->assign('termTitle', current($terms));
+            $term = current($terms);
+            $this->assign('termTitle', $term['title']);
         }
         return $Term;
     }
@@ -290,10 +291,11 @@ class CoursesWebModule extends WebModule {
     }
     
     protected function initialize() {
-    	
+        $this->assign('loggedIn', $this->isLoggedIn());
         $this->feeds = $this->loadFeedData();
         $this->controller = CoursesDataModel::factory('CoursesDataModel', $this->feeds);
         $this->hasPersonalizedCourses =  $this->controller->canRetrieve('registration') || $this->controller->canRetrieve('content');
+        $this->selectedTerm = $this->getArg('term', CoursesDataModel::CURRENT_TERM);
     }
     
     protected function getCourseOptions() {
@@ -509,6 +511,9 @@ class CoursesWebModule extends WebModule {
                 break;
             
             case 'allupdates':
+                if (!$this->isLoggedIn()) {
+                    $this->redirectTo('index');
+                }
                 $Term = $this->assignTerm();
                 $this->assignIndexTabs();
 
@@ -526,6 +531,9 @@ class CoursesWebModule extends WebModule {
                 break;
             
             case 'alltasks':
+                if (!$this->isLoggedIn()) {
+                    $this->redirectTo('index');
+                }
                 $Term = $this->assignTerm();
                 $this->assignIndexTabs();
 
