@@ -6,6 +6,7 @@ class TranslocTransitDataParser extends TransitDataParser {
     private $routeColors = array();
     private $agencyIDs = array();
     const TRANSLOC_API_VERSION = '1.2';
+    const DEFAULT_MARKERS_URL = 'http://feeds.transloc.com/markers/';
     
     static private function argVal($array, $key, $default='') {
         return is_array($array) && isset($array[$key]) ? $array[$key] : $default;
@@ -15,24 +16,38 @@ class TranslocTransitDataParser extends TransitDataParser {
         parent::__construct($args, $overrides, $whitelist, $daemonMode);
         self::$daemonCacheMode = $daemonMode;
     }
-  
+    
     protected function isLive() {
         return true;
     }
     
-    protected function getMapIconUrlForRouteVehicle($routeID, $vehicle=null) {
-        $markerURL = Kurogo::getOptionalSiteVar('TRANSLOC_MARKERS_URL', '');
-        if ($markerURL) {
-            return $markerURL.http_build_query(array(
-                'm' => 'bus',
+    protected function getMapIconUrlForRouteStop($routeID) {
+        $iconURL = Kurogo::getOptionalSiteVar('TRANSLOC_MARKERS_URL', self::DEFAULT_MARKERS_URL);
+        if ($iconURL) {
+            return rtrim($iconURL, '/')."/stop.png?".http_build_query(array(
+                's' => 5,  // radius of 5 px
                 'c' => $this->getRouteColor($routeID),
-                'h' => $this->getDirectionForHeading(self::argVal($vehicle, 'heading', 4)),
             ));
         } else {
-            return parent::getMapIconUrlForRouteVehicle($routeID, $vehicle=null);
+            return parent::getMapIconUrlForRouteVehicle($routeID, $vehicle);
         }
     }
-  
+    
+    protected function getMapIconUrlForRouteVehicle($routeID, $vehicle=null) {
+        $iconURL = Kurogo::getOptionalSiteVar('TRANSLOC_MARKERS_URL', self::DEFAULT_MARKERS_URL);
+        if ($iconURL) {
+            $args = array(
+                'c' => $this->getRouteColor($routeID),
+            );
+            if ($vehicle && ($heading = self::argVal($vehicle, 'heading'))) {
+                $args['h'] = $heading;
+            }
+            return rtrim($iconURL, '/')."/vehicle.png?".http_build_query($args);
+        } else {
+            return parent::getMapIconUrlForRouteVehicle($routeID, $vehicle);
+        }
+    }
+    
     protected function getMapMarkersForVehicles($vehicles) {
         $query = '';
         
@@ -66,7 +81,7 @@ class TranslocTransitDataParser extends TransitDataParser {
     protected function getServiceLink() {
       return isset($this->args['serviceURL']) ? $this->args['serviceURL'] : 'http://www.transloc.com/';
     }
-  
+    
     public function getRouteVehicles($routeID) {
         $vehicles = array();
         $translocAgencyVehiclesInfo = $this->getData('vehicles');
@@ -115,7 +130,7 @@ class TranslocTransitDataParser extends TransitDataParser {
         $agencyIDToName = array_flip($this->agencyIDs);
         return isset($agencyIDToName[$agencyID]) ? $agencyIDToName[$agencyID] : $agencyID;
     }
-  
+    
     protected function loadData() {
         $agencyNames = array(); // all agencies
         if (isset($this->args['agencies'])) {
@@ -300,7 +315,7 @@ class TranslocTransitDataParser extends TransitDataParser {
         }
         return 10; // unknown command
     }
-  
+    
     private static function getCacheForCommand($action) {
         $cacheKey = $action;
         
@@ -426,7 +441,7 @@ class TranslocTransitDataParser extends TransitDataParser {
         
         return $routeInfo;
     }
-  
+    
     public function translocRouteIsRunning($routeID) {
         // Is the route active?
         $translocAllRoutesInfo = $this->getData('routes');
@@ -468,13 +483,13 @@ class TranslocTransitDataParser extends TransitDataParser {
 class TranslocTransitService extends TransitService {
     private $routeID = null;
     private $parser = null;
-  
+    
     function __construct($id, $routeID, $parser) {
         parent::__construct($id);
         $this->routeID = $routeID;
         $this->parser = $parser;
     }
-  
+    
     public function isRunning($time) {
         return true; // all routes in feed are in service
     }
