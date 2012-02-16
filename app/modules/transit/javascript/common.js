@@ -167,10 +167,18 @@ function doUpdateContainerDimensions() {
             var tabHeight = getWindowHeight() - topoffset - bottomoffset;
             var tabPadding = 8 * 2;
             if (maptab) {
-                maptab.style.height = (tabHeight - tabPadding) + "px";
+                if((tabHeight - tabPadding)<254) {
+                	maptab.style.height = "254px";	// enforce minimum height of tab containing map + buttons
+                } else {
+                	maptab.style.height = (tabHeight - tabPadding) + "px";
+                }
                 maptab.style.minHeight = "0"; // so we don't get extra space at the bottom
             }
-            mapimage.style.height = (tabHeight - zoomControlsHeight - tabPadding) + "px";
+            if((tabHeight - zoomControlsHeight - tabPadding)<210) {
+            	mapimage.style.height = "210px";	// enforce a minimum height of the map for usability reasons
+            } else {
+            	mapimage.style.height = (tabHeight - zoomControlsHeight - tabPadding) + "px";
+            }
             mapimage.style.minHeight = "0"; // so we don't get extra space at the bottom
         }
     }
