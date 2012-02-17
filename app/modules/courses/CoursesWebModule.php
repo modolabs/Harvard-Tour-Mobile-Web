@@ -282,12 +282,26 @@ class CoursesWebModule extends WebModule {
     protected function getFeedTitle($feed) {
         return isset($this->feeds[$feed]['TITLE']) ? $this->feeds[$feed]['TITLE'] : '';
     }
-    
-    /* @TODO provide method to get bookmarked courses */
-    protected function getBookmarkedCourses() {
-        return array();
+
+    protected function detailURLForBookmark($aBookmark) {
+        return $this->buildBreadcrumbURL('info', array(
+            'courseID'  => $this->getBookmarkParam($aBookmark, 'id'),
+            'term'      => $this->getBookmarkParam($aBookmark, 'term'),
+        ));
     }
-    
+
+    protected function getTitleForBookmark($aBookmark) {
+        return $this->getBookmarkParam($aBookmark, 'title');
+    }
+
+    protected function getBookmarkParam($aBookmark, $param){
+        parse_str($aBookmark, $params);
+        if(isset($params[$param])){
+            return $params[$param];
+        }
+        return null;
+    }
+
     protected function initialize() {
         $this->assign('loggedIn', $this->isLoggedIn());
         $this->feeds = $this->loadFeedData();
@@ -325,6 +339,18 @@ class CoursesWebModule extends WebModule {
         	    }
         	    $options = $this->getCourseOptions();
         	    
+                // Bookmark
+                if ($this->getOptionalModuleVar('BOOKMARKS_ENABLED', 1)) {
+                    $cookieParams = array(
+                        'title' => $course->getTitle(),
+                        'term'  => rawurlencode($options['term']),
+                        'id'    => rawurlencode($options['courseID']),
+                    );
+
+                    $cookieID = http_build_query($cookieParams);
+                    $this->generateBookmarkOptions($cookieID);
+                }
+
                 $instructorList = array();
                 $instructors = $course->getInstructors();
                 
@@ -730,6 +756,23 @@ class CoursesWebModule extends WebModule {
 	    		$this->assign('links', $options);
 	    		$this->assign('description',$content->getDescription());                //$this->outputFile($content);
                 break;
+
+            case 'bookmarks':
+                $bookmarks = array();
+                if($this->hasBookmarks()){
+                    foreach ($this->getBookmarks() as $aBookmark) {
+                        if ($aBookmark) {
+                            // prevent counting empty string
+                            $bookmarks[] = array(
+                                'title' => $this->getTitleForBookmark($aBookmark),
+                                'url' => $this->detailURLForBookmark($aBookmark),
+                            );
+                        }
+                    }
+                    $this->assign('navItems', $bookmarks);
+                }
+                $this->assign('hasBookmarks', $this->hasBookmarks());
+                break;
                 
             case 'index':
                 $Term = $this->assignTerm();
@@ -765,10 +808,10 @@ class CoursesWebModule extends WebModule {
                         'url'   => $this->buildBreadcrumbURL('catalog', array(), false),
                     );
                     
-                    if ($bookmarks = $this->getBookmarkedCourses()) {
+                    if ($bookmarks = $this->getBookmarks()) {
                         $catalogItems[] = array(
-                            'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . "(" . count($bookmarks) . ")",
-                            'url'   => '',
+                            'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . " (" . count($bookmarks) . ")",
+                            'url'   => $this->buildBreadcrumbURL('bookmarks', array(), true),
                         );
                     }
                 }

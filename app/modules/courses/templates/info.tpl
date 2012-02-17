@@ -1,7 +1,9 @@
 {include file="findInclude:common/templates/header.tpl"}
 
 {include file="findInclude:modules/courses/templates/coursedetailhead.tpl"}
-
+<div class="bookmarkicon">
+{include file="findInclude:common/templates/bookmark.tpl" name=$cookieName item=$bookmarkItem exdate=$expireDate}
+</div>
 {capture assign="tabBody"}
 {include file="findInclude:common/templates/navlist.tpl" navlistItems=$location}
 Information about this course...

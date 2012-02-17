@@ -66,3 +66,9 @@ form {
 .header button {
     display: inline;
 }
+
+.bookmarkicon {
+    position: absolute;
+    right: 10px;
+    top: 100px;
+}
