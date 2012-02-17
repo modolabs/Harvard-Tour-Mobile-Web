@@ -3,6 +3,8 @@
 includePackage('Locations');
 class LocationsAPIModule extends APIModule {
     protected $id = 'locations';
+    protected $vmin = 1;
+    protected $vmax = 1;
     
     protected $feeds = array();
     protected $timezone;
