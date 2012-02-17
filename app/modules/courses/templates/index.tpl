@@ -4,6 +4,7 @@
 
 {capture assign=tabBody}
 {if $courses}
+  <h4 class="nonfocal">{$termTitle}</h4>
   {include file="findInclude:common/templates/navlist.tpl" navlistItems=$courses subTitleNewline=true}
 {elseif $session_userID}
 <div class="nonfocal">
@@ -18,6 +19,7 @@
 {/if}
 
 {if $catalogItems}
+ <h4 class="nonfocal">{"COURSE_CATALOG_TEXT"|getLocalizedString}</h4>
  {include file="findInclude:common/templates/navlist.tpl" navlistItems=$catalogItems}
 {/if}
 {/capture}
