@@ -215,28 +215,26 @@ class CoursesWebModule extends WebModule {
 
         if (count($terms)>1) {
             $this->assign('sections', $terms);
-        } else {
-            $term = current($terms);
-            $this->assign('termTitle', $term['title']);
         }
+        $this->assign('termTitle', $Term->getTitle());
         return $Term;
     }
     
-    protected function assignIndexTabs(){
+    protected function assignIndexTabs($options = array()){
         $courseTabs = array();
         $courseTabs['index'] = array(
             'title'=>$this->getLocalizedString('INDEX_TAB_COURSES'),
-            'url'=> $this->buildBreadcrumbURL('index', array(), false)
+            'url'=> $this->buildBreadcrumbURL('index', $options, false)
         );
 
         if ($this->hasPersonalizedCourses && $this->isLoggedIn()) {
             $courseTabs['allupdates'] = array(
                 'title'=>$this->getLocalizedString('INDEX_TAB_UPDATES'),
-                'url'=> $this->buildBreadcrumbURL('allupdates', array(), false)
+                'url'=> $this->buildBreadcrumbURL('allupdates', $options, false)
             );
             $courseTabs['alltasks'] = array(
                 'title'=>$this->getLocalizedString('INDEX_TAB_TASKS'),
-                'url'=> $this->buildBreadcrumbURL('alltasks', array(), false)
+                'url'=> $this->buildBreadcrumbURL('alltasks', $options, false)
             );
         }
         $this->assign('courseTabs', $courseTabs);
@@ -515,7 +513,7 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index');
                 }
                 $Term = $this->assignTerm();
-                $this->assignIndexTabs();
+                $this->assignIndexTabs(array('term'=>$Term->getID()));
 
                 $contents = array();
                 $courses = $this->controller->getCourses(array());
@@ -535,7 +533,7 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index');
                 }
                 $Term = $this->assignTerm();
-                $this->assignIndexTabs();
+                $this->assignIndexTabs(array('term'=>$Term->getID()));
 
                 //@TODO make this configurable
                 $groups = array('date','priority','course');
@@ -743,7 +741,7 @@ class CoursesWebModule extends WebModule {
 
                 
                 // assign tabs
-                $this->assignIndexTabs();
+                $this->assignIndexTabs(array('term'=>$Term->getID()));
                 $this->assign('hasPersonalizedCourses', $this->hasPersonalizedCourses);
 
                 if ($this->isLoggedIn()) {

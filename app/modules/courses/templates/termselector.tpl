@@ -1,5 +1,5 @@
 {capture name="categorySelect" assign="categorySelect"}
-  <select class="newsinput" id="section" name="section" onchange="loadSection(this);">
+  <select class="newsinput" id="section" name="section" onchange="loadSection(this, '{$page}');">
     {foreach $sections as $section}
       {if $section['selected']}
         <option value="{$section['value']}" selected="true">{$section['title']|escape}</option>
