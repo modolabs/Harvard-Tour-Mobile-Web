@@ -335,7 +335,7 @@ class CoursesWebModule extends WebModule {
         	case 'info':
         	    
         	    if (!$course = $this->getCourseFromArgs()) {
-        	        $this->redirectTo('index');
+                    $this->redirectTo('index');
         	    }
         	    $options = $this->getCourseOptions();
         	    
@@ -387,11 +387,11 @@ class CoursesWebModule extends WebModule {
                 $contentID = $this->getArg('contentID');
                 
         	    if (!$course = $this->getCourseFromArgs()) {
-        	        $this->redirectTo('course');
+                    $this->redirectTo('index');
         	    }
         	    				                
                 if (!$contentCourse = $course->getCourse('content')) {
-                    $this->redirectTo('course');
+                    $this->redirectTo('index');
                 }
 
                 if (!$content = $contentCourse->getContentById($contentID)) {
@@ -421,11 +421,11 @@ class CoursesWebModule extends WebModule {
                 $taskID = $this->getArg('taskID');
                 
         	    if (!$course = $this->getCourseFromArgs()) {
-        	        $this->redirectTo('course');
+                    $this->redirectTo('index');
         	    }
         	    				                
                 if (!$contentCourse = $course->getCourse('content')) {
-                    $this->redirectTo('course');
+                    $this->redirectTo('index');
                 }
 
                 if (!$task = $contentCourse->getTaskById($taskID)) {
@@ -442,7 +442,7 @@ class CoursesWebModule extends WebModule {
             
         	case 'roster':
         	    if (!$course = $this->getCourseFromArgs()) {
-        	        $this->redirectTo('course');
+                    $this->redirectTo('index');
         	    }
 
         		$students = $course->getStudents();
@@ -462,7 +462,7 @@ class CoursesWebModule extends WebModule {
         		
         	case 'dropclass';
         	    if (!$course = $this->getCourseFromArgs()) {
-        	        $this->redirectTo('course');
+                    $this->redirectTo('index');
         	    }
         	    
         	    $options = $this->getCourseOptions();
@@ -626,11 +626,11 @@ class CoursesWebModule extends WebModule {
 
             case 'resources':
         	    if (!$course = $this->getCourseFromArgs()) {
-        	        $this->redirectTo('course');
+                    $this->redirectTo('index');
         	    }
 
                 if (!$contentCourse = $course->getCourse('content')) {
-                    $this->redirectTo('course');
+                    $this->redirectTo('index');
                 }
 
                 $this->assignTerm();
@@ -724,11 +724,11 @@ class CoursesWebModule extends WebModule {
 
             case 'file':
         	    if (!$course = $this->getCourseFromArgs()) {
-        	        $this->redirectTo('course');
+                    $this->redirectTo('index');
         	    }
         	    				                
                 if (!$contentCourse = $course->getCourse('content')) {
-                    $this->redirectTo('course');
+                    $this->redirectTo('index');
                 }
 
                 if (!$content = $contentCourse->getContentById($contentID)) {
