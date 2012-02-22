@@ -586,6 +586,8 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index');
                 }
 
+                $this->assignTerm();
+
                 //@TODO make this configurable
                 $groups = array('date','priority','course');
                 $this->assignGroupLinks($groups, $this->getCourseOptions());
@@ -609,6 +611,8 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index');
                 }
 				
+                $this->assignTerm();
+
                 if ($contentCourse = $course->getCourse('content')) {
                     $items = $contentCourse->getUpdates();
                     $contents = array();
@@ -624,11 +628,13 @@ class CoursesWebModule extends WebModule {
         	    if (!$course = $this->getCourseFromArgs()) {
         	        $this->redirectTo('course');
         	    }
-        	    				                
+
                 if (!$contentCourse = $course->getCourse('content')) {
                     $this->redirectTo('course');
                 }
-                                
+
+                $this->assignTerm();
+
                 //@TODO make this configurable
                 $groups = array('topic','date','type');
                 $this->assignGroupLinks($groups, $this->getCourseOptions());
