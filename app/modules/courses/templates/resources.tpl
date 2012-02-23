@@ -17,7 +17,7 @@
 
 {foreach $resources as $group}
     {if $group.title}<h3 class="nonfocal">{$group.title} {/if}
-    {if $group.url}<a href="{$seeAllLinks.{$group.title}}">see all {count($group.items)}</a>{/if}</h3>
+    {if $group.url}<a href="{$group.url}">see all {$group.count}</a>{/if}</h3>
     {include file="findInclude:common/templates/navlist.tpl" navlistItems=$group.items subTitleNewline=true}
 {/foreach}
 {/capture}

@@ -659,19 +659,18 @@ class CoursesWebModule extends WebModule {
                         $groupItems[] = $this->linkForContent($item, $contentCourse);
                         $index++;
                     }
+                    $resource = array(
+                        'title' => $groupTitle,
+                        'items' => $groupItems,
+                        'count' => count($items),
+                    );
                     if(count($items) > $limit){
                         $courseOptions = $this->getCourseOptions();
-                        $seeAllLinks[$groupTitle] = $this->buildBreadcrumbURL('resourceSeeAll', $courseOptions);
-                        $hasMoreItems = true;
+                        $resource['url'] = $this->buildBreadcrumbURL('resourceSeeAll', $courseOptions);
                     }
-                    $resources[] = array(
-                        'title'=>$groupTitle,
-                        'items'=>$groupItems,
-                        'url'=> $hasMoreItems,
-                    );
+                    $resources[] = $resource;
                 }
 
-                $this->assign('seeAllLinks', $seeAllLinks);
                 $this->assign('resources',$resources);
                 $this->assign('group', $group);
             	break;
