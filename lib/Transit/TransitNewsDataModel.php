@@ -1,5 +1,10 @@
 <?php
 
+/**
+  * TransitNewsDataModel
+  * @package Transit
+  */
+
 includePackage('DataModel');
 class TransitNewsDataModel extends ItemListDataModel
 {

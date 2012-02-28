@@ -1,10 +1,16 @@
 <?php
 
+/**
+  * StripGTFSToDB
+  * @package Transit
+  */
+
 //
 // Configuration
 //
 
-class StripGTFSToDB {
+class StripGTFSToDB
+{
     protected $config = array();
     protected $messages = '';
 

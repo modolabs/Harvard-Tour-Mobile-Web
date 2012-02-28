@@ -94,8 +94,7 @@ class TransitWebModule extends WebModule {
     }
   
     protected function initializeForPage() {
-        $transitConfig = new TransitConfig($this->loadFeedData());
-        $view = new TransitDataView($transitConfig);
+        $view = DataModel::factory("TransitViewDataModel", $this->loadFeedData());
     
         $args = $this->args;
         $args['t'] = time();

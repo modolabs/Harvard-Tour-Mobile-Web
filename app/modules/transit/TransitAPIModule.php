@@ -137,9 +137,8 @@ class TransitAPIModule extends APIModule {
             $this->setResponseVersion($responseVersion);
             return;
         }
-    
-        $transitConfig = new TransitConfig($this->loadFeedData());
-        $view = new TransitDataView($transitConfig);
+        
+        $view = DataModel::factory("TransitViewDataModel", $this->loadFeedData());
     
         switch($this->command) {
           case 'info':

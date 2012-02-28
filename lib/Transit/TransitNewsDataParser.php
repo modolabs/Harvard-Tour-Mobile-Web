@@ -1,5 +1,10 @@
 <?php
 
+/**
+  * TransitNewsDataParser
+  * @package Transit
+  */
+
 class TransitNewsDataParser extends RSSDataParser
 {
     protected function shouldStripTags($element) {
