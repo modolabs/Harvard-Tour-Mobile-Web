@@ -32,12 +32,13 @@ class GTFSDataModel extends TransitDataModel
             $this->splitByHeadsignRoutes = array_filter(array_map('trim', explode(',', $args['SPLIT_BY_HEADSIGN'])));
         }
         
-        if (!isset($args['DATABASE_FILE'])) {
+        if (!isset($args['DB_FILE'])) {
             throw new KurogoConfigurationException("No database file found for gtfs parser in feeds.ini");
         }
 
-        $args['DB_TYPE'] = 'sqlite';
-        $args['DB_FILE'] = Kurogo::getSiteVar('GTFS_DIR').'/'.$args['DATABASE_FILE'];
+        if (!isset($args['DB_TYPE'])) {
+            $args['DB_TYPE'] = 'sqlite';
+        }
         
         parent::init($args);
     }

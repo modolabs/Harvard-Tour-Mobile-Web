@@ -154,6 +154,7 @@ class StripGTFSToDB
                 if (!$db->commit()) {
                     throw new Exception("Failed to commit transaction: ".print_r($db->errorInfo(), true));
                 }
+                $this->notice("\n");
             }
             
         } catch (Exception $e) {
@@ -392,6 +393,6 @@ class StripGTFSToDB
     
     protected function notice($message) {
         error_log($message);
-        $this->messages .= "$message<br>";
+        $this->messages .= "$message\n";
     }
 }

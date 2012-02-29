@@ -92,8 +92,48 @@ class TransitWebModule extends WebModule {
     protected static function directionSort($a, $b) {
         return strnatcmp($a['title'], $b['title']);
     }
+    
+    protected function gtfs2db() {
+        if ($_SERVER['REMOTE_ADDR'] != '127.0.0.1' && $_SERVER['REMOTE_ADDR'] != '::1') {
+            throw new KurogoException("GTFS database conversion can only be run from localhost");
+        }
+        
+        $title = 'Success!';
+        $message = 'Generated GTFS Database';
+        $preformatted = '';
+        $this->setTemplatePage(strtolower($this->page));
+        
+        try {
+            $gtfsConfig = $this->getModuleSections('feeds-gtfs');
+
+            $gtfsToDB = new StripGTFSToDB();
+            foreach ($gtfsConfig as $gtfsIndex => $gtfsData) {
+                $gtfsToDB->addGTFS($gtfsIndex, $gtfsData);
+            }
+            
+            if (!$gtfsToDB->convert()) {  
+                throw new Exception($gtfsToDB->getError());
+            }
+            $preformatted = $gtfsToDB->getMessages();
+
+        } catch (Exception $e) {
+            $title = 'Error!';
+            $message = $e->getMessage();
+        }
+        $now = new DateTime();
+        
+        $this->assign('title', $title);
+        $this->assign('date', $now->format('U'));
+        $this->assign('message', $message);
+        $this->assign('preformatted', $preformatted);
+    }
   
     protected function initializeForPage() {
+        if (strtolower($this->page) == 'gtfs2db') {
+            $this->gtfs2db();
+            return;
+        }
+        
         $view = DataModel::factory("TransitViewDataModel", $this->loadFeedData());
     
         $args = $this->args;
