@@ -282,12 +282,7 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
                       $routeInfo['stops'] = $staticRouteInfo['stops'];
                   
                   } else {
-                      // Use the static first stop, not the prediction first stop
-                      // Use static stop names if available
-                      $firstStop = reset(array_keys($staticRouteInfo['stops']));
-                      $foundFirstStop = false;
-                      $moveToEnd = array();
-                      foreach ($routeInfo['stops'] as $stopID => $stop) {
+                      foreach ($routeInfo['stops'] as $stopID => $ignored) {
                           $staticStopID = $stopID;
                         
                           if (!isset($staticRouteInfo['stops'][$staticStopID])) {
@@ -300,9 +295,17 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
                           }
                           
                           if (isset($staticRouteInfo['stops'][$staticStopID])) {
-                              $routeInfo['stops'][$stopID]['name'] = $staticRouteInfo['stops'][$staticStopID]['name'];
-                
-                              if (!$stop['hasTiming'] && $staticRouteInfo['stops'][$staticStopID]['hasTiming']) {
+                              // Use static stop names if they exist
+                              if ($staticRouteInfo['stops'][$staticStopID]['name']) {
+                                  $routeInfo['stops'][$stopID]['name'] = $staticRouteInfo['stops'][$staticStopID]['name'];
+                              }
+                              
+                              // Prefer the static stop order
+                              $routeInfo['stops'][$stopID]['i'] = $staticRouteInfo['stops'][$staticStopID]['i'];
+                              
+                              // Use static arrival time if available when live tracking is not available
+                              if (!$routeInfo['stops'][$stopID]['hasTiming'] && 
+                                   $staticRouteInfo['stops'][$staticStopID]['hasTiming']) {
                                   $routeInfo['stops'][$stopID]['arrives'] = $staticRouteInfo['stops'][$staticStopID]['arrives'];
                                   
                                   if (isset($staticRouteInfo['stops'][$staticStopID]['predictions'])) {
@@ -314,15 +317,7 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
                           } else {
                               Kurogo::log(LOG_WARNING, "static route info does not have live stop id $stopID", 'transit');
                           }
-                          
-                          if ($foundFirstStop || TransitDataModel::isSameStop($stopID, $firstStop)) {
-                              $foundFirstStop = true;
-                          } else {
-                              $moveToEnd[$stopID] = $stop;
-                              unset($routeInfo['stops'][$stopID]);
-                          }
                       }
-                      $routeInfo['stops'] += $moveToEnd;
                       
                       uasort($routeInfo['stops'], array('TransitDataModel', 'sortStops'));
                     }
