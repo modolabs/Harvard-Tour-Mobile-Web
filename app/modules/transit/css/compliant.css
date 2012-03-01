@@ -13,7 +13,11 @@
 }
 
 #stops {
-  margin: 0px -12px;
+  margin: 0px -8px;
+}
+#stops .results {
+  margin-left: 0;
+  margin-right: 0;
 }
 
 #listView li.icon {
@@ -37,7 +41,7 @@
   height: 19px;
   position: static;
   float: left;
-  margin-left: -24px;
+  margin-left: -26px;
   margin-top: 1px;
 }
 

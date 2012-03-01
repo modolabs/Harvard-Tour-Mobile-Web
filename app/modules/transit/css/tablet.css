@@ -5,7 +5,11 @@
 }
 
 #stops {
-  margin: 0px -12px;
+  margin: 0px -8px;
+}
+#stops .results {
+  margin-left: 0;
+  margin-right: 0;
 }
 
 #listView li.icon {
