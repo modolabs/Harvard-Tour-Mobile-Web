@@ -3,6 +3,7 @@
 {$firstField = array_shift($fields)}
 {$lastField = array_pop($fields)}
 
+{block name="scheduleHeader"}{/block}
 <div class="focal">
   {block name="firstField"}
     <h2>
@@ -21,5 +22,7 @@
   </p>
 
 </div>
+
+{block name="scheduleFooter"}{/block}
 
 {include file="findInclude:common/templates/footer.tpl"}

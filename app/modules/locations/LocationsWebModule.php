@@ -92,7 +92,8 @@ class LocationsWebModule extends WebModule {
         return $urlForType;
     }
     
-    public function linkForLocation($id) {        
+    public function linkForLocation($id) {
+        $breadCrumbs = $this->page != 'pane';
         $feed = $this->getLocationFeed($id);
 
         $status = "";
@@ -104,19 +105,25 @@ class LocationsWebModule extends WebModule {
         $nextEvent = $feed->getNextEvent(true);
         
         if (count($currentEvents)>0) {
-            $currentEvent = current($currentEvents);
             $status = 'open';
             $events = array();
+            $lastTime = null;
             foreach ($currentEvents as $event) {
+                if ($event->get_end()>$lastTime) {
+                    $lastTime = $event->get_end();
+                }
                 $events[] = $event->get_summary() . ': ' . $this->timeText($event, true);
             }
             $subtitle .= implode("<br />", $events);
         } else {
             $status = 'closed';
             if ($nextEvent) {
-                $statusString = $this->getLocalizedString('STATUS_OPEN_STRING') . DateFormatter::formatDate($nextEvent->get_start(), DateFormatter::NO_STYLE, DateFormatter::SHORT_STYLE);
                 $subtitle .= $this->getLocalizedString('NEXT_EVENT') . $nextEvent->get_summary() . ': ' . $this->timeText($nextEvent);
             }
+        }
+        
+        if ($this->page == 'pane') {
+            $subtitle = '';
         }
                 
         $options = array(
@@ -126,7 +133,7 @@ class LocationsWebModule extends WebModule {
         return array(
             'title'    => $feed->getTitle(),
             'subtitle' => $subtitle, 
-            'url'      => $this->buildBreadcrumbURL('detail', $options, true),
+            'url'      => $this->buildBreadcrumbURL('detail', $options, $breadCrumbs),
             'listclass'=> $status
         );
     }
@@ -169,12 +176,16 @@ class LocationsWebModule extends WebModule {
         switch ($this->page) {
             
             case 'index':
-                $locations = array();
+            case 'pane':
+                //pane page makes sure that open items are always at the top closed at bottom()
+                $locations = array('open'=>array(), 'closed'=>array());
                 
                 foreach ($this->feeds as $id => $feedData) {
                     $location = $this->linkForLocation($id);
-                    $locations[] = $location;
+                    $locations[$location['listclass']][] = $location;
                 }
+                
+                $locations = array_merge($locations['open'], $locations['closed']);
 
                 $this->assign('description', $this->getModuleVar('description','strings'));
                 $this->assign('locations', $locations);
@@ -190,7 +201,6 @@ class LocationsWebModule extends WebModule {
                 $next    = strtotime("+1 day", $current);
                 $prev    = strtotime("-1 day", $current);
                 $feed = $this->getLocationFeed($id);
-                $feed->setTime($current);
                 
                 // get title, subtitle and maplocation
                 $title = $feed->getTitle();
@@ -246,7 +256,6 @@ class LocationsWebModule extends WebModule {
                 
                 $feed = $this->getLocationFeed($section);
                 $time = $this->getArg('time', time(), FILTER_VALIDATE_INT);
-                $feed->setTime($time);
                 
                 if ($event = $feed->getItem($id, $time)) {
                     $this->assign('event', $event);

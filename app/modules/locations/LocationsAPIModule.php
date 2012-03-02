@@ -8,6 +8,7 @@ class LocationsAPIModule extends APIModule {
     
     protected $feeds = array();
     protected $timezone;
+
     public function getLocationFeed($id) {
         if (!isset($this->feeds[$id])) {
             throw new KurogoDataException($this->getLocalizedString('ERROR_NO_LOCATION_FEED', $id));
@@ -18,7 +19,20 @@ class LocationsAPIModule extends APIModule {
         
         return LocationsDataModel::factory($dataModel, $feedData);
     }
-       public function initializeForCommand() {
+
+    protected function timeText($event, $timeOnly=false) {
+        if ($timeOnly) {
+            if ($event->get_end() - $event->get_start() == -1) {
+                return DateFormatter::formatDate($event->get_start(), DateFormatter::NO_STYLE, DateFormatter::SHORT_STYLE);
+            } else {
+                return DateFormatter::formatDateRange($event->getRange(), DateFormatter::NO_STYLE, DateFormatter::SHORT_STYLE);
+            }
+        } else {
+            return DateFormatter::formatDateRange($event->getRange(), DateFormatter::SHORT_STYLE, DateFormatter::SHORT_STYLE);
+        }
+    }
+
+    public function initializeForCommand() {
        	$this->setResponseVersion(1);
        	$this->timezone = Kurogo::siteTimezone();
        	$this->feeds = $this->loadFeedData();
@@ -41,7 +55,6 @@ class LocationsAPIModule extends APIModule {
                 $feed->setEndDate($end);
                 $items = $feed->items();
                 
-        
                 $events = array();
                 // format events data
                 foreach($items as $item) {
@@ -55,22 +68,46 @@ class LocationsAPIModule extends APIModule {
             	$response = $events;
                 $this->setResponse($events);
                 break;
-            case 'list':
+            case 'status':
+                $id = $this->getArg('id');
+                $feedObject = $this->getLocationFeed($id);
+                $currentEvents = $feedObject->getCurrentEvents();
+                $response = array();
+                
+                if (count($currentEvents)>0) {
+
+                    $response['status'] = 'open';
+                    $response['current'] = array();
+                    foreach ($currentEvents as $event) {
+                        $response['current'][] = $event->get_summary() . ': ' . $this->timeText($event, true);
+                    }
+                } else {
+
+                    $nextEvent = $feedObject->getNextEvent(true);
+                    $response['status'] = 'closed';
+                    if ($nextEvent) {
+                        $response['next'] = $nextEvent->get_summary() . ': ' . $this->timeText($nextEvent);
+                    }
+                }
+                
+                $this->setResponse($response);
+                break;
+            
+            case 'locations':
             	foreach($this->feeds as $id => $feedData){
-            		$feedObject = $this->getLocationFeed($id);
-            		$currentEvent = $feedObject->getCurrentEvent();
-            		$status = $currentEvent?"open":"closed";
-            		$feed= array(
+            		$feed = array(
             			'id'=>$feedData['INDEX'],
             			'title'=>$feedData['TITLE'],
-	            		'subtitle'=>$feedData['SUBTITLE'],
+            			'subtitle'=>isset($feedData['SUBTITLE']) ? $feedData['SUBTITLE'] : "",
 	            		'maplocation'=>$feedData['MAP_LOCATION'],
-	            		'description'=>$feedData['DESCRIPTION'],
-	            		'status'=>$status
-            		);
+	            		'description'=>isset($feedData['DESCRIPTION']) ? $feedData['DESCRIPTION'] : ""
+	            	);
             		$feeds[] = $feed;
             	}
-            	$response = $feeds;
+            	$response = array(
+            	    'description'=>$this->getModuleVar('description','strings'),
+            	    'locations'=>$feeds
+            	);
             	$this->setResponse($response);
             	break;
             default:
