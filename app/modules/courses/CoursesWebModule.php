@@ -323,9 +323,10 @@ class CoursesWebModule extends WebModule {
     }
     
     protected function assignGroupLinks($groups, $defaultGroupOptions = array()){
-        foreach ($groups as $group) {
-            $defaultGroupOptions['group'] = $group;
-            $groupLinks[$group] = $this->buildBreadcrumbURL($this->page, $defaultGroupOptions, false);
+        foreach ($groups as $groupIndex => $group) {
+            $defaultGroupOptions['group'] = $groupIndex;
+            $groupLinks[$groupIndex]['url'] = $this->buildBreadcrumbURL($this->page, $defaultGroupOptions, false);
+            $groupLinks[$groupIndex]['title'] = $group['title'];
         }
         $this->assign('groupLinks', $groupLinks);
     }
@@ -635,25 +636,26 @@ class CoursesWebModule extends WebModule {
 
                 $this->assignTerm();
 
-                //@TODO make this configurable
-                $groups = array('topic','date','type');
-                $this->assignGroupLinks($groups, $this->getCourseOptions());
+                $groupsConfig = $this->getModuleSections('resources');
+                $availableGroups = array_keys($groupsConfig);
+                $this->assignGroupLinks($groupsConfig, $this->getCourseOptions());
 
-                $group = $this->getArg('group', $groups[0]);
+                $group = $this->getArg('group', $availableGroups[0]);
                 $options = array(
                     'group'=>$group
                 );
                 
                 $resources = array();
                 $groups = $contentCourse->getResources($options);
-                $limit = $this->getOptionalModuleVar('MAX_ITEMS_PER_SECTION', 3, 'resources');
+                $limit = $groupsConfig[$group]['max_items'];
                 $seeAllLinks = array();
+
                 foreach ($groups as $groupTitle => $items){
                     $hasMoreItems = false;
                     $index = 0;
                     $groupItems = array();
                     foreach ($items as $item) {
-                        if($index >= $limit){
+                        if($index >= $limit && $limit != 0){
                             break;
                         }
                         $groupItems[] = $this->linkForContent($item, $contentCourse);
@@ -664,8 +666,10 @@ class CoursesWebModule extends WebModule {
                         'items' => $groupItems,
                         'count' => count($items),
                     );
-                    if(count($items) > $limit){
+                    if(count($items) > $limit && $limit != 0){
                         $courseOptions = $this->getCourseOptions();
+                        $courseOptions['group'] = $group;
+                        $courseOptions['key'] = $groupTitle;
                         $resource['url'] = $this->buildBreadcrumbURL('resourceSeeAll', $courseOptions);
                     }
                     $resources[] = $resource;
@@ -676,21 +680,23 @@ class CoursesWebModule extends WebModule {
             	break;
             	
             case 'resourceSeeAll':
-            	$id = $this->getArg('id');
-                $type = $this->getArg('type');
-                $key = urldecode($this->getArg('key'));
-                $options = array(
-                	'courseID' => $id,
-                );
-                $this->controller->setType($type);
-                $items = $this->controller->getResource($id);
-                $resources = array();
-                foreach ($items as $itemkey => $item){
-                	foreach ($item as $resource){
-                		if($key == $itemkey)
-                		$resources[$itemkey][] = $this->linkForContent($resource,$options);
-                	}
+                if (!$course = $this->getCourseFromArgs()) {
+                    $this->redirectTo('index');
                 }
+
+                if (!$contentCourse = $course->getCourse('content')) {
+                    $this->redirectTo('index');
+                }
+                $key = $this->getArg('key');
+                $group = $this->getArg('group');
+                $groups = $contentCourse->getResources(array('group'=>$group));
+                $items = $groups[$key];
+
+                $resources = array();
+                foreach ($items as $item){
+                    $resources[] = $this->linkForContent($item, $contentCourse);
+                }
+                $this->assign('key', $key);
                 $this->assign('resources',$resources);
             	break;
             	

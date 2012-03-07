@@ -5,3 +5,7 @@
     -webkit-border-radius: 9px;	
     border-radius: 9px;	
 }
+
+.tabbody .nonfocal a{
+    float: right;
+}

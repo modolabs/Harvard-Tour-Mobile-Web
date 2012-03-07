@@ -10,14 +10,14 @@
 
 {capture assign="tabBody"}
 <ul class="tabstrip threetabs">
-<li{if $group == 'topic'} class="active"{/if}><a href="{$groupLinks.topic}">By topic</a>
-<li{if $group == 'date'} class="active"{/if}><a href="{$groupLinks.date}">By Date</a>
-<li{if $group == 'type'} class="active"{/if}><a href="{$groupLinks.type}">By Type</a>
+{foreach $groupLinks as $index => $groupLink}
+<li{if $group == $index} class="active"{/if}><a href="{$groupLink.url}">By {$groupLink.title}</a>
+{/foreach}
 </ul>
 
 {foreach $resources as $group}
-    {if $group.title}<h3 class="nonfocal">{$group.title} {/if}
-    {if $group.url}<a href="{$group.url}">see all {$group.count}</a>{/if}</h3>
+    <h3 class="nonfocal">{if $group.title}{$group.title} {/if}
+    {if $group.url}<a href="{$group.url}">{"SEE_ALL"|getLocalizedString:$group.count}</a>{/if}</h3>
     {include file="findInclude:common/templates/navlist.tpl" navlistItems=$group.items subTitleNewline=true}
 {/foreach}
 {/capture}

@@ -1,10 +1,9 @@
 {include file="findInclude:common/templates/header.tpl"}
-{if $resources}
+
+<div class="nonfocal">
+<h3>{$key}</h3>
+</div>
 {block name="resources"}
-{foreach $resources as $itemname =>$item}
-<h2>{$itemname}</h2>
-  {include file="findInclude:common/templates/navlist.tpl" navlistItems=$item}
-{/foreach}
+{include file="findInclude:common/templates/results.tpl" results=$resources}
 {/block}
-{/if}
 {include file="findInclude:common/templates/footer.tpl"}
