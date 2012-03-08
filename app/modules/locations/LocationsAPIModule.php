@@ -31,6 +31,17 @@ class LocationsAPIModule extends APIModule {
             return DateFormatter::formatDateRange($event->getRange(), DateFormatter::SHORT_STYLE, DateFormatter::SHORT_STYLE);
         }
     }
+    
+    protected function arrayForEvent($event) {
+        return array(
+            'uid' => $event->get_uid(),
+            'title'=> $event->get_summary(),
+            'starttime'=> $event->get_start(),
+            'endtime' => $event->get_end(),
+            'description' => $event->get_description(),
+            'status' => $event->getRange()->contains(new TimeRange(time()))?"open":"closed"
+        );
+    }
 
     public function initializeForCommand() {
        	$this->setResponseVersion(1);
@@ -58,15 +69,10 @@ class LocationsAPIModule extends APIModule {
                 $events = array();
                 // format events data
                 foreach($items as $item) {
-                    $event['title'] = $item->get_summary();
-                    $event['starttime'] = $item->get_start();
-                    $event['endtime'] = $item->get_end();
-                    $event['description'] = $item->get_description();
-                    $event['status'] = $item->getRange()->contains(new TimeRange(time()))?"open":"closed";
-                    $events[] = $event;
+                    $events[] = $this->arrayForEvent($item);
                 }
-            	$response = $events;
-                $this->setResponse($events);
+            	$response['events'] = $events;
+                $this->setResponse($response);
                 break;
             case 'status':
                 $id = $this->getArg('id');
@@ -78,22 +84,23 @@ class LocationsAPIModule extends APIModule {
 
                     $response['status'] = 'open';
                     $response['current'] = array();
-                    foreach ($currentEvents as $event) {
-                        $response['current'][] = $event->get_summary() . ': ' . $this->timeText($event, true);
+                    foreach ($currentEvents as $item) {
+                        $response['current'][] = $this->arrayForEvent($item);
                     }
                 } else {
 
-                    $nextEvent = $feedObject->getNextEvent(true);
+                    $item = $feedObject->getNextEvent(true);
                     $response['status'] = 'closed';
-                    if ($nextEvent) {
-                        $response['next'] = $nextEvent->get_summary() . ': ' . $this->timeText($nextEvent);
+                    $response['next'] = null;
+                    if ($item) {
+                        $response['next'] = $this->arrayForEvent($item);
                     }
                 }
                 
                 $this->setResponse($response);
                 break;
             
-            case 'locations':
+            case 'index':
             	foreach($this->feeds as $id => $feedData){
             		$feed = array(
             			'id'=>$feedData['INDEX'],
