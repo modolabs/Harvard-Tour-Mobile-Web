@@ -546,9 +546,10 @@ class CoursesWebModule extends WebModule {
                 $courses = $this->controller->getCourses(array());
                 foreach($courses as $course){
                     if ($contentCourse = $course->getCourse('content')) {
-                        $items = $contentCourse->getUpdates();
-                        foreach ($items as $item){
-                            $contents[] = $this->linkForUpdate($item, $contentCourse, true);
+                        if($items = $contentCourse->getUpdates()){
+                            foreach ($items as $item){
+                                $contents[] = $this->linkForUpdate($item, $contentCourse, true);
+                            }
                         }
                     }
                 }
