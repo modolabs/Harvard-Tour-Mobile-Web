@@ -178,6 +178,9 @@
   padding-top: 11px;
 }
 
+#scheduleViewWrapper {
+  margin: 0 -4px;
+}
 table#scheduleView {
   margin: 0;
   font-size: 90%;

@@ -9,6 +9,7 @@
     {$columnWidth = ceil(100 / $columnCount)}
   {/if}
   
+  <div id="scheduleViewWrapper">
   <table id="scheduleView"{block name="tableAttrs"}{/block}>
     <tr class="stopicons">
       {block name="stopIconSuffix"}
@@ -56,6 +57,7 @@
       </tr>
     {/foreach}
   </table>
+  </div>
 {else}
   {foreach $routeInfo['stops'] as $stopID => $stopInfo}
     {if count($stopInfo['predictions'])}
