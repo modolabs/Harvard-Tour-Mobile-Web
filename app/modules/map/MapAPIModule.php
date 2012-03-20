@@ -27,7 +27,9 @@ class MapAPIModule extends APIModule
         $categoryArg = isset($urlArgs['category']) ? $urlArgs['category'] : null;
         $categories = explode(MAP_CATEGORY_DELIMITER, $categoryArg);
         $category = current($categories);
-        $urlArgs['feed'] = $category;
+        if ($category) {
+            $urlArgs['feed'] = $category;
+        }
 
         $configData = $this->getDataForGroup($this->feedGroup);
 
@@ -207,7 +209,11 @@ class MapAPIModule extends APIModule
         }
 
         if (isset($categoryId)) {
-            $this->dataModel->findCategory($categoryId);
+            $category = $this->dataModel->findCategory($categoryId);
+            $categoryArg = $this->getArg('category');
+            if ($categoryArg) {
+                $this->dataModel->findCategory($categoryArg);
+            }
         }
 
         return $this->dataModel;

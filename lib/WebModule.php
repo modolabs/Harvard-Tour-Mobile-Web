@@ -74,31 +74,42 @@ abstract class WebModule extends Module {
   //
   
   protected function enableTabs($tabKeys, $defaultTab=null, $javascripts=array()) {
-    $currentTab = $tabKeys[0];
+    // prefill from config to get order
+    $tabs = array();
+    foreach ($this->pageConfig as $key => $value) {
+      if (strpos($key, 'tab_') === 0) {
+        $tabKey = substr($key, 4);
+        if (in_array($tabKey, $tabKeys)) {
+          $tabs[$tabKey] = array(
+            'title' => $value,
+          );
+        }
+      }
+    }
+    
+    // Fill out rest of tabs
+    foreach ($tabKeys as $tabKey) {
+      // Fill out default titles for tabs not in config:
+      if (!isset($tabs[$tabKey]) || !is_array($tabs[$tabKey])) {
+        $tabs[$tabKey] = array(
+          'title' => ucwords($tabKey),
+        );
+      }
+      
+      $tabArgs = $this->args;
+      $tabArgs['tab'] = $tabKey;
+      $tabs[$tabKey]['url'] = $this->buildBreadcrumbURL($this->page, $tabArgs, false);
+      
+      $tabs[$tabKey]['javascript'] = isset($javascripts[$tabKey]) ? $javascripts[$tabKey] : '';
+    }
+    
+    // Figure which tab should be selected
+    $currentTab = reset(array_keys($tabs));
     if (isset($this->args['tab']) && in_array($this->args['tab'], $tabKeys)) {
       $currentTab = $this->args['tab'];
       
     } else if (isset($defaultTab) && in_array($defaultTab, $tabKeys)) {
       $currentTab = $defaultTab;
-    }
-    
-    $tabs = array();
-    foreach ($tabKeys as $tabKey) {
-      $title = ucwords($tabKey);
-      $configKey = "tab_{$tabKey}";
-      if (isset($this->pageConfig, $this->pageConfig[$configKey]) && 
-          strlen($this->pageConfig[$configKey])) {
-        $title = $this->pageConfig[$configKey];
-      }
-      
-      $tabArgs = $this->args;
-      $tabArgs['tab'] = $tabKey;
-      
-      $tabs[$tabKey] = array(
-        'title' => $title,
-        'url'   => $this->buildBreadcrumbURL($this->page, $tabArgs, false),
-        'javascript' => isset($javascripts[$tabKey]) ? $javascripts[$tabKey] : '',
-      );
     }
     
     $this->tabbedView = array(
