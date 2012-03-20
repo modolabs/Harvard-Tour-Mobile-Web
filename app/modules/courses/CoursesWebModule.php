@@ -268,6 +268,11 @@ class CoursesWebModule extends WebModule {
                     'title'=>$this->getLocalizedString('COURSE_TAB_TASKS'),
                     'url'=> $this->buildBreadcrumbURL('tasks', $options, false)
                 );
+
+                $courseTabs['grades'] = array(
+                    'title'=>$this->getLocalizedString('COURSE_TAB_GRADES'),
+                    'url'=> $this->buildBreadcrumbURL('grades', $options, false)
+                );
             }
 
             $courseTabs['info'] = array(
@@ -700,7 +705,18 @@ class CoursesWebModule extends WebModule {
                 $this->assign('resources',$resources);
                 $this->assign('group', $group);
             	break;
-            	
+            case 'grades':
+                if (!$course = $this->getCourseFromArgs()) {
+                    $this->redirectTo('index');
+                }
+
+                if (!$contentCourse = $course->getCourse('content')) {
+                    $this->redirectTo('index');
+                }
+
+                $grades = $contentCourse->getGrades();
+                $this->assignTerm();
+                break;
             case 'resourceSeeAll':
                 if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
