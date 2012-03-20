@@ -8,7 +8,10 @@
 {if $location}
 {include file="findInclude:common/templates/navlist.tpl" navlistItems=$location}
 {/if}
-Information about this course...
+{if $description}
+<h3 class="nonfocal">Description</h3>
+<p class="nonfocal">{$description}</p>
+{/if}
 {if $instructors}
 <h3 class="nonfocal">Instructor(s)</h3>
 {include file="findInclude:common/templates/navlist.tpl" navlistItems=$instructors accessKey=false subTitleNewline=$contactsSubTitleNewline}

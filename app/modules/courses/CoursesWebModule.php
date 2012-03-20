@@ -346,6 +346,12 @@ class CoursesWebModule extends WebModule {
         	    if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
         	    }
+                if (!$contentCourse = $course->getCourse('content')) {
+                    $this->redirectTo('index');
+                }
+                if($description = $contentCourse->getDescription()){
+                    $this->assign('description', $description);
+                }
         	    $options = $this->getCourseOptions();
         	    
                 // Bookmark
