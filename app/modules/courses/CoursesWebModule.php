@@ -63,7 +63,8 @@ class CoursesWebModule extends WebModule {
     public function linkForContent($resource, CourseContentCourse $course) {
     	$link = array(
             'title' => $resource->getTitle(),
-            'subtitle' => $resource->getSubTitle()
+            'subtitle' => $resource->getSubTitle(),
+            'class' => "content_" . $resource->getContentType(),
         );
 
         if($resource->getPublishedDate()){

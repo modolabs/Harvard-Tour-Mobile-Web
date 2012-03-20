@@ -6,11 +6,13 @@
 {if $contentPublished}
 <span class="smallprint">{$contentPublished}</span><br/>
 {/if}
-<span class="smallprint">{$courseTitle}</span><br/><br/>
-{if $contentDescription}
-<p>{$contentDescription}</p>
-{/if}
+<span class="smallprint">{$courseTitle}</span><br/>
 </div>
+{if $contentDescription}
+<div class="focal">
+{$contentDescription}
+</div>
+{/if}
 {if $links}
 {include file="findInclude:common/templates/navlist.tpl" navlistItems=$links subTitleNewline=true}
 {/if}
