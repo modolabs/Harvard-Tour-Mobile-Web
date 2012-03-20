@@ -360,6 +360,7 @@ class CoursesWebModule extends WebModule {
                 foreach ($instructors as $instructor){
                 	$value = $instructor->getFullName();
                 	$link = Kurogo::moduleLinkForValue('people', $value, $this, $instructor);
+                	$link['class'] = 'people';
                 	if(!$link){
                 		$link = array(
                 				'title' => $value,
@@ -379,6 +380,15 @@ class CoursesWebModule extends WebModule {
                         );
                     }
     		    }
+
+                $links[] = array(
+                    'title' => 'Roster',
+                    'url'   => $this->buildBreadcrumbURL('roster', $this->getCourseOptions()),
+                );
+                $links[] = array(
+                    'title' => 'Course Materials',
+                    'url'   => $this->buildBreadcrumbURL('index', array()),
+                );
     		    
     		    $this->assign('links', $links);
                 
