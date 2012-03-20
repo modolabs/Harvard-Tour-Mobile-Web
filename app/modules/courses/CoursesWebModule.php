@@ -89,7 +89,8 @@ class CoursesWebModule extends WebModule {
         $contentID = $content->getID();
         $options = array(
             'courseID'  => $course->getCommonID(),
-            'contentID' => $contentID
+            'contentID' => $contentID,
+            'type'      => $content->getContentType(),
         );
         $link = array(
             'title' => $includeCourseName ? $course->getTitle() : $content->getTitle(),
@@ -189,7 +190,8 @@ class CoursesWebModule extends WebModule {
                     'url'=>$this->buildBreadcrumbURL('download', $options, false)
                 );
                 break;
-            
+            case 'announcement':
+                break;
             default:
                 KurogoDebug::debug($content, true);
         }
@@ -395,7 +397,8 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index');
                 }
 
-                if (!$content = $contentCourse->getContentById($contentID)) {
+                $options['type'] = $this->getArg('type');
+                if (!$content = $contentCourse->getContentById($contentID, $options)) {
                     throw new KurogoDataException($this->getLocalizedString('ERROR_CONTENT_NOT_FOUND'));
                 }
                 
