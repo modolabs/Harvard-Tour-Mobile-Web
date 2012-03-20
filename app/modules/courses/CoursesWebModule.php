@@ -413,9 +413,16 @@ class CoursesWebModule extends WebModule {
                     }
                 }
                 
+                $this->assign('courseTitle', $course->getTitle());
                 $this->assign('contentType', $content->getContentType());
                 $this->assign('contentTitle', $content->getTitle());
                 $this->assign('contentDescription', $content->getDescription());        	    
+                if($content->getAuthor()){
+                    $this->assign('contentAuthor', 'Posted by ' . $content->getAuthor());
+                }
+                if($content->getPublishedDate()){
+                    $this->assign('contentPublished', $this->elapsedTime($content->getPublishedDate()->format('U')));
+                }
 
                 $links = $this->getContentLinks($content);
                 $this->assign('links', $links);
