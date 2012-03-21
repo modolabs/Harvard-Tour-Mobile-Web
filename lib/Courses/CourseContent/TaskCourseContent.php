@@ -2,6 +2,7 @@
 
 class TaskCourseContent extends CalendarCourseContent
 {
+    protected $contentType = 'task';
     protected $dueDate;
     protected $finished;
     protected $links = array();
