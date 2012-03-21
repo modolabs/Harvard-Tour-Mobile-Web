@@ -56,6 +56,7 @@ class CoursesWebModule extends WebModule {
 
         $options = $this->getCourseOptions();
         $options['taskID'] = $task->getID();
+        $options['courseID'] = $course->getCommonID();
             
         $link['url'] = $this->buildBreadcrumbURL('task', $options, true);
         $link['subtitle'] = implode("<br />", $subtitle);
@@ -471,9 +472,13 @@ class CoursesWebModule extends WebModule {
                 }
                                 
                 $this->assign('taskTitle', $task->getTitle());
-                $this->assign('taskDescription', $task->getDescription());        	    
-                $this->assign('taskDate', DateFormatter::formatDate($task->getDate(), DateFormatter::MEDIUM_STYLE, DateFormatter::NO_STYLE));
-                $this->assign('taskDueDate', DateFormatter::formatDate($task->getDueDate(), DateFormatter::MEDIUM_STYLE, DateFormatter::NO_STYLE));
+                $this->assign('taskDescription', $task->getDescription());
+                if($task->getPublishedDate()){
+                    $this->assign('taskDate', 'Published: '.DateFormatter::formatDate($task->getPublishedDate(), DateFormatter::LONG_STYLE, DateFormatter::NO_STYLE));
+                }
+                if($task->getDueDate()){
+                    $this->assign('taskDueDate', DateFormatter::formatDate($task->getDueDate(), DateFormatter::MEDIUM_STYLE, DateFormatter::NO_STYLE));
+                }
                 $this->assign('links', $task->getLinks());
 
                 break;
