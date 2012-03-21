@@ -44,11 +44,15 @@ class CoursesWebModule extends WebModule {
             $subtitle[] = $task->getTitle();
         }
 
-        if($date = $task->getDate()) {
-            $subtitle[] = DateFormatter::formatDate($date, DateFormatter::MEDIUM_STYLE, DateFormatter::NO_STYLE);
-	    } else {
-	    	$subtitle[] = $task->getSubTitle();
-	    } 
+        if($task->getPublishedDate()){
+            if($task->getAuthor()){
+                $subtitle[] = 'Updated '. $this->elapsedTime($task->getPublishedDate()->format('U')) .' by '.$task->getAuthor();
+            }else{
+                $subtitle[] = 'Updated '. $this->elapsedTime($task->getPublishedDate()->format('U'));
+            }
+        } else {
+            $subtitle[] = $task->getSubTitle();
+        }
 
         $options = $this->getCourseOptions();
         $options['taskID'] = $task->getID();
@@ -192,6 +196,7 @@ class CoursesWebModule extends WebModule {
                 );
                 break;
             case 'announcement':
+            case 'task':
                 break;
             default:
                 KurogoDebug::debug($content, true);
@@ -596,17 +601,30 @@ class CoursesWebModule extends WebModule {
                 $this->assignIndexTabs(array('term'=>$Term->getID()));
 
                 //@TODO make this configurable
-                $groups = array('date','priority','course');
+                $groups = $this->getModuleSections('alltasks');
                 $this->assignGroupLinks($groups);
 
-                $group = $this->getArg('group', $groups[0]);
+                $group = $this->getArg('group', current(array_keys($groups)));
+                $options = array(
+                    'group'=>$group
+                );
+
                 $tasks = array();
                 $courses = $this->controller->getCourses(array());
                 foreach($courses as $course){
                     if ($contentCourse = $course->getCourse('content')) {
-                        $items = $contentCourse->getTasks();
-                        foreach ($items as $item){
-                            $tasks[] = $this->linkForTask($item, $contentCourse, true);
+                        $groups = $contentCourse->getTasks($options);
+                        foreach ($groups as $groupTitle => $items){
+                            $groupItems = array();
+                            foreach ($items as $item) {
+                                $groupItems[] = $this->linkForTask($item, $contentCourse);
+                            }
+                            $task = array(
+                                'title' => $groupTitle,
+                                'items' => $groupItems,
+                            );
+
+                            $tasks[] = $task;
                         }
                     }
                 }
@@ -622,17 +640,28 @@ class CoursesWebModule extends WebModule {
 
                 $this->assignTerm();
 
-                //@TODO make this configurable
-                $groups = array('date','priority','course');
+                $groups = $this->getModuleSections('tasks');
                 $this->assignGroupLinks($groups, $this->getCourseOptions());
 
-                $group = $this->getArg('group', $groups[0]);
+                $group = $this->getArg('group', current(array_keys($groups)));
+                $options = array(
+                    'group'=>$group
+                );
 
                 $tasks = array();
                 if ($contentCourse = $course->getCourse('content')) {
-                    $items = $contentCourse->getTasks();
-                    foreach ($items as $item){
-                        $tasks[] = $this->linkForTask($item, $contentCourse);
+                    $groups = $contentCourse->getTasks($options);
+                    foreach ($groups as $groupTitle => $items){
+                        $groupItems = array();
+                        foreach ($items as $item) {
+                            $groupItems[] = $this->linkForTask($item, $contentCourse);
+                        }
+                        $task = array(
+                            'title' => $groupTitle,
+                            'items' => $groupItems,
+                        );
+
+                        $tasks[] = $task;
                     }
                 }
                 $this->assign('tasks', $tasks);

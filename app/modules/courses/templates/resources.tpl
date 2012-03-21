@@ -2,12 +2,6 @@
 
 {include file="findInclude:modules/courses/templates/coursedetailhead.tpl"}
 
-{if $contentTypes}
-    <h2 class="nonfocal">{"CONTENT_TYPE_TITLE"|getLocalizedString}</h2>
-    {include file="findInclude:common/templates/navlist.tpl" navlistItems=$contentTypes} 
-{/if}
-
-
 {capture assign="tabBody"}
 <ul class="tabstrip threetabs">
 {foreach $groupLinks as $index => $groupLink}

@@ -5,11 +5,14 @@
 {capture assign=tabBody}
 {if $tasks}
 <ul class="tabstrip threetabs">
-<li{if $group == 'date'} class="active"{/if}><a href="{$groupLinks.date}">By Date</a>
-<li{if $group == 'priority'} class="active"{/if}><a href="{$groupLinks.priority}">By Priority</a>
-<li{if $group == 'course'} class="active"{/if}><a href="{$groupLinks.course}">By Course</a>
+{foreach $groupLinks as $index => $groupLink}
+<li{if $group == $index} class="active"{/if}><a href="{$groupLink.url}">By {$groupLink.title}</a>
+{/foreach}
 </ul>
-{include file="findInclude:common/templates/navlist.tpl" navlistItems=$tasks subTitleNewline=true}
+{foreach $tasks as $group}
+    {if $group.title}<h3 class="nonfocal">{$group.title}</h3>{/if}
+    {include file="findInclude:common/templates/navlist.tpl" navlistItems=$group.items subTitleNewline=true}
+{/foreach}
 {else}
 {"NO_TASKS"|getLocalizedString}
 {/if}
