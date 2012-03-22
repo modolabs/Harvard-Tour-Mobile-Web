@@ -1,6 +1,5 @@
 <?php
 
-includePackage('Courses', 'Course');
 interface CourseDataInterface {
     /**
      * returns an array of Course objects
