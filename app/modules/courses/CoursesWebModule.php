@@ -124,6 +124,8 @@ class CoursesWebModule extends WebModule {
             $subtitle[] = $published;
         }
         
+        $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
+
         $link['subtitle'] = implode("<br />", $subtitle);
         $link['url'] = $this->buildBreadcrumbURL('content', $options, true);
         return $link;
@@ -343,6 +345,18 @@ class CoursesWebModule extends WebModule {
             $groupLinks[$groupIndex]['title'] = $group['title'];
         }
         $this->assign('groupLinks', $groupLinks);
+    }
+
+    protected function sortUpdatesByDate($updates){
+        if(empty($updates)){
+            return array();
+        }
+        uasort($updates, array($this, 'sortByDate'));
+        return $updates;
+    }
+
+    private function sortByDate($updateA, $updateB){
+        return $updateA['sortDate'] < $updateB['sortDate'];
     }
 
     protected function initializeForPage() {
@@ -595,6 +609,7 @@ class CoursesWebModule extends WebModule {
                         }
                     }
                 }
+                $contents = $this->sortUpdatesByDate($contents);
                 $this->assign('contents', $contents);
                 break;
             
