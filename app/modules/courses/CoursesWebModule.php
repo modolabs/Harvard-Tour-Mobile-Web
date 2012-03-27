@@ -184,7 +184,7 @@ class CoursesWebModule extends WebModule {
         switch ($content->getContentType()) {
             case 'link':
                 $links[] = array(
-                    'title'=>'Follow Link',
+                    'title'=>$content->getTitle(),
                     'subtitle'=>$content->getURL(),
                     'url'=>$content->getURL()
                 );
