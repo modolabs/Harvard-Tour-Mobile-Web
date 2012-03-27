@@ -186,7 +186,8 @@ class CoursesWebModule extends WebModule {
                 $links[] = array(
                     'title'=>$content->getTitle(),
                     'subtitle'=>$content->getURL(),
-                    'url'=>$content->getURL()
+                    'url'=>$content->getURL(),
+                    'class'=>'external',
                 );
                 break;
             case 'file':
