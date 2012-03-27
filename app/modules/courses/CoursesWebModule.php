@@ -756,8 +756,13 @@ class CoursesWebModule extends WebModule {
                         $groupItems[] = $this->linkForContent($item, $contentCourse);
                         $index++;
                     }
+                    if($group == 'type'){
+                        $title = $this->getLocalizedString('CONTENT_TYPE_TITLE_'.strtoupper($groupTitle));
+                    }else{
+                        $title = $groupTitle;
+                    }
                     $resource = array(
-                        'title' => $groupTitle,
+                        'title' => $title,
                         'items' => $groupItems,
                         'count' => count($items),
                     );
