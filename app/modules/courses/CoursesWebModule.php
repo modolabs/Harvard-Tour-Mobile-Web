@@ -362,7 +362,12 @@ class CoursesWebModule extends WebModule {
     }
 
     private function sortByDate($updateA, $updateB){
-        return $updateA['sortDate'] < $updateB['sortDate'];
+        $updateA_time = $updateA['sortDate'] ? $updateA['sortDate']->format('U') : 0;
+        $updateB_time = $updateB['sortDate'] ? $updateB['sortDate']->format('U') : 0;
+        if($updateA_time == $updateB_time){
+            return 0;
+        }
+        return ($updateA_time > $updateB_time) ? -1 : 1;
     }
 
     protected function initializeForPage() {
