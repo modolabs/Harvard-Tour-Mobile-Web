@@ -611,6 +611,7 @@ class CoursesWebModule extends WebModule {
                     }
                 }
                 $contents = $this->sortUpdatesByDate($contents);
+                $contents = array_slice($contents, 0, $this->getOptionalModuleVar('MAX_UPDATES', 10));
                 $this->assign('contents', $contents);
                 break;
             
