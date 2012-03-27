@@ -234,20 +234,25 @@ class CoursesWebModule extends WebModule {
     
     protected function assignIndexTabs($options = array()){
         $courseTabs = array();
-        $courseTabs['index'] = array(
-            'title'=>$this->getLocalizedString('INDEX_TAB_COURSES'),
-            'url'=> $this->buildBreadcrumbURL('index', $options, false)
-        );
+        $tabsConfig = $this->getModuleSections('indextabs');
+        foreach($tabsConfig as $page => $tab){
+            if($tab['protected'] == 0){
+                $courseTabs[$page] = array(
+                    'title' => $tab['title'],
+                    'url'   => $this->buildBreadcrumbURL($page, $options, false),
+                );
+            }
+        }
 
         if ($this->hasPersonalizedCourses && $this->isLoggedIn()) {
-            $courseTabs['allupdates'] = array(
-                'title'=>$this->getLocalizedString('INDEX_TAB_UPDATES'),
-                'url'=> $this->buildBreadcrumbURL('allupdates', $options, false)
-            );
-            $courseTabs['alltasks'] = array(
-                'title'=>$this->getLocalizedString('INDEX_TAB_TASKS'),
-                'url'=> $this->buildBreadcrumbURL('alltasks', $options, false)
-            );
+            foreach($tabsConfig as $page => $tab){
+                if($tab['protected'] == 1){
+                    $courseTabs[$page] = array(
+                        'title' => $tab['title'],
+                        'url'   => $this->buildBreadcrumbURL($page, $options, false),
+                    );
+                }
+            }
         }
         $this->assign('courseTabs', $courseTabs);
     }
