@@ -456,6 +456,7 @@ class CoursesWebModule extends WebModule {
                     }
                 }
                 
+                $this->setPageTitle($this->getLocalizedString('CONTENT_TYPE_TITLE_'.strtoupper($content->getContentType())));
                 $this->assign('courseTitle', $course->getTitle());
                 $this->assign('contentType', $content->getContentType());
                 $this->assign('contentTitle', $content->getTitle());
