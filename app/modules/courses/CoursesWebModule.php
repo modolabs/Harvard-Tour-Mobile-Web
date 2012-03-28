@@ -268,31 +268,14 @@ class CoursesWebModule extends WebModule {
             $this->assign('courseID', $course->getID());
             $courseTabs = array();
             if ($contentCourse = $course->getCourse('content')) {
-                $courseTabs['updates'] = array(
-                    'title'=>$this->getLocalizedString('COURSE_TAB_UPDATES'),
-                    'url'=> $this->buildBreadcrumbURL('updates', $options, false)
-                );
-
-                $courseTabs['resources'] = array(
-                    'title'=>$this->getLocalizedString('COURSE_TAB_RESOURCES'),
-                    'url'=> $this->buildBreadcrumbURL('resources', $options, false)
-                );
-
-                $courseTabs['tasks'] = array(
-                    'title'=>$this->getLocalizedString('COURSE_TAB_TASKS'),
-                    'url'=> $this->buildBreadcrumbURL('tasks', $options, false)
-                );
-
-                $courseTabs['grades'] = array(
-                    'title'=>$this->getLocalizedString('COURSE_TAB_GRADES'),
-                    'url'=> $this->buildBreadcrumbURL('grades', $options, false)
-                );
+                $tabsConfig = $this->getModuleSections('coursetabs');
+                foreach($tabsConfig as $page => $tab){
+                    $courseTabs[$page] = array(
+                        'title' => $tab['title'],
+                        'url'   => $this->buildBreadcrumbURL($page, $options, false),
+                    );
+                }
             }
-
-            $courseTabs['info'] = array(
-                'title'=>$this->getLocalizedString('COURSE_TAB_INFO'),
-                'url'=> $this->buildBreadcrumbURL('info', $options, false)
-            );
                         
             $this->assign('courseTabs', $courseTabs);
         }
