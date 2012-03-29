@@ -69,7 +69,8 @@ class CoursesWebModule extends WebModule {
     	$link = array(
             'title' => $resource->getTitle(),
             'subtitle' => $resource->getSubTitle(),
-            'class' => "content_" . $resource->getContentType(),
+            'class' => "content content_" . $resource->getContentType(),
+            'img'   => "/modules/courses/images/content_" . $resource->getContentType() . $this->imageExt
         );
 
         if($resource->getPublishedDate()){
@@ -100,7 +101,8 @@ class CoursesWebModule extends WebModule {
         );
         $link = array(
             'title' => $includeCourseName ? $course->getTitle() : $content->getTitle(),
-            'class' => "content_" . $content->getContentType()
+            'class' => "content content_" . $content->getContentType(),
+            'img'   => "/modules/courses/images/content_" . $content->getContentType() . $this->imageExt
         );
         foreach (array('courseID') as $field) {
             if (isset($data[$field])) {
