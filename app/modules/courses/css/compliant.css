@@ -77,3 +77,7 @@ form {
     height: 40px;
     width: 40px;
 }
+
+.tabbody{
+    min-height: 0px;
+}
