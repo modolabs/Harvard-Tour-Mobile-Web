@@ -9,17 +9,14 @@
 {include file="findInclude:common/templates/navlist.tpl" navlistItems=$location}
 {/if}
 {if $description}
-<h3 class="nonfocal">Description</h3>
-<p class="nonfocal">{$description}</p>
+{include file="findInclude:common/templates/navlist.tpl" navListHeading="Description" navlistItems=$description accessKey=false subTitleNewline=$contactsSubTitleNewline}
 {/if}
 {if $instructors}
-<h3 class="nonfocal">Instructor(s)</h3>
-{include file="findInclude:common/templates/navlist.tpl" navlistItems=$instructors accessKey=false subTitleNewline=$contactsSubTitleNewline}
+{include file="findInclude:common/templates/navlist.tpl" navListHeading="Instructor(s)" navlistItems=$instructors accessKey=false subTitleNewline=$contactsSubTitleNewline}
 {/if}
 
 {if $links}
-<h3 class="nonfocal">Links</h3>
-{include file="findInclude:common/templates/navlist.tpl" navlistItems=$links subTitleNewline=true}
+{include file="findInclude:common/templates/navlist.tpl" navListHeading="Links" navlistItems=$links subTitleNewline=true}
 {/if}
 
 {/capture}
