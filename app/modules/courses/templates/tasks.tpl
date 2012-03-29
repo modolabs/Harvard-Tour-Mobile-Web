@@ -10,8 +10,8 @@
 {/foreach}
 </ul>
 {foreach $tasks as $group}
-    {if $group.title}<h3 class="nonfocal">{$group.title}</h3>{/if}
-    {include file="findInclude:common/templates/navlist.tpl" navlistItems=$group.items subTitleNewline=true}
+    {$navListHeading=$group.title|default:''}
+    {include file="findInclude:common/templates/navlist.tpl" navListHeading=$navListHeading navlistItems=$group.items subTitleNewline=true}
 {/foreach}
 {else}
 {"NO_TASKS"|getLocalizedString}

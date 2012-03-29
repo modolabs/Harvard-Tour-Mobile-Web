@@ -10,9 +10,8 @@
 </ul>
 
 {foreach $resources as $group}
-    <h3 class="nonfocal">{if $group.title}{$group.title} {/if}
-    {if $group.url}<a href="{$group.url}">{"SEE_ALL"|getLocalizedString:$group.count}</a>{/if}</h3>
-    {include file="findInclude:common/templates/navlist.tpl" navlistItems=$group.items subTitleNewline=true}
+    {$navListHeading=$group.title|default:''}
+    {include file="findInclude:common/templates/navlist.tpl" navListHeading=$navListHeading navlistItems=$group.items subTitleNewline=true}
 {/foreach}
 {/capture}
 {include file="findInclude:modules/courses/templates/courseTabs.tpl" tabBody=$tabBody}

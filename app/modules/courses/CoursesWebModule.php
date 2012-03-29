@@ -635,8 +635,13 @@ class CoursesWebModule extends WebModule {
                             foreach ($items as $item) {
                                 $groupItems[] = $this->linkForTask($item, $contentCourse);
                             }
+                            if($group == 'priority'){
+                                $title = $this->getLocalizedString('CONTENT_PRIORITY_TITLE_'.strtoupper($groupTitle));
+                            }else{
+                                $title = $groupTitle;
+                            }
                             $task = array(
-                                'title' => $groupTitle,
+                                'title' => $title,
                                 'items' => $groupItems,
                             );
 
@@ -672,8 +677,13 @@ class CoursesWebModule extends WebModule {
                         foreach ($items as $item) {
                             $groupItems[] = $this->linkForTask($item, $contentCourse);
                         }
+                        if($group == 'priority'){
+                            $title = $this->getLocalizedString('CONTENT_PRIORITY_TITLE_'.strtoupper($groupTitle));
+                        }else{
+                            $title = $groupTitle;
+                        }
                         $task = array(
-                            'title' => $groupTitle,
+                            'title' => $title,
                             'items' => $groupItems,
                         );
 
@@ -915,8 +925,12 @@ class CoursesWebModule extends WebModule {
                     }
                     $this->assign('courses', $courses);
                 } else {
-                    $this->assign('loginLink', $this->buildURLForModule('login','', $this->getArrayForRequest()));
-                    $this->assign('loginText', $this->getLocalizedString('SIGN_IN_SITE', Kurogo::getSiteString('SITE_NAME')));
+                    $loginLink = array(
+                        'title' => $this->getLocalizedString('SIGN_IN_SITE', Kurogo::getSiteString('SITE_NAME')),
+                        'url'   => $this->buildURLForModule('login','', $this->getArrayForRequest()),
+                    );
+                    $this->assign('loginLink', array($loginLink));
+                    $this->assign('loginText', $this->getLocalizedString('NOT_LOGGED_IN'));
                 }
 
                 // do we have a catalog?  catelog just demo and XML file copy from LMS //delete this line after look
@@ -934,6 +948,7 @@ class CoursesWebModule extends WebModule {
                         );
                     }
                 }
+                $this->assign('courseCatalogText', $this->getLocalizedString('COURSE_CATALOG_TEXT'));
                 $this->assign('catalogItems', $catalogItems);
                 break;
         }
