@@ -335,6 +335,15 @@ class CoursesWebModule extends WebModule {
             $groupLinks[$groupIndex]['url'] = $this->buildBreadcrumbURL($this->page, $defaultGroupOptions, false);
             $groupLinks[$groupIndex]['title'] = $group['title'];
         }
+        $tabCount = count($groups);
+        $tabCountMap = array(
+            1   => 'one',
+            2   => 'two',
+            3   => 'three',
+            4   => 'four',
+            5   => 'five',
+        );
+        $this->assign('tabCount', $tabCountMap[$tabCount]);
         $this->assign('groupLinks', $groupLinks);
     }
 
