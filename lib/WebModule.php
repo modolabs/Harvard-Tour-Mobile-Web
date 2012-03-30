@@ -26,6 +26,8 @@ abstract class WebModule extends Module {
   protected $templatePage = 'index';
 
   protected $deviceClassifier;  
+
+  protected $homeModuleID;
   protected $pagetype = 'unknown';
   protected $platform = 'unknown';
   
@@ -104,7 +106,8 @@ abstract class WebModule extends Module {
     }
     
     // Figure which tab should be selected
-    $currentTab = reset(array_keys($tabs));
+    $currentTab = array_keys($tabs);
+    $currentTab = reset($currentTab);    
     if (isset($this->args['tab']) && in_array($this->args['tab'], $tabKeys)) {
       $currentTab = $this->args['tab'];
       
@@ -472,6 +475,9 @@ abstract class WebModule extends Module {
         }
 
         $this->moduleName = $this->getModuleVar('title','module');
+
+        $homeModuleID = Kurogo::getOptionalSiteVar('HOME_MODULE', 'home', 'modules');
+        $this->homeModuleID = $homeModuleID;
 
         $this->pagetype = $this->getPagetype();
         $this->platform = $this->getPlatform();
@@ -1077,11 +1083,11 @@ abstract class WebModule extends Module {
   //
   
   private function encodeBreadcrumbParam($breadcrumbs) {
-    return urlencode(gzdeflate(json_encode($breadcrumbs), 9));
+    return gzdeflate(json_encode($breadcrumbs), 9);
   }
   
   private function decodeBreadcrumbParam($breadcrumbs) {
-    if ($json = @gzinflate(urldecode($breadcrumbs))) {
+    if ($json = @gzinflate($breadcrumbs)) {
         return json_decode($json, true);
     }
 
@@ -1470,7 +1476,8 @@ abstract class WebModule extends Module {
     
     $moduleStrings = $this->getOptionalModuleSection('strings');
     $this->assign('moduleStrings', $moduleStrings);
-    $this->assign('homeLink', $this->buildURLForModule('home','',array()));
+    $this->assign('homeLink', $this->buildURLForModule($this->homeModuleID,'',array()));
+    $this->assign('homeModuleID', $this->homeModuleID);
     
     $this->assignLocalizedStrings();
 
@@ -1624,3 +1631,4 @@ abstract class WebModule extends Module {
         ), false);
     }
 }
+  
