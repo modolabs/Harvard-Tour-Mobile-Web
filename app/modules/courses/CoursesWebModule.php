@@ -168,6 +168,7 @@ class CoursesWebModule extends WebModule {
                     }
                     $subtitle[] = $published;
                 }
+                $link['class'] = 'content_'.$lastUpdateContent->getContentType();
             } else {
                 $subtitle[] = $this->getLocalizedString('NO_UPDATES');
             }
