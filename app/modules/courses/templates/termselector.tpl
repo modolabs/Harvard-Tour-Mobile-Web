@@ -1,5 +1,5 @@
 {capture name="categorySelect" assign="categorySelect"}
-  <select class="newsinput" id="section" name="section" onchange="loadSection(this, '{$page}');">
+  <select class="coursesinput" id="section" name="section" onchange="loadSection(this, '{$page}');">
     {foreach $sections as $section}
       {if $section['selected']}
         <option value="{$section['value']}" selected="true">{$section['title']|escape}</option>
@@ -17,8 +17,7 @@
             <form method="get" action="index" id="category-form">
               <table border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td class="formlabel">{"TERM_TEXT"|getLocalizedString}</td>
-                  <td class="inputfield"><div id="news-category-select">{$categorySelect}</div></td>
+                  <td class="inputfield"><div id="courses-category-select">{$categorySelect}</div></td>
                 </tr>
               </table>
               {foreach $hiddenArgs as $arg => $value}
