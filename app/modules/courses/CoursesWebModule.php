@@ -935,6 +935,7 @@ class CoursesWebModule extends WebModule {
                             $courses[] = $course;
                         }
                     }
+                    $this->assign('courseListHeading', $this->getLocalizedString('COURSE_LIST_HEADING', $Term->getTitle(), count($courses)));
                     $this->assign('courses', $courses);
                 } else {
                     $loginLink = array(

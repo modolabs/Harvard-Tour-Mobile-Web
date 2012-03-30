@@ -5,7 +5,7 @@
 {capture assign=tabBody}
     {block name="courseList"}
     {if $courses}
-        {include file="findInclude:common/templates/navlist.tpl" navListHeading=$termTitle navlistItems=$courses subTitleNewline=true}
+        {include file="findInclude:common/templates/navlist.tpl" navListHeading=$courseListHeading navlistItems=$courses subTitleNewline=true}
     {elseif $session_userID}
         <div>
         {"NO_COURSES"|getLocalizedString}
