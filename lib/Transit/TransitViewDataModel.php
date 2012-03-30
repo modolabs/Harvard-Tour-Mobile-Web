@@ -65,8 +65,8 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
         $cacheLifetime = Kurogo::getOptionalSiteVar('TRANSIT_VIEW_CACHE_TIMEOUT', 20);
         if ($this->daemonMode) {
             // daemons should load cached files aggressively to beat user page loads
-            $cacheLifetime -= 300;
-            if ($cacheLifetime < 0) { $cacheLifetime = 0; }
+            $cacheLifetime -= 900;
+            if ($cacheLifetime < 1) { $cacheLifetime = 1; }
         }
         $this->cache->setCacheLifetime($cacheLifetime);
     }

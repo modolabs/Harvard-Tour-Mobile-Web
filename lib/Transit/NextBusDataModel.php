@@ -22,8 +22,8 @@ class NextBusDataModel extends TransitDataModel
         $cacheLifetime = Kurogo::getOptionalSiteVar('NEXTBUS_ROUTE_CACHE_TIMEOUT', 86400);
         if ($this->daemonMode) {
             // daemons should load cached files aggressively to beat user page loads
-            $cacheLifetime -= 300;
-            if ($cacheLifetime < 0) { $cacheLifetime = 0; }
+            $cacheLifetime -= 900;
+            if ($cacheLifetime < 1) { $cacheLifetime = 1; }
         }
         $this->pathCache->setCacheLifetime($cacheLifetime);
         

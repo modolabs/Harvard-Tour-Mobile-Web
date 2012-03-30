@@ -46,8 +46,8 @@ class TranslocDataRetriever extends URLDataRetriever
         
         // daemons should load cached files aggressively to beat user page loads
         if ($this->daemonMode) {
-            $cacheLifetime -= 300;
-            if ($cacheLifetime < 0) { $cacheLifetime = 0; }
+            $cacheLifetime -= 900;
+            if ($cacheLifetime < 1) { $cacheLifetime = 1; }
         }
         $this->setCacheLifeTime($cacheLifetime);
         $this->setTimeout($timeout);
