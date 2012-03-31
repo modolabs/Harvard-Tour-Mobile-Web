@@ -425,7 +425,7 @@ class CoursesWebModule extends WebModule {
                     );
                     $sectionList[] = $link;
                 }
-                $this->assign('sections',$sectionList);
+                $this->assign('sectionList',$sectionList);
 
                 $instructorList = array();
                 $instructors = $course->getInstructors();
