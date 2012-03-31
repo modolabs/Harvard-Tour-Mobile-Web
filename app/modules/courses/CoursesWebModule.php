@@ -650,11 +650,9 @@ class CoursesWebModule extends WebModule {
                 $options = array('term' => $term);
                 if ($areas = $this->controller->getCatalogAreas($options)) {
                     $areasList = array();
+                    $areaOptions = array('term' => strval($term));
                     foreach ($areas as $CourseArea) {
-                        $areasList[] = array(
-                            'title'=>$CourseArea->getTitle(),
-                            'url'=>$this->buildBreadcrumbURL('area',array('area'=>$CourseArea->getCode(), 'term' => strval($term)), false)
-                        );
+                        $areasList[] = $this->linkForCatalogArea($CourseArea, $areaOptions);
                     }
                     $this->assign('areas', $areasList);
                 }
