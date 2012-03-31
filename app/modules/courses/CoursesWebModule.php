@@ -383,6 +383,68 @@ class CoursesWebModule extends WebModule {
     protected function initializeForPage() {
         switch($this->page) {
             case 'catalogCourseInfo':
+                if (!$course = $this->getCourseFromArgs()) {
+                    $this->redirectTo('index');
+                }
+                $catalogCourse = $course->getCourse('catalog');
+                if (!$catalogCourse = $course->getCourse('catalog')) {
+                    $this->redirectTo('index');
+                }
+                if($description = $catalogCourse->getDescription()){
+                    $description = array(array('title'=>$description));
+                    $this->assign('description', $description);
+                }
+        	    $options = $this->getCourseOptions();
+        	    
+                // Bookmark
+                if ($this->getOptionalModuleVar('BOOKMARKS_ENABLED', 1)) {
+                    $cookieParams = array(
+                        'title' => $course->getTitle(),
+                        'term'  => rawurlencode($options['term']),
+                        'id'    => rawurlencode($options['courseID']),
+                    );
+
+                    $cookieID = http_build_query($cookieParams);
+                    $this->generateBookmarkOptions($cookieID);
+                }
+
+                $instructorList = array();
+                $instructors = $course->getInstructors();
+                
+                foreach ($instructors as $instructor){
+                	$value = $instructor->getFullName();
+                	$link = Kurogo::moduleLinkForValue('people', $value, $this, $instructor);
+                	$link['class'] = 'people';
+                	if(!$link){
+                		$link = array(
+                				'title' => $value,
+                		);
+                	}
+                	$instructorList[] = $link;
+                }
+                
+                $this->assign('instructors',$instructorList);
+                $links = array();
+
+                if ($registrationCourse = $course->getCourse('registration')) {
+                    if ($registrationCourse->canDrop()) {
+                        $links[] = array(
+                            'title'=> $this->getLocalizedString('DROP_COURSE'),
+                            'url' => $this->buildBreadcrumbURL('dropclass', $options, true)
+                        );
+                    }
+    		    }
+
+                $links[] = array(
+                    'title' => 'Roster',
+                    'url'   => $this->buildBreadcrumbURL('roster', $this->getCourseOptions()),
+                );
+                $links[] = array(
+                    'title' => 'Course Materials',
+                    'url'   => $this->buildBreadcrumbURL('index', array()),
+                );
+    		    
+    		    $this->assign('links', $links);
                 break;
         	case 'info':
         	    
