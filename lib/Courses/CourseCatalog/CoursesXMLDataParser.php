@@ -70,13 +70,13 @@ class CoursesXMLDataParser extends XMLDataParser {
                 $parent->addSection($element);
                 break;
             case 'COURSE':
-                if ($area = $this->getOption('area')) {
-                    if ($element->getAreaCode() == $area) {
-                        $this->items[] = $element;
-                    }
-                } elseif ($courseID = $this->getOption('courseID')) {
+                if ($courseID = $this->getOption('courseID')) {
                     if ($element->getCommonID() == $courseID) {
                         $this->items = $element;
+                    }
+                }elseif ($area = $this->getOption('area')) {
+                    if ($element->getAreaCode() == $area) {
+                        $this->items[] = $element;
                     }
                 } else {
                     $this->items[] = $element;
