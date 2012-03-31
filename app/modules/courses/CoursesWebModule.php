@@ -668,15 +668,16 @@ class CoursesWebModule extends WebModule {
                 if (!$CourseArea = $this->controller->getCatalogArea($area)) {
                     $this->redirectTo('catalog', array());
                 }
+                $Term = $this->assignTerm();
 
                 $areas = $CourseArea->getAreas();
                 
                 $areasList = array();
+                $areaOptions = array('term' => strval($Term));
                 foreach ($areas as $CourseArea) {
-                    $areasList[] = $this->linkForCatalogArea($CourseArea);
+                    $areasList[] = $this->linkForCatalogArea($CourseArea, $areaOptions);
                 }
 
-                $Term = $this->assignTerm();
                 $courses = array();
                 $options = array(
                     'term'=>$Term,
