@@ -645,12 +645,14 @@ class CoursesWebModule extends WebModule {
         	    break;
         	    
             case 'catalog':
+                $termCode = $this->getArg('term', '');
                 if($terms = $this->controller->getAvailableTerms()) {
                     $termsList = array();
                     foreach($terms as $term) {
                         $termsList[] = array(
                             'title' => $term->getTitle(),
-                            'value' => $term->getID()
+                            'value' => $term->getID(),
+                            'selected' => ($termCode == $term->getID()) ? '1' : ''
                         );
                     }
                     $this->assign('terms', $termsList);
