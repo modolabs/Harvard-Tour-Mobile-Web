@@ -404,6 +404,7 @@ class CoursesWebModule extends WebModule {
                         'title' => $course->getTitle(),
                         'term'  => rawurlencode($options['term']),
                         'id'    => rawurlencode($options['courseID']),
+                        'area'    => rawurlencode($options['area']),
                     );
 
                     $cookieID = http_build_query($cookieParams);
