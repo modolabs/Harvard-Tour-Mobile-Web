@@ -307,9 +307,10 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function detailURLForBookmark($aBookmark) {
-        return $this->buildBreadcrumbURL('info', array(
+        return $this->buildBreadcrumbURL('catalogCourseInfo', array(
             'courseID'  => $this->getBookmarkParam($aBookmark, 'id'),
             'term'      => $this->getBookmarkParam($aBookmark, 'term'),
+            'area'      => $this->getBookmarkParam($aBookmark, 'area'),
         ));
     }
 
