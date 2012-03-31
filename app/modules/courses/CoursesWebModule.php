@@ -647,7 +647,8 @@ class CoursesWebModule extends WebModule {
             case 'catalog':
                 $term = $this->assignTerm();
 
-                if ($areas = $this->controller->getCatalogAreas()) {
+                $options = array('term' => $term);
+                if ($areas = $this->controller->getCatalogAreas($options)) {
                     $areasList = array();
                     foreach ($areas as $CourseArea) {
                         $areasList[] = array(
