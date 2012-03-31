@@ -4,11 +4,11 @@
 {$catalogHeader}
 {/block}
 Term: <select id="termID" name="term" onchange="loadSection(this, '{$page}');">
-    {foreach $terms as $term}
-        {if $term['selected']}
-            <option value="{$term['value']}" selected="true">{$term['title']|escape}</option>
+    {foreach $sections as $section}
+        {if $section['selected']}
+            <option value="{$section['value']}" selected="true">{$section['title']|escape}</option>
         {else}
-            <option value="{$term['value']}">{$term['title']|escape}</option>
+            <option value="{$section['value']}">{$section['title']|escape}</option>
         {/if}
     {/foreach}
 </select>

@@ -645,25 +645,14 @@ class CoursesWebModule extends WebModule {
         	    break;
         	    
             case 'catalog':
-                $termCode = $this->getArg('term', '');
-                if($terms = $this->controller->getAvailableTerms()) {
-                    $termsList = array();
-                    foreach($terms as $term) {
-                        $termsList[] = array(
-                            'title' => $term->getTitle(),
-                            'value' => $term->getID(),
-                            'selected' => ($termCode == $term->getID()) ? '1' : ''
-                        );
-                    }
-                    $this->assign('terms', $termsList);
-                }
+                $term = $this->assignTerm();
 
                 if ($areas = $this->controller->getCatalogAreas()) {
                     $areasList = array();
                     foreach ($areas as $CourseArea) {
                         $areasList[] = array(
                             'title'=>$CourseArea->getTitle(),
-                            'url'=>$this->buildBreadcrumbURL('area',array('area'=>$CourseArea->getCode()), false)
+                            'url'=>$this->buildBreadcrumbURL('area',array('area'=>$CourseArea->getCode(), 'term' => strval($term)), false)
                         );
                     }
                     $this->assign('areas', $areasList);
