@@ -5,8 +5,8 @@
 {include file="findInclude:common/templates/bookmark.tpl" name=$cookieName item=$bookmarkItem exdate=$expireDate}
 </div>
 {capture assign="tabBody"}
-{if $location}
-{include file="findInclude:common/templates/navlist.tpl" navlistItems=$location}
+{if $sectionList}
+{include file="findInclude:common/templates/navlist.tpl" navListHeading="Section(s)" navlistItems=$sectionList}
 {/if}
 {if $description}
 {include file="findInclude:common/templates/navlist.tpl" navListHeading="Description" navlistItems=$description accessKey=false subTitleNewline=$contactsSubTitleNewline}
