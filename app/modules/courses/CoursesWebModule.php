@@ -412,6 +412,21 @@ class CoursesWebModule extends WebModule {
                     $this->generateBookmarkOptions($cookieID);
                 }
 
+                // TODO: sections information need to be fully displayed
+                // sections
+                $sectionList = array();
+                $sections = $catalogCourse->getSections();
+                foreach($sections as $section) {
+                    // TODO: every section has one or several schedules
+                    // it need to be displayed
+                    $link = array(
+                        'title' => $section->getClassNumber(),
+                        'subtitle' => $section->getInstructor()
+                    );
+                    $sectionList[] = $link;
+                }
+                $this->assign('sections',$sectionList);
+
                 $instructorList = array();
                 $instructors = $course->getInstructors();
                 
