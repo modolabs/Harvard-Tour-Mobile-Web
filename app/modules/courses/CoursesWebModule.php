@@ -156,7 +156,8 @@ class CoursesWebModule extends WebModule {
             'title' => $course->getTitle()
         );
 
-        if ($contentCourse = $course->getCourse('content')) {
+        $contentCourse = $course->getCourse('content');
+        if ($contentCourse) {
             $page = 'updates';
             $subtitle = array();
             if ($lastUpdateContent = $contentCourse->getLastUpdate()) {
@@ -179,6 +180,20 @@ class CoursesWebModule extends WebModule {
         }
         
         $link['url'] = $this->buildBreadcrumbURL($page, $options , false);
+        return $link;
+    }
+
+    protected function linkForCatalogCourse(CourseInterface $course, $options = array()) {
+        $options = array_merge($options, array(
+            'courseID'  => $course->getID()
+            )
+        );
+    
+        $link = array(
+            'title' => $course->getTitle()
+        );
+
+        $link['url'] = $this->buildBreadcrumbURL('catalogCourseInfo', $options , false);
         return $link;
     }
     
@@ -367,6 +382,8 @@ class CoursesWebModule extends WebModule {
 
     protected function initializeForPage() {
         switch($this->page) {
+            case 'catalogCourseInfo':
+                break;
         	case 'info':
         	    
         	    if (!$course = $this->getCourseFromArgs()) {
@@ -588,7 +605,7 @@ class CoursesWebModule extends WebModule {
                 $coursesList = array();
  
                 foreach ($courses as $item) {
-                    $course = $this->linkForCourse($item, array('term'=>strval($Term)));
+                    $course = $this->linkForCatalogCourse($item, array('term'=>strval($Term), 'area' => $area));
                     $coursesList[] = $course;
                 }
 
