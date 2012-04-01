@@ -234,6 +234,8 @@ class CoursesWebModule extends WebModule {
             $Term = $this->controller->getCurrentTerm();
         }
 
+        $this->controller->setCurrentTerm($Term);
+
         $terms = array();
         foreach($feedTerms as $term) {
             $terms[] = array(
@@ -647,8 +649,7 @@ class CoursesWebModule extends WebModule {
             case 'catalog':
                 $term = $this->assignTerm();
 
-                $options = array('term' => $term);
-                if ($areas = $this->controller->getCatalogAreas($options)) {
+                if ($areas = $this->controller->getCatalogAreas()) {
                     $areasList = array();
                     $areaOptions = array('term' => strval($term));
                     foreach ($areas as $CourseArea) {
@@ -666,7 +667,7 @@ class CoursesWebModule extends WebModule {
                 $term = $this->assignTerm();
                 $options = array('term' => $term);
 
-                if (!$CourseArea = $this->controller->getCatalogArea($area, $options)) {
+                if (!$CourseArea = $this->controller->getCatalogArea($area)) {
                     $this->redirectTo('catalog', array());
                 }
 
