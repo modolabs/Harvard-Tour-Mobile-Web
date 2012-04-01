@@ -20,7 +20,11 @@ class CoursesDataModel extends DataModel {
     }
     
     protected function getCurrentTerm() {
-        $term = new CourseTermCurrent();
+        if($this->currentTerm) {
+            $term = $this->currentTerm;
+        }else {
+            $term = new CourseTermCurrent();
+        }
         return $term;
     }
 
