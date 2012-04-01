@@ -28,17 +28,22 @@ class TestCourseCatalogDataRetriever extends URLDataRetriever implements CourseC
         return $courses;
     }
     
-    public function getCatalogArea($area, $parent=null) {
+    public function getCatalogArea($area, $options = array()) {
         
         $this->setMode('areas');
         $this->setOption('area', $area);
+        if (isset($options['term'])) {
+            $this->setOption('term', $options['term']);
+        }
         $area = $this->getData();
         return $area;
     }
     
-    public function getCatalogAreas($parent=null) {
+    public function getCatalogAreas($options = array()) {
         $this->setMode('areas');
-        $this->setOption('parent', $parent);
+        if (isset($options['term'])) {
+            $this->setOption('term', $options['term']);
+        }
         $areas =  $this->getData();
         return $areas;
     }
