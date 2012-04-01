@@ -8,6 +8,7 @@ class CoursesDataModel extends DataModel {
     const ALL_TERMS = 2;
     protected $retrievers=array();
     protected $termsRetriever;
+    protected $currentTerm;
     
     //returns an array of terms. 
     public function getAvailableTerms() {
@@ -21,6 +22,10 @@ class CoursesDataModel extends DataModel {
     protected function getCurrentTerm() {
         $term = new CourseTermCurrent();
         return $term;
+    }
+
+    public function setCurrentTerm(CourseTerm $term) {
+        $this->currentTerm = $term;
     }
     
     public function getTerm($termCode) {
