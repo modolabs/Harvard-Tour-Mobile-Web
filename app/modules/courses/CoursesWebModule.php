@@ -662,24 +662,25 @@ class CoursesWebModule extends WebModule {
                 break;
                 
             case 'area':
-                $baseArea = '';
                 $area = $this->getArg('area');
-                if (!$CourseArea = $this->controller->getCatalogArea($area)) {
+                $term = $this->assignTerm();
+                $options = array('term' => $term);
+
+                if (!$CourseArea = $this->controller->getCatalogArea($area, $options)) {
                     $this->redirectTo('catalog', array());
                 }
-                $Term = $this->assignTerm();
 
                 $areas = $CourseArea->getAreas();
                 
                 $areasList = array();
-                $areaOptions = array('term' => strval($Term));
+                $areaOptions = array('term' => strval($term));
                 foreach ($areas as $CourseArea) {
                     $areasList[] = $this->linkForCatalogArea($CourseArea, $areaOptions);
                 }
 
                 $courses = array();
                 $options = array(
-                    'term'=>$Term,
+                    'term'=>$term,
                     'types'=>array('catalog'),
                     'area'=>$area
                 );
@@ -688,7 +689,7 @@ class CoursesWebModule extends WebModule {
                 $coursesList = array();
  
                 foreach ($courses as $item) {
-                    $course = $this->linkForCatalogCourse($item, array('term'=>strval($Term), 'area' => $area));
+                    $course = $this->linkForCatalogCourse($item, array('term'=>strval($term), 'area' => $area));
                     $coursesList[] = $course;
                 }
 
