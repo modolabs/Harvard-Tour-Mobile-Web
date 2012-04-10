@@ -217,8 +217,35 @@ class ICalEvent extends ICalObject implements KurogoObject, CalendarEvent {
         return $this->range->get_start();
     }
 
+    public function set_start($timestamp, $dayOnly=false) {
+        if (!$this->range) {
+            throw new KurogoDataException("set_start called before range is initialized");
+        }
+        $this->range->set_start($timestamp);
+        $this->starttime = $timestamp;
+    }
+
     public function get_end() {
         return $this->range->get_end();
+    }
+
+    public function set_end($timestamp, $dayOnly=false) {
+        if (!$this->range) {
+            throw new KurogoDataException("set_end called before range is initialized");
+        }
+        $start = $this->range->get_start();
+        
+        if ($timestamp < $start) {
+            // if the end time is an all day time then just use the start time.
+            if ($dayOnly) {
+                $timestamp = $start;
+            } else {
+                //end time must be greater. 
+                throw new KurogoDataException("End time $timestamp must be greater than start time $start");
+            }
+        }
+            
+        $this->range->set_end($timestamp);
     }
 
     public function get_summary() {
@@ -337,8 +364,27 @@ class ICalEvent extends ICalObject implements KurogoObject, CalendarEvent {
             $this->geo = implode(';', array_values($coordinates));
         }
     }
+
+    private static function timezoneMap() {
+    	return array(
+    		'US-Eastern' => 'America/New_York',
+    		'US-Central' => 'America/Chicago',
+    		'US-Mountain' => 'America/Denver',
+    		'US-Pacific' => 'America/Los_Angeles',
+    	);
+    }
+    
+    private static function timezoneFilter($tzid) {
+    	$timezoneMap = self::timezoneMap();
+    	if(array_key_exists($tzid, $timezoneMap)) {
+    		$tzid = $timezoneMap[$tzid];
+    	}
+    	
+        return $tzid;
+    }
     
     private static function getTimezoneForID($tzid) {
+        $tzid = self::timezoneFilter($tzid);
         try {
             $timezone = new DateTimeZone($tzid);
         } catch (Exception $e) {
@@ -348,6 +394,19 @@ class ICalEvent extends ICalObject implements KurogoObject, CalendarEvent {
         return $timezone;
     }
 
+    /**
+     * reset the end time when the start time is less than the start time
+     */
+    protected function rectifyRange() {
+        if ($this->range) {
+            $start = $this->range->get_start();
+            $end = $this->range->get_end();
+            if ($end < $start) {
+                $this->range->set_end($start);
+            }
+        }
+    }
+    
     public function set_attribute($attr, $value, $params=NULL) {
         switch ($attr) {
             case 'UID':
@@ -417,6 +476,7 @@ class ICalEvent extends ICalObject implements KurogoObject, CalendarEvent {
                 break;
             case 'DTSTART':
             case 'DTEND':
+                $dayOnly = false;
                 if (array_key_exists('TZID', $params)) {
                     $timezone = self::getTimezoneForID($params['TZID']);
                     $datetime = new DateTime($value, $timezone);
@@ -424,21 +484,24 @@ class ICalEvent extends ICalObject implements KurogoObject, CalendarEvent {
                     $datetime = new DateTime($value);
                 }
 
+                $t = strpos($value, 'T');
+                // if there is no "T" or if the "T" is at the end
+                if ( ($t === FALSE) || ($t == (strlen($value)-1))) {
+                    $dayOnly = true;
+                }
+
                 $timestamp = $datetime->format('U');
                 
                 if ($attr=='DTEND') {
-                    if (strpos($value, 'T')== FALSE) {
+                    if ($dayOnly) {
                         // make all day events end at 11:59:59 so they don't overlap next day
                         $timestamp -= 1;
                     }
                 }
 
                 if (!$this->range) {
-                    if (strpos($value, 'T')!== FALSE) {
-                        $this->setRange(new TimeRange($timestamp));
-                    } else {
-                        $this->setRange(new DayRange($timestamp));
-                    }
+                    $range = $dayOnly ? new DayRange($timestamp) : new TimeRange($timestamp);
+                    $this->setRange($range);
 
                     if (isset($this->properties['duration'])) {
                         $this->range->set_icalendar_duration($this->properties['duration']);
@@ -449,11 +512,10 @@ class ICalEvent extends ICalObject implements KurogoObject, CalendarEvent {
                     switch ($attr)
                     {
                         case 'DTSTART':
-                            $this->range->set_start($timestamp);
-                            $this->starttime= $timestamp;
+                            $this->set_start($timestamp, $dayOnly);
                             break;
                         case 'DTEND':
-                            $this->range->set_end($timestamp);
+                            $this->set_end($timestamp, $dayOnly);
                             break;
                     }
                 }
