@@ -554,8 +554,12 @@ class CoursesWebModule extends WebModule {
                 if ($this->page=='download') {
                     if ($content->getContentType()=='file') {
                         $file = $contentCourse->getFileForContent($contentID);
-                        header('Content-type: ' . mime_type($file));
-                        readfile($file);
+                        if($this->controller->getRetriever('content')->shouldDownloadFile()){
+                            header('Content-type: ' . mime_type($file));
+                            readfile($file);
+                            die();
+                        }
+                        header('Location: '.$file);
                         die();
                     } else {
                         throw new KurogoException("Cannot download content of type " . $content->getContentType());
