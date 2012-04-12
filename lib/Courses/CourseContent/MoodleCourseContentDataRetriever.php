@@ -10,6 +10,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
     protected $token;
     protected $userID;
     protected $sortType;
+    protected $shouldDownloadFile = true;
         
     protected function setUserID($userID) {
         $this->userID = $userID;
@@ -31,6 +32,14 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
     
     protected function getUserID() {
         return $this->userID;
+    }
+
+    protected function setShouldDownloadFile($shouldDownloadFile){
+        $this->shouldDownloadFile = $shouldDownloadFile;
+    }
+
+    public function shouldDownloadFile(){
+        return $this->shouldDownloadFile;
     }
 
     //CoursesDATAModel function getFileUrl need use token
