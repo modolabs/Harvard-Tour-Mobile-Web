@@ -498,12 +498,13 @@ class TourDataParser {
     }
     
     protected function getNodeVideo($node) {
-        $nodeMPEG4 = reset($this->getNodeField($node, 'field_mpeg4', array()));
+        $nodeMPEG4Fields = $this->getNodeField($node, 'field_mpeg4', array());
+        $firstMPEG4Field = reset($nodeMPEG4Fields);
         
         return array(
             'type'    => 'video',
             'title'   => $this->getNodeHTML($node, 'field_caption'),
-            'url'     => $this->getURLForNodeFileURI($nodeMPEG4),
+            'url'     => $this->getURLForNodeFileURI($firstMPEG4Field),
             'youtube' => $this->getNodeHTML($node, 'field_youtube'),
         );
     }
