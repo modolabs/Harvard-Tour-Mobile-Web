@@ -292,6 +292,10 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         if (isset($args['SECURE'])) {
             $this->secure = (bool) $args['SECURE'];
         }
+
+        if (isset($args['DOWNLOAD_FILE'])) {
+            $this->shouldDownloadFile = (bool) $args['DOWNLOAD_FILE'];
+        }
         
         if ($user = $this->getCurrentUser()) {
             if ($user instanceOf MoodleUser) {
