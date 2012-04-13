@@ -15,10 +15,5 @@
 {/block}
 
 {block name="footerKurogo"}
-  <div class="h375logo">
-    <a href="http://375.harvard.edu" target="_new">
-      <img src="/modules/tour/images/h375.png" width="60" height="20" alt="Harvard 375" />
-    </a>
-  </div>
 {/block}
 
