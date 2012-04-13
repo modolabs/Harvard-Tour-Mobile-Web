@@ -51,7 +51,7 @@ class TransitWebModule extends WebModule {
                     $news[$agencyID]['items'][$item->getID()] = array(
                         'title' => $item->getTitle(),
                         'date'  => $item->getPubDate()->format('U'),
-                        'url'   => $content ? $this->newsURL($item->getID()) : $item->getURL(),
+                        'url'   => $content ? $this->newsURL($item->getID()) : $item->getLink(),
                         'html'  => $content,
                     );
                 }
