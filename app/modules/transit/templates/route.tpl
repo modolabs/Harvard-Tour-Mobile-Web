@@ -12,11 +12,11 @@
 {/if}
 
 {capture name="stopsPane" assign="stopsPane"}
-  {if isset($routeInfo['directions']) && $routeInfo['directions']}
+  {if $routeInfo['view'] == 'schedule'}
     {if $scheduleHelpText}
       <span class="smallprint">{$scheduleHelpText}</span>
     {/if}
-  {elseif $routeInfo['stops']}
+  {else}
     {$stopTimeHelpText = "STOP_TIME_HELP_TEXT"|getLocalizedString}
     {if $stopTimeHelpText}
       <span class="smallprint">{$stopTimeHelpText}</span>

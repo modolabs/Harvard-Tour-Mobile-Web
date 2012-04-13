@@ -216,7 +216,8 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
     public function getMapImageForStop($globalStopID, $width=270, $height=270) {
         $image = false;
         list($system, $stopID) = $this->getRealID($globalStopID);
-        $model = reset($this->modelsForStop($system, $stopID));
+        $models = $this->modelsForStop($system, $stopID);
+        $model = reset($models);
         
         if ($model['live']) {
             $image = $model['live']->getMapImageForStop($stopID, $width, $height);
@@ -264,97 +265,74 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
                 $staticRouteInfo = $model['static']->getRouteInfo($routeID, $time);
                 
                 if (!count($routeInfo)) {
-                  $routeInfo = $staticRouteInfo;
+                    $routeInfo = $staticRouteInfo;
                 
                 } else if (count($staticRouteInfo)) {
-                  if (strlen($staticRouteInfo['name'])) {
-                      // static name is better
-                      $routeInfo['name'] = $staticRouteInfo['name'];
-                  }
-                  if (strlen($staticRouteInfo['description'])) {
-                      // static description is better
-                      $routeInfo['description'] = $staticRouteInfo['description'];
-                  }
-                  if ($staticRouteInfo['frequency'] != 0) { // prefer static
-                      $routeInfo['frequency'] = $staticRouteInfo['frequency'];
-                  }
-                  if (!count($routeInfo['stops'])) {
-                      $routeInfo['stops'] = $staticRouteInfo['stops'];
-                  
-                  } else {
-                      foreach ($routeInfo['stops'] as $stopID => $ignored) {
-                          $staticStopID = $stopID;
+                    if (strlen($staticRouteInfo['name'])) {
+                        // static name is better
+                        $routeInfo['name'] = $staticRouteInfo['name'];
+                    }
+                    if (strlen($staticRouteInfo['description'])) {
+                        // static description is better
+                        $routeInfo['description'] = $staticRouteInfo['description'];
+                    }
+                    if ($staticRouteInfo['frequency'] != 0) { // prefer static
+                        $routeInfo['frequency'] = $staticRouteInfo['frequency'];
+                    }
+                    if (!count($routeInfo['directions'])) {
+                        $routeInfo['directions'] = $staticRouteInfo['directions'];
+                    
+                    } else {
+                        foreach ($routeInfo['directions'] as $directionID => $ignored1) {
+                            foreach ($routeInfo['directions'][$directionID]['stops'] as $stopID => $ignored2) {
+                                $staticStopID = $stopID;
+                              
+                                if (!isset($staticRouteInfo['directions'][$directionID]['stops'][$staticStopID])) {
+                                    // NextBus sometimes has _ar suffixes on it.  Try stripping them
+                                    $parts = explode('_', $stopID);
+                                    if (isset($staticRouteInfo['directions'][$directionID]['stops'][$parts[0]])) {
+                                        //error_log("Warning: static route does not have live stop id $stopID, using {$parts[0]}");
+                                        $staticStopID = $parts[0];
+                                    }
+                                }
+                                
+                                if (isset($staticRouteInfo['directions'][$directionID]['stops'][$staticStopID])) {
+                                    // Use static stop names if they exist
+                                    if ($staticRouteInfo['directions'][$directionID]['stops'][$staticStopID]['name']) {
+                                        $routeInfo['directions'][$directionID]['stops'][$stopID]['name'] = 
+                                            $staticRouteInfo['directions'][$directionID]['stops'][$staticStopID]['name'];
+                                    }
+                                    
+                                    // Prefer the static stop order
+                                    $routeInfo['directions'][$directionID]['stops'][$stopID]['i'] = 
+                                        $staticRouteInfo['directions'][$directionID]['stops'][$staticStopID]['i'];
+                                    
+                                    // Use static arrival time if available when live tracking is not available
+                                    if (!$routeInfo['directions'][$directionID]['stops'][$stopID]['hasTiming'] && 
+                                         $staticRouteInfo['directions'][$directionID]['stops'][$staticStopID]['hasTiming']) {
+                                        $routeInfo['directions'][$directionID]['stops'][$stopID]['arrives'] = 
+                                            $staticRouteInfo['directions'][$directionID]['stops'][$staticStopID]['arrives'];
+                                        
+                                        if (isset($staticRouteInfo['directions'][$directionID]['stops'][$staticStopID]['predictions'])) {
+                                            $routeInfo['directions'][$directionID]['stops'][$stopID]['predictions'] = 
+                                                $staticRouteInfo['directions'][$directionID]['stops'][$staticStopID]['predictions'];
+                                        } else {
+                                            unset($routeInfo['directions'][$directionID]['stops'][$stopID]['predictions']);
+                                        }
+                                    }
+                                } else {
+                                    Kurogo::log(LOG_WARNING, "static route info does not have live stop id $stopID", 'transit');
+                                }
+                            }
                         
-                          if (!isset($staticRouteInfo['stops'][$staticStopID])) {
-                              // NextBus sometimes has _ar suffixes on it.  Try stripping them
-                              $parts = explode('_', $stopID);
-                              if (isset($staticRouteInfo['stops'][$parts[0]])) {
-                                  //error_log("Warning: static route does not have live stop id $stopID, using {$parts[0]}");
-                                  $staticStopID = $parts[0];
-                              }
-                          }
-                          
-                          if (isset($staticRouteInfo['stops'][$staticStopID])) {
-                              // Use static stop names if they exist
-                              if ($staticRouteInfo['stops'][$staticStopID]['name']) {
-                                  $routeInfo['stops'][$stopID]['name'] = $staticRouteInfo['stops'][$staticStopID]['name'];
-                              }
-                              
-                              // Prefer the static stop order
-                              $routeInfo['stops'][$stopID]['i'] = $staticRouteInfo['stops'][$staticStopID]['i'];
-                              
-                              // Use static arrival time if available when live tracking is not available
-                              if (!$routeInfo['stops'][$stopID]['hasTiming'] && 
-                                   $staticRouteInfo['stops'][$staticStopID]['hasTiming']) {
-                                  $routeInfo['stops'][$stopID]['arrives'] = $staticRouteInfo['stops'][$staticStopID]['arrives'];
-                                  
-                                  if (isset($staticRouteInfo['stops'][$staticStopID]['predictions'])) {
-                                      $routeInfo['stops'][$stopID]['predictions'] = $staticRouteInfo['stops'][$staticStopID]['predictions'];
-                                  } else {
-                                      unset($routeInfo['stops'][$stopID]['predictions']);
-                                  }
-                              }
-                          } else {
-                              Kurogo::log(LOG_WARNING, "static route info does not have live stop id $stopID", 'transit');
-                          }
-                      }
-                      
-                      uasort($routeInfo['stops'], array('TransitDataModel', 'sortStops'));
+                            uasort($routeInfo['directions'][$directionID]['stops'], array('TransitDataModel', 'sortStops'));
+                        }
                     }
                 }
             }
             
-            if (count($routeInfo)) {
-                $now = time();
-                
-                // Walk the stops to figure out which is upcoming
-                $stopIDs     = array_keys($routeInfo['stops']);
-                $firstStopID = reset($stopIDs);
-                
-                $firstStopPrevID  = end($stopIDs);
-                if (TransitDataModel::isSameStop($firstStopID, $firstStopPrevID)) {
-                    $firstStopPrevID = prev($stopIDs);
-                }
-                
-                foreach ($stopIDs as $index => $stopID) {
-                    if (!isset($routeInfo['stops'][$stopID]['upcoming'])) {
-                        $arrives = $routeInfo['stops'][$stopID]['arrives'];
-                  
-                        if ($stopID == $firstStopID) {
-                            $prevArrives = $routeInfo['stops'][$firstStopPrevID]['arrives'];
-                        } else {
-                            $prevArrives = $routeInfo['stops'][$stopIDs[$index-1]]['arrives'];
-                        }
-                  
-                        // Suppress any soonest stops which are more than 2 hours from now
-                        $routeInfo['stops'][$stopID]['upcoming'] = 
-                            (abs($arrives - $now) < Kurogo::getSiteVar('TRANSIT_MAX_ARRIVAL_DELAY')) && 
-                            $arrives <= $prevArrives;
-                    }
-                }
-                
-                $routeInfo['lastupdate'] = $now;
-            }
+            $routeInfo['lastupdate'] = time();
+            
             $this->remapRouteInfo($model['system'], $routeInfo);
       
             if ($time == null) {
@@ -475,27 +453,17 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
     }
     
     protected function remapRouteInfo($system, &$routeInfo) {
-        if (isset($routeInfo['stops'])) {
-            $stops = array();
-            foreach ($routeInfo['stops'] as $stopID => $stopInfo) {
-                $stops[$this->getGlobalID($system, $stopID)] = $stopInfo;
-            }
-            $routeInfo['stops'] = $stops;
-        }
-        
-        if (isset($routeInfo['directions'])) {
-            // remap stop ids for schedule mode structures
-            foreach ($routeInfo['directions'] as $d => $directionInfo) {
-                foreach ($directionInfo['segments'] as $i => $segmentInfo) {
-                    foreach ($segmentInfo['stops'] as $j => $stopInfo) {
-                        $routeInfo['directions'][$d]['segments'][$i]['stops'][$j]['id'] = 
-                            $this->getGlobalID($system, $stopInfo['id']);
-                    }
-                }
-                foreach ($directionInfo['stops'] as $i => $stopInfo) {
-                    $routeInfo['directions'][$d]['stops'][$i]['id'] = 
+        // remap stop ids for schedule mode structures
+        foreach ($routeInfo['directions'] as $d => $directionInfo) {
+            foreach ($directionInfo['segments'] as $i => $segmentInfo) {
+                foreach ($segmentInfo['stops'] as $j => $stopInfo) {
+                    $routeInfo['directions'][$d]['segments'][$i]['stops'][$j]['id'] = 
                         $this->getGlobalID($system, $stopInfo['id']);
                 }
+            }
+            foreach ($directionInfo['stops'] as $i => $stopInfo) {
+                $routeInfo['directions'][$d]['stops'][$i]['id'] = 
+                    $this->getGlobalID($system, $stopInfo['id']);
             }
         }
     }

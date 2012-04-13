@@ -5,9 +5,9 @@ includePackage('Transit');
 class TransitAPIModule extends APIModule {
     protected $id = 'transit';
     protected $vmin = 1;
-    protected $vmax = 2;
+    protected $vmax = 3;
     protected $defaultNewsModel = 'TransitNewsDataModel';
-  
+    
     protected function formatBriefRouteInfo($routeId, $routeInfo) {
         return array(
             'id'              => "$routeId", // make sure numeric route names are strings
@@ -20,10 +20,11 @@ class TransitAPIModule extends APIModule {
             'running'         => $routeInfo['running'] ? true : false,
             'live'            => $this->argVal($routeInfo, 'live', false) ? true : false,
             'view'            => $this->argVal($routeInfo, 'view', 'list'),
+            'splitByHeadsign' => $this->argVal($routeInfo, 'splitByHeadsign', false),
         );
     }
     
-    protected function formatFullRouteInfo($routeId, $routeInfo) {
+    protected function formatFullRouteInfo($routeId, $routeInfo, $responseVersion) {
         // Get the basic attributes for the route
         $formatted = $this->formatBriefRouteInfo($routeId, $routeInfo);
         
@@ -38,12 +39,16 @@ class TransitAPIModule extends APIModule {
         // Schedule view or stop list view?
         if (isset($routeInfo['directions'])) {
             $formatted['directions'] = $routeInfo['directions'];
-            $formatted['splitByHeadsign'] = $this->argVal($routeInfo, 'splitByHeadsign', false);
-          
-        } else {
-            $formatted['stops'] = array();
-            foreach ($routeInfo['stops'] as $stopId => $stopInfo) {
-                $formatted['stops'][] = $this->formatStopInfoForRoute($routeId, $stopId, $stopInfo);
+        }
+        
+        // pre version 3 the API provided a merged stop view
+        // and only provided the directions field in schedule view
+        if ($responseVersion < 3) {
+            $mergedDirections = TransitDataModel::mergeDirections($routeInfo['directions']);
+            $mergedDirection = reset($mergedDirections);
+            $formatted['stops'] = $mergedDirection['stops'];
+            if ($formatted['view'] == 'list') {
+                unset($formatted['directions']);
             }
         }
         
@@ -81,7 +86,9 @@ class TransitAPIModule extends APIModule {
                 'lat' => $stopInfo['coordinates']['lat'],
                 'lon' => $stopInfo['coordinates']['lon'],
             ),
-            'arrives' => $this->argVal($stopInfo, 'predictions', array()),
+            'arrives'        => self::argVal($stopInfo, 'predictions', array()),
+            'direction'      => self::argVal($stopInfo, 'direction', 'loop'),
+            'directionTitle' => self::argVal($stopInfo, 'directionTitle', ''),
         );
     }
     
@@ -222,7 +229,7 @@ class TransitAPIModule extends APIModule {
                   throw new Exception("No such route '$routeId'");
               }
               
-              $response = $this->formatFullRouteInfo($routeId, $routeInfo);
+              $response = $this->formatFullRouteInfo($routeId, $routeInfo, $responseVersion);
               
               // Add route paths (if any)
               // Note: these line segments are not necessarily a loop

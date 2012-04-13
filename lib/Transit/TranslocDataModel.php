@@ -195,8 +195,7 @@ class TranslocDataModel extends TransitDataModel
                     $routeID, 
                     $this->getAgencyName($agencyID), 
                     self::argVal($routeInfo, 'long_name'), 
-                    self::argVal($routeInfo, 'description'),
-                    $this->viewRouteAsLoop($routeID)
+                    self::argVal($routeInfo, 'description')
                 ));
                 
                 $this->routeColors[$routeID] = self::argVal($routeInfo, 'color', parent::getRouteColor($routeID));
@@ -324,9 +323,7 @@ class TranslocDataModel extends TransitDataModel
         return $results && isset($results['data']) ? $results['data'] : array();
     }
     
-    public function getRouteInfo($routeID, $time=null) {
-        $routeInfo = parent::getRouteInfo($routeID, $time);
-        
+    protected function setUpcomingRouteStops($routeID, &$directions) {
         $upcomingVehicleStops = array();
         if ($this->translocRouteIsRunning($routeID)) {
             $agencyVehiclesInfo = $this->getTranslocData('vehicles');
@@ -352,11 +349,11 @@ class TranslocDataModel extends TransitDataModel
         }
         
         // Add upcoming stop information
-        foreach ($routeInfo['stops'] as $stopID => $stopInfo) {
-            $routeInfo['stops'][$stopID]['upcoming'] = isset($upcomingVehicleStops[$stopID]);
+        foreach ($directions as $directionID => $directionInfo) {
+            foreach ($directionInfo['stops'] as $i => $stopInfo) {
+                $directions[$directionID]['stops'][$i]['upcoming'] = isset($upcomingVehicleStops[$stopInfo['id']]);
+            }
         }
-        
-        return $routeInfo;
     }
     
     public function translocRouteIsRunning($routeID) {

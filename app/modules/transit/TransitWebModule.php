@@ -269,76 +269,76 @@ class TransitWebModule extends WebModule {
               
               $routeInfo = $view->getRouteInfo($routeID);
               
-              switch ($routeInfo['view']) {
-                  case 'schedule':
-                      if (isset($routeInfo['directions']) && $routeInfo['directions']) {
-                          // Schedule view
-                          $direction = $this->getArg('direction', null);
-                          if (count($routeInfo['directions']) == 1) {
-                              $direction = reset(array_keys($routeInfo['directions']));
+              $direction = $this->getArg('direction', null);
+              if (count($routeInfo['directions']) == 1) {
+                  $directionIDs = array_keys($routeInfo['directions']);
+                  $direction = reset($directionIDs);
+              }
+              
+              if (isset($direction) && isset($routeInfo['directions'][$direction])) {
+                  switch ($routeInfo['view']) {
+                      case 'schedule':
+                          $this->assign('direction', $direction);
+                          foreach ($routeInfo['directions'][$direction]['stops'] as $i => $stop) {
+                              $routeInfo['directions'][$direction]['stops'][$i]['url'] = $this->stopURL($stop['id']);
                           }
+                          break;
                           
-                          if (isset($direction) && isset($routeInfo['directions'][$direction])) {
-                              $this->assign('direction', $direction);
-                              foreach ($routeInfo['directions'][$direction]['stops'] as $i => $stop) {
-                                  $routeInfo['directions'][$direction]['stops'][$i]['url'] = $this->stopURL($stop['id']);
-                              }
-                            
-                          } else if (count($routeInfo['directions'])) {
-                              $this->setPageTitles('Directions');
-                              $this->setBreadcrumbLongTitle($routeInfo['name'].' Directions');
-                      
-                              $this->setTemplatePage('directions');
+                      case 'list':
+                      default:
+                          $routeInfo['stops'] = $routeInfo['directions'][$direction]['stops'];
+                          
+                          foreach ($routeInfo['stops'] as $i => $stop) {
+                              $routeInfo['stops'][$i]['url']   = $this->stopURL($stop['id']);
+                              $routeInfo['stops'][$i]['title'] = $stop['name'];
                               
-                              $directionArgs = $this->args;
-                              $directionsList = array();
-                              foreach ($routeInfo['directions'] as $direction => $directionInfo) {
-                                  $directionArgs['direction'] = $direction;
-                                
-                                  $directionList[] = array(
-                                      'title' => $directionInfo['name'],
-                                      'url'   => $this->buildBreadcrumbURL($this->page, $directionArgs),
-                                  );
+                              if ($stop['upcoming']) {
+                                  $routeInfo['stops'][$i]['title'] = "<strong>{$stop['name']}</strong>";
+                                  $routeInfo['stops'][$i]['imgAlt'] = $this->getLocalizedString('CURRENT_STOP_ICON_ALT_TEXT');
                               }
                               
-                              usort($directionList, array(get_class(), 'directionSort'));
-                              
-                              $this->assign('directionList', $directionList);
+                              if ($stop['upcoming'] || $this->pagetype != 'basic') {
+                                  $routeInfo['stops'][$i]['img'] = '/modules/transit/images/';
+                              }
+                              switch ($this->pagetype) {
+                                  case 'basic':
+                                      if ($stop['upcoming']) {
+                                          $routeInfo['stops'][$i]['img'] .= 'shuttle.gif';
+                                      }
+                                      break;
+                                  
+                                  case 'touch':
+                                      $routeInfo['stops'][$i]['img'] .= $stop['upcoming'] ? 'shuttle.gif' : 'shuttle-spacer.gif';
+                                      break;
+                                    
+                                  default:
+                                      $routeInfo['stops'][$i]['img'] .= $stop['upcoming'] ? 'shuttle.png' : 'shuttle-spacer.png';
+                                      break;
+                              }
                           }
-                      }
-                      break;
+                          break;
+                  }
+                
+              } else if (count($routeInfo['directions'])) {
+                  $this->setPageTitles('Directions');
+                  $this->setBreadcrumbLongTitle($routeInfo['name'].' Directions');
+          
+                  $this->setTemplatePage('directions');
+                  
+                  $directionArgs = $this->args;
+                  $directionsList = array();
+                  foreach ($routeInfo['directions'] as $direction => $directionInfo) {
+                      $directionArgs['direction'] = $direction;
                     
-                  case 'list':
-                  default:
-                      foreach ($routeInfo['stops'] as $stopID => $stop) {
-                          $routeInfo['stops'][$stopID]['url']   = $this->stopURL($stopID);
-                          $routeInfo['stops'][$stopID]['title'] = $stop['name'];
-                          
-                          if ($stop['upcoming']) {
-                              $routeInfo['stops'][$stopID]['title'] = "<strong>{$stop['name']}</strong>";
-                              $routeInfo['stops'][$stopID]['imgAlt'] = $this->getLocalizedString('CURRENT_STOP_ICON_ALT_TEXT');
-                          }
-                          
-                          if ($stop['upcoming'] || $this->pagetype != 'basic') {
-                              $routeInfo['stops'][$stopID]['img'] = '/modules/transit/images/';
-                          }
-                          switch ($this->pagetype) {
-                              case 'basic':
-                                  if ($stop['upcoming']) {
-                                      $routeInfo['stops'][$stopID]['img'] .= 'shuttle.gif';
-                                  }
-                                  break;
-                              
-                              case 'touch':
-                                  $routeInfo['stops'][$stopID]['img'] .= $stop['upcoming'] ? 'shuttle.gif' : 'shuttle-spacer.gif';
-                                  break;
-                                
-                              default:
-                                  $routeInfo['stops'][$stopID]['img'] .= $stop['upcoming'] ? 'shuttle.png' : 'shuttle-spacer.png';
-                                  break;
-                          }
-                      }
-                      break;
+                      $directionList[] = array(
+                          'title' => $directionInfo['name'],
+                          'url'   => $this->buildBreadcrumbURL($this->page, $directionArgs),
+                      );
+                  }
+                  
+                  usort($directionList, array(get_class(), 'directionSort'));
+                  
+                  $this->assign('directionList', $directionList);
               }
               
               $this->assign('routeInfo', $routeInfo);
@@ -411,9 +411,11 @@ class TransitWebModule extends WebModule {
               
               $serviceInfo = false;
               if (count($runningRoutes)) {
-                  $serviceInfo = $view->getServiceInfoForRoute(reset(array_keys($runningRoutes)));
+                  $runningRouteIDs = array_keys($runningRoutes);
+                  $serviceInfo = $view->getServiceInfoForRoute(reset($runningRouteIDs));
               } else if (count($offlineRoutes)) {
-                  $serviceInfo = $view->getServiceInfoForRoute(reset(array_keys($offlineRoutes)));
+                  $offlineRouteIDs = array_keys($runningRoutes);
+                  $serviceInfo = $view->getServiceInfoForRoute(reset($offlineRouteIDs));
               }
               
               $mapImageWidth = 298;

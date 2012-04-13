@@ -151,8 +151,7 @@ class NextBusDataModel extends TransitDataModel
                     $routeID, 
                     $agencyID, 
                     $route->attributes->getNamedItem('title')->nodeValue, 
-                    '', // NextBus does not provide a description
-                    $this->viewRouteAsLoop($routeID)
+                    '' // NextBus does not provide a description
                 ));
                 
                 $xml = $this->queryNextBus('routeConfig', $agencyID, array( 'r' => $routeID ));

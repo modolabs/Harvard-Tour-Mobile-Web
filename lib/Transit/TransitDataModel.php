@@ -12,12 +12,21 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     protected $args = array();
     protected $agencyIDs = array();
     protected $routeWhitelist = array();
-    protected $viewRoutesAsLoop = array();
+    protected $viewAsLoopRoutes = array();
+    protected $scheduleViewRoutes = array();
+    protected $splitByHeadsignRoutes = array();
     protected $daemonMode = false;
     
     protected $routes    = array();
     protected $stops     = array();
     protected $overrides = array();
+
+    // For routes where not all vehicles stop at all stops
+    protected $stopOrders = array();
+
+    // Set this to true for stop order debugging
+    // Do not leave this set to true because it modifies the REST API output
+    protected $debugStopOrder = false;
     
     protected $platform = 'unknown';
     protected $pagetype = 'compliant';
@@ -61,9 +70,25 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         
         if (isset($args['VIEW_ROUTES_AS_LOOP'])) {
             if ($args['VIEW_ROUTES_AS_LOOP'] === "*") {
-                $this->viewRoutesAsLoop = true; // all routes
+                $this->viewAsLoopRoutes = true; // all routes
             } else {
-                $this->viewRoutesAsLoop = array_filter(array_map('trim', explode(',', $args['VIEW_ROUTES_AS_LOOP'])));
+                $this->viewAsLoopRoutes = array_filter(array_map('trim', explode(',', $args['VIEW_ROUTES_AS_LOOP'])));
+            }
+        }
+        
+        if (isset($args['SCHEDULE_VIEW'])) {
+            if ($args['SCHEDULE_VIEW'] === "*") {
+                $this->scheduleViewRoutes = true; // all routes
+            } else {
+                $this->scheduleViewRoutes = array_filter(array_map('trim', explode(',', $args['SCHEDULE_VIEW'])));
+            }
+        }
+
+        if (isset($args['SPLIT_BY_HEADSIGN'])) {
+            if ($args['SPLIT_BY_HEADSIGN'] === "*") {
+                $this->splitByHeadsignRoutes = true; // all routes
+            } else {
+                $this->splitByHeadsignRoutes = array_filter(array_map('trim', explode(',', $args['SPLIT_BY_HEADSIGN'])));
             }
         }
         
@@ -78,7 +103,15 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     }
     
     protected function viewRouteAsLoop($routeID) {
-        return $this->viewRoutesAsLoop === true || in_array($routeID, $this->viewRoutesAsLoop);
+        return $this->viewAsLoopRoutes === true || in_array($routeID, $this->viewAsLoopRoutes);
+    }
+    
+    protected function viewRouteInScheduleView($routeID) {
+        return $this->scheduleViewRoutes === true || in_array($routeID, $this->scheduleViewRoutes);
+    }
+    
+    protected function viewRouteSplitByHeadsign($routeID) {
+        return $this->splitByHeadsignRoutes === true || in_array($routeID, $this->splitByHeadsignRoutes);
     }
     
     protected function updatePredictionData($routeID) {
@@ -89,6 +122,48 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         // override if the parser has vehicle locations
         return array();
     }
+    
+    protected function setUpcomingRouteStops($routeID, &$directions) {
+        // override if you have vehicle locations that say what stop is upcoming
+        
+        $now = time();
+        
+        foreach ($directions as $directionID => $directionInfo) {
+            // Walk the stops to figure out which is upcoming
+            $stopIndexes = array_keys($directionInfo['stops']);
+            $firstStopIndex = reset($stopIndexes);
+            
+            $firstStopPrevIndex  = null;
+            if (count($directions) == 1) {
+                // Loop case
+                $firstStopPrevIndex = end($stopIndexes);
+                if (self::isSameStop($directionInfo['stops'][$firstStopIndex]['id'], 
+                                     $directionInfo['stops'][$firstStopPrevIndex]['id'])) {
+                    $firstStopPrevIndex = prev($stopIndexes);
+                }
+            }
+            
+            foreach ($stopIndexes as $i => $stopIndex) {
+                $arrives = $directionInfo['stops'][$stopIndex]['arrives'];
+                
+                $prevArrives = PHP_INT_MAX; // Non-loop case
+                if ($stopIndex == $firstStopIndex) {
+                    if ($firstStopPrevIndex) {
+                        // Loop case
+                        $prevArrives = $directionInfo['stops'][$firstStopPrevIndex]['arrives'];
+                    }
+                } else {
+                    $prevArrives = $directionInfo['stops'][$stopIndexes[$i-1]]['arrives'];
+                }
+                
+                // Suppress any soonest stops which are more than 2 hours from now
+                $directions[$directionID]['stops'][$stopIndex]['upcoming'] = 
+                    (abs($arrives - $now) < Kurogo::getSiteVar('TRANSIT_MAX_ARRIVAL_DELAY')) && 
+                    $arrives <= $prevArrives;
+            }
+        }
+    }
+
     
     protected function getServiceId() {
         return '';
@@ -113,11 +188,11 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     abstract protected function loadData();
     
     abstract protected function isLive();
-  
+    
     //
     // Routes
     //
-  
+    
     protected function addRoute($route) {
         $id = $route->getID();
     
@@ -127,7 +202,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         }
         $this->routes[$id] = $route;
     }
-      
+    
     protected function getRoute($id) {
         if (!isset($this->routes[$id])) {
             Kurogo::log(LOG_WARNING, __FUNCTION__."(): No such route '$id'", 'transit');
@@ -399,192 +474,117 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         $isRunning = $route->isRunning($time, $inService);
         
         $routeInfo = array(
-            'agency'         => $route->getAgencyID(),
-            'name'           => $route->getName(),
-            'description'    => $route->getDescription(),
-            'color'          => $this->getRouteColor($routeID),
-            'live'           => $isRunning ? $this->isLive() : false,
-            'frequency'      => $route->getServiceFrequency($time),
-            'running'        => $isRunning,
-            'inService'      => $inService,
-            'stopIconURL'    => $this->getMapIconUrlForRouteStop($routeID),
-            'vehicleIconURL' => $this->getMapIconUrlForRouteVehicle($routeID),
-            'view'           => 'list',
-            'stops'          => array(),
+            'agency'          => $route->getAgencyID(),
+            'name'            => $route->getName(),
+            'description'     => $route->getDescription(),
+            'color'           => $this->getRouteColor($routeID),
+            'live'            => $isRunning ? $this->isLive() : false,
+            'frequency'       => round($route->getServiceFrequency($time) / 60, 0),
+            'running'         => $isRunning,
+            'inService'       => $inService,
+            'stopIconURL'     => $this->getMapIconUrlForRouteStop($routeID),
+            'vehicleIconURL'  => $this->getMapIconUrlForRouteVehicle($routeID),
+            'view'            => $this->viewRouteInScheduleView($routeID) ? 'schedule' : 'list',
+            'splitByHeadsign' => $this->viewRouteSplitByHeadsign($routeID),
+            'directions'      => array(),
         );
     
         // Check if there are a valid services and segments
         // Add a minute to the time checking so we don't tell people about buses 
         // that are leaving
         
-        $seenDirections = array();
-        $directions = array();
         foreach ($route->getDirections() as $direction) {
-            $directionNames = array();
-            $directionStops = array();
-            $segmentStopOrders = array(); // reset this
+            $directionID = is_numeric($direction) ? "direction_{$direction}" : $direction;
             
-            foreach ($route->getSegmentsForDirection($direction) as $segment) {
-                if (!$segment->getService()->isRunning($time)) {
-                    continue;
-                }
-              
-                $segmentName = $segment->getName();
-                if (isset($segmentName)) {
-                    $directionNames[$segment->getID()] = $segmentName;
-                }
-                
-                $segmentStopOrder = array();
-                foreach ($segment->getStops() as $stopIndex => $stopInfo) {
-                    $stopID = $stopInfo['stopID'];
-                    
-                    $segmentStopOrder[] = $stopID;
-                    
-                    $arrivalTime = null;
-                    if ($stopInfo['hasTiming']) {
-                        $arrivalTime = $segment->getNextArrivalTime($time, $stopIndex);
-                    }
-                    
-                    if (!isset($directionStops[$stopID])) {
-                        $stop = $this->getStop($stopID);
-                        if ($stop) {
-                            $directionStops[$stopID] = array(
-                                'name'      => $stop->getName(),
-                                'arrives'   => $arrivalTime,
-                                'hasTiming' => $stopInfo['hasTiming'],
-                                'i'         => $stopInfo['i'],
-                            );
-                            $directionStops[$stopID]['coordinates'] = $stop->getCoordinates();
-                        }
-                        if (isset($stopInfo['predictions'])) {
-                            $directionStops[$stopID]['predictions'] = $stopInfo['predictions'];
-                        }
-                        //error_log('Setting stop time to '.strftime("%H:%M:%S %Y/%m/%d", $arrivalTime).' for '.$this->stops[$stopID]->getName());
-                    } else {
-                        $oldArrivalTime = $directionStops[$stopID]['arrives'];
-                        if ($arrivalTime > $time && ($arrivalTime < $oldArrivalTime || $oldArrivalTime < $time)) {
-                            $directionStops[$stopID]['arrives'] = $arrivalTime;
-                            //error_log('Replacing stop time '.strftime("%H:%M:%S %Y/%m/%d", $oldArrivalTime).' with '.strftime("%H:%M:%S %Y/%m/%d", $arrivalTime)." (".strftime("%H:%M:%S %Y/%m/%d", $time).') for stop '.$this->stops[$stopID]['name']);
-                        }
-                    }
-                }
-                $segmentStopOrders[] = $segmentStopOrder;
-            }
-            
-            // Warning: stops within a trip are in order, but not all trips contain
-            // all stops.  The following sort function attempts to build a graph of the 
-            // stop orders in $sortHelper which is then used below in "sortByStopOrder"
-            self::$sortHelper = array();
-            foreach ($segmentStopOrders as $segmentStopOrder) {
-                foreach ($segmentStopOrder as $i => $stopID) {
-                    if (!isset(self::$sortHelper[$stopID])) {
-                        self::$sortHelper[$stopID] = array(
-                            'before' => array(),
-                            'after'  => array(),
-                        );
-                    }
-                    
-                    self::$sortHelper[$stopID]['before'] = array_unique(array_merge(
-                        self::$sortHelper[$stopID]['before'], array_slice($segmentStopOrder, 0, $i)));
-                    self::$sortHelper[$stopID]['after'] = array_unique(array_merge(
-                        self::$sortHelper[$stopID]['after'], array_slice($segmentStopOrder, $i+1)));
-                }
-            }
-            
-            // Sort the stops using the trip stop orders (not all trips have all stops)
-            uksort($directionStops, array(get_class(), 'sortByStopOrder')); // uses $sortHelper
-            //error_log(print_r(array_keys($directionStops), true));
-            
-            $directions[$direction] = array(
-              'names' => array_unique($directionNames),
-              'stops' => $directionStops,
-            );
-        }
-    
-        // Check if we can merge the directions together into one big loop
-        if (count($directions) > 1) {
-            $newDirections = array();
-            $handled = array();
-            foreach ($directions as $direction => &$info) {
-                $directionStops = array_keys($info['stops']);
-                $first = reset($directionStops);
-                $last = end($directionStops);
-                foreach ($directions as $testDirection => &$testInfo) {
-                    if ($direction != $testDirection && !in_array($direction, $handled) && !in_array($testDirection, $handled)) {
-                        //error_log("Looking at directions '$direction' and '$testDirection'");
-                        $testDirectionStops = array_keys($testInfo['stops']);
-                        $testFirst = reset($testDirectionStops);
-                        $testLast = end($testDirectionStops);
-                        $stops = $info['stops'];
-                        $testStops = $testInfo['stops'];
-                        
-                        if (self::isSameStop($last, $testFirst)) {
-                            if ($last['arrives'] > $testFirst['arrives']) {
-                                self::removeLastStop($stops);
-                            } else {
-                                self::removeFirstStop($testStops);
-                            }
-                            //error_log("Collapsing '$direction' and '$testDirection'");
-                            $newDirections["$direction-$testDirection"] = array(
-                                'names' => array_unique($info['names'] + $testInfo['names']),
-                                'stops' => $stops + $testStops,
-                            );
-                            $handled[] = $testDirection;
-                            $handled[] = $direction;
-                            break;
-                          
-                        } else if (self::isSameStop($testLast, $first)) {
-                            if ($testLast['arrives'] > $first['arrives']) {
-                                self::removeLastStop($testStops);
-                            } else {
-                                self::removeFirstStop($stops);
-                            }
-                            //error_log("Collapsing '$testDirection' and '$direction'");
-                            $newDirections["$testDirection-$direction"] = array(
-                                'names' => array_unique($testInfo['names'] + $info['names']),
-                                'stops' => $testStops + $stops,
-                            );
-                            $handled[] = $testDirection;
-                            $handled[] = $direction;
-                            break;
-                          
-                        }
-                    }
-                }
-                if (!in_array($direction, $handled) && count($directions[$direction]['stops'])) {
-                    $newDirections[$direction] = $info;
-                }
-            }
-            //error_log('NEW DIRECTIONS: '.print_r($newDirections, true));
-            $directions = $newDirections;
-        }
-    
-        $names = array();
-        foreach ($directions as $direction => $info) {
-            $routeInfo['stops'] += $info['stops'];
-            $names = array_merge($names, $info['names']);
+            $segments = $route->getSegmentsForDirection($direction);
+
+            $routeInfo['directions'][$directionID] = 
+                $this->getDirectionInfo($route->getAgencyID(), $routeID, $direction, $segments, $time);
         }
         
-        $routeInfo['frequency'] = round($routeInfo['frequency'] / 60, 0);
-        //error_log(print_r($routeInfo, true));
+        if ($routeInfo['splitByHeadsign']) {
+            $headsignDirections = array();
+            
+            foreach ($routeInfo['directions'] as $directionID => $directionInfo) {
+                foreach ($directionInfo['segments'] as $segment) {
+                    $headsign = $segment['name'] ? $segment['name'] : $directionInfo['name'];
+                    if (!isset($headsignDirections[$headsign])) {
+                        $headsignDirections[$headsign] = array(
+                            'name'     => $headsign,
+                            'segments' => array(),
+                            'stops'    => array(),
+                        );
+                    }
+                    $headsignDirections[$headsign]['segments'][] = $segment;
+                    $headsignDirections[$headsign]['stops'][$directionID] = $directionInfo['stops'];
+                }
+            }
+            
+            foreach ($headsignDirections as $directionID => $directionInfo) {
+                usort($headsignDirections[$directionID]['segments'], array(get_class(), 'sortDirectionSegments'));
+            
+                // flatten stop lists -- sometimes the same headsign exists in both directions
+                $allStops = array();
+                foreach ($headsignDirections[$directionID]['stops'] as $id => $stops) {
+                    $allStops = array_merge($allStops, $stops);
+                }
+                $headsignDirections[$directionID]['stops'] = $allStops;
+            }
+            
+            $routeInfo['directions'] = $headsignDirections;
+            //error_log(print_r($routeInfo['directions'], true));
+        }
+        
+        $this->setUpcomingRouteStops($routeID, $routeInfo['directions']);
         
         $this->applyRouteInfoOverrides($routeID, $routeInfo);
         
+        // Do this last because it will confuse everything else!
+        if ($this->viewRouteAsLoop($routeID)) {
+            $routeInfo['directions'] = self::mergeDirections($routeInfo['directions']);
+        }
+        
+        //error_log(print_r($routeInfo, true));
+        
         return $routeInfo;
+    }
+    
+    public static function mergeDirections($directions) {
+        // Check if we can merge the directions together into one big loop
+        $names = array();
+        $segments = array();
+        $stops = array();
+        
+        foreach ($directions as $directionID => $directionInfo) {
+            $names[] = $directionInfo['name'];
+            $segments = array_merge($segments, $directionInfo['segments']);
+            $stops = array_merge($stops, $directionInfo['stops']);
+        }
+        
+        return array(
+            'loop' => array(
+                'name'     => implode(' / ', array_filter($names)),
+                'segments' => $segments,
+                'stops'    => $stops,
+            ),
+        );
     }
   
     public function getRoutes($time=null) {
         if (!isset($time)) {
             $time = TransitTime::getCurrentTime();
         }
-    
+        
+        $timeRange = array($time, $time + Kurogo::getOptionalSiteVar('TRANSIT_SCHEDULE_ROUTE_RUNNING_PADDING', 900));
+        
         $routes = array();
         foreach ($this->routes as $routeID => $route) {
             $this->updatePredictionData($routeID);
-                
+            
             $inService = false; // Safety in case isRunning doesn't set this
-            $isRunning = $route->isRunning($time, $inService);
-      
+            $runningTime = $this->viewRouteInScheduleView($routeID) ? $timeRange : $time;
+            $isRunning = $route->isRunning($runningTime, $inService);
+            
             $routes[$routeID] = array(
                 'name'         => $route->getName(),
                 'description'  => $route->getDescription(),
@@ -594,9 +594,9 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 'live'         => $isRunning ? $this->isLive() : false,
                 'inService'    => $inService,
                 'running'      => $isRunning,
-                'view'         => 'list',
+                'view'         => $this->viewRouteInScheduleView($routeID) ? 'schedule' : 'list',
             );
-      
+            
             $this->applyRouteInfoOverrides($routeID, $routes[$routeID]);
         }
     
@@ -697,6 +697,340 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         Kurogo::log(LOG_WARNING, "Not enough information in trip stop orders to determine the relative order of stops $a and $b", 'transit');
         
         return 0;
+    }
+
+    protected function lookupStopOrder($agencyID, $routeID, $directionID, &$directionName) {
+        if (!$this->stopOrders) {
+            $config = ConfigFile::factory('transit-stoporder', 'site');
+            $stopOrderConfigs = $config->getSectionVars(Config::EXPAND_VALUE);
+            
+            foreach ($stopOrderConfigs as $stopOrderConfig) {
+                if (!isset($stopOrderConfig['route_id'])) { continue; }
+                
+                $stops = array();
+                if (isset($stopOrderConfig['stop_ids'])) {
+                    foreach ($stopOrderConfig['stop_ids'] as $stopID) {
+                        $stops[] = array(
+                            'id' => $stopID,
+                        );
+                    }
+                }
+                
+                $this->stopOrders[] = array(
+                    'agencyID'      => $stopOrderConfig['agency_id'],
+                    'routeID'       => $stopOrderConfig['route_id'],
+                    'directionID'   => $stopOrderConfig['direction_id'],
+                    'directionName' => $stopOrderConfig['direction_name'],
+                    'stops'         => $stops,
+                );
+            }
+        }
+        
+        foreach ($this->stopOrders as $stopOrder) {
+            if ($stopOrder['agencyID'] == $agencyID && 
+                    $stopOrder['routeID'] == $routeID && 
+                    $stopOrder['directionID'] == $directionID) {
+                $directionName = $stopOrder['directionName'];
+                return $stopOrder['stops'];
+            }
+        }
+        return array();
+    }
+    
+    protected static function sortDirectionSegments($a, $b) {
+        for ($i = 0; $i < count($a['stops']); $i++) {
+            if (isset($a['stops'][$i], $a['stops'][$i]['arrives'],
+                                $b['stops'][$i], $b['stops'][$i]['arrives']) &&
+                    $a['stops'][$i]['arrives'] && $b['stops'][$i]['arrives']) {
+                // Found a stop where both $a and $b have stop times
+                if ($a['stops'][$i]['arrives'] < $b['stops'][$i]['arrives']) {
+                    return -1;
+                } else if ($a['stops'][$i]['arrives'] > $b['stops'][$i]['arrives']) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            }
+        }
+        //error_log("Found two trips with no stop overlap");
+        
+        // There are no stop overlaps between $a and $b, just order them by first stop time
+        $aFirstStopTime = PHP_INT_MAX;
+        $bFirstStopTime = PHP_INT_MAX;
+        
+        foreach ($a['stops'] as $stop) {
+            if (isset($stop['arrives']) && $stop['arrives']) {
+                $aFirstStopTime = $stop['arrives'];
+                break;
+            }
+        }
+        foreach ($b['stops'] as $stop) {
+            if (isset($stop['arrives']) && $stop['arrives']) {
+                $bFirstStopTime = $stop['arrives'];
+                break;
+            }
+        }
+        
+        if ($aFirstStopTime < $bFirstStopTime) {
+            return -1;
+        } else if ($aFirstStopTime > $bFirstStopTime) {
+            return 1;
+        }
+        
+        return 0;
+    }
+    
+    protected function getDirectionInfo($agencyID, $routeID, $direction, $directionSegments, $time) {
+        $directionName = '';
+        
+        $stopArray = $this->lookupStopOrder($agencyID, $routeID, $direction, &$directionName);
+        if (!$stopArray) {
+            // No stop order in config, build with graph
+            $segmentStopOrders = array(); // reset this
+            $stopCounts = array();  // Keep track of stops that appear more than once in a segment
+            
+            foreach ($directionSegments as $segment) {
+                if (!$segment->getService()->isRunning($time)) {
+                    continue;
+                }
+                
+                // If we don't have a direction name, try the first segment name (headsign)
+                if (!$directionName && ($segmentName = $segment->getName())) {
+                    $directionName = $segmentName;
+                }
+                
+                $segmentStopOrder = array();
+                $segmentStopCounts = array();
+                foreach ($segment->getStops() as $stopIndex => $stopInfo) {
+                    // skip stops with non-integer ids (things like 'skipped')
+                    if (!ctype_digit(strval($stopInfo['i']))) { continue; }
+                    
+                    if (!isset($segmentStopCounts[$stopInfo['stopID']])) {
+                        $segmentStopCounts[$stopInfo['stopID']] = 1;
+                    } else {
+                        $segmentStopCounts[$stopInfo['stopID']]++;
+                    }
+                    $segmentStopOrder[] = $stopInfo['stopID'];
+                }
+                $segmentStopOrders[] = $segmentStopOrder;
+                
+                foreach ($segmentStopCounts as $stopID => $count) {
+                    if (!isset($stopCounts[$stopID]) || $count > $stopCounts[$stopID]) {
+                        $stopCounts[$stopID] = $count;  // remember max count in any segment
+                    }
+                }
+            }
+            //error_log("HEADSIGN: $directionName");
+            //error_log(print_r($segmentStopOrders, true));
+            
+            // The following attempts to fix the problem of cycles in the graph
+            // It assumes that there is at least one trip with all the visits to a single
+            // stop in it.  It numbers these stops uniquely and then removes all other 
+            // instances of the stop from the other trips
+            foreach ($stopCounts as $stopID => $count) {
+                if ($count > 1) {
+                    foreach ($segmentStopOrders as $i => $segmentStopOrder) {
+                        $matching = array_intersect($segmentStopOrder, array($stopID));
+                        if (count($matching) < $count) {
+                            // remove all elements
+                            $segmentStopOrders[$i] = array_diff($segmentStopOrder, array($stopID));
+                        } else {
+                            // order all elements
+                            $index = 0;
+                            foreach ($segmentStopOrder as $j => $segmentStopID) {
+                                if ($segmentStopID == $stopID) {
+                                    $segmentStopOrders[$i][$j] = $segmentStopID.'___'.$index++;
+                                    $stopCounts[$segmentStopOrders[$i][$j]] = 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            //error_log(print_r($segmentStopOrders, true));
+            //error_log(print_r($stopCounts, true));
+            $directionStops = array();
+            $tempStopCounts = $stopCounts;
+            $stopSortGraph = $this->buildSortStopGraph($segmentStopOrders);
+            $this->topologicalSortStops($stopSortGraph, $tempStopCounts, $directionStops);
+            //error_log(print_r($directionStops, true));
+            
+            $stopArray = array();
+            foreach ($directionStops as $stopID) {
+                // strip any index which might have been added
+                $parts = explode('___', $stopID);
+                if ($parts) { $stopID = $parts[0]; }
+                
+                $stopArray[] = array(
+                    'id'      => $stopID,
+                );
+            }
+        }
+        
+        // initialize arrives field
+        foreach ($stopArray as $i => $stop) {
+            $stopArray[$i]['arrives'] = null;
+        }
+        
+        $fullStopList = $stopArray;
+        foreach ($fullStopList as $i => $stopInfo) {
+            $stop = $this->getStop($stopInfo['id']);
+            if (!$stop) {
+                Kurogo::log(LOG_WARNING, "Attempt to look up invalid stop {$stopInfo['id']}", 'transit');
+                continue;
+            }
+            
+            $fullStopList[$i]['i']           = $i;
+            $fullStopList[$i]['name']        = $stop->getName();
+            $fullStopList[$i]['coordinates'] = $stop->getCoordinates();
+            $fullStopList[$i]['hasTiming']   = false;
+            $fullStopList[$i]['upcoming']    = false;
+            
+            $this->applyStopInfoOverrides($stopInfo['id'], $fullStopList[$i]);
+        }
+        
+        $segments = array();
+        
+        $timeRange = array($time, $time + Kurogo::getOptionalSiteVar('TRANSIT_SCHEDULE_ROUTE_RUNNING_PADDING', 900));
+        $runningTime = $this->viewRouteInScheduleView($routeID) ? $timeRange : $time;
+        
+        foreach ($directionSegments as $segment) {
+            if (!$segment->isRunning($runningTime)) { continue; }
+            
+            $segmentInfo = array(
+                'id'   => $segment->getID(),
+                'name' => $segment->getName(),
+                'stops' => $stopArray,
+            );
+
+            //error_log(print_r($segment->getStops(), true));
+            $remainingStopsIndex = 0;
+            foreach ($segment->getStops() as $i => $stopInfo) {
+                $arrivalTime = null;
+                
+                if (isset($stopInfo['arrives']) && $stopInfo['arrives']) {
+                    $arrivalTime = TransitTime::getTimestampOnDate($stopInfo['arrives'], $time);
+                } else if (isset($stopInfo['predictions']) && $stopInfo['predictions']) {
+                    $arrivalTime = reset($stopInfo['predictions']);
+                }
+                
+                for ($j = $remainingStopsIndex; $j < count($segmentInfo['stops']); $j++) {
+                    if ($segmentInfo['stops'][$j]['id'] == $stopInfo['stopID']) {
+                        $remainingStopsIndex = $j+1;
+                        if ($this->debugStopOrder) {
+                            $segmentInfo['stops'][$j]['i'] = $stopInfo['i']; // useful for debugging stop sorting issues
+                        }
+                        $segmentInfo['stops'][$j]['arrives'] = $arrivalTime;
+                        
+                        // Augment full stop list with this arrival time
+                        if ($arrivalTime) {
+                            $oldArrivalTime = $fullStopList[$j]['arrives'];
+                            if (!$oldArrivalTime || ($arrivalTime > $time && 
+                                                     ($arrivalTime < $oldArrivalTime || $oldArrivalTime < $time))) {
+                                $fullStopList[$j]['arrives'] = $arrivalTime;
+                                $fullStopList[$j]['hasTiming'] = true;
+                                if (isset($stopInfo['predictions'])) {
+                                    $fullStopList[$j]['predictions'] = $stopInfo['predictions'];
+                                }
+                                
+                                /*
+                                // Debugging arrival time calculations
+                                if ($oldArrivalTime) {
+                                    error_log('Setting stop time to '.strftime("%H:%M:%S %Y/%m/%d", $arrivalTime).' for '.$this->stops[$stopID]->getName());
+                                } else {
+                                    error_log('Replacing stop time '.strftime("%H:%M:%S %Y/%m/%d", $oldArrivalTime).' with '.strftime("%H:%M:%S %Y/%m/%d", $arrivalTime)." (".strftime("%H:%M:%S %Y/%m/%d", $time).') for stop '.$this->stops[$stopID]['name']);
+                                }
+                                */
+                            }
+                        }
+                        break;
+                    }
+                }
+                if ($j == count($segmentInfo['stops'])) {
+                    Kurogo::log(LOG_WARNING, "Unable to place stop {$stopInfo['stopID']} for direction '$directionName' at index {$stopInfo['i']}", 'transit');
+                    error_log("Unable to place stop {$stopInfo['stopID']} for direction '$directionName' at index {$stopInfo['i']}");
+                }
+            }
+            $segments[] = $segmentInfo;
+        }
+        
+        // Useful for debugging stop sorting issues
+        // very noisy output so we really don't want this most of the time
+        if ($this->debugStopOrder) {
+            foreach ($segments as $i => $segmentInfo) {
+                error_log("Trip {$segmentInfo['id']} ($directionName)");
+                foreach ($segmentInfo['stops'] as $stop) {
+                    error_log("\t\t".str_pad($stop['id'], 8).' => '.(isset($stop['i']) ? $stop['i'] : 'skipped'));
+                }
+            }
+        }
+        
+        return array(
+            'name'     => $directionName,
+            'segments' => $segments,
+            'stops'    => $fullStopList,
+        );
+    }
+
+    protected function buildSortStopGraph($segmentStopOrders) {
+        // Warning: stops within a trip are in order, but not all trips contain
+        // all stops.  The following sort function attempts to build a graph of the 
+        // stop orders in $sortHelper which is then used below in "topologicalSortStops"
+        $stopSortGraph = array();
+        foreach ($segmentStopOrders as $segmentStopOrder) {
+            foreach ($segmentStopOrder as $i => $stopID) {
+                $before = array_slice($segmentStopOrder, 0, $i);
+                $after = array_slice($segmentStopOrder, $i+1);
+                
+                if (!isset($stopSortGraph[$stopID])) {
+                    $stopSortGraph[$stopID] = array(
+                        'before' => $before,
+                        'after'  => $after,
+                    );
+                } else {
+                    $stopSortGraph[$stopID]['before'] = array_merge($stopSortGraph[$stopID]['before'], $before);
+                    $stopSortGraph[$stopID]['after']  = array_merge($stopSortGraph[$stopID]['after'],  $after);
+                }
+            }
+        }
+        
+        // collapse graph to reduce sort time
+        foreach ($stopSortGraph as $stopID => $stopInfo) {
+            $stopSortGraph[$stopID]['before'] = array_unique($stopSortGraph[$stopID]['before']);
+            $stopSortGraph[$stopID]['after']  = array_unique($stopSortGraph[$stopID]['after']);
+        }
+        
+        return $stopSortGraph;
+    }
+    
+    protected function topologicalSortStops($stopSortGraph, &$stopCounts, &$sortedStops, $current=null) {
+        if ($current === null) {
+            foreach ($stopSortGraph as $stopID => $stopInfo) {
+                if (!count($stopInfo['after'])) {
+                    $current = $stopID;
+                    break;
+                }
+            }
+            if ($current === null) {
+                Kurogo::log(LOG_WARNING, "Could not find last stop.", 'transit');
+                return;
+            }
+        }
+        
+        $stopCounts[$current]--; // remember we will be placing this stop
+        //error_log("Looking at $current (".implode(', ', $stopSortGraph[$current]['before']).')');
+        
+        foreach ($stopSortGraph[$current]['before'] as $stopID) {
+            // Each leg of the tree is permitted to have $seenStopCounts[$stopID] of each stop
+            // Keep track of how many we have allowed into this branch
+            if (isset($stopCounts[$stopID]) && $stopCounts[$stopID] > 0) {
+                $this->topologicalSortStops($stopSortGraph, $stopCounts, $sortedStops, $stopID);
+            }
+        }
+        
+        $sortedStops[] = $current;
+        //error_log(print_r($sortedStops, true));
     }
 }
 
@@ -892,15 +1226,13 @@ class TransitRoute
     protected $name = null;
     protected $description = null;
     protected $agencyID = null;
-    protected $viewAsLoop = false;
     protected $directions = array();
     
-    function __construct($id, $agencyID, $name, $description, $viewAsLoop=false) {
+    function __construct($id, $agencyID, $name, $description) {
         $this->id = $id;
         $this->name = $name;
         $this->description = $description;
         $this->agencyID = $agencyID;
-        $this->viewAsLoop = $viewAsLoop;
         $this->paths = array();
     }
     
@@ -938,11 +1270,7 @@ class TransitRoute
     }
     
     public function getDirections() {
-        if ($this->viewAsLoop) {
-            return array('loop');
-        } else {
-            return array_keys($this->directions);
-        }
+        return array_keys($this->directions);
     }
     
     public function getDirection($id) {
@@ -954,16 +1282,8 @@ class TransitRoute
     }
     
     public function getSegmentsForDirection($direction) {
-        if ($this->viewAsLoop) {
-            $segments = array();
-            foreach ($this->directions as $directionID => $direction) {
-                $segments += $direction['segments'];
-            }
-            return $segments;
-        } else {
-            $direction = $this->getDirection($direction);
-            return $direction['segments'];
-        }
+        $direction = $this->getDirection($direction);
+        return $direction['segments'];
     }
     
     public function setStopTimes($directionID, $stopID, $arrivesOffset, $departsOffset) {
