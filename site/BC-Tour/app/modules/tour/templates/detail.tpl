@@ -1,6 +1,6 @@
 {$tabEventAction = "Stop Detail"}
 {if strlen($GOOGLE_ANALYTICS_ID)}
-  {$onLoadBlocks[] = "_gaq.push(['_trackEvent', '{$tabEventAction}', '{$tabbedView['tabs'][$tabbedView['current']]['title']} Tab', '{$stop['title']}']);"}
+  {$onLoadBlocks[] = "_gaq.push(['_trackEvent', '{$tabEventAction|escape:'javascript'}', '{$tabbedView['tabs'][$tabbedView['current']]['title']|escape:'javascript'} Tab', '{$stop['title']|escape:'javascript'}']);"}
 {/if}
 {include file="findInclude:common/templates/header.tpl"}
 
@@ -13,7 +13,7 @@
         {if isset($tabbedView['tabs'][$tabKey])}
           {$tabInfo = $tabbedView['tabs'][$tabKey]}
           <li{if $tabKey == $tabbedView['current']} class="active"{/if} id="{$tabKey}TourTab">
-            <a href="javascript:void(0);" onclick="{if strlen($GOOGLE_ANALYTICS_ID)}_gaq.push(['_trackEvent', '{$tabEventAction}', '{$tabInfo['title']} Tab', '{$stop['title']}']); {/if}showTourTab('{$tabKey}', this);{$tabInfo['javascript']}">
+            <a href="javascript:void(0);" onclick="{if strlen($GOOGLE_ANALYTICS_ID)}_gaq.push(['_trackEvent', '{$tabEventAction|escape:'javascript'}', '{$tabInfo['title']|escape:'javascript'} Tab', '{$stop['title']|escape:'javascript'}']); {/if}showTourTab('{$tabKey}', this);{$tabInfo['javascript']}">
               {block name="lensImage"}
                 <img src="/modules/tour/images/lens-{$tabKey}@2x.png" alt="{$tabInfo['title']}" width="34" height="34" border="0" />
               {/block}
