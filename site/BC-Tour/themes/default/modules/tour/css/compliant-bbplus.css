@@ -1,6 +1,14 @@
 #navbar {
 	font-size: 100%;
 }
+#pagehead {
+	min-height: 100px;	
+  height: auto;
+}
+#pagehead.brief {
+  min-height: 40px;
+  height: auto;
+}
 #pagetitle h1 {
 	min-height: 1.5em;
 	height: auto;
@@ -15,14 +23,6 @@
 }
 #pagetitle.overview h1 {
   width: 100%;
-}
-#pagehead {
-	min-height: 100px;
-  height: auto;
-}
-#pagehead.brief {
-  min-height: 40px;
-  height: auto;
 }
 #pagehead.tabbed {
 	min-height: 84px;
