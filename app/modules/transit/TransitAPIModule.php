@@ -39,16 +39,29 @@ class TransitAPIModule extends APIModule {
         // Schedule view or stop list view?
         if (isset($routeInfo['directions'])) {
             $formatted['directions'] = $routeInfo['directions'];
-        }
+            
+            foreach ($formatted['directions'] as $id => $directionInfo) {
+                $stops = array();
+                foreach ($directionInfo['stops'] as $stopInfo) {
+                    $stops[] = $this->formatStopInfoForRoute($routeId, $stopInfo);
+                }
+                $formatted['directions'][$id]['stops'] = $stops;
+            }
         
-        // pre version 3 the API provided a merged stop view
-        // and only provided the directions field in schedule view
-        if ($responseVersion < 3) {
-            $mergedDirections = TransitDataModel::mergeDirections($routeInfo['directions']);
-            $mergedDirection = reset($mergedDirections);
-            $formatted['stops'] = $mergedDirection['stops'];
-            if ($formatted['view'] == 'list') {
-                unset($formatted['directions']);
+            // pre version 3 the API provided a merged stop view
+            // and only provided the directions field in schedule view
+            if ($responseVersion < 3) {
+                $mergedDirections = TransitDataModel::mergeDirections($routeInfo['directions']);
+                $mergedDirection = reset($mergedDirections);
+                $stops = array();
+                foreach ($mergedDirection['stops'] as $stopInfo) {
+                    $stops[] = $this->formatStopInfoForRoute($routeId, $stopInfo);
+                }
+                $formatted['stops'] = $stops;
+                
+                if ($formatted['view'] == 'list') {
+                    unset($formatted['directions']);
+                }
             }
         }
         
@@ -77,9 +90,9 @@ class TransitAPIModule extends APIModule {
         );
     }
     
-    protected function formatStopInfoForRoute($routeId, $stopId, $stopInfo) {
+    protected function formatStopInfoForRoute($routeId, $stopInfo) {
         return array(
-            'id'      => "$stopId",
+            'id'      => strval($stopInfo['id']),
             'routeId' => "$routeId",
             'title'   => $stopInfo['name'],
             'coords'  => array(
@@ -125,7 +138,7 @@ class TransitAPIModule extends APIModule {
             $this->requestedVersion : $this->vmax;
         
         $view = DataModel::factory("TransitViewDataModel", $this->loadFeedData());
-    
+        
         switch($this->command) {
           case 'info':
             $keyRemap = array(
