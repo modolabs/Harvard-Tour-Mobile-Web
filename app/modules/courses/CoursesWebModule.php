@@ -368,17 +368,51 @@ class CoursesWebModule extends WebModule {
         $this->assign('groupLinks', $groupLinks);
     }
 
-    protected function sortUpdatesByDate($updates, $start = 0, $limit = null){
+    protected function paginateArray($contents) {
+        $totalItems = count($contents);
+        $start = $this->getArg('start', 0);
+        $limit = $this->getOptionalModuleVar('MAX_UPDATES', 10);
+        $previousURL = null;
+        $nextURL = null;
+        if ($totalItems > $limit) {
+            $args = $this->args;
+            if ($start > 0) {
+                $args['start'] = $start - $limit;
+                $previousURL = $this->buildBreadcrumbURL($this->page, $args, false);
+            }
+
+            if (($totalItems - $start) > $limit) {
+                $args['start'] = $start + $limit;
+                $nextURL = $this->buildBreadcrumbURL($this->page, $args, false);
+            }
+        }
+
+        $contents = array_slice($contents, $start, $limit);
+
+        if($previousURL) {
+            $link = array(
+                'title' => "Previous",
+                'url' => $previousURL,
+            );
+            array_unshift($contents, $link);
+        }
+        if($nextURL) {
+            $link = array(
+                'title' => "Next",
+                'url' => $nextURL,
+            );
+            array_push($contents, $link);
+        }
+        return $contents;
+    }
+
+    protected function sortUpdatesByDate($updates){
         if(empty($updates)){
             return array();
         }
         uasort($updates, array($this, 'sortByDate'));
 
-        if($limit) {
-            return array_slice($updates, $start, $limit);
-        }else {
-            return $updates;
-        }
+        return $updates;
     }
 
     private function sortByDate($updateA, $updateB){
@@ -728,38 +762,8 @@ class CoursesWebModule extends WebModule {
                         }
                     }
                 }
-                $totalItems = count($contents);
-                $start = $this->getArg('start', 0);
-                $limit = $this->getOptionalModuleVar('MAX_UPDATES', 10);
-                $previousURL = null;
-                $nextURL = null;
-                if ($totalItems > $limit) {
-                    $args = $this->args;
-                    if ($start > 0) {
-                        $args['start'] = $start - $limit;
-                        $previousURL = $this->buildBreadcrumbURL($this->page, $args, false);
-                    }
-
-                    if (($totalItems - $start) > $limit) {
-                        $args['start'] = $start + $limit;
-                        $nextURL = $this->buildBreadcrumbURL($this->page, $args, false);
-                    }
-                }
-                $contents = $this->sortUpdatesByDate($contents, $start, $limit);
-                if($previousURL) {
-                    $link = array(
-                        'title' => "Previous",
-                        'url' => $previousURL,
-                    );
-                    array_unshift($contents, $link);
-                }
-                if($nextURL) {
-                    $link = array(
-                        'title' => "Next",
-                        'url' => $nextURL,
-                    );
-                    array_push($contents, $link);
-                }
+                $contents = $this->sortUpdatesByDate($contents);
+                $contents = $this->paginateArray($contents);
                 $this->assign('contents', $contents);
                 break;
             
@@ -862,6 +866,7 @@ class CoursesWebModule extends WebModule {
                     foreach ($items as $item){
                         $contents[] = $this->linkForUpdate($item, $contentCourse, false);
                     }
+                    $contents = $this->paginateArray($contents);
                     $this->assign('contents', $contents);
                 }
                     
