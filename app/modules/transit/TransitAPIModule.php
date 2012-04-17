@@ -41,11 +41,8 @@ class TransitAPIModule extends APIModule {
             $formatted['directions'] = $routeInfo['directions'];
             
             foreach ($formatted['directions'] as $id => $directionInfo) {
-                $stops = array();
-                foreach ($directionInfo['stops'] as $stopInfo) {
-                    $stops[] = $this->formatStopInfoForRoute($routeId, $stopInfo);
-                }
-                $formatted['directions'][$id]['stops'] = $stops;
+                $formatted['directions'][$id]['stops'] = 
+                    $this->formatStopsInfoForRoute($routeId, $directionInfo['stops'], $responseVersion);
             }
         
             // pre version 3 the API provided a merged stop view
@@ -53,11 +50,9 @@ class TransitAPIModule extends APIModule {
             if ($responseVersion < 3) {
                 $mergedDirections = TransitDataModel::mergeDirections($routeInfo['directions']);
                 $mergedDirection = reset($mergedDirections);
-                $stops = array();
-                foreach ($mergedDirection['stops'] as $stopInfo) {
-                    $stops[] = $this->formatStopInfoForRoute($routeId, $stopInfo);
-                }
-                $formatted['stops'] = $stops;
+                
+                $formatted['stops'] = 
+                    $this->formatStopsInfoForRoute($routeId, $mergedDirection['stops'], $responseVersion);
                 
                 if ($formatted['view'] == 'list') {
                     unset($formatted['directions']);
@@ -66,6 +61,32 @@ class TransitAPIModule extends APIModule {
         }
         
         return $formatted;
+    }
+    
+    protected function formatStopsInfoForRoute($routeId, $stops, $responseVersion) {
+        $routeStopsInfo = array();
+        
+        foreach ($stops as $stopInfo) {
+            $routeStopInfo = array(
+                'id'      => strval($stopInfo['id']),
+                'routeId' => "$routeId",
+                'title'   => $stopInfo['name'],
+                'coords'  => array(
+                    'lat' => $stopInfo['coordinates']['lat'],
+                    'lon' => $stopInfo['coordinates']['lon'],
+                ),
+                'arrives'        => self::argVal($stopInfo, 'predictions', array()),
+                'direction'      => self::argVal($stopInfo, 'direction', 'loop'),
+                'directionTitle' => self::argVal($stopInfo, 'directionTitle', ''),
+            );
+            
+            if ($responseVersion < 3) {
+                $routeStopInfo['name'] = $stopInfo['name']; // Also provide old name field
+            }
+            $routeStopsInfo[] = $routeStopInfo;
+        }
+        
+        return $routeStopsInfo;
     }
     
     protected function formatStopInfo($stopId, $stopInfo) {
@@ -87,21 +108,6 @@ class TransitAPIModule extends APIModule {
                 'lon' => $stopInfo['coordinates']['lon'],
             ),
             'routes' => $routes,
-        );
-    }
-    
-    protected function formatStopInfoForRoute($routeId, $stopInfo) {
-        return array(
-            'id'      => strval($stopInfo['id']),
-            'routeId' => "$routeId",
-            'title'   => $stopInfo['name'],
-            'coords'  => array(
-                'lat' => $stopInfo['coordinates']['lat'],
-                'lon' => $stopInfo['coordinates']['lon'],
-            ),
-            'arrives'        => self::argVal($stopInfo, 'predictions', array()),
-            'direction'      => self::argVal($stopInfo, 'direction', 'loop'),
-            'directionTitle' => self::argVal($stopInfo, 'directionTitle', ''),
         );
     }
     
