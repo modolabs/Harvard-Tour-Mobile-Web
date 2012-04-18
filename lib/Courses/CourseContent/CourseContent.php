@@ -11,6 +11,11 @@ abstract class CourseContent implements KurogoObject {
     protected $author;
     protected $publishedDate;
     protected $priority;
+    protected $viewMode;
+    protected $downloadMode;
+    const MODE_PAGE = 1;
+    const MODE_DOWNLOAD = 2;
+    const MODE_URL = 3;
     
     public function filterItem($filters) {
         return true;
@@ -126,5 +131,45 @@ abstract class CourseContent implements KurogoObject {
         return isset($this->properties[$var]) ?  $this->properties[$var] : '';
     }
     
+    /**
+     * Get viewMode.
+     *
+     * @return viewMode.
+     */
+    public function getViewMode() {
+        if(empty($this->viewMode)) {
+            return MODE_PAGE;
+        }
+        return $this->viewMode;
+    }
     
+    /**
+     * Set viewMode.
+     *
+     * @param viewMode the value to set.
+     */
+    public function setViewMode($viewMode) {
+        $this->viewMode = $viewMode;
+    }
+    
+    /**
+     * Get downloadMode.
+     *
+     * @return downloadMode.
+     */
+    public function getDownloadMode() {
+        if(empty($this->downloadMode)) {
+            return MODE_DOWNLOAD;
+        }
+        return $this->downloadMode;
+    }
+    
+    /**
+     * Set downloadMode.
+     *
+     * @param downloadMode the value to set.
+     */
+    public function setDownloadMode($downloadMode) {
+        $this->downloadMode = $downloadMode;
+    }
 }
