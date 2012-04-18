@@ -13,6 +13,11 @@
 {$contentDescription}
 </div>
 {/if}
+{if $contentData}
+<div class="focal">
+{$contentData}
+</div>
+{/if}
 {if $links}
 {include file="findInclude:common/templates/navlist.tpl" navlistItems=$links subTitleNewline=true}
 {/if}

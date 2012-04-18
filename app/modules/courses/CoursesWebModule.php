@@ -217,6 +217,19 @@ class CoursesWebModule extends WebModule {
                     'url'=>$this->buildBreadcrumbURL('download', $options, false)
                 );
                 break;
+            case 'page':
+                $viewMode = $content->getViewMode();
+                if($viewMode == $content::MODE_URL) {
+                    $links[] = array(
+                        'title'=>$content->getTitle(),
+                        'subtitle'=>$content->getFileurl(),
+                        'url'=>$content->getFileurl(),
+                        'class'=>'external',
+                    );
+                }
+                break;
+            case 'download':
+                break;
             case 'announcement':
             case 'task':
                 break;
@@ -615,6 +628,14 @@ class CoursesWebModule extends WebModule {
                 }
                 if($content->getPublishedDate()){
                     $this->assign('contentPublished', $this->elapsedTime($content->getPublishedDate()->format('U')));
+                }
+
+                if($content->getContentType() == "page") {
+                    if($content->getViewMode() == $content::MODE_PAGE) {
+                        $contentDataUrl = $contentCourse->getFileForContent($content->getID());
+                        $contentData = file_get_contents($contentDataUrl);
+                        $this->assign("contentData", $contentData);
+                    }
                 }
 
                 $links = $this->getContentLinks($content);
