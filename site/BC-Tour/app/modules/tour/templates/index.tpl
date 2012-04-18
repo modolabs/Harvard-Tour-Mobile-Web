@@ -38,14 +38,14 @@
 <div id="welcomefooter">
     {if $resumeURL}
       <a class="startlink" href="{$resumeURL}">
-        <img class="resume" src="/modules/tour/images/resume.png" alt="resume your tour" width="300" height="30" border="0" />
+        <img class="resume" src="/modules/tour/images/resume2.png" alt="resume your tour" width="300" height="30" border="0" />
       </a>
       <a class="startlink" href="{$startURL}">
-        <img class="startover" src="/modules/tour/images/startover.png" alt="start a new tour" width="300" height="30" border="0" />
+        <img class="startover" src="/modules/tour/images/startover2.png" alt="start a new tour" width="300" height="30" border="0" />
       </a>
     {else}
       <a class="startlink" href="{$startURL}">
-        <img class="begin" src="/modules/tour/images/begin.png" alt="begin your tour" width="300" height="30" border="0" />
+        <img class="begin" src="/modules/tour/images/begin2.png" alt="begin your tour" width="300" height="30" border="0" />
       </a>
     {/if}
 </div>

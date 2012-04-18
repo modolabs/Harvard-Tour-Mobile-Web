@@ -8,7 +8,7 @@ html, body, #nonfooternav {
 }
 
 body {
-	background: #f0f0ee url(/modules/tour/images/bodyback.jpg) repeat;	/* Background of tab content */
+	background: #F9F3E8 url(/modules/tour/images/bodyback3.jpg) repeat;	/* Background of tab content */
 	font: 17px/1.33em 'Helvetica Neue', Helvetica, Arial, sans-serif;	/* Base font size and line height */
 	color: #333;	/* Base font color */
 }
@@ -42,8 +42,8 @@ p, dl, ul {
 	height: 34px;
 	float: left;
 	text-decoration: none;
-	color: #000;
-	text-shadow: rgba(0,0,0,0.13) -1px -1px 1px,rgba(255,255,255,0.85) 1px 1px 1px;
+	color: #fff;
+	text-shadow: rgba(0,0,0,0.13) -1px -1px 1px,rgba(0,0,0,0.85) 1px 1px 1px;
 }
 #homelink img {
 	float: left;
@@ -64,8 +64,8 @@ p, dl, ul {
 }
 #helplinks a {
 	text-decoration: none;
-	color: #4c6680;
-	text-shadow: rgba(0,0,0,0.13) -1px -1px 1px,rgba(255,255,255,0.85) 1px 1px 1px;
+	color: tan;
+	/*text-shadow: rgba(0,0,0,0.13) -1px -1px 1px,rgba(255,255,255,0.85) 1px 1px 1px;*/
 	padding: 0 8px;
 }
 
@@ -129,12 +129,12 @@ p, dl, ul {
 	padding: 3px 2px 0 0;
 	height: 52px;
 	font: 82.4%/56px serif;
-	color: #cbe1f3;
+	color: #DDC7A5;
 }
 #pagehead #viewtoggle a, 
 #pagehead #viewtoggle a:visited,
 #pagehead #viewtoggle span {
-	color: #cbe1f3;
+	color: #DDC7A5;
 	padding: 0 8px;
 	text-decoration: none;
 }
@@ -178,8 +178,8 @@ p, dl, ul {
 	text-align: center;
 	background: #485761 url(/common/images/tabback.jpg) repeat-x;
 	border: 1px solid rgba(0,0,0,0.2);
-	border-top-color: rgba(255,255,255,0.33);
-	border-bottom-color: rgba(255,255,255,0);
+	border-top-color: rgba(101,92,73,0.33);
+	border-bottom-color: rgba(101,92,73,0);
 	-webkit-box-shadow: 0px 0px 3px rgba(0,0,0,0.7);
 	-moz-box-shadow: 0px 0px 3px rgba(0,0,0,0.7);
 	box-shadow: 0px 0px 3px rgba(0,0,0,0.7);
@@ -203,7 +203,7 @@ p, dl, ul {
 #content,
 #tabbodies {
 	padding: 4px; /* this left/right padding is duplicated in tour module common.js */
-	background: url(/common/images/bodyback2.jpg) repeat-x;
+	background: url(/common/images/bodyback3.jpg) repeat-x;
 	font: 88.24%/1.333em sans-serif;
 	color: #464640;
 	min-height: 240px;
