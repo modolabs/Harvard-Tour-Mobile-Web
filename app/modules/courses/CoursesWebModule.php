@@ -209,26 +209,34 @@ class CoursesWebModule extends WebModule {
                 );
                 break;
             case 'file':
-                $options = $this->getCourseOptions();
-                $options['contentID'] = $content->getID();
-                $links[] = array(
-                    'title'=>'Download File',
-                    'subtitle'=>$content->getFilename(),
-                    'url'=>$this->buildBreadcrumbURL('download', $options, false)
-                );
+                $downloadMode = $content->getDownloadMode();
+                if($downloadMode == $content::MODE_DOWNLOAD) {
+                    $options = $this->getCourseOptions();
+                    $options['contentID'] = $content->getID();
+                    $links[] = array(
+                        'title'=>'Download File',
+                        'subtitle'=>$content->getFilename(),
+                        'url'=>$this->buildBreadcrumbURL('download', $options, false)
+                    );
+                }elseif($downloadMode == $content::MODE_URL) {
+                    $links[] = array(
+                        'title'=>$content->getTitle(),
+                        'subtitle'=>$content->getFilename(),
+                        'url'=>$content->getFileurl(),
+                        'class'=>'external',
+                    );
+                }
                 break;
             case 'page':
                 $viewMode = $content->getViewMode();
                 if($viewMode == $content::MODE_URL) {
                     $links[] = array(
                         'title'=>$content->getTitle(),
-                        'subtitle'=>$content->getFileurl(),
+                        'subtitle'=>$content->getFilename(),
                         'url'=>$content->getFileurl(),
                         'class'=>'external',
                     );
                 }
-                break;
-            case 'download':
                 break;
             case 'announcement':
             case 'task':
@@ -585,6 +593,10 @@ class CoursesWebModule extends WebModule {
                 
                 
             	break;
+
+            case 'loadFile':
+                $file = $this->getArg('file');
+                break;
             	
             case 'content':
             case 'download':
