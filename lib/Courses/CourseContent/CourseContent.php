@@ -138,7 +138,7 @@ abstract class CourseContent implements KurogoObject {
      */
     public function getViewMode() {
         if(empty($this->viewMode)) {
-            return MODE_PAGE;
+            return self::MODE_PAGE;
         }
         return $this->viewMode;
     }
@@ -159,7 +159,7 @@ abstract class CourseContent implements KurogoObject {
      */
     public function getDownloadMode() {
         if(empty($this->downloadMode)) {
-            return MODE_DOWNLOAD;
+            return self::MODE_DOWNLOAD;
         }
         return $this->downloadMode;
     }
