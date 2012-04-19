@@ -21,6 +21,11 @@ h1 {
 	color: #000;
 }
 
+h2 {
+	color: #990000;
+	font-family:Georgia, "Times New Roman", Times, serif;
+}
+
 p, dl, ul {
 	margin: 0 0 15px 0;		/* Remove some browser's normal margin-top on these block elements */
 }
@@ -47,7 +52,7 @@ p, dl, ul {
 }
 #homelink img {
 	float: left;
-	margin-right: 8px;
+	margin-right: 5px;
 	vertical-align: middle;
 }
 #helplinks {
@@ -129,17 +134,17 @@ p, dl, ul {
 	padding: 3px 2px 0 0;
 	height: 52px;
 	font: 82.4%/56px serif;
-	color: #DDC7A5;
+	color:#EFDDA8;
 }
 #pagehead #viewtoggle a, 
 #pagehead #viewtoggle a:visited,
 #pagehead #viewtoggle span {
-	color: #DDC7A5;
+	color:#fff ;
 	padding: 0 8px;
 	text-decoration: none;
 }
 #pagehead #viewtoggle a.active {
-	color: #fff;
+	color: #EFDDA8;
 }
 #pagehead #viewtoggle .spacer {
   padding: 0;
@@ -176,7 +181,7 @@ p, dl, ul {
 	line-height: 1em;
 	color: #b4c0cc;
 	text-align: center;
-	background: #485761 url(/common/images/tabback.jpg) repeat-x;
+	background: #9C8C73 url(/common/images/tabback.jpg) repeat-x;
 	border: 1px solid rgba(0,0,0,0.2);
 	border-top-color: rgba(101,92,73,0.33);
 	border-bottom-color: rgba(101,92,73,0);
