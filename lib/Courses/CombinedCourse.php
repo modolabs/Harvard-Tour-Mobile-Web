@@ -4,6 +4,29 @@ class CombinedCourse implements CourseInterface
 {
     protected $id;
     protected $courses = array();
+    protected $attributes = array();
+    
+    public function standardAttributes() {
+        return array(
+            'ID', 
+            'courseNumber', 
+            'title',
+            'description', 
+            'term',
+        );
+    }
+
+    public function constructAttributes($type, Course $course) {
+    	foreach($this->standardAttributes() as $attribute) {
+	        $method = "get".ucfirst($attribute);
+	        $value = $course->$method();
+	        if($value) {
+		        $this->attributes[$type][$attribute] = $value;
+	        }else{
+				$this->attributes[$type][$attribute] = null;
+	        }
+    	}
+    }
     
     public function getTitle($type=null) {
         if ($type==null) {
@@ -30,9 +53,25 @@ class CombinedCourse implements CourseInterface
     public function addCourse($type, Course $course) {
         $this->courses[$type] = $course;
         $this->id = $course->getCommonID();
+        $this->constructAttributes($type, $course);
     }
 
     public function getID($type=null) {
         return $this->id;
+    }
+    
+    public function getField($field, $type=null) {
+        if ($type==null) {
+            $type = key($this->courses);
+        }
+
+        if($type) {
+            if (array_key_exists($type, $this->attributes)) {
+                if(array_key_exists($field, $this->attributes[$type])) {
+		        	return $this->attributes[$type][$field];
+                }
+	        }
+        }
+        return NULL;
     }
 }

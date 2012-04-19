@@ -7,6 +7,7 @@ class CoursesWebModule extends WebModule {
     protected $courses;
     protected $hasPersonalizedCourses = false;
     protected $selectedTerm;
+    protected $detailFields = array();
     
     protected function linkforInfo($courseId, $description){
     	$links = array();
@@ -355,6 +356,8 @@ class CoursesWebModule extends WebModule {
         $this->controller = CoursesDataModel::factory('CoursesDataModel', $this->feeds);
         $this->hasPersonalizedCourses =  $this->controller->canRetrieve('registration') || $this->controller->canRetrieve('content');
         $this->selectedTerm = $this->getArg('term', CoursesDataModel::CURRENT_TERM);
+        //load page detail configs
+        $this->detailFields = $this->loadPageConfigFile('info', 'detailFields');
     }
     
     protected function getCourseOptions() {
@@ -445,6 +448,125 @@ class CoursesWebModule extends WebModule {
         return ($updateA_time > $updateB_time) ? -1 : 1;
     }
 
+    protected function formatCourseDetails(CombinedCourse $course) {
+        //error_log(print_r($this->detailFields, true));
+        
+        $details = array();    
+        
+        foreach($this->detailFields as $key => $info) {
+            $section = $this->formatCourseDetail($course, $info, $key);
+            
+            if (count($section)) {
+                if (isset($info['section'])) {
+                    if (!isset($details[$info['section']])) {
+                        $details[$info['section']] = $section;
+                    } else {
+                        $details[$info['section']] = array_merge($details[$info['section']], $section);
+                    }
+                } else {
+                    $details[$key] = $section;
+                }
+            }
+        }
+        //error_log(print_r($details, true));
+        return $details;
+    }
+    
+    protected function formatCourseDetail(CombinedCourse $course, $info, $key=0) {
+        $section = array();
+        $courseType = isset($info['courseType']) ? $info['courseType'] : null;
+        
+        if (count($info['attributes']) == 1) {
+            $values = (array)$course->getField($info['attributes'][0], $courseType);
+            if (count($values)) {
+                $section[$key] = $this->formatDetail($this->formatValues($values, $info), $info, $course);
+            }      
+        } else {
+            $valueGroups = array();
+        
+            foreach ($info['attributes'] as $attribute) {
+                $values = $this->formatValues((array)$course->getField($attribute, $courseType), $info);
+            
+                if (count($values)) {
+                    foreach ($values as $i => $value) {
+                        $valueGroups[$i][] = $value;
+                    }
+                }
+            }
+          
+            foreach ($valueGroups as $valueGroup) {
+                $section[$key] = $this->formatDetail($valueGroup, $info, $course);
+            }
+        }
+        
+        return $section;
+    }
+    
+    protected function formatDetail($values, $info, CombinedCourse $course) {
+        if (isset($info['format'])) {
+            $value = vsprintf($this->replaceFormat($info['format']), $values);
+        } else {
+            $delimiter = isset($info['delimiter']) ? $info['delimiter'] : ' ';
+            $value = implode($delimiter, $values);
+        }
+    
+        $detail = array(
+            'label' => isset($info['label']) ? $info['label'] : '',
+            'title' => $value
+        );
+    
+        switch(isset($info['type']) ? $info['type'] : 'text') 
+        {
+            case 'email':
+                $detail['title'] = str_replace('@', '@&shy;', $detail['title']);
+                $detail['url'] = "mailto:$value";
+                $detail['class'] = 'email';
+                break;
+        
+            case 'phone':
+                $detail['title'] = str_replace('-', '-&shy;', $detail['title']);
+                
+                if (strpos($value, '+1') !== 0) { 
+                    $value = "+1$value"; 
+                }
+                $detail['url'] = PhoneFormatter::getPhoneURL($value);
+                $detail['class'] = 'phone';
+                break;
+ 
+            // compatibility
+            case 'map':
+                $info['module'] = 'map';
+                break;
+        }
+
+        if (isset($info['module'])) {
+            $detail = array_merge($detail, Kurogo::moduleLinkForValue($info['module'], $value, $this, $person));
+        }
+        
+        if (isset($info['urlfunc'])) {
+            $urlFunction = create_function('$value,$course', $info['urlfunc']);
+            $detail['url'] = $urlFunction($value, $course);
+        }
+    
+        $detail['title'] = nl2br($detail['title']); 
+        return $detail;
+    }
+    
+    protected function formatValues($values, $info) {
+        if (isset($info['parse'])) {
+            $formatFunction = create_function('$value', $info['parse']);
+            foreach ($values as &$value) {
+                $value = $formatFunction($value);
+            }
+        }
+        
+        return $values;
+    }
+    
+    protected function replaceFormat($format) {
+        return str_replace(array('\n','\t'),array("\n","\t"), $format);
+    }
+    
     protected function initializeForPage() {
         switch($this->page) {
             case 'catalogCourseInfo':
@@ -541,6 +663,8 @@ class CoursesWebModule extends WebModule {
                 }
         	    $options = $this->getCourseOptions();
         	    
+        	    $courseDetails =  $this->formatCourseDetails($course);
+        	    $this->assign('courseDetails', $courseDetails);
                 // Bookmark
                 if ($this->getOptionalModuleVar('BOOKMARKS_ENABLED', 1)) {
                     $cookieParams = array(
