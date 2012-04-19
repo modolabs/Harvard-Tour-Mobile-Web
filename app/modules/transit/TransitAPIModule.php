@@ -38,24 +38,34 @@ class TransitAPIModule extends APIModule {
         
         // Schedule view or stop list view?
         if (isset($routeInfo['directions'])) {
-            $formatted['directions'] = $routeInfo['directions'];
-            
-            foreach ($formatted['directions'] as $id => $directionInfo) {
-                $formatted['directions'][$id]['stops'] = 
-                    $this->formatStopsInfoForRoute($routeId, $directionInfo['stops'], $responseVersion);
+            foreach ($routeInfo['directions'] as $directionID => $directionInfo) {
+                $formatted['directions'][] = array(
+                    'id'    => $directionID,
+                    'name'  => $directionInfo['name'],
+                    'stops' => $this->formatStopsInfoForRoute($routeId, $directionInfo['stops'], $responseVersion),
+                );
             }
-        
-            // pre version 3 the API provided a merged stop view
-            // and only provided the directions field in schedule view
+            
             if ($responseVersion < 3) {
+                // pre version 3 the API provided a merged stop view
                 $mergedDirections = TransitDataModel::mergeDirections($routeInfo['directions']);
                 $mergedDirection = reset($mergedDirections);
                 
                 $formatted['stops'] = 
                     $this->formatStopsInfoForRoute($routeId, $mergedDirection['stops'], $responseVersion);
                 
+                // and only provided the directions field in schedule view, indexed by direction id
                 if ($formatted['view'] == 'list') {
                     unset($formatted['directions']);
+                    
+                } else {
+                    $oldStyleDirections = array();
+                    foreach ($formatted['directions'] as $directionInfo) {
+                        $directionID = $directionInfo['id'];
+                        unset($directionInfo['id']);
+                        $oldStyleDirections[$directionID] = $directionInfo;
+                    }
+                    $formatted['directions'] = $oldStyleDirections;
                 }
             }
         }
@@ -69,19 +79,18 @@ class TransitAPIModule extends APIModule {
         foreach ($stops as $stopInfo) {
             $routeStopInfo = array(
                 'id'      => strval($stopInfo['id']),
-                'routeId' => "$routeId",
                 'title'   => $stopInfo['name'],
                 'coords'  => array(
                     'lat' => $stopInfo['coordinates']['lat'],
                     'lon' => $stopInfo['coordinates']['lon'],
                 ),
-                'arrives'        => self::argVal($stopInfo, 'predictions', array()),
-                'direction'      => self::argVal($stopInfo, 'direction', 'loop'),
-                'directionTitle' => self::argVal($stopInfo, 'directionTitle', ''),
+                'arrives' => self::argVal($stopInfo, 'predictions', array()),
             );
             
             if ($responseVersion < 3) {
-                $routeStopInfo['name'] = $stopInfo['name']; // Also provide old name field
+                $routeStopInfo['routeId'] = "$routeId"; // Provide old route id field
+                $routeStopInfo['name'] = $stopInfo['name']; // Provide old name field
+                unset($routeStopInfo['title']);
             }
             $routeStopsInfo[] = $routeStopInfo;
         }
@@ -89,15 +98,40 @@ class TransitAPIModule extends APIModule {
         return $routeStopsInfo;
     }
     
-    protected function formatStopInfo($stopId, $stopInfo) {
+    protected function formatStopInfo($stopId, $stopInfo, $responseVersion) {
         $routes = array();
         foreach ($stopInfo['routes'] as $routeId => $routeInfo) {
-            $routes[] = array(
-                'routeId' => $routeId,
-                'title'   => $routeInfo['name'],
-                'running' => $routeInfo['running'],
-                'arrives' => self::argVal($routeInfo, 'predictions', array()),
+            $directions = array();
+            foreach (self::argVal($routeInfo, 'directions', array()) as $directionID => $directionInfo) {
+                $directions[] = array(
+                    'id'      => $directionID,
+                    'title'   => self::argVal($directionInfo, 'name', ''),
+                    'arrives' => self::argVal($directionInfo, 'predictions', array()),
+                );
+            }
+            
+            $route = array(
+                'id'         => $routeId,
+                'title'      => $routeInfo['name'],
+                'running'    => $routeInfo['running'],
+                'directions' => $directions,
             );
+
+            if ($responseVersion < 3) {
+                $predictions = array();
+                foreach ($directions as $directionID => $directionInfo) {
+                    $predictions = array_merge($predictions, $directionInfo['arrives']);
+                }
+                sort($predictions);
+
+                $route['arrives'] = $predictions;
+                unset($route['directions']);
+                
+                $route['routeId'] = $routeId;
+                unset($route['id']);
+            }
+            
+            $routes[] = $route;
         }
     
         return array(
@@ -219,7 +253,7 @@ class TransitAPIModule extends APIModule {
                   throw new Exception("No such stop '$stopId'");
               }
               
-              $response = $this->formatStopInfo($stopId, $stopInfo);
+              $response = $this->formatStopInfo($stopId, $stopInfo, $responseVersion);
               
               $this->setResponse($response);
               $this->setResponseVersion($responseVersion);

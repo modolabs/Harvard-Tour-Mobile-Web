@@ -95,47 +95,6 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
         }
     }
     
-    public function getStopInfoForRoute($globalRouteID, $globalStopID) {  
-        $stopInfo = array();
-        $cacheKey = "stopInfoForRoute.$globalRouteID.$globalStopID";
-        
-        if (!$stopInfo = $this->getCachedViewForKey($cacheKey)) {
-            list($system, $routeID) = $this->getRealID($globalRouteID);
-            list($system, $stopID)  = $this->getRealID($globalStopID);
-            $model = $this->modelForRoute($system, $routeID);
-            
-            if ($model['live']) {
-                $stopInfo = $model['live']->getStopInfoForRoute($routeID, $stopID);
-            }
-            
-            if ($model['static']) {
-                $staticStopInfo = $model['static']->getStopInfoForRoute($routeID, $stopID);
-            }
-            
-            if (!$stopInfo) {
-                $stopInfo = $staticStopInfo;
-            }
-            
-            if ($stopInfo) {
-                if (!isset($stopInfo['arrives']) || $staticStopInfo['arrives'] < $stopInfo['arrives']) {
-                    $stopInfo['arrives'] = $staticStopInfo['arrives'];
-                }
-                if (!isset($stopInfo['predictions'])) {
-                    $stopInfo['predictions'] = $staticStopInfo['predictions'];
-                  
-                } else if (count($staticStopInfo['predictions'])) {
-                    $stopInfo['predictions'] = array_merge($stopInfo['predictions'], $staticStopInfo['predictions']);
-                    
-                    $stopInfo['predictions'] = array_unique($stopInfo['predictions']);
-                    sort($stopInfo['predictions']);
-                }
-            }
-            $this->cacheViewForKey($cacheKey, $stopInfo);
-        }
-        
-        return $stopInfo;
-    }
-    
     public function getStopInfo($globalStopID) {
         $stopInfo = array();
         $cacheKey = "stopInfo.$globalStopID";
@@ -166,7 +125,7 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
             
                     foreach ($staticModelInfo['routes'] as $routeID => $routeInfo) {
                         if (!isset($modelInfo['routes'][$routeID]) ||
-                            !isset($modelInfo['routes'][$routeID]['predictions'])) {
+                            !isset($modelInfo['routes'][$routeID]['directions'])) {
                             $modelInfo['routes'][$routeID] = $routeInfo;
                         }
                         
@@ -186,22 +145,29 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
                     if (!count($stopInfo)) {
                         $stopInfo = $modelInfo;
                     } else {
-                        foreach ($modelInfo['routes'] as $routeID => $stopTimes) {
+                        foreach ($modelInfo['routes'] as $routeID => $stopRouteInfo) {
                             if (!isset($stopInfo['routes'][$routeID])) {
-                                $stopInfo['routes'][$routeID] = $stopTimes;
-                            } else {
-                                if (!isset($stopTimes['predictions'])) {
-                                    $stopInfo['routes'][$routeID]['predictions'] = $stopTimes['predictions'];
-                                
-                                } else if (count($stopTimes['predictions'])) {
-                                    $stopInfo['routes'][$routeID]['predictions'] = array_merge(
-                                        $stopInfo['routes'][$routeID]['predictions'], $stopTimes['predictions']);
+                                // add new route
+                                $stopInfo['routes'][$routeID] = $stopRouteInfo;
+                                continue;
+                            }
+                            
+                            $directions = $stopInfo['routes'][$routeID]['directions'];
+                            foreach ($stopRouteInfo['directions'] as $directionID => $directionInfo) {
+                                if (!isset($directions[$directionID])) {
+                                    // add new direction
+                                    $directions[$directionID] = $directionInfo;
                                     
-                                    $stopInfo['routes'][$routeID]['predictions'] = 
-                                        array_unique($stopInfo['routes'][$routeID]['predictions']);
-                                    sort($stopInfo['routes'][$routeID]['predictions']);
+                                } else if (count($directionInfo['predictions'])) {
+                                    // merge in new predictions for existing direction
+                                    $directions[$directionID]['predictions'] = array_merge($directions[$directionID]['predictions'],
+                                                                                           $directionInfo['predictions']);
+                                                    
+                                    $directions[$directionID]['predictions'] = array_unique($directions[$directionID]['predictions']);
+                                    sort($directions[$directionID]['predictions']);
                                 }
                             }
+                            $stopInfo['routes'][$routeID]['directions'] = $directions;
                         }
                     }
                 }
@@ -212,7 +178,17 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
         }
         return $stopInfo;
     }
-  
+    
+    protected function liveAndStaticMerge($live, $static) {
+        if ($live && !$static) {
+            return $live;
+        }
+        if (!$live && $static) {
+            return $static;
+        }
+        
+    }
+    
     public function getMapImageForStop($globalStopID, $width=270, $height=270) {
         $image = false;
         list($system, $stopID) = $this->getRealID($globalStopID);

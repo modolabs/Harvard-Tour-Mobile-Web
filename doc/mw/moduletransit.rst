@@ -58,14 +58,14 @@ In the feed configuration example above, ``VIEW_ROUTES_AS_LOOP = "1,701,747"`` w
 
 * *AGENCIES* - (required) A string containing a comma-separated list of agency ids in the feed.
 * *ROUTE_WHITELIST* - (optional) A string containing a comma-separated list of route ids.  If this parameter is not specified, all routes in each of the specified agencies will be provided.
-* *VIEW_ROUTES_AS_LOOP* - (optional) A string containing either a single asterix ``*`` or a comma-separated list of route ids.  Sometimes transit feeds arbitrarily split routes which are loops into two directions.  This can cause the route to display in a way which does not make sense to the user.  This argument tells the backend to collapse these directions into a single loop.  The ``*`` value will tell the parser to collapse directions on all routes in each of the specified agencies.
+* *VIEW_ROUTES_AS_LOOP* - (optional) A string containing either a single asterix ``*`` (all routes) or a comma-separated list of route ids.  Sometimes transit feeds arbitrarily split routes which are loops into two directions.  This can cause the route to display in a way which does not make sense to the user.  This argument tells the backend to collapse these directions into a single loop.
 
 **GTFS-Specific Arguments:**
 
 * *DB_FILE* - (required) The location of the database containing the GTFS data.  For information about how to create this database, see below.
 * *DB_TYPE* - (optional) If not specified, assumes a type of SQLite.
-* *SPLIT_BY_HEADSIGN* - (optional) Instead of splitting routes by direction, splits them by the trip_headsign field in trips.txt.  This option will only work properly if trip_headsign is specified for all trips in trips.txt.
-* *SCHEDULE_VIEW* - (optional) Attempts to display the GTFS data in schedule tables showing the next few vehicles.  Because GTFS data is meant for trip planning, it does not always contain enough data to order the stops in a route.  If your routes are display stops in the wrong order, see the section on stop orders below.
+* *SPLIT_BY_HEADSIGN* - (optional) A string containing either a single asterix ``*`` (all routes) or a comma-separated list of route ids.  Instead of splitting routes by direction, splits them by the trip_headsign field in trips.txt.  This option will only work properly if trip_headsign is specified for all trips in trips.txt.
+* *SCHEDULE_VIEW* - (optional) A string containing either a single asterix ``*`` (all routes) or a comma-separated list of route ids.  Attempts to display the GTFS data in schedule tables showing the next few vehicles.  Because GTFS data is meant for trip planning, it does not always contain enough data to order the stops in a route.  If your routes are display stops in the wrong order, see the section on stop orders below.
 
 --------------------------------
 Overriding Stop and Route Fields

@@ -61,10 +61,13 @@ class TransitWebModule extends WebModule {
         return $news;
     }
 
-    protected function timesURL($routeID, $addBreadcrumb=true, $noBreadcrumb=false, $paneLink=false) {
+    protected function timesURL($routeID, $directionID=null, $addBreadcrumb=true, $noBreadcrumb=false, $paneLink=false) {
         $args = array(
             'id' => $routeID,
         );
+        if ($directionID && $directionID !== TransitDataModel::LOOP_DIRECTION) {
+            $args['direction'] = $directionID;
+        }
       
         if ($paneLink || $noBreadcrumb) {
             return $this->buildURL('route', $args);
@@ -150,7 +153,7 @@ class TransitWebModule extends WebModule {
                       $routes[] = array(
                           'title' => $routeConfig['name'],
                           'subtitle' => $routeConfig['description'],
-                          'url'   => $this->timesURL($routeID, false, true, true),
+                          'url'   => $this->timesURL($routeID, null, false, true, true),
                       );
                   }
               }
@@ -276,9 +279,10 @@ class TransitWebModule extends WebModule {
               }
               
               if (isset($direction) && isset($routeInfo['directions'][$direction])) {
+                  $this->assign('direction', $direction);
+                  
                   switch ($routeInfo['view']) {
                       case 'schedule':
-                          $this->assign('direction', $direction);
                           foreach ($routeInfo['directions'][$direction]['stops'] as $i => $stop) {
                               $routeInfo['directions'][$direction]['stops'][$i]['url'] = $this->stopURL($stop['id']);
                           }
@@ -383,18 +387,23 @@ class TransitWebModule extends WebModule {
               $runningRoutes = array();
               $offlineRoutes = array();
               foreach ($stopInfo['routes'] as $routeID => $routeInfo) {
-                  $entry = array(
-                      'title' => $routeInfo['name'],
-                      'url'   => $this->timesURL($routeID, false, true), // no breadcrumbs
-                  );
-                  if (isset($routeInfo['predictions'])) {
-                      $entry['predictions'] = $routeInfo['predictions'];
-                  }
+                  foreach ($routeInfo['directions'] as $directionID => $directionInfo) {
+                      $entry = array(
+                          'title' => $routeInfo['name'],
+                          'url'   => $this->timesURL($routeID, $directionID, false, true), // no breadcrumbs
+                      );
+                      if (isset($directionInfo['predictions'])) {
+                          $entry['predictions'] = $directionInfo['predictions'];
+                      }
+                      if ($directionInfo['name'] && $directionID != TransitDataModel::LOOP_DIRECTION) {
+                          $entry['title'] .= '<br/>'.$directionInfo['name'];
+                      }
         
-                  if ($routeInfo['running']) {
-                      $runningRoutes[$routeID] = $entry;
-                  } else {
-                      $offlineRoutes[$routeID] = $entry;
+                      if ($routeInfo['running']) {
+                          $runningRoutes[$routeID] = $entry;
+                      } else {
+                          $offlineRoutes[$routeID] = $entry;
+                      }
                   }
               }
               uasort($runningRoutes, array(get_class($this), 'routeSort'));

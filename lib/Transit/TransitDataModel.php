@@ -47,6 +47,8 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     const GOOGLE_STATIC_MAPS_URL = 'http://maps.google.com/maps/api/staticmap?';
     const GOOGLE_CHART_API_URL = 'http://chart.apis.google.com/chart?';
     
+    const LOOP_DIRECTION = 'loop';
+    
     protected function init($args) {
         $args['CACHE_FOLDER'] = isset($args['CACHE_FOLDER']) ? 
             $args['CACHE_FOLDER'] : Kurogo::getOptionalSiteVar('TRANSIT_CACHE_DIR', 'Transit');
@@ -313,35 +315,81 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     protected function getRouteColor($routeID) {
         return Kurogo::getSiteVar('TRANSIT_DEFAULT_ROUTE_COLOR');
     }
-  
+    
+    protected function getRouteDirectionPredictionsForStop($routeID, $stopID, $time) {
+        $route = $this->getRoute($routeID);
+        if (!$route) {
+            Kurogo::log(LOG_WARNING, __FUNCTION__."(): No such route '$routeID'", 'transit');
+            return false;
+        }
+
+        $directionPredictions = array();
+        foreach ($route->getDirections() as $directionID) {
+            $directionHasStop = false;
+            $directionName = '';
+            $predictions = array();
+            
+            if (!$this->lookupStopOrder($route->getAgencyID(), $routeID, $directionID, &$directionName)) {
+                $directionName = '';
+            }
+            
+            foreach ($route->getSegmentsForDirection($directionID) as $segment) {
+                $segmentHasStop = false;
+                
+                foreach ($segment->getStops() as $stopInfo) {
+                    if ($stopInfo['stopID'] == $stopID) {
+                        $segmentHasStop = true;
+                        $directionHasStop = true;
+                        break;
+                    }
+                }
+                
+                if ($segmentHasStop) {
+                    $predictions = array_merge($predictions, $segment->getArrivalTimesForStop($stopID, $time));
+                }
+                
+                if (!$directionName && $segment->getService()->isRunning($time)) {
+                    $directionName = strval($segment->getName());
+                }
+            }
+            
+            if ($directionHasStop) {
+                if (count($predictions)) {
+                    sort($predictions);
+                    $predictions = array_values(array_unique($predictions, SORT_NUMERIC));
+                }
+    
+                $directionPredictions[$directionID] = array(
+                    'name'        => $directionName,
+                    'predictions' => $predictions,
+                );
+            }
+        }
+
+        if ($this->viewRouteAsLoop($routeID)) {
+            $names = array();
+            $predictions = array();
+            
+            foreach ($directionPredictions as $directionID => $directionInfo) {
+                $names[] = $directionInfo['name'];
+                $predictions = array_merge($predictions, $directionInfo['predictions']);
+            }
+            
+            $directionPredictions = array(
+                self::LOOP_DIRECTION => array(
+                    'name'        => implode(' / ', array_filter($names)),
+                    'predictions' => $predictions,
+                ),
+            );
+        }
+        
+        return $directionPredictions;
+    }
+
     //
     // Query functions
     // 
     
-    public function getStopInfoForRoute($routeID, $stopID) {
-        if (!isset($this->routes[$routeID])) {
-            Kurogo::log(LOG_WARNING, __FUNCTION__."(): No such route '$routeID'", 'transit');
-            return array();
-        }
-      
-        $this->updatePredictionData($routeID);
-        
-        $stopInfo = array();
-    
-        $now = TransitTime::getCurrentTime(); 
-        $stopInfo = array(
-            'name'        => $this->stops[$stopID]->getName(),
-            'description' => $this->stops[$stopID]->getDescription(),
-            'coordinates' => $this->stops[$stopID]->getCoordinates(),
-            'predictions' => $this->routes[$routeID]->getPredictionsForStop($stopID, $now),
-            'live'        => $this->isLive(),
-        );
-        
-        $this->applyStopInfoOverrides($stopID, $stopInfo);
-        
-        return $stopInfo;
-    }
-      
     public function getStopInfo($stopID) {
         if (!isset($this->stops[$stopID])) {
             Kurogo::log(LOG_WARNING, __FUNCTION__."(): No such stop '$stopID'", 'transit');
@@ -352,15 +400,19 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     
         $routePredictions = array();
         foreach ($this->routes as $routeID => $route) {
-            if ($route->routeContainsStop($stopID)) {
-                $this->updatePredictionData($route->getID());
-                
-                $routePredictions[$routeID]['predictions'] = $route->getPredictionsForStop($stopID, $now);
-                $routePredictions[$routeID]['running'] = $route->isRunning($now);
-                $routePredictions[$routeID]['name'] = $route->getName();
-                $routePredictions[$routeID]['agency'] = $route->getAgencyID();
-                $routePredictions[$routeID]['live'] = $this->isLive();
-            }
+            if (!$route->hasStop($stopID)) { continue; }
+
+            $this->updatePredictionData($route->getID());
+            
+            $directionPredictions = $this->getRouteDirectionPredictionsForStop($routeID, $stopID, $now);
+            
+            $routePredictions[$routeID] = array(
+                'name'       => $route->getName(),
+                'agency'     => $route->getAgencyID(),
+                'directions' => $directionPredictions,
+                'running'    => $route->isRunning($now),
+                'live'       => $this->isLive(),
+            );
         }
         
         $stopInfo = array(
@@ -550,7 +602,6 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     }
     
     public static function mergeDirections($directions) {
-        // Check if we can merge the directions together into one big loop
         $names = array();
         $segments = array();
         $stops = array();
@@ -562,7 +613,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         }
         
         return array(
-            'loop' => array(
+            self::LOOP_DIRECTION => array(
                 'name'     => implode(' / ', array_filter($names)),
                 'segments' => $segments,
                 'stops'    => $stops,
@@ -780,10 +831,10 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         return 0;
     }
     
-    protected function getDirectionInfo($agencyID, $routeID, $direction, $directionSegments, $time) {
+    protected function getDirectionInfo($agencyID, $routeID, $directionID, $directionSegments, $time) {
         $directionName = '';
         
-        $stopArray = $this->lookupStopOrder($agencyID, $routeID, $direction, &$directionName);
+        $stopArray = $this->lookupStopOrder($agencyID, $routeID, $directionID, &$directionName);
         if (!$stopArray) {
             // No stop order in config, build with graph
             $segmentStopOrders = array(); // reset this
@@ -1316,7 +1367,7 @@ class TransitRoute
         return $stops;
     }
     
-    public function routeContainsStop($stopID) {
+    public function hasStop($stopID) {
         foreach ($this->directions as $directionID => $direction) {
             foreach ($direction['segments'] as $segment) {
                 foreach ($segment->getStops() as $stopInfo) {
@@ -1327,29 +1378,6 @@ class TransitRoute
             }
         }
         return false;
-    }
-    
-    public function getPredictionsForStop($stopID, $time) {
-        $predictions = array();
-        $arrives = null;
-        
-        foreach ($this->directions as $directionID => $direction) {
-            foreach ($direction['segments'] as $segment) {
-                $segmentPredictions = $segment->getArrivalTimesForStop($stopID, $time);
-                
-                $predictions = array_merge($predictions, $segmentPredictions);
-            }
-        }
-        
-        if (count($predictions)) {
-            sort($predictions);
-            $predictions = array_values(array_unique($predictions, SORT_NUMERIC));
-          
-        } else if ($arrives) {
-            $predictions[] = $arrives;
-        }
-        
-        return $predictions;
     }
     
     public function isRunning($time, &$inService=null, &$runningSegmentNames=null) {

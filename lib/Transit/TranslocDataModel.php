@@ -203,10 +203,10 @@ class TranslocDataModel extends TransitDataModel
                 $routeService = new TransitService("{$routeID}_service", true);
                 
                 $routeSegments[$routeID] = new TranslocTransitSegment(
-                    'loop',
+                    self::LOOP_DIRECTION,
                     '',
                     $routeService,
-                    'loop',
+                    self::LOOP_DIRECTION,
                     $routeID,
                     $this
                 );
@@ -216,7 +216,7 @@ class TranslocDataModel extends TransitDataModel
                 
                 $paths = array();
                 foreach ($routeInfo['segments'] as $segmentInfo) {
-                    $segmentID = 'loop';
+                    $segmentID = self::LOOP_DIRECTION;
                     
                     if (is_string($segmentInfo)) {
                         $segmentID = "segment-{$segmentInfo}";

@@ -4,7 +4,6 @@ $config = ConfigFile::factory('transit', 'site');
 Kurogo::siteConfig()->addConfig($config);
 
 interface TransitDataModelInterface {
-    public function getStopInfoForRoute($routeID, $stopID);
     public function getStopInfo($stopID);
     
     public function getMapImageForStop($stopID, $width, $height);

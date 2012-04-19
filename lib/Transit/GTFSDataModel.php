@@ -58,13 +58,6 @@ class GTFSDataModel extends TransitDataModel
         return parent::getStop($id);
     }
     
-    public function getStopInfoForRoute($routeID, $stopID) {
-        // ensure the data required by TransitDataModel is loaded
-        $this->getStop($stopID);
-        
-        return parent::getStopInfoForRoute($routeID, $stopID);
-    }
-    
     // used to avoid warnings when looking at the wrong agency
     public function hasStop($id) {
         // ensure the data required by TransitDataModel is loaded
@@ -93,7 +86,7 @@ class GTFSDataModel extends TransitDataModel
                 $route = $this->getRoute($routeID);
                 $this->updatePredictionData($routeID);
                 
-                $routePredictions[$routeID]['predictions'] = $route->getPredictionsForStop($stopID, $now);
+                $routePredictions[$routeID]['directions'] = $this->getRouteDirectionPredictionsForStop($routeID, $stopID, $now);
                 $routePredictions[$routeID]['running'] = $route->isRunning($now, $inService) && $inService;
                 $routePredictions[$routeID]['name'] = $route->getName();
                 $routePredictions[$routeID]['agency'] = $route->getAgencyID();
@@ -492,7 +485,7 @@ class GTFSTransitRoute extends TransitRoute
             if ($result) {
                 while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
                     $serviceID = $row['service_id'];
-                    $direction = ($row['direction_id'] === NULL) ? 'loop' : $row['direction_id'];
+                    $direction = ($row['direction_id'] === NULL) ? TransitDataModel::LOOP_DIRECTION : $row['direction_id'];
                     if (!isset($services[$serviceID])) {
                         $services[$serviceID] = new TransitService($serviceID, true /* always running */);
                     }
