@@ -9,7 +9,7 @@
   <div id="navbar"{if $hasHelp} class="helpon"{/if}>
     <a id="homelink" href="/">
       <img src="/common/images/homelink@2x.png" width="28" height="33" border="0" alt="" />
-      Boston College Tour
+      Tour of the Heights
     </a>
 		<ul id="helplinks">
       {if $mapLink}
