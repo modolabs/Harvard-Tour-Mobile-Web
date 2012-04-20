@@ -19,7 +19,10 @@
 {/block}
   {foreach $courseDetails as $sectionName=>$section}
     {block name="sectionStart"}
-      <ul class="nav section_{$sectionName}">
+		<div class="nonfocal">
+		<h3>{$sectionName}</h3>
+		</div>
+		<ul class="nav section_{$sectionName}">
     {/block}        
         {foreach $section as $key=>$item}
           {block name="detail"}
