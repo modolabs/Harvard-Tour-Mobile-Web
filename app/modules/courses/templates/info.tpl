@@ -8,9 +8,6 @@
 {if $location}
 {include file="findInclude:common/templates/navlist.tpl" navlistItems=$location}
 {/if}
-{if $description}
-{include file="findInclude:common/templates/navlist.tpl" navListHeading="Description" navlistItems=$description accessKey=false subTitleNewline=$contactsSubTitleNewline}
-{/if}
 {if $instructors}
 {include file="findInclude:common/templates/navlist.tpl" navListHeading="Instructor(s)" navlistItems=$instructors accessKey=false subTitleNewline=$contactsSubTitleNewline}
 {/if}

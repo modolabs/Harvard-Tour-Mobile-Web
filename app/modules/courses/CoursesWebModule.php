@@ -586,10 +586,6 @@ class CoursesWebModule extends WebModule {
 	                    $this->redirectTo('index');
 	                }
                 }
-                if($description = $contentCourse->getDescription()){
-                    $description = array(array('title'=>$description));
-                    $this->assign('description', $description);
-                }
         	    $options = $this->getCourseOptions();
         	    
         	    $courseDetails =  $this->formatCourseDetails($course);
