@@ -1,6 +1,6 @@
 {block name="courseList"}
-{if $courses}
-    {include file="findInclude:common/templates/navlist.tpl" navListHeading=$courseListHeading navlistItems=$courses subTitleNewline=true}
+{if $coursesLinks}
+    {include file="findInclude:common/templates/navlist.tpl" navListHeading=$courseListHeading navlistItems=$coursesLinks subTitleNewline=true}
 {elseif $session_userID}
     <div>
     {"NO_COURSES"|getLocalizedString}

@@ -1,8 +1,3 @@
-{include file="findInclude:common/templates/header.tpl"}
-
-{include file="findInclude:modules/courses/templates/termselector.tpl"}
-
-{capture assign=tabBody}
 {if $tasks}
 {block name="groupSelector"}
 <ul class="tabstrip threetabs">
@@ -18,7 +13,3 @@
 {else}
 {"NO_TASKS"|getLocalizedString}
 {/if}
-{/capture}
-{include file="findInclude:modules/courses/templates/courseTabs.tpl" tabBody=$tabBody}
-
-{include file="findInclude:common/templates/footer.tpl"}

@@ -407,6 +407,7 @@ class CoursesWebModule extends WebModule {
         $nextURL = null;
         if ($totalItems > $limit) {
             $args = $this->args;
+            $args['tab'] = 'updates';
             if ($start > 0) {
                 $args['start'] = $start - $limit;
                 $previousURL = $this->buildBreadcrumbURL($this->page, $args, false);
@@ -829,51 +830,6 @@ class CoursesWebModule extends WebModule {
                 $this->assign('courses', $coursesList);
                 
                 break;
-            
-            case 'alltasks':
-                if (!$this->isLoggedIn()) {
-                    $this->redirectTo('index');
-                }
-                $Term = $this->assignTerm();
-                $this->assignIndexTabs(array('term'=>$Term->getID()));
-
-                //@TODO make this configurable
-                $groups = $this->getModuleSections('alltasks');
-                $this->assignGroupLinks($groups);
-
-                $group = $this->getArg('group', current(array_keys($groups)));
-                $options = array(
-                    'group'=>$group
-                );
-
-                $tasks = array();
-                $courses = $this->controller->getCourses(array());
-                foreach($courses as $course){
-                    if ($contentCourse = $course->getCourse('content')) {
-                        $groups = $contentCourse->getTasks($options);
-                        foreach ($groups as $groupTitle => $items){
-                            $groupItems = array();
-                            foreach ($items as $item) {
-                                $groupItems[] = $this->linkForTask($item, $contentCourse);
-                            }
-                            if($group == 'priority'){
-                                $title = $this->getLocalizedString('CONTENT_PRIORITY_TITLE_'.strtoupper($groupTitle));
-                            }else{
-                                $title = $groupTitle;
-                            }
-                            $task = array(
-                                'title' => $title,
-                                'items' => $groupItems,
-                            );
-
-                            $tasks[] = $task;
-                        }
-                    }
-                }
-                $this->assign('tasks', $tasks);
-                $this->assign('group', $group);
-                break;
-
             case 'tasks':
 
                 if (!$course = $this->getCourseFromArgs()) {
@@ -1127,85 +1083,119 @@ class CoursesWebModule extends WebModule {
                 
             case 'index':
                 $Term = $this->assignTerm();
-                $courses = array();
+                $coursesLinks = array();
                 $options = array(
                     'term'=>$Term,
                     'types'=>array('content','registration')
                 );
 
-                
                 // assign tabs
                 $this->assignIndexTabs(array('term'=>$Term->getID()));
                 $tab = $this->getArg('tab');
                 
-                switch ($tab)
-                {
-                    case 'updates':
-                        if (!$this->isLoggedIn()) {
-                            $this->redirectTo('index');
-                        }
-                        $Term = $this->assignTerm();
-                        $this->assignIndexTabs(array('term'=>$Term->getID()));
+                /********
+                Index Tab
+                ********/
+                $this->assign('hasPersonalizedCourses', $this->hasPersonalizedCourses);
         
-                        $contents = array();
-                        $courses = $this->controller->getCourses(array());
-                        foreach($courses as $course){
-                            if ($contentCourse = $course->getCourse('content')) {
-                                if($items = $contentCourse->getUpdates()){
-                                    foreach ($items as $item){
-                                        $contents[] = $this->linkForUpdate($item, $contentCourse, true);
-                                    }
-                                }
-                            }
+                if ($this->isLoggedIn()) {
+                    if ($courses = $this->controller->getCourses($options)) {
+                        foreach ($courses as $course) {
+                            $courseLink = $this->linkForCourse($course, array('term'=>strval($Term)));
+                            $coursesLinks[] = $courseLink;
                         }
-                        $contents = $this->sortUpdatesByDate($contents);
-                        $contents = $this->paginateArray($contents, $this->getOptionalModuleVar('MAX_UPDATES', 5));
-                        $this->assign('contents', $contents);
-                        break;
-                    case 'tasks':
-                        break;
-                    case 'index':
-                    default:
-
-                        $this->assign('hasPersonalizedCourses', $this->hasPersonalizedCourses);
-        
-                        if ($this->isLoggedIn()) {
-                            if ($items = $this->controller->getCourses($options)) {
-                                foreach ($items as $item) {
-                                    $course = $this->linkForCourse($item, array('term'=>strval($Term)));
-                                    $courses[] = $course;
-                                }
-                            }
-                            $this->assign('courseListHeading', $this->getLocalizedString('COURSE_LIST_HEADING', $Term->getTitle(), count($courses)));
-                            $this->assign('courses', $courses);
-                        } else {
-                            $loginLink = array(
-                                'title' => $this->getLocalizedString('SIGN_IN_SITE', Kurogo::getSiteString('SITE_NAME')),
-                                'url'   => $this->buildURLForModule('login','', $this->getArrayForRequest()),
-                            );
-                            $this->assign('loginLink', array($loginLink));
-                            $this->assign('loginText', $this->getLocalizedString('NOT_LOGGED_IN'));
-                        }
-        
-                        // do we have a catalog?  catelog just demo and XML file copy from LMS //delete this line after look
-                        $catalogItems = array();
-                        if ($this->controller->canRetrieve('catalog')) {
-                            $catalogItems[] = array(
-                                'title' => $this->getFeedTitle('catalog'),
-                                'url'   => $this->buildBreadcrumbURL('catalog', array(), false),
-                            );
-                            
-                            if ($bookmarks = $this->getBookmarks()) {
-                                $catalogItems[] = array(
-                                    'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . " (" . count($bookmarks) . ")",
-                                    'url'   => $this->buildBreadcrumbURL('bookmarks', array(), true),
-                                );
-                            }
-                        }
-                        $this->assign('courseCatalogText', $this->getLocalizedString('COURSE_CATALOG_TEXT'));
-                        $this->assign('catalogItems', $catalogItems);
-                        break;
+                    }
+                    $this->assign('courseListHeading', $this->getLocalizedString('COURSE_LIST_HEADING', $Term->getTitle(), count($coursesLinks)));
+                    $this->assign('coursesLinks', $coursesLinks);
+                } else {
+                    $loginLink = array(
+                        'title' => $this->getLocalizedString('SIGN_IN_SITE', Kurogo::getSiteString('SITE_NAME')),
+                        'url'   => $this->buildURLForModule('login','', $this->getArrayForRequest()),
+                    );
+                    $this->assign('loginLink', array($loginLink));
+                    $this->assign('loginText', $this->getLocalizedString('NOT_LOGGED_IN'));
                 }
+
+                // do we have a catalog?  catelog just demo and XML file copy from LMS //delete this line after look
+                $catalogItems = array();
+                if ($this->controller->canRetrieve('catalog')) {
+                    $catalogItems[] = array(
+                        'title' => $this->getFeedTitle('catalog'),
+                        'url'   => $this->buildBreadcrumbURL('catalog', array(), false),
+                    );
+
+                    if ($bookmarks = $this->getBookmarks()) {
+                        $catalogItems[] = array(
+                            'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . " (" . count($bookmarks) . ")",
+                            'url'   => $this->buildBreadcrumbURL('bookmarks', array(), true),
+                        );
+                    }
+                }
+                $this->assign('courseCatalogText', $this->getLocalizedString('COURSE_CATALOG_TEXT'));
+                $this->assign('catalogItems', $catalogItems);
+                //*******
+
+                /********
+                Updates Tab
+                ********/
+                if ($this->isLoggedIn()) {
+                    $updatesLinks = array();
+                    $courses = $this->controller->getCourses(array());
+                    foreach($courses as $course){
+                        if ($contentCourse = $course->getCourse('content')) {
+                            if($items = $contentCourse->getUpdates()){
+                                foreach ($items as $item){
+                                    $updatesLinks[] = $this->linkForUpdate($item, $contentCourse, true);
+                                }
+                            }
+                        }
+                    }
+                    $updatesLinks = $this->sortUpdatesByDate($updatesLinks);
+                    $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 5));
+                    $this->assign('updatesLinks', $updatesLinks);
+                }
+                //*******
+
+                /********
+                Tasks Tab
+                ********/
+                if (!$this->isLoggedIn()) {
+                    $taskGroups = $this->getModuleSections('alltasks');
+                    $this->assignGroupLinks($taskGroups);
+
+                    $group = $this->getArg('group', current(array_keys($taskGroups)));
+                    $options = array(
+                        'group'=>$group
+                    );
+
+                    $tasks = array();
+                    $courses = $this->controller->getCourses(array());
+                    foreach($courses as $course){
+                        if ($contentCourse = $course->getCourse('content')) {
+                            $groups = $contentCourse->getTasks($options);
+                            foreach ($groups as $groupTitle => $items){
+                                $groupItems = array();
+                                foreach ($items as $item) {
+                                    $groupItems[] = $this->linkForTask($item, $contentCourse);
+                                }
+                                if($group == 'priority'){
+                                    $title = $this->getLocalizedString('CONTENT_PRIORITY_TITLE_'.strtoupper($groupTitle));
+                                }else{
+                                    $title = $groupTitle;
+                                }
+                                $task = array(
+                                    'title' => $title,
+                                    'items' => $groupItems,
+                                );
+
+                                $tasks[] = $task;
+                            }
+                        }
+                    }
+                    $this->assign('tasks', $tasks);
+                    $this->assign('group', $group);
+                }
+                //*******
         }
     }
 }
