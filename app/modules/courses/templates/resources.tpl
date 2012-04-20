@@ -14,8 +14,8 @@
     {if $group['url']}
     <div class="seeall"><a href="{$group['url']}">{'SEE_ALL'|getLocalizedString:$group['count']}</a></div>
     {/if}
-    {$navListHeading=$group.title|default:''}
-    {include file="findInclude:common/templates/navlist.tpl" navListHeading=$navListHeading navlistItems=$group.items subTitleNewline=true}
+    {$resourcesListHeading=$group.title|default:''}
+    {include file="findInclude:modules/courses/templates/resourcesList.tpl" resourcesListHeading=$resourcesListHeading resources=$group.items}
 {/foreach}
 {/capture}
 {include file="findInclude:modules/courses/templates/courseTabs.tpl" tabBody=$tabBody}
