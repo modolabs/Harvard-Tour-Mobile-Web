@@ -65,7 +65,7 @@
 	min-height: 54px;
   height: auto;
 	font-size: 88.23%;
-	background: #7c8893 url(/common/images/headback.jpg) repeat-x 0 -1px;
+	background: #9C8C73 url(/common/images/headback.jpg) repeat-x 0 -1px;
 }
 #nextstop #starthere {
 	font-size: 100%;
@@ -87,7 +87,7 @@
 	height: 40px;
 }
 #tabs li a {
-	border-color: #4f595e;
+	border-color: #6C614E;
 	height: 40px;
 	text-align: center;
 }
