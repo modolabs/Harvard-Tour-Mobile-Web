@@ -5,7 +5,7 @@
 
 #welcomehead {
   overflow: hidden;
-	background: #f0f0ee url(/common/images/bodyback2.jpg) repeat-x;
+	background: #7A1B1B url(/common/images/bodyback2.jpg) repeat-x;
 	padding: 10px;
 }
 a.startlink {
@@ -56,7 +56,7 @@ img.begin, img.startover, img.resume {
 #container {
 	margin-top: -4px;
 	padding: 10px;
-	background: url(/common/images/bodyback2.jpg) repeat-x;
+	background: url(/common/images/bodyback3.jpg) repeat-x;
 	color: #505050;
 }
 #footer {

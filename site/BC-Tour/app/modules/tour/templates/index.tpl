@@ -2,7 +2,7 @@
   <div id="welcomehead">
     {if $resumeURL}
       <a class="startlink logostartlink" href="{$resumeURL}">
-        <img src="/modules/tour/images/logo.png" alt="harvard yard tour" width="300" height="30" border="0" />
+        <img src="/modules/tour/images/logo.png" alt="Boston College Tour" width="300" height="30" border="0" />
         <br/>
         <img class="resume" src="/modules/tour/images/resume.png" alt="resume your tour" width="300" height="30" border="0" />
       </a>
@@ -12,14 +12,14 @@
       
     {else}
       <a class="startlink logostartlink" href="{$startURL}">
-        <img src="/modules/tour/images/logo.png" alt="harvard yard tour" width="300" height="30" border="0" />
+        <img src="/modules/tour/images/logo.png" alt="Boston College Tour" width="300" height="30" border="0" />
         <br/>
         <img class="begin" src="/modules/tour/images/begin.png" alt="begin your tour" width="300" height="30" border="0" />
       </a>
     {/if}
   </div>
   <div id="hero">
-    <img src="/modules/tour/images/hero-hdpi.jpg" alt="Photo of Harvard" width="100%" border="0" />
+    <img src="/modules/tour/images/hero-hdpi.jpg" alt="Photo of BC" width="100%" border="0" />
     {if $pagetype == 'compliant' && $platform == 'iphone'}
       <div id="download">
         <a href="http://itunes.apple.com/us/app/harvard-yard-tour/id449660709">
@@ -38,14 +38,14 @@
 <div id="welcomefooter">
     {if $resumeURL}
       <a class="startlink" href="{$resumeURL}">
-        <img class="resume" src="/modules/tour/images/resume.png" alt="resume your tour" width="300" height="30" border="0" />
+        <img class="resume" src="/modules/tour/images/resume2.png" alt="resume your tour" width="300" height="30" border="0" />
       </a>
       <a class="startlink" href="{$startURL}">
-        <img class="startover" src="/modules/tour/images/startover.png" alt="start a new tour" width="300" height="30" border="0" />
+        <img class="startover" src="/modules/tour/images/startover2.png" alt="start a new tour" width="300" height="30" border="0" />
       </a>
     {else}
       <a class="startlink" href="{$startURL}">
-        <img class="begin" src="/modules/tour/images/begin.png" alt="begin your tour" width="300" height="30" border="0" />
+        <img class="begin" src="/modules/tour/images/begin2.png" alt="begin your tour" width="300" height="30" border="0" />
       </a>
     {/if}
 </div>

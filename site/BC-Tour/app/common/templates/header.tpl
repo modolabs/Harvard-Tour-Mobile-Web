@@ -8,8 +8,8 @@
 {block name="navbar"}
   <div id="navbar"{if $hasHelp} class="helpon"{/if}>
     <a id="homelink" href="/">
-      <img src="/common/images/homelink@2x.png" width="27" height="33" border="0" alt="" />
-      Harvard Yard Tour
+      <img src="/common/images/homelink@2x.png" width="28" height="33" border="0" alt="" />
+      Boston College Tour
     </a>
 		<ul id="helplinks">
       {if $mapLink}

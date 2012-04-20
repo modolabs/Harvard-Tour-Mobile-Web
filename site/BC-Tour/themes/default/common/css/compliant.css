@@ -32,7 +32,7 @@ body, th, td, li, option, select, input {
 }
 
 a, a:visited {
-	color: #036;
+	color: #990000;
 }
 
 h1 {
@@ -46,7 +46,7 @@ h2 {
 	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	font-size: 21px;
 	font-weight: normal;
-	color: #036;
+	color: #99000;
 }
 
 h3 {
