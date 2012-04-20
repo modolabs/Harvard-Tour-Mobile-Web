@@ -62,13 +62,18 @@ class CombinedCourse implements CourseInterface
     
     public function getField($field, $type=null) {
         if ($type==null) {
-            $type = key($this->courses);
+        	//if type is not defined, then find field in each courses
+            $types = array_keys($this->courses);
+        }else{
+        	$types = array($type);
         }
 
-        if($type) {
+        foreach($types as $type) {
             if (array_key_exists($type, $this->attributes)) {
                 if(array_key_exists($field, $this->attributes[$type])) {
-		        	return $this->attributes[$type][$field];
+                	if(!empty($this->attributes[$type][$field])) {
+			        	return $this->attributes[$type][$field];
+                	}
                 }
 	        }
         }
