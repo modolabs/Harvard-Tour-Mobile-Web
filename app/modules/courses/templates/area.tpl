@@ -8,7 +8,7 @@
 
 {if $courses}
 {block name="courses"}
-  {include file="findInclude:common/templates/navlist.tpl" navlistItems=$courses}
+  {include file="findInclude:common/templates/navlist.tpl" boldLabels=true navlistItems=$courses}
 {/block}
 {/if}
 
