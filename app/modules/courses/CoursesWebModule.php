@@ -70,16 +70,18 @@ class CoursesWebModule extends WebModule {
     	$link = array(
             'title' => $resource->getTitle(),
             'subtitle' => $resource->getSubTitle(),
+            'type'  => $resource->getContentType(),
             'class' => "content content_" . $resource->getContentType(),
             'img'   => "/modules/courses/images/content_" . $resource->getContentType() . $this->imageExt
         );
 
         if($resource->getPublishedDate()){
 	    	if($resource->getAuthor()){
-	    		$link['subtitle'] = 'Updated '. $this->elapsedTime($resource->getPublishedDate()->format('U')) .' by '.$resource->getAuthor();
+	    		$updated = 'Updated '. $this->elapsedTime($resource->getPublishedDate()->format('U')) .' by '.$resource->getAuthor();
 	    	}else{
-	    		$link['subtitle'] = 'Updated '. $this->elapsedTime($resource->getPublishedDate()->format('U'));
+	    		$updated = 'Updated '. $this->elapsedTime($resource->getPublishedDate()->format('U'));
 	    	}
+	    	$link['subtitle'] = $link['updated'] = $updated;
 	    } else {
 	    	$link['subtitle'] = $resource->getSubTitle();
 	    } 
@@ -102,6 +104,9 @@ class CoursesWebModule extends WebModule {
         );
         $link = array(
             'title' => $includeCourseName ? $course->getTitle() : $content->getTitle(),
+            'courseTitle' => $course->getTitle(),
+            'type' => $content->getContentType(),
+            'lastUpdate' =>$content->getTitle(),
             'class' => "content content_" . $content->getContentType(),
             'img'   => "/modules/courses/images/content_" . $content->getContentType() . $this->imageExt
         );
@@ -125,6 +130,7 @@ class CoursesWebModule extends WebModule {
                 $published .= ' by '.$content->getAuthor();
             }
             $subtitle[] = $published;
+            $link['updated'] = $published;
         }
         
         $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
@@ -392,10 +398,9 @@ class CoursesWebModule extends WebModule {
         $this->assign('groupLinks', $groupLinks);
     }
 
-    protected function paginateArray($contents) {
+    protected function paginateArray($contents, $limit) {
         $totalItems = count($contents);
         $start = $this->getArg('start', 0);
-        $limit = $this->getOptionalModuleVar('MAX_UPDATES', 10);
         $previousURL = null;
         $nextURL = null;
         if ($totalItems > $limit) {
@@ -920,7 +925,7 @@ class CoursesWebModule extends WebModule {
                     }
                 }
                 $contents = $this->sortUpdatesByDate($contents);
-                $contents = $this->paginateArray($contents);
+                $contents = $this->paginateArray($contents, $this->getOptionalModuleVar('MAX_UPDATES', 5));
                 $this->assign('contents', $contents);
                 break;
             
@@ -1023,7 +1028,7 @@ class CoursesWebModule extends WebModule {
                     foreach ($items as $item){
                         $contents[] = $this->linkForUpdate($item, $contentCourse, false);
                     }
-                    $contents = $this->paginateArray($contents);
+                    $contents = $this->paginateArray($contents, $this->getOptionalModuleVar('MAX_UPDATES', 10));
                     $this->assign('contents', $contents);
                 }
                     

@@ -3,8 +3,7 @@
 {include file="findInclude:modules/courses/templates/termselector.tpl"}
 
 {capture assign=tabBody}
-{include file="findInclude:common/templates/navlist.tpl" navlistItems=$contents subTitleNewline=true}
+{include file="findInclude:modules/courses/templates/updatesList.tpl" updates=$contents}
 {/capture}
 {include file="findInclude:modules/courses/templates/courseTabs.tpl" tabBody=$tabBody}
-
 {include file="findInclude:common/templates/footer.tpl"}

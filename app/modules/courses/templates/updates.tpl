@@ -9,7 +9,7 @@
 
 {capture assign=tabBody}
 {if $contents}
-{include file="findInclude:common/templates/navlist.tpl" navlistItems=$contents subTitleNewline=true}
+{include file="findInclude:modules/courses/templates/updatesList.tpl" updates=$contents}
 {else}
 {"NO_UPDATES"|getLocalizedString}
 {/if}
