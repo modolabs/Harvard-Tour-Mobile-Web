@@ -8,6 +8,7 @@ class CoursesWebModule extends WebModule {
     protected $hasPersonalizedCourses = false;
     protected $selectedTerm;
     protected $detailFields = array();
+    protected $showCourseNumber = true;
     
     protected function linkforInfo($courseId, $description){
     	$links = array();
@@ -194,6 +195,10 @@ class CoursesWebModule extends WebModule {
             'title' => $course->getTitle()
         );
 
+        if($this->showCourseNumber) {
+        	$link['label'] = $course->getField('courseNumber');
+        }
+        
         $link['url'] = $this->buildBreadcrumbURL('info', $options , false);
         return $link;
     }
@@ -358,6 +363,8 @@ class CoursesWebModule extends WebModule {
         $this->selectedTerm = $this->getArg('term', CoursesDataModel::CURRENT_TERM);
         //load page detail configs
         $this->detailFields = $this->loadPageConfigFile('info', 'detailFields');
+        //load showCourseNumber setting
+        $this->showCourseNumber = $this->getOptionalModuleVar('SHOW_COURSENUMBER_IN_LIST', 1);
     }
     
     protected function getCourseOptions() {
