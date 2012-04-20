@@ -282,9 +282,12 @@ class CoursesWebModule extends WebModule {
     
     protected function assignIndexTabs($options = array()){
         $courseTabs = array();
+        $tabs = array();
         $tabsConfig = $this->getModuleSections('indextabs');
+
         foreach($tabsConfig as $page => $tab){
-            if($tab['protected'] == 0){
+            if(!$tab['protected'] || $this->isLoggedIn()) {
+                $tabs[] = $page;
                 $courseTabs[$page] = array(
                     'title' => $tab['title'],
                     'url'   => $this->buildBreadcrumbURL($page, $options, false),
@@ -292,17 +295,9 @@ class CoursesWebModule extends WebModule {
             }
         }
 
-        if ($this->hasPersonalizedCourses && $this->isLoggedIn()) {
-            foreach($tabsConfig as $page => $tab){
-                if($tab['protected'] == 1){
-                    $courseTabs[$page] = array(
-                        'title' => $tab['title'],
-                        'url'   => $this->buildBreadcrumbURL($page, $options, false),
-                    );
-                }
-            }
-        }
-        $this->assign('courseTabs', $courseTabs);
+        $this->enableTabs($tabs);
+        $this->assign('tabs', $tabs);
+//        $this->assign('courseTabs', $courseTabs);
     }
 
     protected function getCourseFromArgs() {
@@ -906,29 +901,6 @@ class CoursesWebModule extends WebModule {
                 
                 break;
             
-            case 'allupdates':
-                if (!$this->isLoggedIn()) {
-                    $this->redirectTo('index');
-                }
-                $Term = $this->assignTerm();
-                $this->assignIndexTabs(array('term'=>$Term->getID()));
-
-                $contents = array();
-                $courses = $this->controller->getCourses(array());
-                foreach($courses as $course){
-                    if ($contentCourse = $course->getCourse('content')) {
-                        if($items = $contentCourse->getUpdates()){
-                            foreach ($items as $item){
-                                $contents[] = $this->linkForUpdate($item, $contentCourse, true);
-                            }
-                        }
-                    }
-                }
-                $contents = $this->sortUpdatesByDate($contents);
-                $contents = $this->paginateArray($contents, $this->getOptionalModuleVar('MAX_UPDATES', 5));
-                $this->assign('contents', $contents);
-                break;
-            
             case 'alltasks':
                 if (!$this->isLoggedIn()) {
                     $this->redirectTo('index');
@@ -1235,44 +1207,76 @@ class CoursesWebModule extends WebModule {
                 
                 // assign tabs
                 $this->assignIndexTabs(array('term'=>$Term->getID()));
-                $this->assign('hasPersonalizedCourses', $this->hasPersonalizedCourses);
-
-                if ($this->isLoggedIn()) {
-                    if ($items = $this->controller->getCourses($options)) {
-                    	foreach ($items as $item) {
-                            $course = $this->linkForCourse($item, array('term'=>strval($Term)));
-                            $courses[] = $course;
+                $tab = $this->getArg('tab');
+                
+                switch ($tab)
+                {
+                    case 'updates':
+                        if (!$this->isLoggedIn()) {
+                            $this->redirectTo('index');
                         }
-                    }
-                    $this->assign('courseListHeading', $this->getLocalizedString('COURSE_LIST_HEADING', $Term->getTitle(), count($courses)));
-                    $this->assign('courses', $courses);
-                } else {
-                    $loginLink = array(
-                        'title' => $this->getLocalizedString('SIGN_IN_SITE', Kurogo::getSiteString('SITE_NAME')),
-                        'url'   => $this->buildURLForModule('login','', $this->getArrayForRequest()),
-                    );
-                    $this->assign('loginLink', array($loginLink));
-                    $this->assign('loginText', $this->getLocalizedString('NOT_LOGGED_IN'));
-                }
+                        $Term = $this->assignTerm();
+                        $this->assignIndexTabs(array('term'=>$Term->getID()));
+        
+                        $contents = array();
+                        $courses = $this->controller->getCourses(array());
+                        foreach($courses as $course){
+                            if ($contentCourse = $course->getCourse('content')) {
+                                if($items = $contentCourse->getUpdates()){
+                                    foreach ($items as $item){
+                                        $contents[] = $this->linkForUpdate($item, $contentCourse, true);
+                                    }
+                                }
+                            }
+                        }
+                        $contents = $this->sortUpdatesByDate($contents);
+                        $contents = $this->paginateArray($contents, $this->getOptionalModuleVar('MAX_UPDATES', 5));
+                        $this->assign('contents', $contents);
+                        break;
+                    case 'tasks':
+                        break;
+                    case 'index':
+                    default:
 
-                // do we have a catalog?  catelog just demo and XML file copy from LMS //delete this line after look
-                $catalogItems = array();
-                if ($this->controller->canRetrieve('catalog')) {
-                    $catalogItems[] = array(
-                        'title' => $this->getFeedTitle('catalog'),
-                        'url'   => $this->buildBreadcrumbURL('catalog', array(), false),
-                    );
-                    
-                    if ($bookmarks = $this->getBookmarks()) {
-                        $catalogItems[] = array(
-                            'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . " (" . count($bookmarks) . ")",
-                            'url'   => $this->buildBreadcrumbURL('bookmarks', array(), true),
-                        );
-                    }
+                        $this->assign('hasPersonalizedCourses', $this->hasPersonalizedCourses);
+        
+                        if ($this->isLoggedIn()) {
+                            if ($items = $this->controller->getCourses($options)) {
+                                foreach ($items as $item) {
+                                    $course = $this->linkForCourse($item, array('term'=>strval($Term)));
+                                    $courses[] = $course;
+                                }
+                            }
+                            $this->assign('courseListHeading', $this->getLocalizedString('COURSE_LIST_HEADING', $Term->getTitle(), count($courses)));
+                            $this->assign('courses', $courses);
+                        } else {
+                            $loginLink = array(
+                                'title' => $this->getLocalizedString('SIGN_IN_SITE', Kurogo::getSiteString('SITE_NAME')),
+                                'url'   => $this->buildURLForModule('login','', $this->getArrayForRequest()),
+                            );
+                            $this->assign('loginLink', array($loginLink));
+                            $this->assign('loginText', $this->getLocalizedString('NOT_LOGGED_IN'));
+                        }
+        
+                        // do we have a catalog?  catelog just demo and XML file copy from LMS //delete this line after look
+                        $catalogItems = array();
+                        if ($this->controller->canRetrieve('catalog')) {
+                            $catalogItems[] = array(
+                                'title' => $this->getFeedTitle('catalog'),
+                                'url'   => $this->buildBreadcrumbURL('catalog', array(), false),
+                            );
+                            
+                            if ($bookmarks = $this->getBookmarks()) {
+                                $catalogItems[] = array(
+                                    'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . " (" . count($bookmarks) . ")",
+                                    'url'   => $this->buildBreadcrumbURL('bookmarks', array(), true),
+                                );
+                            }
+                        }
+                        $this->assign('courseCatalogText', $this->getLocalizedString('COURSE_CATALOG_TEXT'));
+                        $this->assign('catalogItems', $catalogItems);
+                        break;
                 }
-                $this->assign('courseCatalogText', $this->getLocalizedString('COURSE_CATALOG_TEXT'));
-                $this->assign('catalogItems', $catalogItems);
-                break;
         }
     }
 }

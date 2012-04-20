@@ -2,7 +2,10 @@
 
 {include file="findInclude:modules/courses/templates/termselector.tpl"}
 
-{capture assign=tabBody}
+{$tabBodies=array()}
+{foreach $tabs as $key}
+{if $key=='index'}
+{capture name="indexTab" assign="tabBody"}
     {block name="courseList"}
     {if $courses}
         {include file="findInclude:common/templates/navlist.tpl" navListHeading=$courseListHeading navlistItems=$courses subTitleNewline=true}
@@ -18,13 +21,22 @@
         {/block}
     {/if}
     {/block}
-
     {block name="courseCatalog"}
     {if $catalogItems}
         {include file="findInclude:common/templates/navlist.tpl" navListHeading=$courseCatalogText navlistItems=$catalogItems}
     {/if}
     {/block}
 {/capture}
-{include file="findInclude:modules/courses/templates/courseTabs.tpl" tabBody=$tabBody}
+{else}
+{capture name="tab" assign="tabBody"}
+{/capture}
+{/if}
+  {$tabBodies[$key] = $tabBody}
+{/foreach}
+{block name="tabs"}
+<div id="tabscontainer">
+{include file="findInclude:common/templates/tabs.tpl" tabBodies=$tabBodies smallTabs=true}
+</div>
+{/block}
 
 {include file="findInclude:common/templates/footer.tpl"}
