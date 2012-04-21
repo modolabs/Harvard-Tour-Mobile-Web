@@ -352,17 +352,24 @@ class TransitWebModule extends WebModule {
                   $this->setTemplatePage('routeajax');
                   break;
               }
-      
-              $tabs = array('stops');
-              $tabsJavascript = array('');
+              
+              $tabs = array();
+              $tabsJavascript = array();
+              
+              if ($routeInfo['stops']) {
+                  array_unshift($tabs, 'stops');
+                  array_unshift($tabsJavascript, '');
+                  $this->assign('hasStops', true);
+              }
               
               $paths = $view->getRoutePaths($routeID);
-              if ($paths) {
+              $vehicles = $view->getRouteVehicles($routeID);
+              if ($paths || $vehicles) {
                   array_unshift($tabs, 'map');
                   array_unshift($tabsJavascript, 'mapResizeHandler()');
                   $this->assign('hasRouteMap', true);
                 
-                  $this->initMapForRoute($routeID, $routeInfo, $paths, $view);
+                  $this->initMapForRoute($routeID, $routeInfo, $paths, $vehicles, $view);
               } else {
                   $this->initListUpdate();
               }
@@ -370,7 +377,7 @@ class TransitWebModule extends WebModule {
               if (count($tabs) > 1) {
                   $this->enableTabs($tabs);
               }
-      
+              
               $this->assign('lastRefresh',      time());
               $this->assign('serviceInfo',      $view->getServiceInfoForRoute($routeID));
               $this->assign('stopTimeHelpText', $this->getOptionalModuleVar('stopTimeHelpText', ''));
@@ -423,7 +430,7 @@ class TransitWebModule extends WebModule {
                   $runningRouteIDs = array_keys($runningRoutes);
                   $serviceInfo = $view->getServiceInfoForRoute(reset($runningRouteIDs));
               } else if (count($offlineRoutes)) {
-                  $offlineRouteIDs = array_keys($runningRoutes);
+                  $offlineRouteIDs = array_keys($offlineRoutes);
                   $serviceInfo = $view->getServiceInfoForRoute(reset($offlineRouteIDs));
               }
               
@@ -462,8 +469,9 @@ class TransitWebModule extends WebModule {
                   
                   $routeInfo = $view->getRouteInfo($routeID);
                   $paths = $view->getRoutePaths($routeID);
-                  if ($routeInfo && $paths) {
-                      $this->initMapForRoute($routeID, $routeInfo, $paths, $view);
+                  $vehicles = $view->getRouteVehicles($routeID);
+                  if ($routeInfo && ($paths || $vehicles)) {
+                      $this->initMapForRoute($routeID, $routeInfo, $paths, $vehicles, $view);
                   } else {
                       $this->redirectTo('route', array(
                           'id' => $routeID,
@@ -526,7 +534,7 @@ class TransitWebModule extends WebModule {
         }
     }
     
-    function initMapForRoute($routeID, $routeInfo, $paths, $view) {
+    function initMapForRoute($routeID, $routeInfo, $paths, $vehicles, $view) {
         $mapImageWidth = $mapImageHeight = 270;
         if ($this->pagetype == 'basic') {
             $mapImageWidth = $mapImageHeight = 200;
@@ -538,7 +546,7 @@ class TransitWebModule extends WebModule {
     
         $staticImage = $view->getMapImageForRoute($routeID, $mapImageWidth, $mapImageHeight);
         $markers = array();
-        foreach ($view->getRouteVehicles($routeID) as $vehicleID => $vehicle) {
+        foreach ($vehicles as $vehicleID => $vehicle) {
             $markers[$vehicleID] = array(
                 'lat' => $vehicle['lat'],
                 'lon' => $vehicle['lon'],

@@ -5,32 +5,40 @@
 {if $hasRouteMap}
   {capture name="mapPane" assign="mapPane"}
     {block name="mapPane"}
-      {include file="findInclude:modules/transit/templates/include/map.tpl"}
+      {if !$hasStops}
+        <div id="mapcontainer">
+      {/if}
+          {include file="findInclude:modules/transit/templates/include/map.tpl"}
+      {if !$hasStops}
+        </div>
+      {/if}
     {/block}
   {/capture}
   {$tabBodies['map'] = $mapPane}
 {/if}
 
-{capture name="stopsPane" assign="stopsPane"}
-  {if $routeInfo['view'] == 'schedule'}
-    {if $scheduleHelpText}
-      <span class="smallprint">{$scheduleHelpText}</span>
+{if $hasStops}
+  {capture name="stopsPane" assign="stopsPane"}
+    {if $routeInfo['view'] == 'schedule'}
+      {if $scheduleHelpText}
+        <span class="smallprint">{$scheduleHelpText}</span>
+      {/if}
+    {else}
+      {$stopTimeHelpText = "STOP_TIME_HELP_TEXT"|getLocalizedString}
+      {if $stopTimeHelpText}
+        <span class="smallprint">{$stopTimeHelpText}</span>
+      {/if}
     {/if}
-  {else}
-    {$stopTimeHelpText = "STOP_TIME_HELP_TEXT"|getLocalizedString}
-    {if $stopTimeHelpText}
-      <span class="smallprint">{$stopTimeHelpText}</span>
-    {/if}
-  {/if}
-  {block name="stopsPane"}
-    <div id="stops">
-      <div id="ajaxcontainer">
-        {include file="findInclude:modules/transit/templates/include/stoplist.tpl"}
+    {block name="stopsPane"}
+      <div id="stops">
+        <div id="ajaxcontainer">
+          {include file="findInclude:modules/transit/templates/include/stoplist.tpl"}
+        </div>
       </div>
-    </div>
-  {/block}
-{/capture}
-{$tabBodies['stops'] = $stopsPane}
+    {/block}
+  {/capture}
+  {$tabBodies['stops'] = $stopsPane}
+{/if}
 
 {capture name="serviceLogo" assign="serviceLogo"}
   {if $serviceInfo['id']}
