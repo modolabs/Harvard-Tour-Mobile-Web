@@ -308,15 +308,6 @@ class CoursesWebModule extends WebModule {
         if ($course = $this->controller->getCourseByCommonID($courseID, $options)) {
             $this->assign('courseTitle', $course->getTitle());
             $this->assign('courseID', $course->getID());
-            $tabs = array();
-            if ($contentCourse = $course->getCourse('content')) {
-                $tabsConfig = $this->getModuleSections('coursetabs');
-                foreach($tabsConfig as $page => $tab){
-                    $tabs[] = $page;
-                }
-            }
-            $this->enableTabs($tabs);
-            $this->assign('tabs', $tabs);
         }
         return $course;
     }
@@ -896,20 +887,19 @@ class CoursesWebModule extends WebModule {
                 }
                 $this->assignTerm();
                 $tabsConfig = $this->getModuleSections('coursetabs');
+                $tabs = array_keys($tabsConfig);
 
                 /********
                 Updates Tab
                 ********/
                 if(array_key_exists('updates', $tabsConfig)){
-                    if ($contentCourse = $course->getCourse('content')) {
-                        $items = $contentCourse->getUpdates();
-                        $updatesLinks = array();
-                        foreach ($items as $item){
-                            $updatesLinks[] = $this->linkForUpdate($item, $contentCourse, false);
-                        }
-                        $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 10));
-                        $this->assign('updatesLinks', $updatesLinks);
+                    $items = $contentCourse->getUpdates();
+                    $updatesLinks = array();
+                    foreach ($items as $item){
+                        $updatesLinks[] = $this->linkForUpdate($item, $contentCourse, false);
                     }
+                    $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 10));
+                    $this->assign('updatesLinks', $updatesLinks);
                 }
                 //*******
 
@@ -981,25 +971,23 @@ class CoursesWebModule extends WebModule {
                     );
 
                     $tasks = array();
-                    if ($contentCourse = $course->getCourse('content')) {
-                        $groups = $contentCourse->getTasks($options);
-                        foreach ($groups as $groupTitle => $items){
-                            $groupItems = array();
-                            foreach ($items as $item) {
-                                $groupItems[] = $this->linkForTask($item, $contentCourse);
-                            }
-                            if($group == 'priority'){
-                                $title = $this->getLocalizedString('CONTENT_PRIORITY_TITLE_'.strtoupper($groupTitle));
-                            }else{
-                                $title = $groupTitle;
-                            }
-                            $task = array(
-                                'title' => $title,
-                                'items' => $groupItems,
-                            );
-
-                            $tasks[] = $task;
+                    $groups = $contentCourse->getTasks($options);
+                    foreach ($groups as $groupTitle => $items){
+                        $groupItems = array();
+                        foreach ($items as $item) {
+                            $groupItems[] = $this->linkForTask($item, $contentCourse);
                         }
+                        if($group == 'priority'){
+                            $title = $this->getLocalizedString('CONTENT_PRIORITY_TITLE_'.strtoupper($groupTitle));
+                        }else{
+                            $title = $groupTitle;
+                        }
+                        $task = array(
+                            'title' => $title,
+                            'items' => $groupItems,
+                        );
+
+                        $tasks[] = $task;
                     }
                     $this->assign('tasks', $tasks);
                     $this->assign('courseTasksGroup', $group);
@@ -1039,14 +1027,8 @@ class CoursesWebModule extends WebModule {
                             );
                         }
                     }
-                    $links[] = array(
-                        'title' => 'Roster',
-                        'url'   => $this->buildBreadcrumbURL('roster', $this->getCourseOptions()),
-                    );
-                    $links[] = array(
-                        'title' => 'Course Materials',
-                        'url'   => $this->buildBreadcrumbURL('index', array()),
-                    );
+
+                    // @TODO ADD configurable links                    
                     $this->assign('links', $links);
                 }
                 //*******
@@ -1055,10 +1037,12 @@ class CoursesWebModule extends WebModule {
                 Grades Tab
                 ********/
                 if(array_key_exists('grades', $tabsConfig)){
-
                     $grades = $contentCourse->getGrades();
                 }
                 //*******
+
+                $this->enableTabs($tabs);
+                $this->assign('tabs', $tabs);
 
                 break;
             case 'index':
@@ -1096,7 +1080,6 @@ class CoursesWebModule extends WebModule {
                     $this->assign('loginText', $this->getLocalizedString('NOT_LOGGED_IN'));
                 }
 
-                // do we have a catalog?  catelog just demo and XML file copy from LMS //delete this line after look
                 $catalogItems = array();
                 if ($this->controller->canRetrieve('catalog')) {
                     $catalogItems[] = array(
