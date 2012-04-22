@@ -105,10 +105,8 @@ class CoursesWebModule extends WebModule {
         );
         $link = array(
             'title' => $includeCourseName ? $course->getTitle() : $content->getTitle(),
-            'courseTitle' => $course->getTitle(),
             'type' => $content->getContentType(),
-            'lastUpdate' =>$content->getTitle(),
-            'class' => "content content_" . $content->getContentType(),
+            'class' => "update update_" . $content->getContentType(),
             'img'   => "/modules/courses/images/content_" . $content->getContentType() . $this->imageExt
         );
         foreach (array('courseID') as $field) {
@@ -131,11 +129,9 @@ class CoursesWebModule extends WebModule {
                 $published .= ' by '.$content->getAuthor();
             }
             $subtitle[] = $published;
-            $link['updated'] = $published;
         }
         
         $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
-
         $link['subtitle'] = implode("<br />", $subtitle);
         $link['url'] = $this->buildBreadcrumbURL('content', $options, true);
         return $link;
