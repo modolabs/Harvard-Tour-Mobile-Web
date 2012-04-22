@@ -162,7 +162,7 @@ class CoursesWebModule extends WebModule {
 
         $contentCourse = $course->getCourse('content');
         if ($contentCourse) {
-            $page = 'updates';
+            $page = 'course';
             $subtitle = array();
             if ($lastUpdateContent = $contentCourse->getLastUpdate()) {
                 $subtitle[] = $lastUpdateContent->getTitle();
@@ -282,28 +282,17 @@ class CoursesWebModule extends WebModule {
     }
     
     protected function assignIndexTabs($options = array()){
-        $courseTabs = array();
+        $tabs = array();
         $tabsConfig = $this->getModuleSections('indextabs');
+
         foreach($tabsConfig as $page => $tab){
-            if($tab['protected'] == 0){
-                $courseTabs[$page] = array(
-                    'title' => $tab['title'],
-                    'url'   => $this->buildBreadcrumbURL($page, $options, false),
-                );
+            if(!$tab['protected'] || $this->isLoggedIn()) {
+                $tabs[] = $page;
             }
         }
 
-        if ($this->hasPersonalizedCourses && $this->isLoggedIn()) {
-            foreach($tabsConfig as $page => $tab){
-                if($tab['protected'] == 1){
-                    $courseTabs[$page] = array(
-                        'title' => $tab['title'],
-                        'url'   => $this->buildBreadcrumbURL($page, $options, false),
-                    );
-                }
-            }
-        }
-        $this->assign('courseTabs', $courseTabs);
+        $this->enableTabs($tabs);
+        $this->assign('tabs', $tabs);
     }
 
     protected function getCourseFromArgs() {
@@ -315,23 +304,9 @@ class CoursesWebModule extends WebModule {
         if ($course = $this->controller->getCourseByCommonID($courseID, $options)) {
             $this->assign('courseTitle', $course->getTitle());
             $this->assign('courseID', $course->getID());
-            $courseTabs = array();
-            if ($contentCourse = $course->getCourse('content')) {
-                $tabsConfig = $this->getModuleSections('coursetabs');
-                foreach($tabsConfig as $page => $tab){
-                    $courseTabs[$page] = array(
-                        'title' => $tab['title'],
-                        'url'   => $this->buildBreadcrumbURL($page, $options, false),
-                    );
-                }
-            }
-                        
-            $this->assign('courseTabs', $courseTabs);
         }
-    
         return $course;
     }
-
 
     protected function getFeedTitle($feed) {
         return isset($this->feeds[$feed]['TITLE']) ? $this->feeds[$feed]['TITLE'] : '';
@@ -383,7 +358,7 @@ class CoursesWebModule extends WebModule {
         return $options;
     }
     
-    protected function assignGroupLinks($groups, $defaultGroupOptions = array()){
+    protected function assignGroupLinks($tabPage, $groups, $defaultGroupOptions = array()){
         foreach ($groups as $groupIndex => $group) {
             $defaultGroupOptions['group'] = $groupIndex;
             $groupLinks[$groupIndex]['url'] = $this->buildBreadcrumbURL($this->page, $defaultGroupOptions, false);
@@ -397,8 +372,8 @@ class CoursesWebModule extends WebModule {
             4   => 'four',
             5   => 'five',
         );
-        $this->assign('tabCount', $tabCountMap[$tabCount]);
-        $this->assign('groupLinks', $groupLinks);
+        $this->assign($tabPage.'TabCount', $tabCountMap[$tabCount]);
+        $this->assign($tabPage.'GroupLinks', $groupLinks);
     }
 
     protected function paginateArray($contents, $limit) {
@@ -408,6 +383,7 @@ class CoursesWebModule extends WebModule {
         $nextURL = null;
         if ($totalItems > $limit) {
             $args = $this->args;
+            $args['tab'] = 'updates';
             if ($start > 0) {
                 $args['start'] = $start - $limit;
                 $previousURL = $this->buildBreadcrumbURL($this->page, $args, false);
@@ -577,77 +553,6 @@ class CoursesWebModule extends WebModule {
     
     protected function initializeForPage() {
         switch($this->page) {
-        	case 'info':
-        	    
-        	    if (!$course = $this->getCourseFromArgs()) {
-                    $this->redirectTo('index');
-        	    }
-                if (!$contentCourse = $course->getCourse('content')) {
-                    if (!$contentCourse = $course->getCourse('catalog')) {
-	                    $this->redirectTo('index');
-	                }
-                }
-                if($description = $contentCourse->getDescription()){
-                    $description = array(array('title'=>$description));
-                    $this->assign('description', $description);
-                }
-        	    $options = $this->getCourseOptions();
-        	    
-        	    $courseDetails =  $this->formatCourseDetails($course);
-        	    $this->assign('courseDetails', $courseDetails);
-                // Bookmark
-                if ($this->getOptionalModuleVar('BOOKMARKS_ENABLED', 1)) {
-                    $cookieParams = array(
-                        'title' => $course->getTitle(),
-                        'term'  => rawurlencode($options['term']),
-                        'id'    => rawurlencode($options['courseID']),
-                    );
-
-                    $cookieID = http_build_query($cookieParams);
-                    $this->generateBookmarkOptions($cookieID);
-                }
-
-                $instructorList = array();
-                $instructors = $course->getInstructors();
-                
-                foreach ($instructors as $instructor){
-                	$value = $instructor->getFullName();
-                	$link = Kurogo::moduleLinkForValue('people', $value, $this, $instructor);
-                	$link['class'] = 'people';
-                	if(!$link){
-                		$link = array(
-                				'title' => $value,
-                		);
-                	}
-                	$instructorList[] = $link;
-                }
-                
-                $this->assign('instructors',$instructorList);
-                $links = array();
-
-                if ($registrationCourse = $course->getCourse('registration')) {
-                    if ($registrationCourse->canDrop()) {
-                        $links[] = array(
-                            'title'=> $this->getLocalizedString('DROP_COURSE'),
-                            'url' => $this->buildBreadcrumbURL('dropclass', $options, true)
-                        );
-                    }
-    		    }
-
-                $links[] = array(
-                    'title' => 'Roster',
-                    'url'   => $this->buildBreadcrumbURL('roster', $this->getCourseOptions()),
-                );
-                $links[] = array(
-                    'title' => 'Course Materials',
-                    'url'   => $this->buildBreadcrumbURL('index', array()),
-                );
-    		    
-    		    $this->assign('links', $links);
-                
-                
-            	break;
-
             case 'loadFile':
                 $file = $this->getArg('file');
                 break;
@@ -830,204 +735,25 @@ class CoursesWebModule extends WebModule {
                 $this->assign('courses', $coursesList);
                 
                 break;
-            
-            case 'allupdates':
-                if (!$this->isLoggedIn()) {
-                    $this->redirectTo('index');
-                }
-                $Term = $this->assignTerm();
-                $this->assignIndexTabs(array('term'=>$Term->getID()));
+                
 
-                $contents = array();
-                $courses = $this->controller->getCourses(array());
-                foreach($courses as $course){
-                    if ($contentCourse = $course->getCourse('content')) {
-                        if($items = $contentCourse->getUpdates()){
-                            foreach ($items as $item){
-                                $contents[] = $this->linkForUpdate($item, $contentCourse, true);
-                            }
-                        }
-                    }
-                }
-                $contents = $this->sortUpdatesByDate($contents);
-                $contents = $this->paginateArray($contents, $this->getOptionalModuleVar('MAX_UPDATES', 5));
-                $this->assign('contents', $contents);
-                break;
-            
-            case 'alltasks':
-                if (!$this->isLoggedIn()) {
-                    $this->redirectTo('index');
-                }
-                $Term = $this->assignTerm();
-                $this->assignIndexTabs(array('term'=>$Term->getID()));
-
-                //@TODO make this configurable
-                $groups = $this->getModuleSections('alltasks');
-                $this->assignGroupLinks($groups);
-
-                $group = $this->getArg('group', current(array_keys($groups)));
-                $options = array(
-                    'group'=>$group
-                );
-
-                $tasks = array();
-                $courses = $this->controller->getCourses(array());
-                foreach($courses as $course){
-                    if ($contentCourse = $course->getCourse('content')) {
-                        $groups = $contentCourse->getTasks($options);
-                        foreach ($groups as $groupTitle => $items){
-                            $groupItems = array();
-                            foreach ($items as $item) {
-                                $groupItems[] = $this->linkForTask($item, $contentCourse);
-                            }
-                            if($group == 'priority'){
-                                $title = $this->getLocalizedString('CONTENT_PRIORITY_TITLE_'.strtoupper($groupTitle));
-                            }else{
-                                $title = $groupTitle;
-                            }
-                            $task = array(
-                                'title' => $title,
-                                'items' => $groupItems,
-                            );
-
-                            $tasks[] = $task;
-                        }
-                    }
-                }
-                $this->assign('tasks', $tasks);
-                $this->assign('group', $group);
-                break;
-
-            case 'tasks':
-
+            case 'info': // CATALOG
                 if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
                 }
 
-                $this->assignTerm();
-
-                $groups = $this->getModuleSections('tasks');
-                $this->assignGroupLinks($groups, $this->getCourseOptions());
-
-                $group = $this->getArg('group', current(array_keys($groups)));
-                $options = array(
-                    'group'=>$group
-                );
-
-                $tasks = array();
-                if ($contentCourse = $course->getCourse('content')) {
-                    $groups = $contentCourse->getTasks($options);
-                    foreach ($groups as $groupTitle => $items){
-                        $groupItems = array();
-                        foreach ($items as $item) {
-                            $groupItems[] = $this->linkForTask($item, $contentCourse);
-                        }
-                        if($group == 'priority'){
-                            $title = $this->getLocalizedString('CONTENT_PRIORITY_TITLE_'.strtoupper($groupTitle));
-                        }else{
-                            $title = $groupTitle;
-                        }
-                        $task = array(
-                            'title' => $title,
-                            'items' => $groupItems,
-                        );
-
-                        $tasks[] = $task;
-                    }
-                }
-                $this->assign('tasks', $tasks);
-                $this->assign('group', $group);
-                break;
-                
-            case 'updates':
-                
-                if (!$course = $this->getCourseFromArgs()) {
-                    $this->redirectTo('index');
-                }
-				
-                $this->assignTerm();
-
-                if ($contentCourse = $course->getCourse('content')) {
-                    $items = $contentCourse->getUpdates();
-                    $contents = array();
-                    foreach ($items as $item){
-                        $contents[] = $this->linkForUpdate($item, $contentCourse, false);
-                    }
-                    $contents = $this->paginateArray($contents, $this->getOptionalModuleVar('MAX_UPDATES', 10));
-                    $this->assign('contents', $contents);
-                }
-                    
-                break;
-
-            case 'resources':
-        	    if (!$course = $this->getCourseFromArgs()) {
-                    $this->redirectTo('index');
-        	    }
-
-                if (!$contentCourse = $course->getCourse('content')) {
-                    $this->redirectTo('index');
-                }
-
-                $this->assignTerm();
-
-                $groupsConfig = $this->getModuleSections('resources');
-                $availableGroups = array_keys($groupsConfig);
-                $this->assignGroupLinks($groupsConfig, $this->getCourseOptions());
-
-                $group = $this->getArg('group', $availableGroups[0]);
-                $options = array(
-                    'group'=>$group
-                );
-                
-                $resources = array();
-                $groups = $contentCourse->getResources($options);
-                $limit = $groupsConfig[$group]['max_items'];
-                $seeAllLinks = array();
-
-                foreach ($groups as $groupTitle => $items){
-                    $hasMoreItems = false;
-                    $index = 0;
-                    $groupItems = array();
-                    foreach ($items as $item) {
-                        if($index >= $limit && $limit != 0){
-                            break;
-                        }
-                        $groupItems[] = $this->linkForContent($item, $contentCourse);
-                        $index++;
-                    }
-                    if($group == 'type'){
-                        $title = $this->getLocalizedString('CONTENT_TYPE_TITLE_'.strtoupper($groupTitle));
-                    }else{
-                        $title = $groupTitle;
-                    }
-                    $resource = array(
-                        'title' => $title,
-                        'items' => $groupItems,
-                        'count' => count($items),
+                // Bookmark
+                if ($this->getOptionalModuleVar('BOOKMARKS_ENABLED', 1)) {
+                    $cookieParams = array(
+                        'title' => $course->getTitle(),
+                        'term'  => rawurlencode($this->selectedTerm),
+                        'id'    => rawurlencode($course->getID())
                     );
-                    if(count($items) > $limit && $limit != 0){
-                        $courseOptions = $this->getCourseOptions();
-                        $courseOptions['group'] = $group;
-                        $courseOptions['key'] = $groupTitle;
-                        $resource['url'] = $this->buildBreadcrumbURL('resourceSeeAll', $courseOptions);
-                    }
-                    $resources[] = $resource;
-                }
 
-                $this->assign('resources',$resources);
-                $this->assign('group', $group);
-            	break;
-            case 'grades':
-                if (!$course = $this->getCourseFromArgs()) {
-                    $this->redirectTo('index');
+                    $cookieID = http_build_query($cookieParams);
+                    $this->generateBookmarkOptions($cookieID);
                 }
-
-                if (!$contentCourse = $course->getCourse('content')) {
-                    $this->redirectTo('index');
-                }
-
-                $grades = $contentCourse->getGrades();
-                $this->assignTerm();
+                
                 break;
             case 'resourceSeeAll':
                 if (!$course = $this->getCourseFromArgs()) {
@@ -1148,29 +874,199 @@ class CoursesWebModule extends WebModule {
                 }
                 $this->assign('hasBookmarks', $this->hasBookmarks());
                 break;
-                
+            case 'course':
+                if (!$course = $this->getCourseFromArgs()) {
+                    $this->redirectTo('index');
+                }
+                if (!$contentCourse = $course->getCourse('content')) {
+                    $this->redirectTo('index');
+                }
+                $this->assignTerm();
+                $tabsConfig = $this->getModuleSections('coursetabs');
+                $tabs = array_keys($tabsConfig);
+
+                /********
+                Updates Tab
+                ********/
+                if(array_key_exists('updates', $tabsConfig)){
+                    $items = $contentCourse->getUpdates();
+                    $updatesLinks = array();
+                    foreach ($items as $item){
+                        $updatesLinks[] = $this->linkForUpdate($item, $contentCourse, false);
+                    }
+                    $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 10));
+                    $this->assign('updatesLinks', $updatesLinks);
+                }
+                //*******
+
+                /********
+                Resources Tab
+                ********/
+                if(array_key_exists('resources', $tabsConfig)){
+                    $groupsConfig = $this->getModuleSections('resources');
+                    $availableGroups = array_keys($groupsConfig);
+                    $groupLinksOptions = $this->getCourseOptions();
+                    $groupLinksOptions['tab'] = 'resources';
+                    $this->assignGroupLinks('courseResources', $groupsConfig, $groupLinksOptions);
+
+                    $group = $this->getArg('group', $availableGroups[0]);
+                    $options = array(
+                        'group'=>$group
+                    );
+
+                    $resourcesLinks = array();
+                    $groups = $contentCourse->getResources($options);
+                    $limit = $groupsConfig[$group]['max_items'];
+                    $seeAllLinks = array();
+
+                    foreach ($groups as $groupTitle => $items){
+                        $hasMoreItems = false;
+                        $index = 0;
+                        $groupItems = array();
+                        foreach ($items as $item) {
+                            if($index >= $limit && $limit != 0){
+                                break;
+                            }
+                            $groupItems[] = $this->linkForContent($item, $contentCourse);
+                            $index++;
+                        }
+                        if($group == 'type'){
+                            $title = $this->getLocalizedString('CONTENT_TYPE_TITLE_'.strtoupper($groupTitle));
+                        }else{
+                            $title = $groupTitle;
+                        }
+                        $resource = array(
+                            'title' => $title,
+                            'items' => $groupItems,
+                            'count' => count($items),
+                        );
+                        if(count($items) > $limit && $limit != 0){
+                            $courseOptions = $this->getCourseOptions();
+                            $courseOptions['group'] = $group;
+                            $courseOptions['key'] = $groupTitle;
+                            $resource['url'] = $this->buildBreadcrumbURL('resourceSeeAll', $courseOptions);
+                        }
+                        $resourcesLinks[] = $resource;
+                    }
+
+                    $this->assign('resourcesLinks',$resourcesLinks);
+                    $this->assign('courseResourcesGroup', $group);
+                }
+                //*******
+
+                /********
+                Tasks Tab
+                ********/
+                if(array_key_exists('resources', $tabsConfig)){
+                    $groups = $this->getModuleSections('tasks');
+                    $this->assignGroupLinks('courseTasks', $groups, $this->getCourseOptions());
+
+                    $group = $this->getArg('group', current(array_keys($groups)));
+                    $options = array(
+                        'group'=>$group
+                    );
+
+                    $tasks = array();
+                    $groups = $contentCourse->getTasks($options);
+                    foreach ($groups as $groupTitle => $items){
+                        $groupItems = array();
+                        foreach ($items as $item) {
+                            $groupItems[] = $this->linkForTask($item, $contentCourse);
+                        }
+                        if($group == 'priority'){
+                            $title = $this->getLocalizedString('CONTENT_PRIORITY_TITLE_'.strtoupper($groupTitle));
+                        }else{
+                            $title = $groupTitle;
+                        }
+                        $task = array(
+                            'title' => $title,
+                            'items' => $groupItems,
+                        );
+
+                        $tasks[] = $task;
+                    }
+                    $this->assign('tasks', $tasks);
+                    $this->assign('courseTasksGroup', $group);
+                }
+                //*******
+
+                /********
+                Info Tab
+                ********/
+                if(array_key_exists('info', $tabsConfig)){
+                    $options = $this->getCourseOptions();
+
+                    $courseDetails =  $this->formatCourseDetails($course);
+                    $this->assign('courseDetails', $courseDetails);
+
+                    $instructorList = array();
+                    $instructors = $course->getInstructors();
+                    foreach ($instructors as $instructor){
+                        $value = $instructor->getFullName();
+                        $link = Kurogo::moduleLinkForValue('people', $value, $this, $instructor);
+                        $link['class'] = 'people';
+                        if(!$link){
+                            $link = array(
+                                    'title' => $value,
+                            );
+                        }
+                        $instructorList[] = $link;
+                    }
+                    $this->assign('instructors',$instructorList);
+
+                    $links = array();
+                    if ($registrationCourse = $course->getCourse('registration')) {
+                        if ($registrationCourse->canDrop()) {
+                            $links[] = array(
+                                'title'=> $this->getLocalizedString('DROP_COURSE'),
+                                'url' => $this->buildBreadcrumbURL('dropclass', $options, true)
+                            );
+                        }
+                    }
+
+                    // @TODO ADD configurable links                    
+                    $this->assign('links', $links);
+                }
+                //*******
+
+                /********
+                Grades Tab
+                ********/
+                if(array_key_exists('grades', $tabsConfig)){
+                    $grades = $contentCourse->getGrades();
+                }
+                //*******
+
+                $this->enableTabs($tabs);
+                $this->assign('tabs', $tabs);
+
+                break;
             case 'index':
                 $Term = $this->assignTerm();
-                $courses = array();
+                $coursesLinks = array();
                 $options = array(
                     'term'=>$Term,
                     'types'=>array('content','registration')
                 );
 
-                
                 // assign tabs
                 $this->assignIndexTabs(array('term'=>$Term->getID()));
+                $tab = $this->getArg('tab');
+                
+                /********
+                Index Tab
+                ********/
                 $this->assign('hasPersonalizedCourses', $this->hasPersonalizedCourses);
-
+        
                 if ($this->isLoggedIn()) {
-                    if ($items = $this->controller->getCourses($options)) {
-                    	foreach ($items as $item) {
-                            $course = $this->linkForCourse($item, array('term'=>strval($Term)));
-                            $courses[] = $course;
+                    if ($courses = $this->controller->getCourses($options)) {
+                        foreach ($courses as $course) {
+                            $courseLink = $this->linkForCourse($course, array('term'=>strval($Term)));
+                            $coursesLinks[] = $courseLink;
                         }
                     }
-                    $this->assign('courseListHeading', $this->getLocalizedString('COURSE_LIST_HEADING', $Term->getTitle(), count($courses)));
-                    $this->assign('courses', $courses);
+                    $this->assign('courseListHeading', $this->getLocalizedString('COURSE_LIST_HEADING', $Term->getTitle(), count($coursesLinks)));
+                    $this->assign('coursesLinks', $coursesLinks);
                 } else {
                     $loginLink = array(
                         'title' => $this->getLocalizedString('SIGN_IN_SITE', Kurogo::getSiteString('SITE_NAME')),
@@ -1180,14 +1076,13 @@ class CoursesWebModule extends WebModule {
                     $this->assign('loginText', $this->getLocalizedString('NOT_LOGGED_IN'));
                 }
 
-                // do we have a catalog?  catelog just demo and XML file copy from LMS //delete this line after look
                 $catalogItems = array();
                 if ($this->controller->canRetrieve('catalog')) {
                     $catalogItems[] = array(
                         'title' => $this->getFeedTitle('catalog'),
                         'url'   => $this->buildBreadcrumbURL('catalog', array(), false),
                     );
-                    
+
                     if ($bookmarks = $this->getBookmarks()) {
                         $catalogItems[] = array(
                             'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . " (" . count($bookmarks) . ")",
@@ -1197,6 +1092,69 @@ class CoursesWebModule extends WebModule {
                 }
                 $this->assign('courseCatalogText', $this->getLocalizedString('COURSE_CATALOG_TEXT'));
                 $this->assign('catalogItems', $catalogItems);
+                //*******
+
+                /********
+                Updates Tab
+                ********/
+                if ($this->isLoggedIn()) {
+                    $updatesLinks = array();
+                    $courses = $this->controller->getCourses(array());
+                    foreach($courses as $course){
+                        if ($contentCourse = $course->getCourse('content')) {
+                            if($items = $contentCourse->getUpdates()){
+                                foreach ($items as $item){
+                                    $updatesLinks[] = $this->linkForUpdate($item, $contentCourse, true);
+                                }
+                            }
+                        }
+                    }
+                    $updatesLinks = $this->sortUpdatesByDate($updatesLinks);
+                    $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 5));
+                    $this->assign('updatesLinks', $updatesLinks);
+                }
+                //*******
+
+                /********
+                Tasks Tab
+                ********/
+                if (!$this->isLoggedIn()) {
+                    $taskGroups = $this->getModuleSections('alltasks');
+                    $this->assignGroupLinks('indexTasks', $taskGroups, array('tab'=>'tasks'));
+
+                    $group = $this->getArg('group', current(array_keys($taskGroups)));
+                    $options = array(
+                        'group'=>$group
+                    );
+
+                    $tasks = array();
+                    $courses = $this->controller->getCourses(array());
+                    foreach($courses as $course){
+                        if ($contentCourse = $course->getCourse('content')) {
+                            $groups = $contentCourse->getTasks($options);
+                            foreach ($groups as $groupTitle => $items){
+                                $groupItems = array();
+                                foreach ($items as $item) {
+                                    $groupItems[] = $this->linkForTask($item, $contentCourse);
+                                }
+                                if($group == 'priority'){
+                                    $title = $this->getLocalizedString('CONTENT_PRIORITY_TITLE_'.strtoupper($groupTitle));
+                                }else{
+                                    $title = $groupTitle;
+                                }
+                                $task = array(
+                                    'title' => $title,
+                                    'items' => $groupItems,
+                                );
+
+                                $tasks[] = $task;
+                            }
+                        }
+                    }
+                    $this->assign('tasks', $tasks);
+                    $this->assign('indexTasksGroup', $group);
+                }
+                //*******
                 break;
         }
     }
