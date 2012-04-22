@@ -748,6 +748,26 @@ class CoursesWebModule extends WebModule {
                 $this->assign('courses', $coursesList);
                 
                 break;
+                
+
+            case 'info': // CATALOG
+                if (!$course = $this->getCourseFromArgs()) {
+                    $this->redirectTo('index');
+                }
+
+                // Bookmark
+                if ($this->getOptionalModuleVar('BOOKMARKS_ENABLED', 1)) {
+                    $cookieParams = array(
+                        'title' => $course->getTitle(),
+                        'term'  => rawurlencode($this->selectedTerm),
+                        'id'    => rawurlencode($course->getID())
+                    );
+
+                    $cookieID = http_build_query($cookieParams);
+                    $this->generateBookmarkOptions($cookieID);
+                }
+                
+                break;
             case 'resourceSeeAll':
                 if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
@@ -994,17 +1014,6 @@ class CoursesWebModule extends WebModule {
 
                     $courseDetails =  $this->formatCourseDetails($course);
                     $this->assign('courseDetails', $courseDetails);
-                    // Bookmark
-                    if ($this->getOptionalModuleVar('BOOKMARKS_ENABLED', 1)) {
-                        $cookieParams = array(
-                            'title' => $course->getTitle(),
-                            'term'  => rawurlencode($options['term']),
-                            'id'    => rawurlencode($options['courseID']),
-                        );
-
-                        $cookieID = http_build_query($cookieParams);
-                        $this->generateBookmarkOptions($cookieID);
-                    }
 
                     $instructorList = array();
                     $instructors = $course->getInstructors();
