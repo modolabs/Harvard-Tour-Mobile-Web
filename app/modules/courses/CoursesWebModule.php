@@ -773,6 +773,7 @@ class CoursesWebModule extends WebModule {
 
                 $tasks = array();
                 $groups = $contentCourse->getTasks($tasksOptions);
+                $group = $tasksOptions['group'];
                 foreach ($groups as $groupTitle => $items){
                     $groupItems = array();
                     foreach ($items as $item) {
