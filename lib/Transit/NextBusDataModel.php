@@ -143,9 +143,8 @@ class NextBusDataModel extends TransitDataModel
             
             foreach ($xml->getElementsByTagName('route') as $route) {
                 $routeID = $route->attributes->getNamedItem('tag')->nodeValue;
-                if ($this->routeWhitelist && !in_array($routeID, $this->routeWhitelist)) {
-                    continue;
-                }
+                
+                if (!$this->viewRoute($routeID)) { continue; }
                 
                 $this->addRoute(new TransitRoute(
                     $routeID, 

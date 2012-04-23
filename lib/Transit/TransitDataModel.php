@@ -12,6 +12,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     protected $args = array();
     protected $agencyIDs = array();
     protected $routeWhitelist = array();
+    protected $routeBlacklist = array();
     protected $viewAsLoopRoutes = array();
     protected $scheduleViewRoutes = array();
     protected $splitByHeadsignRoutes = array();
@@ -70,6 +71,10 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             $this->routeWhitelist = array_filter(array_map('trim', explode(',', $args['ROUTE_WHITELIST'])));
         }
         
+        if (isset($args['ROUTE_BLACKLIST'])) {
+            $this->routeBlacklist = array_filter(array_map('trim', explode(',', $args['ROUTE_BLACKLIST'])));
+        }
+        
         if (isset($args['VIEW_ROUTES_AS_LOOP'])) {
             if ($args['VIEW_ROUTES_AS_LOOP'] === "*") {
                 $this->viewAsLoopRoutes = true; // all routes
@@ -102,6 +107,12 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         $this->platform = Kurogo::deviceClassifier()->getPlatform();
         
         $this->loadData();
+    }
+    
+    protected function viewRoute($routeID) {
+        $passedWhitelist = count($this->routeWhitelist) === 0 || in_array($routeID, $this->routeWhitelist);
+        $passedBlacklist = count($this->routeWhitelist) === 0 || !in_array($routeID, $this->routeBlacklist);
+        return $passedWhitelist && $passedBlacklist;
     }
     
     protected function viewRouteAsLoop($routeID) {
@@ -197,7 +208,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     
     protected function addRoute($route) {
         $id = $route->getID();
-    
+        
         if (isset($this->routes[$id])) {
             Kurogo::log(LOG_WARNING, __FUNCTION__."(): Duplicate route '$id'", 'transit');
             return;

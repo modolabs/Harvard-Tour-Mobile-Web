@@ -127,6 +127,8 @@ class GTFSDataModel extends TransitDataModel
         $result = $this->query($sql);
         if ($result) {
             while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+                if (!$this->viewRoute($row['route_id'])) { continue; }
+                
                 $agencyID = isset($row['agency_id']) && in_array($row['agency_id'], $this->agencyIDs) ? 
                     $row['agency_id'] : reset($this->agencyIDs);
                     

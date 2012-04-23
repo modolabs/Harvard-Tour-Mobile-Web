@@ -17,12 +17,13 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
     
     // Do not call parent!!!
     protected function init($config) {
-        if (isset($args['DAEMON_MODE'])) {
-            $this->daemonMode = $args['DAEMON_MODE'];
-            unset($args['DAEMON_MODE']); // Make sure this doesn't confuse TransitConfig class
+        if (isset($config['DAEMON_MODE'])) {
+            $this->daemonMode = $config['DAEMON_MODE'];
+            unset($config['DAEMON_MODE']); // Make sure this doesn't confuse TransitConfig class
         }
         
         $this->config = new TransitConfig($config);
+        $this->initArgs = $this->config->getGlobalArgs();
 
         $this->setDebugMode(Kurogo::getOptionalSiteVar('DEBUG_MODE', false));
         $this->globalIDSeparator = Kurogo::getOptionalSiteVar('TRANSIT_GLOBAL_ID_SEPARATOR', '__');
@@ -56,9 +57,9 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
         }
         
         $cacheClass = Kurogo::getOptionalSiteVar('TRANSIT_VIEW_CACHE_CLASS', 'DataCache');
-        $this->cache = DataCache::factory($cacheClass, array(
-            'CACHE_FOLDER' => Kurogo::getOptionalSiteVar('TRANSIT_CACHE_DIR', 'Transit'),
-        ));
+        $cacheFolder = isset($this->initArgs['CACHE_FOLDER']) ? $this->initArgs['CACHE_FOLDER'] :
+            Kurogo::getOptionalSiteVar('TRANSIT_CACHE_DIR', 'Transit');
+        $this->cache = DataCache::factory($cacheClass, array('CACHE_FOLDER' => $cacheFolder,));
         
         $this->cache->setCacheGroup('View');
         
@@ -514,9 +515,15 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
 
 class TransitConfig
 {
+    protected $defaultArgs = array();
     protected $models = array();
     
     function __construct($feedConfigs) {
+        if (isset($feedConfigs['defaults'])) {
+            $this->defaultArgs = $feedConfigs['defaults'];
+            unset($feedConfigs['defaults']);
+        }
+        
         foreach ($feedConfigs as $id => $config) {
             $system = isset($config['system']) ? $config['system'] : $id;
             
@@ -542,14 +549,14 @@ class TransitConfig
             if (isset($liveModelClass) && $liveModelClass) {
                 $this->models[$id]['live'] = array(
                     'class'     => $liveModelClass,
-                    'arguments' => array(),
+                    'arguments' => $this->defaultArgs,
                     'overrides' => array(),
                 );
             }
             if (isset($staticModelClass) && $staticModelClass) {
                 $this->models[$id]['static'] = array(
                     'class'     => $staticModelClass,
-                    'arguments' => array(),
+                    'arguments' => $this->defaultArgs,
                     'overrides' => array(),
                 );
             }
@@ -662,6 +669,9 @@ class TransitConfig
     
     public function getSystem($id) {
         return isset($this->models[$id]) ? $this->models[$id]['system'] : $id;
+    }
+    public function getGlobalArgs() {
+        return $this->defaultArgs;
     }
     
     public function getLiveModelClass($id) {

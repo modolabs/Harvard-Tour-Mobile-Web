@@ -187,9 +187,7 @@ class TranslocDataModel extends TransitDataModel
             foreach ($routesInfo as $routeInfo) {
                 $routeID = self::argVal($routeInfo, 'route_id');
                 
-                if ($this->routeWhitelist && !in_array($routeID, $this->routeWhitelist)) {
-                    continue;  // skip entries not on whitelist
-                }
+                if (!$this->viewRoute($routeID)) { continue; }
                 
                 $this->addRoute(new TransitRoute(
                     $routeID, 

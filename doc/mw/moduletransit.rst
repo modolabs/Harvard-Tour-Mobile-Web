@@ -26,7 +26,7 @@ Using TransitViewDataModel, a site which has both static route data (e.g. GTFS) 
 Configuration
 =============
 
-Transit feed configuration is specified in feeds.ini.  Similar to other feeds, each transit feed is specified in a section.  However, when using merged live and static data, both the live and static classes are specified in a single block.  For example, here a configuration to view three routes the Boston area's MBTA transit authority:
+Transit feed configuration is specified in feeds.ini.  Similar to other feeds, each transit feed is specified in a section. When using merged live and static data, both the live and static classes are specified in a single block.  For example, here a configuration to view three routes the Boston area's MBTA transit authority:
 
 .. code-block:: ini
 
@@ -46,6 +46,10 @@ Transit feed configuration is specified in feeds.ini.  Similar to other feeds, e
     all_argument_keys[] = "ROUTE_WHITELIST"
     all_argument_vals[] = "1,701,747"
 
+
+Note that there is a special section "defaults" which is used for default arguments for all transit classes.  Do not name your feed sections "defaults".
+
+
 --------------
 Feed Arguments
 --------------
@@ -57,7 +61,8 @@ In the feed configuration example above, ``VIEW_ROUTES_AS_LOOP = "1,701,747"`` w
 **Common Arguments:**
 
 * *AGENCIES* - (required) A string containing a comma-separated list of agency ids in the feed.
-* *ROUTE_WHITELIST* - (optional) A string containing a comma-separated list of route ids.  If this parameter is not specified, all routes in each of the specified agencies will be provided.
+* *ROUTE_WHITELIST* - (optional) A string containing a comma-separated list of route ids.  If ROUTE_WHITELIST and ROUTE_BLACKLIST are not specified, all routes in each of the specified agencies will be shown.
+* *ROUTE_BLACKLIST* - (optional) A string containing a comma-separated list of route ids to omit from the full list of route ids.  If ROUTE_WHITELIST and ROUTE_BLACKLIST are not specified, all routes in each of the specified agencies will be shown.
 * *VIEW_ROUTES_AS_LOOP* - (optional) A string containing either a single asterix ``*`` (all routes) or a comma-separated list of route ids.  Sometimes transit feeds arbitrarily split routes which are loops into two directions.  This can cause the route to display in a way which does not make sense to the user.  This argument tells the backend to collapse these directions into a single loop.
 
 **GTFS-Specific Arguments:**
@@ -66,6 +71,21 @@ In the feed configuration example above, ``VIEW_ROUTES_AS_LOOP = "1,701,747"`` w
 * *DB_TYPE* - (optional) If not specified, assumes a type of SQLite.
 * *SPLIT_BY_HEADSIGN* - (optional) A string containing either a single asterix ``*`` (all routes) or a comma-separated list of route ids.  Instead of splitting routes by direction, splits them by the trip_headsign field in trips.txt.  This option will only work properly if trip_headsign is specified for all trips in trips.txt.
 * *SCHEDULE_VIEW* - (optional) A string containing either a single asterix ``*`` (all routes) or a comma-separated list of route ids.  Attempts to display the GTFS data in schedule tables showing the next few vehicles.  Because GTFS data is meant for trip planning, it does not always contain enough data to order the stops in a route.  If your routes are display stops in the wrong order, see the section on stop orders below.
+
+----------------------
+Feed Argument Defaults
+----------------------
+
+You may wish to specify feed arguments which affect all feeds.  These are specified in a special "defaults" section.
+
+.. code-block:: ini
+
+    [defaults]
+    CACHE_FOLDER = "Transit"
+    CACHE_CLASS = "DataCache"
+
+
+Note: the defaults section is the only way to pass arguments to the TransitViewDataModel class which presents the aggregated view of all routes.
 
 --------------------------------
 Overriding Stop and Route Fields
