@@ -1,7 +1,7 @@
 {if $tasks}
-<ul class="tabstrip twotabs">
-{foreach $courseTasksGroupLinks as $index => $groupLink}
-<li{if $courseTasksGroup == $index} class="active"{/if}><a href="{$groupLink.url}">By {$groupLink.title}</a>
+<ul class="tabstrip {$tasksTabCount}tabs">
+{foreach $tasksGroupLinks as $index => $groupLink}
+<li{if $tasksGroup == $index} class="active"{/if}><a href="{$groupLink.url}">By {$groupLink.title}</a>
 {/foreach}
 </ul>
 {foreach $tasks as $group}
