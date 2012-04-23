@@ -5,6 +5,8 @@
 {/foreach}
 </ul>
 {/block}
+{block name="resourcesHeader"}{/block}
+{block name="resourcesList"}
 {foreach $resourcesLinks as $group}
     {if $group['url']}
     <div class="seeall"><a href="{$group['url']}">{'SEE_ALL'|getLocalizedString:$group['count']}</a></div>
@@ -12,3 +14,5 @@
     {$resourcesListHeading=$group.title|default:''}
     {include file="findInclude:modules/courses/templates/resourcesList.tpl" resourcesListHeading=$resourcesListHeading resources=$group.items}
 {/foreach}
+{/block}
+{block name="resourcesFooter"}{/block}

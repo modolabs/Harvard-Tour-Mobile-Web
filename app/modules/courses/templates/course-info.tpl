@@ -1,15 +1,16 @@
 <div class="bookmarkicon">
 {include file="findInclude:common/templates/bookmark.tpl" name=$cookieName item=$bookmarkItem exdate=$expireDate}
 </div>
+{block name="infoLocation"}
 {if $location}
 {include file="findInclude:common/templates/navlist.tpl" navlistItems=$location}
 {/if}
-{if $description}
-{include file="findInclude:common/templates/navlist.tpl" navListHeading="Description" navlistItems=$description accessKey=false subTitleNewline=$contactsSubTitleNewline}
-{/if}
+{/block}
+{block name="infoInstructors"}
 {if $instructors}
 {include file="findInclude:common/templates/navlist.tpl" navListHeading="Instructor(s)" navlistItems=$instructors accessKey=false subTitleNewline=$contactsSubTitleNewline}
 {/if}
+{/block}
 
 {block name="detailsStart"}
 {/block}
@@ -51,6 +52,8 @@
 {block name="detailsEnd"}
 {/block}
 
+{block name="links"}
 {if $links}
 {include file="findInclude:common/templates/navlist.tpl" navListHeading="Links" navlistItems=$links subTitleNewline=true}
 {/if}
+{/block}

@@ -1,3 +1,5 @@
+{block name="tasksHeader"}{/block}
+{block name="tasksList"}
 {if $tasks}
 {block name="groupSelector"}
 <ul class="tabstrip {$tasksTabCount}tabs">
@@ -13,3 +15,5 @@
 {else}
 {"NO_TASKS"|getLocalizedString}
 {/if}
+{/block}
+{block name="tasksFooter"}{/block}
