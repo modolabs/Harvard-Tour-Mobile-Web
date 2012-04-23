@@ -174,7 +174,8 @@ class CoursesWebModule extends WebModule {
                     }
                     $subtitle[] = $published;
                 }
-                $link['class'] = 'content_'.$lastUpdateContent->getContentType();
+                $link['type']  = $lastUpdateContent->getContentType();
+                $link['img']   = "/modules/courses/images/content_" . $lastUpdateContent->getContentType() . $this->imageExt;
             } else {
                 $subtitle[] = $this->getLocalizedString('NO_UPDATES');
             }
