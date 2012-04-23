@@ -2,29 +2,29 @@
 
 {include file="findInclude:modules/courses/templates/termselector.tpl"}
 
-{capture assign=tabBody}
-    {block name="courseList"}
-    {if $courses}
-        {include file="findInclude:common/templates/navlist.tpl" navListHeading=$courseListHeading navlistItems=$courses subTitleNewline=true}
-    {elseif $session_userID}
-        <div>
-        {"NO_COURSES"|getLocalizedString}
-        </div>
-    {elseif $hasPersonalizedCourses}
-        {block name="loginText"}
-            <div>
-            {include file="findInclude:common/templates/navlist.tpl" navlistItems=$loginLink navListHeading=$loginText subTitleNewline=true}
-            </div>
-        {/block}
+{$tabBodies=array()}
+{foreach $tabs as $key}
+    {if $key=='index'}
+        {capture name="indexTab" assign="tabBody"}
+        {include file="findInclude:modules/courses/templates/index-index.tpl"}
+        {/capture}
     {/if}
-    {/block}
-
-    {block name="courseCatalog"}
-    {if $catalogItems}
-        {include file="findInclude:common/templates/navlist.tpl" navListHeading=$courseCatalogText navlistItems=$catalogItems}
+    {if $key == 'updates'}
+        {capture name="allupdatesTab" assign="tabBody"}
+        {include file="findInclude:modules/courses/templates/index-updates.tpl"}
+        {/capture}
     {/if}
-    {/block}
-{/capture}
-{include file="findInclude:modules/courses/templates/courseTabs.tpl" tabBody=$tabBody}
+    {if $key == 'tasks'}
+        {capture name="alltasksTab" assign="tabBody"}
+        {include file="findInclude:modules/courses/templates/index-tasks.tpl"}
+        {/capture}
+    {/if}
+    {$tabBodies[$key] = $tabBody}
+{/foreach}
+{block name="tabs"}
+<div id="tabscontainer">
+{include file="findInclude:common/templates/tabs.tpl" tabBodies=$tabBodies smallTabs=true}
+</div>
+{/block}
 
 {include file="findInclude:common/templates/footer.tpl"}
