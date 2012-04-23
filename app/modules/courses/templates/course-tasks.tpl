@@ -1,3 +1,5 @@
+{block name="tasksHeader"}{/block}
+{block name="tasksList"}
 {if $tasks}
 <ul class="tabstrip {$tasksTabCount}tabs">
 {foreach $tasksGroupLinks as $index => $groupLink}
@@ -11,3 +13,5 @@
 {else}
 {"NO_TASKS"|getLocalizedString}
 {/if}
+{/block}
+{block name="tasksFooter"}{/block}
