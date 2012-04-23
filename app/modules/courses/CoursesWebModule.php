@@ -402,22 +402,41 @@ class CoursesWebModule extends WebModule {
         return $contents;
     }
 
-    protected function sortUpdatesByDate($updates){
-        if(empty($updates)){
+    public function sortCourseContent($courseContents, $sort) {
+        if (empty($courseContents)) {
             return array();
         }
-        uasort($updates, array($this, 'sortByDate'));
-
-        return $updates;
+        $this->sortType = $sort;
+        uasort($courseContents, array($this, "sortByField"));
+        return $courseContents;
     }
 
-    private function sortByDate($updateA, $updateB){
-        $updateA_time = $updateA['sortDate'] ? $updateA['sortDate']->format('U') : 0;
-        $updateB_time = $updateB['sortDate'] ? $updateB['sortDate']->format('U') : 0;
-        if($updateA_time == $updateB_time){
-            return 0;
+    // sort type for content
+    private function sortByField($contentA, $contentB) {
+        switch ($this->sortType){
+            case 'publishedDate':
+                $contentA_time = $contentA->getPublishedDate() ? $contentA->getPublishedDate()->format('U') : 0;
+                $contentB_time = $contentB->getPublishedDate() ? $contentB->getPublishedDate()->format('U') : 0;
+                if($contentA_time == $contentB_time){
+                    return 0;
+                }
+                return ($contentA_time > $contentB_time) ? -1 : 1;
+            case 'sortDate':
+                $updateA_time = $contentA['sortDate'] ? $contentA['sortDate']->format('U') : 0;
+                $updateB_time = $contentB['sortDate'] ? $contentB['sortDate']->format('U') : 0;
+                if($updateA_time == $updateB_time){
+                    return 0;
+                }
+                return ($updateA_time > $updateB_time) ? -1 : 1;
+            default:
+                $func = 'get' . $this->sortType;
+                if(function_exists($func)){
+                    return strcasecmp($contentA->$func(), $contentB->$func());
+                }else{
+                    throw new KurogoConfigurationException("Function not exist");
+                }
+            break;
         }
-        return ($updateA_time > $updateB_time) ? -1 : 1;
     }
 
     protected function formatCourseDetails(CombinedCourse $course) {
@@ -589,9 +608,6 @@ class CoursesWebModule extends WebModule {
         switch ($tab) 
         {
             case 'index':        
-                /********
-                Index page - Index Tab
-                ********/
                 $Term = $this->assignTerm();
                 $coursesLinks = array();
                 $this->assign('hasPersonalizedCourses', $this->hasPersonalizedCourses);
@@ -631,13 +647,9 @@ class CoursesWebModule extends WebModule {
                     $this->assign('courseCatalogText', $this->getLocalizedString('COURSE_CATALOG_TEXT'));
                     $this->assign('catalogItems', $catalogItems);
                 }
-                //*******
                 break;
         
             case 'updates':
-                /********
-                Index Page - Updates Tab
-                ********/
                 $updatesLinks = array();
                 $courses = $options['courses'];
                 foreach($courses as $course){
@@ -650,18 +662,12 @@ class CoursesWebModule extends WebModule {
                         }
                     }
                 }
-                $updatesLinks = $this->sortUpdatesByDate($updatesLinks);
+                $updatesLinks = $this->sortCourseContent($updatesLinks, 'sortDate');
                 $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 5));
                 $this->assign('updatesLinks', $updatesLinks);
-                //*******
                 break;
             
             case 'tasks':
-                /********
-                Index Page - Tasks Tab
-                ********/
-
-                // TODO Aggregate tasks 
                 $tasks = array();
                 $courses = $options['courses'];
                 foreach($courses as $course){
@@ -671,10 +677,6 @@ class CoursesWebModule extends WebModule {
                         $group = $tasksOptions['group'];
                         $groups = $contentCourse->getTasks($tasksOptions);
                         foreach ($groups as $groupTitle => $items){
-                            $groupItems = array();
-                            foreach ($items as $item) {
-                                $groupItems[] = $this->linkForTask($item, $contentCourse);
-                            }
                             if($group == 'priority'){
                                 $title = $this->getLocalizedString('CONTENT_PRIORITY_TITLE_'.strtoupper($groupTitle));
                             }else{
@@ -682,15 +684,28 @@ class CoursesWebModule extends WebModule {
                             }
                             $task = array(
                                 'title' => $title,
-                                'items' => $groupItems,
+                                'items' => $items,
                             );
 
-                            $tasks[] = $task;
+                            if(isset($tasks[$title])){
+                                $tasks[$title] = array_merge($tasks[$title], $items);
+                            }else{
+                                $tasks[$title] = $items;
+                            }
                         }
                     }
                 }
+                //Sort aggregated content
+                foreach($tasks as $title => $group){
+                    $items = $this->sortCourseContent($group, 'publishedDate');
+                    $tasksLinks = array();
+                    foreach($items as $item){
+                        $tasksLinks[] = $this->linkForTask($item, $contentCourse);
+                    }
+                    $tasks[$title] = $tasksLinks;
+                }
+
                 $this->assign('tasks', $tasks);
-                //*******  
                 break;
             }  
     }
@@ -702,10 +717,6 @@ class CoursesWebModule extends WebModule {
         switch ($tab)
         {
             case 'updates':
-
-                /********
-                Updates Tab
-                ********/
                 $updatesOptions = $this->getOptionsForUpdates($options);
                 $items = $contentCourse->getUpdates($updatesOptions);
                 $updatesLinks = array();
@@ -717,11 +728,6 @@ class CoursesWebModule extends WebModule {
                 break;
                 
             case 'resources':
-
-                /********
-                Resources Tab
-                ********/
-                
                 $resourcesLinks = array();
                 $resourcesOptions = $this->getOptionsForResources($options);
                 $groups = $contentCourse->getResources($resourcesOptions);
@@ -764,12 +770,6 @@ class CoursesWebModule extends WebModule {
                 break;
                 
             case 'tasks':
-
-                /********
-                Tasks Tab
-                ********/
-
-
                 $tasksOptions = $this->getOptionsForTasks($options);
 
                 $tasks = array();
@@ -796,9 +796,6 @@ class CoursesWebModule extends WebModule {
                 break;
 
             case 'info':
-                /********
-                Info Tab
-                ********/
                 $options = $this->getCourseOptions();
 
                 $courseDetails =  $this->formatCourseDetails($course);
@@ -834,10 +831,6 @@ class CoursesWebModule extends WebModule {
                 break;
             
             case 'grades':
-            
-                /********
-                Grades Tab
-                ********/
                 $grades = $contentCourse->getGrades();
                 
                 break;
