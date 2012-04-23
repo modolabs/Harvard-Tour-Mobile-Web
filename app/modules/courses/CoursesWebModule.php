@@ -660,12 +660,15 @@ class CoursesWebModule extends WebModule {
                 Index Page - Tasks Tab
                 ********/
 
+                // TODO Aggregate tasks 
                 $tasks = array();
                 $courses = $options['courses'];
                 foreach($courses as $course){
                     if ($contentCourse = $course->getCourse('content')) {
                         $options['course'] = $contentCourse;
-                        $groups = $contentCourse->getTasks($this->getOptionsForTasks($options));
+                        $tasksOptions = $this->getOptionsForTasks($options);
+                        $group = $tasksOptions['group'];
+                        $groups = $contentCourse->getTasks($tasksOptions);
                         foreach ($groups as $groupTitle => $items){
                             $groupItems = array();
                             foreach ($items as $item) {
