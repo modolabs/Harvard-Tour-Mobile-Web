@@ -5,5 +5,4 @@
 {else}
 {"NO_UPDATES"|getLocalizedString}
 {/if}
-{/block}
 {block name="updatesFooter"}{/block}
