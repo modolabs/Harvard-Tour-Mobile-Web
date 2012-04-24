@@ -1,7 +1,7 @@
 {block name="groupSelector"}
 <ul class="tabstrip {$resourcesTabCount}tabs">
 {foreach $resourcesGroupLinks as $index => $groupLink}
-<li{if $resourcesGroup == $index} class="active"{/if}><a href="{$groupLink.url}">By {$groupLink.title}</a>
+<li{if $resourcesGroup == $index} class="active"{/if}><a href="{$groupLink.url}">By {$groupLink.title}</a></li>
 {/foreach}
 </ul>
 {/block}
