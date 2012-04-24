@@ -10,7 +10,7 @@
   <a href="{$resource.url}">
     {$resource.courseTitle|default:$resource.title}
     <div class="smallprint">
-    {if $resource.img}<img src="{$resource.img}" width="24" height="24" alt="">{/if}
+    {if $resource.img}<img src="{$resource.img}" width="16" height="16" alt="" class="listtype">{/if}
     {$resource.updated}
     </div> 
   </a>

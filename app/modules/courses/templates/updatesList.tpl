@@ -5,7 +5,7 @@
   <a href="{$update.url}">
     {$update.title}
     <div class="smallprint">
-    {if $update.img}<img src="{$update.img}" width="24" height="24" alt="">{/if}
+    {if $update.img}<img src="{$update.img}" width="16" height="16" alt="" class="listtype">{/if}
     {$update.subtitle}
     </div> 
   </a>
