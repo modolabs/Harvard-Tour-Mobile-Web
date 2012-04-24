@@ -10,7 +10,7 @@
 {/block}
 {foreach $tasks as $title => $group}
     {$navListHeading=$title|default:''}
-    {include file="findInclude:common/templates/navlist.tpl" navListHeading=$navListHeading navlistItems=$group subTitleNewline=true}
+    {include file="findInclude:common/templates/navlist.tpl" navListHeading=$navListHeading navlistItems=$group.items subTitleNewline=true}
 {/foreach}
 {else}
 {"NO_TASKS"|getLocalizedString}
