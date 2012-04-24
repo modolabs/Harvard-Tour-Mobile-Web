@@ -800,6 +800,9 @@ class CoursesWebModule extends WebModule {
             case 'info':
                 $options = $this->getCourseOptions();
 
+		        //load tab page detail configs
+		        $this->detailFields = $this->getModuleSections($tab . '-detail');
+                
                 $courseDetails =  $this->formatCourseDetails($course);
                 $this->assign('courseDetails', $courseDetails);
 
@@ -1030,6 +1033,9 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index');
                 }
 
+                $courseDetails =  $this->formatCourseDetails($course);
+                $this->assign('courseDetails', $courseDetails);
+                
                 // Bookmark
                 if ($this->getOptionalModuleVar('BOOKMARKS_ENABLED', 1)) {
                     $cookieParams = array(
