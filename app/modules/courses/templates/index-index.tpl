@@ -7,6 +7,12 @@
     </div>
 {elseif $hasPersonalizedCourses}
     {block name="loginText"}
+        {block name="welcomeInfo"}
+        <div class="nonfocal">
+            <h2>{$welcomeTitle}</h2>
+            <p>{$welcomDesription}</p>
+        </div>
+        {/block}
         <div>
         {include file="findInclude:common/templates/navlist.tpl" navlistItems=$loginLink navListHeading=$loginText subTitleNewline=true}
         </div>
