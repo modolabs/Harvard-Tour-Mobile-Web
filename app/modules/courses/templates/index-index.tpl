@@ -6,13 +6,13 @@
     {"NO_COURSES"|getLocalizedString}
     </div>
 {elseif $hasPersonalizedCourses}
+    {block name="welcomeInfo"}
+    <div class="nonfocal">
+        <h2>{$moduleStrings.COURSES_WELCOME_TITLE}</h2>
+        <p>{$moduleStrings.COURSES_WELCOME_DESCRIPTION}</p>
+    </div>
+    {/block}
     {block name="loginText"}
-        {block name="welcomeInfo"}
-        <div class="nonfocal">
-            <h2>{$welcomeTitle}</h2>
-            <p>{$welcomDesription}</p>
-        </div>
-        {/block}
         <div>
         {include file="findInclude:common/templates/navlist.tpl" navlistItems=$loginLink navListHeading=$loginText subTitleNewline=true}
         </div>
