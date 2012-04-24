@@ -625,8 +625,6 @@ class CoursesWebModule extends WebModule {
                         'title' => $this->getLocalizedString('SIGN_IN_SITE', Kurogo::getSiteString('SITE_NAME')),
                         'url'   => $this->buildURLForModule('login','', $this->getArrayForRequest()),
                     );
-                    $this->assign('welcomeTitle', $this->getOptionalModuleVar('COURSES_WELCOME_TITLE','', 'strings'));
-                    $this->assign('welcomDesription', $this->getOptionalModuleVar('COURSES_WELCOME_DESCRIPTION','', 'strings'));
                     $this->assign('loginLink', array($loginLink));
                     $this->assign('loginText', $this->getLocalizedString('NOT_LOGGED_IN'));
                 }
