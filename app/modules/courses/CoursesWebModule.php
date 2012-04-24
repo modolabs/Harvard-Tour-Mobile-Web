@@ -690,24 +690,33 @@ class CoursesWebModule extends WebModule {
                             );
 
                             if(isset($tasks[$title])){
-                                $tasks[$title] = array_merge($tasks[$title], $items);
+                                $tasks[$title]['items'] = array_merge($tasks[$title]['items'], $task['items']);
                             }else{
-                                $tasks[$title] = $items;
+                                $tasks[$title]['items'] = $task['items'];
                             }
                         }
                     }
                 }
                 //Sort aggregated content
+                $sortedTasks = array();
                 foreach($tasks as $title => $group){
-                    $items = $this->sortCourseContent($group, 'publishedDate');
+                    $items = $this->sortCourseContent($group['items'], 'publishedDate');
                     $tasksLinks = array();
                     foreach($items as $item){
                         $tasksLinks[] = $this->linkForTask($item, $contentCourse);
                     }
-                    $tasks[$title] = $tasksLinks;
+                    $task = array(
+                        'title' => $title,
+                        'items' => $tasksLinks,
+                    );
+                    if(isset($sortedTasks[$title])){
+                        $sortedTasks[$title] = array_merge($tasks[$title], $task);
+                    }else{
+                        $sortedTasks[$title] = $task;
+                    }
                 }
 
-                $this->assign('tasks', $tasks);
+                $this->assign('tasks', $sortedTasks);
                 break;
             }  
     }
