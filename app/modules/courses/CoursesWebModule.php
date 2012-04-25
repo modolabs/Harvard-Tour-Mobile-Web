@@ -701,7 +701,7 @@ class CoursesWebModule extends WebModule {
                     $items = $this->sortCourseContent($group['items'], 'publishedDate');
                     $tasksLinks = array();
                     foreach($items as $item){
-                        $tasksLinks[] = $this->linkForTask($item, $contentCourse);
+                        $tasksLinks[] = $this->linkForTask($item, $item->getContentCourse());
                     }
                     $task = array(
                         'title' => $title,

@@ -6,6 +6,7 @@ class TaskCourseContent extends CalendarCourseContent
     protected $dueDate;
     protected $finished;
     protected $links = array();
+    protected $contentCourse = null;
     
     public function setDueDate(DateTime $date) {
         $this->dueDate = $date;
@@ -29,5 +30,13 @@ class TaskCourseContent extends CalendarCourseContent
 
     public function addLink($title, $url) {
         $this->links[] = array('title'=>$title, 'url'=>$url);
+    }
+    
+    public function setContentCourse(CourseContentCourse $contentCourse) {
+        $this->contentCourse = $contentCourse;
+    }
+    
+    public function getContentCourse() {
+        return $this->contentCourse;
     }
 }
