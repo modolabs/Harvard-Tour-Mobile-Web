@@ -6,9 +6,25 @@ class LocationsWebModule extends WebModule {
     
     protected $feeds = array();
     protected $timezone;
+    protected $feedGroups = null;
     
-    public function getLocationFeed($id) {
-        if (!isset($this->feeds[$id])) {
+    //get feed groups
+    public function getFeedGroups() {
+        return $this->getModuleSections('feedgroups');
+    }
+    
+    public function loadFeedData($groupID) {
+    	$configName = "feeds-$groupID";
+    	$this->feeds = $this->getModuleSections($configName);
+    }
+    
+    public function getLocationFeed($groupID, $id) {
+        if (!isset($this->feedGroups[$groupID])) {
+            throw new KurogoDataException($this->getLocalizedString('ERROR_NO_LOCATION_FEED', $id));
+        }
+        //load feeds by group
+        $this->loadFeedData($groupID);
+    	if (!isset($this->feeds[$id])) {
             throw new KurogoDataException($this->getLocalizedString('ERROR_NO_LOCATION_FEED', $id));
         }
         
@@ -92,9 +108,9 @@ class LocationsWebModule extends WebModule {
         return $urlForType;
     }
     
-    public function linkForLocation($id) {
+    public function linkForLocation($groupID, $id) {
         $breadCrumbs = $this->page != 'pane';
-        $feed = $this->getLocationFeed($id);
+        $feed = $this->getLocationFeed($groupID, $id);
 
         $status = "";
         if ($subtitle = $feed->getSubtitle()) {
@@ -127,7 +143,8 @@ class LocationsWebModule extends WebModule {
         }
                 
         $options = array(
-            'id' => $id
+            'id' => $id,
+        	'groupID'=>$groupID
         );
         
         return array(
@@ -149,6 +166,10 @@ class LocationsWebModule extends WebModule {
         if (isset($data['section'])) {
             $options['section'] = $data['section'];
         }
+
+        if (isset($data['groupID'])) {
+            $options['groupID'] = $data['groupID'];
+        }
         
         $class = '';
         $url = $this->buildBreadcrumbURL('schedule', $options, true);
@@ -167,7 +188,8 @@ class LocationsWebModule extends WebModule {
     }
     
     protected function initialize() {
-        $this->feeds = $this->loadFeedData();
+//        $this->feeds = $this->loadFeedData();
+        $this->feedGroups = $this->getFeedGroups();
         $this->timezone = Kurogo::siteTimezone();
     } 
     
@@ -178,21 +200,37 @@ class LocationsWebModule extends WebModule {
             case 'index':
             case 'pane':
                 //pane page makes sure that open items are always at the top closed at bottom()
-                $locations = array('open'=>array(), 'closed'=>array());
-                
-                foreach ($this->feeds as $id => $feedData) {
-                    $location = $this->linkForLocation($id);
-                    $locations[$location['listclass']][] = $location;
+                $showOpenAtTop = $this->getOptionalModuleVar('SHOW_OPEN_AT_TOP', true);
+				$locations = array();
+                //if $showOpenAtTop is 1, defined a zero key array at first of locations array.
+				if($showOpenAtTop) {
+	                $locations[0] = array();
                 }
                 
-                $locations = array_merge($locations['open'], $locations['closed']);
+                foreach($this->feedGroups as $groupID=>$this->feedGroup) {
+                	$this->loadFeedData($groupID);
+	                foreach ($this->feeds as $id => $feedData) {
+	                    $location = $this->linkForLocation($groupID, $id);
+	                    //if $showOpenAtTop is 1 then put open location in first zero key array
+	                    if($showOpenAtTop) {
+	                    	if($location['listclass'] == 'open') {
+	                    		$locations[0][] = $location;
+	                    	}else{
+	                    		$locations[$this->feedGroup['title']][] = $location;
+	                    	}
+	                    }else{
+		                    $locations[$this->feedGroup['title']][] = $location;
+	                    }
+	                }
+                }
 
                 $this->assign('description', $this->getModuleVar('description','strings'));
-                $this->assign('locations', $locations);
+                $this->assign('groupedLocations', $locations);
                 
                 break;
             case 'detail':
                 $id = $this->getArg('id');
+                $groupID = $this->getArg('groupID');
                 // specified date for events
                 $current = $this->getArg('time', time(), FILTER_VALIDATE_INT);
                 //$date = $this->getArg('date', date('Y-m-d', time()));
@@ -200,7 +238,7 @@ class LocationsWebModule extends WebModule {
                
                 $next    = strtotime("+1 day", $current);
                 $prev    = strtotime("-1 day", $current);
-                $feed = $this->getLocationFeed($id);
+                $feed = $this->getLocationFeed($groupID, $id);
                 
                 // get title, subtitle and maplocation
                 $title = $feed->getTitle();
@@ -221,15 +259,16 @@ class LocationsWebModule extends WebModule {
                 $events = array();
                 // format events data
                 $options = array(
-                    'section' => $id
+                    'section' => $id,
+                	'groupID' => $groupID
                 );
                 foreach($items as $item) {
                     $event = $this->linkForSechedule($item, $options);
                     $events[] = $event;
                 }
                 
-                $nextURL = $this->buildBreadcrumbURL('detail', array('id' => $id, 'time' => $next), false);
-                $prevURL = $this->buildBreadcrumbURL('detail', array('id' => $id, 'time' => $prev), false);
+                $nextURL = $this->buildBreadcrumbURL('detail', array('id' => $id, 'groupID' => $groupID, 'time' => $next), false);
+                $prevURL = $this->buildBreadcrumbURL('detail', array('id' => $id, 'groupID' => $groupID, 'time' => $prev), false);
                 
                 $dayRange = new DayRange(time());
                 
@@ -253,8 +292,9 @@ class LocationsWebModule extends WebModule {
             case 'schedule':
                 $section = $this->getArg('section');
                 $id = $this->getArg('id');
+                $groupID = $this->getArg('groupID');
                 
-                $feed = $this->getLocationFeed($section);
+                $feed = $this->getLocationFeed($groupID, $section);
                 $time = $this->getArg('time', time(), FILTER_VALIDATE_INT);
                 
                 if ($event = $feed->getItem($id, $time)) {

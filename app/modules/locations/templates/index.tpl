@@ -5,7 +5,9 @@
     {$description|escape}
   </p>
 {/if}
-
-{include file="findInclude:common/templates/navlist.tpl" navlistItems=$locations navlistID="locations" subTitleNewline=true}
-
+{foreach $groupedLocations as $group => $locations}
+	{if $locations}
+		{include file="findInclude:common/templates/navlist.tpl" navListHeading=$group navlistItems=$locations navlistID="locations" subTitleNewline=true}
+	{/if}
+{/foreach}
 {include file="findInclude:common/templates/footer.tpl"}
