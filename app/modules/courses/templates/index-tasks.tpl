@@ -9,8 +9,8 @@
 </ul>
 {/block}
 {foreach $tasks as $title => $group}
-    {$navListHeading=$title|default:''}
-    {include file="findInclude:common/templates/navlist.tpl" navListHeading=$navListHeading navlistItems=$group.items subTitleNewline=true}
+    {$tasksListHeading=$title|default:''}
+    {include file="findInclude:modules/courses/templates/tasksList.tpl" tasksListHeading=$tasksListHeading tasks=$group.items}
 {/foreach}
 {else}
 {"NO_TASKS"|getLocalizedString}
