@@ -2,6 +2,7 @@
 
 class CalendarCourseContent extends CourseContent
 {
+    protected $contentType = 'calendar';
     protected $date;
     
     public function setDate(DateTime $date) {

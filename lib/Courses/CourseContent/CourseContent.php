@@ -5,6 +5,7 @@ abstract class CourseContent implements KurogoObject {
     protected $id;
     protected $courseID;
     protected $contentRetriever;
+    protected $contentCourse = null;
     protected $contentType;
     protected $title;
     protected $description;
@@ -55,6 +56,14 @@ abstract class CourseContent implements KurogoObject {
     
     public function getContentRetriever() {
         return $this->contentRetriever;
+    }
+    
+    public function setContentCourse(CourseContentCourse $contentCourse) {
+        $this->contentCourse = $contentCourse;
+    }
+    
+    public function getContentCourse() {
+        return $this->contentCourse;
     }
     
     public function setContentType($type) {
