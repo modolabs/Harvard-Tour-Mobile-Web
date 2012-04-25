@@ -39,7 +39,8 @@ class CoursesWebModule extends WebModule {
 
     public function linkForTask($task, CourseContentCourse $course, $includeCourseName=false) {
     	$link = array(
-            'title' =>$includeCourseName ? $course->getTitle() : $task->getTitle()
+            'title' =>$includeCourseName ? $course->getTitle() : $task->getTitle(),
+            'img'   => "/modules/courses/images/content_" . $task->getContentType() . $this->imageExt
         );
         
         $subtitle = array();
