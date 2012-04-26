@@ -67,7 +67,7 @@ abstract class CourseContent implements KurogoObject {
         if(!$this->contentCourse){
             if($retriver = $this->getContentRetriever()){
                 if($course = $retriver->getCourseById($this->courseID)){
-                    $this->contentCourse = $course->getContent('course');
+                    $this->contentCourse = $course;
                 }
             }
         }
