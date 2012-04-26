@@ -50,9 +50,11 @@ class CoursesWebModule extends WebModule {
 
         if($task->getPublishedDate()){
             if($task->getAuthor()){
-                $subtitle[] = 'Updated '. $this->elapsedTime($task->getPublishedDate()->format('U')) .' by '.$task->getAuthor();
+                //$subtitle[] = 'Updated '. $this->elapsedTime($task->getPublishedDate()->format('U')) .' by '.$task->getAuthor();
+                $subtitle[] = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $task->getAuthor(), $this->elapsedTime($task->getPublishedDate()->format('U')));
             }else{
-                $subtitle[] = 'Updated '. $this->elapsedTime($task->getPublishedDate()->format('U'));
+                //$subtitle[] = 'Updated '. $this->elapsedTime($task->getPublishedDate()->format('U'));
+                $subtitle[] = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($task->getPublishedDate()->format('U')));
             }
         } else {
             $subtitle[] = $task->getSubTitle();
@@ -80,9 +82,11 @@ class CoursesWebModule extends WebModule {
 
         if($resource->getPublishedDate()){
 	    	if($resource->getAuthor()){
-	    		$updated = 'Updated '. $this->elapsedTime($resource->getPublishedDate()->format('U')) .' by '.$resource->getAuthor();
+	    	    $updated = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $resource->getAuthor(), $this->elapsedTime($resource->getPublishedDate()->format('U')));
+	    		//$updated = 'Updated '. $this->elapsedTime($resource->getPublishedDate()->format('U')) .' by '.$resource->getAuthor();
 	    	}else{
-	    		$updated = 'Updated '. $this->elapsedTime($resource->getPublishedDate()->format('U'));
+	    		//$updated = 'Updated '. $this->elapsedTime($resource->getPublishedDate()->format('U'));
+	    		$updated = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($resource->getPublishedDate()->format('U')));
 	    	}
 	    	$link['subtitle'] = $link['updated'] = $updated;
 	    } else {
@@ -126,9 +130,12 @@ class CoursesWebModule extends WebModule {
         }
         
         if ($content->getPublishedDate()){
-            $published = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U'));
+            $published = $this->elapsedTime($content->getPublishedDate()->format('U'));
             if ($content->getAuthor()) {
-                $published .= ' by '.$content->getAuthor();
+                $published = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $content->getAuthor(), $published);
+                //$published .= ' by '.$content->getAuthor();
+            } else {
+                $published = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $published);
             }
             $subtitle[] = $published;
         }
@@ -171,7 +178,10 @@ class CoursesWebModule extends WebModule {
                 if ($publishedDate = $lastUpdateContent->getPublishedDate()) {
                     $published = $this->elapsedTime($publishedDate->format('U'));
                     if ($lastUpdateContent->getAuthor()) {
-                        $published = '<span class="author">'. $lastUpdateContent->getAuthor() .', ' . $published . "</span>";
+                        //$published = '<span class="author">'. $lastUpdateContent->getAuthor() .', ' . $published . "</span>";
+                        $published = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $lastUpdateContent->getAuthor(), $published);
+                    } else {
+                        $published = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $published);
                     }
                     $subtitle[] = $published;
                 }
