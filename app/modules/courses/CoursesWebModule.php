@@ -437,7 +437,7 @@ class CoursesWebModule extends WebModule {
                 return ($updateA_time > $updateB_time) ? -1 : 1;
             default:
                 $func = 'get' . $this->sortType;
-                if(function_exists($func)){
+                if(method_exists($contentA, $func)){
                     return strcasecmp($contentA->$func(), $contentB->$func());
                 }else{
                     throw new KurogoConfigurationException("Function not exist");
@@ -705,7 +705,7 @@ class CoursesWebModule extends WebModule {
                 //Sort aggregated content
                 $sortedTasks = array();
                 foreach($tasks as $title => $group){
-                    $items = $this->sortCourseContent($group['items'], 'publishedDate');
+                    $items = $this->sortCourseContent($group['items'], 'DateTime');
                     $tasksLinks = array();
                     foreach($items as $item){
                         $tasksLinks[] = $this->linkForTask($item, $item->getContentCourse());
