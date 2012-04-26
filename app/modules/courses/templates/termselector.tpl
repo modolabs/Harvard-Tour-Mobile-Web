@@ -10,7 +10,7 @@
   </select>
 {/capture}
 
-{if $loggedIn|default: false}
+{if $session_loggedIn}
     {if count($sections) > 1}
         <div class="header">
           <div id="category-switcher" class="category-mode">
