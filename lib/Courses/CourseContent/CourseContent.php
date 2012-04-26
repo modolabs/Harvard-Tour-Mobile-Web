@@ -63,6 +63,14 @@ abstract class CourseContent implements KurogoObject {
     }
     
     public function getContentCourse() {
+        //Lazy load the contentCourse
+        if(!$this->contentCourse){
+            if($retriver = $this->getContentRetriever()){
+                if($course = $retriver->getCourseById($this->courseID)){
+                    $this->contentCourse = $course->getContent('course');
+                }
+            }
+        }
         return $this->contentCourse;
     }
     
