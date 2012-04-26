@@ -30,4 +30,12 @@ class TaskCourseContent extends CalendarCourseContent
     public function addLink($title, $url) {
         $this->links[] = array('title'=>$title, 'url'=>$url);
     }
+
+    public function sortBy(){
+        $sortBy = parent::sortBy();
+        if($this->getDueDate()){
+            $sortBy = $this->getDueDate()->format('U');
+        }
+        return $sortBy;
+    }
 }

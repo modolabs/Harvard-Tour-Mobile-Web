@@ -20,4 +20,12 @@ class CalendarCourseContent extends CourseContent
         
         return 0;
     }
+
+    public function sortBy(){
+        $sortBy = parent::sortBy();
+        if($this->getDate()){
+            $sortBy = $this->getDueDate()->format('U');
+        }
+        return $sortBy;
+    }
 }

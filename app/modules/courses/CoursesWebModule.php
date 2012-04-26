@@ -419,7 +419,7 @@ class CoursesWebModule extends WebModule {
         return $contents;
     }
 
-    public function sortCourseContent($courseContents, $sort) {
+    public function sortCourseContent($courseContents, $sort=null) {
         if (empty($courseContents)) {
             return array();
         }
@@ -431,13 +431,6 @@ class CoursesWebModule extends WebModule {
     // sort type for content
     private function sortByField($contentA, $contentB) {
         switch ($this->sortType){
-            case 'publishedDate':
-                $contentA_time = $contentA->getPublishedDate() ? $contentA->getPublishedDate()->format('U') : 0;
-                $contentB_time = $contentB->getPublishedDate() ? $contentB->getPublishedDate()->format('U') : 0;
-                if($contentA_time == $contentB_time){
-                    return 0;
-                }
-                return ($contentA_time > $contentB_time) ? -1 : 1;
             case 'sortDate':
                 $updateA_time = $contentA['sortDate'] ? $contentA['sortDate']->format('U') : 0;
                 $updateB_time = $contentB['sortDate'] ? $contentB['sortDate']->format('U') : 0;
@@ -446,12 +439,10 @@ class CoursesWebModule extends WebModule {
                 }
                 return ($updateA_time > $updateB_time) ? -1 : 1;
             default:
-                $func = 'get' . $this->sortType;
-                if(method_exists($contentA, $func)){
-                    return strcasecmp($contentA->$func(), $contentB->$func());
-                }else{
-                    throw new KurogoConfigurationException("Function not exist");
+                if($contentA->sortBy() == $contentB->sortBy()){
+                    return 0;
                 }
+                return ($contentA->sortBy() > $contentB->sortBy()) ? -1 : 1;
             break;
         }
     }
@@ -715,7 +706,7 @@ class CoursesWebModule extends WebModule {
                 //Sort aggregated content
                 $sortedTasks = array();
                 foreach($tasks as $title => $group){
-                    $items = $this->sortCourseContent($group['items'], 'DateTime');
+                    $items = $this->sortCourseContent($group['items']);
                     $tasksLinks = array();
                     foreach($items as $item){
                         $tasksLinks[] = $this->linkForTask($item, $item->getContentCourse());

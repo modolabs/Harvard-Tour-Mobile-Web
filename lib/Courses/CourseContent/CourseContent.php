@@ -181,4 +181,8 @@ abstract class CourseContent implements KurogoObject {
     public function setDownloadMode($downloadMode) {
         $this->downloadMode = $downloadMode;
     }
+
+    public function sortBy(){
+        return $this->getPublishedDate() ? $this->getPublishedDate()->format('U') : 0;
+    }
 }
