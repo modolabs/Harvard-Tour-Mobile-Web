@@ -24,7 +24,7 @@ class CalendarCourseContent extends CourseContent
     public function sortBy(){
         $sortBy = parent::sortBy();
         if($this->getDate()){
-            $sortBy = $this->getDueDate()->format('U');
+            $sortBy = $this->getDate()->format('U');
         }
         return $sortBy;
     }
