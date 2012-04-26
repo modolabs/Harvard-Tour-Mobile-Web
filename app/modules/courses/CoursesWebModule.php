@@ -332,7 +332,6 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function initialize() {
-        $this->assign('loggedIn', $this->isLoggedIn());
         $this->feeds = $this->loadFeedData();
         $this->controller = CoursesDataModel::factory($this->defaultModel, $this->feeds);
         $this->hasPersonalizedCourses =  $this->controller->canRetrieve('registration') || $this->controller->canRetrieve('content');
