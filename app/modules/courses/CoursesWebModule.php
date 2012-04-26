@@ -931,7 +931,7 @@ class CoursesWebModule extends WebModule {
                 }
 
                 if (!$task = $contentCourse->getTaskById($taskID)) {
-                    throw new KurogoDataException($this->getLocalizedString('ERROR_TASK_NOT_FOUND'));
+                    throw new KurogoDataException($this->getLocalizedString('ERROR_CONTENT_NOT_FOUND'));
                 }
                                 
                 $this->assign('taskTitle', $task->getTitle());
