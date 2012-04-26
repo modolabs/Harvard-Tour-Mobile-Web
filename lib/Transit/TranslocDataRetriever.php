@@ -34,7 +34,7 @@ class TranslocDataRetriever extends URLDataRetriever
             case 'segments':
             case 'stops':
                 $timeout = Kurogo::getOptionalSiteVar('TRANSLOC_ROUTE_REQUEST_TIMEOUT', 5);
-                $cacheLifetime = Kurogo::getOptionalSiteVar('TRANSLOC_ROUTE_CACHE_TIMEOUT', 3600);
+                $cacheLifetime = Kurogo::getOptionalSiteVar('TRANSLOC_ROUTE_CACHE_TIMEOUT', 300);
                 break;
       
             case 'arrival-estimates':

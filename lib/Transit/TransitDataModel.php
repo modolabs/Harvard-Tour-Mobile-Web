@@ -111,7 +111,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     
     protected function viewRoute($routeID) {
         $passedWhitelist = count($this->routeWhitelist) === 0 || in_array($routeID, $this->routeWhitelist);
-        $passedBlacklist = count($this->routeWhitelist) === 0 || !in_array($routeID, $this->routeBlacklist);
+        $passedBlacklist = count($this->routeBlacklist) === 0 || !in_array($routeID, $this->routeBlacklist);
         return $passedWhitelist && $passedBlacklist;
     }
     
