@@ -89,4 +89,14 @@ class CombinedCourse implements CourseInterface
         }
         return NULL;
     }
+    
+    public function getArea($type=null) {
+        if ($type==null) {
+            $type = key($this->courses);
+        }
+
+        if ($course = $this->getCourse($type)) {
+            return $course->getArea();
+        }        
+    }
 }
