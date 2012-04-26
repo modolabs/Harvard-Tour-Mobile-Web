@@ -8,7 +8,7 @@
 </ul>
 {foreach $tasks as $group}
     {$navListHeading=$group.title|default:''}
-    {include file="findInclude:common/templates/navlist.tpl" navListHeading=$navListHeading navlistItems=$group.items subTitleNewline=true}
+    {include file="findInclude:modules/courses/templates/tasksList.tpl" tasksListHeading=$navListHeading tasks=$group.items}
 {/foreach}
 {else}
 {"NO_TASKS"|getLocalizedString}
