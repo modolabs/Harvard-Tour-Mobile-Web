@@ -387,15 +387,21 @@ class CoursesWebModule extends WebModule {
         $contents = array_slice($contents, $start, $limit);
 
         if($previousURL) {
+            $title = $this->getLocalizedString('UPDATE_PREV', $limit);
             $link = array(
-                'title' => "Previous",
+                'title' => $title,
                 'url' => $previousURL,
             );
             array_unshift($contents, $link);
         }
         if($nextURL) {
+            $num = $totalItems - $start - $limit;
+            if($num > $limit) {
+                $num = $limit;
+            }
+            $title = $this->getLocalizedString('UPDATE_NEXT', $num);
             $link = array(
-                'title' => "Next",
+                'title' => $title,
                 'url' => $nextURL,
             );
             array_push($contents, $link);
