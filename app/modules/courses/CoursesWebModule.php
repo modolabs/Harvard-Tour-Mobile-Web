@@ -477,7 +477,7 @@ class CoursesWebModule extends WebModule {
         if (count($info['attributes']) == 1) {
             $values = (array)$course->getField($info['attributes'][0], $courseType);
             if (count($values)) {
-                $section[$key] = $this->formatDetail($this->formatValues($values, $info), $info, $course);
+                $section[$key] = $this->formatInfoDetail($this->formatValues($values, $info), $info, $course);
             }      
         } else {
             $valueGroups = array();
@@ -493,26 +493,30 @@ class CoursesWebModule extends WebModule {
             }
           
             foreach ($valueGroups as $valueGroup) {
-                $section[$key] = $this->formatDetail($valueGroup, $info, $course);
+                $section[$key] = $this->formatInfoDetail($valueGroup, $info, $course);
             }
         }
         
         return $section;
     }
     
-    protected function formatDetail($values, $info, CombinedCourse $course) {
-        if (isset($info['format'])) {
-            $value = vsprintf($this->replaceFormat($info['format']), $values);
-        } else {
-            $delimiter = isset($info['delimiter']) ? $info['delimiter'] : ' ';
-            $value = implode($delimiter, $values);
-        }
-    
-        $detail = array(
-            'label' => isset($info['label']) ? $info['label'] : '',
-            'title' => $value
-        );
-    
+    protected function formatInfoDetail($values, $info, CombinedCourse $course) {
+    	if(isset($values[0]) && is_object($values[0])) {
+    		$detail = array();
+    	}else{
+	    	if (isset($info['format'])) {
+	            $value = vsprintf($this->replaceFormat($info['format']), $values);
+	        } else {
+	            $delimiter = isset($info['delimiter']) ? $info['delimiter'] : ' ';
+	            $value = implode($delimiter, $values);
+	        }
+	    
+	        $detail = array(
+	            'label' => isset($info['label']) ? $info['label'] : '',
+	            'title' => $value
+	        );
+    	}
+    	
         switch(isset($info['type']) ? $info['type'] : 'text') 
         {
             case 'email':
@@ -533,12 +537,15 @@ class CoursesWebModule extends WebModule {
  
             // compatibility
             case 'map':
+            	$detail['label'] = isset($info['label']) ? $info['label'] : '';
+            	$value = $values[0]->getTitle().' '.$values[0]->getLocation();
+            	$detail['subtitle'] = $values[0]->getTime();
                 $info['module'] = 'map';
                 break;
         }
 
         if (isset($info['module'])) {
-            $detail = array_merge($detail, Kurogo::moduleLinkForValue($info['module'], $value, $this, $person));
+            $detail = array_merge($detail, Kurogo::moduleLinkForValue($info['module'], $value, $this, $course));
         }
         
         if (isset($info['urlfunc'])) {
@@ -818,7 +825,6 @@ class CoursesWebModule extends WebModule {
 		        $this->detailFields = $this->getModuleSections($tab . '-detail');
                 
                 $courseDetails =  $this->formatCourseDetails($course);
-                $this->assign('courseDetails', $courseDetails);
 
                 $instructorList = array();
                 $instructors = $course->getInstructors();
@@ -833,7 +839,8 @@ class CoursesWebModule extends WebModule {
                     }
                     $instructorList[] = $link;
                 }
-                $this->assign('instructors',$instructorList);
+                $courseDetails['Instructor(s)'] = $instructorList;
+				$this->assign('courseDetails', $courseDetails);
 
                 $links = array();
                 if ($registrationCourse = $course->getCourse('registration')) {
@@ -852,6 +859,37 @@ class CoursesWebModule extends WebModule {
             case 'grades':
                 $grades = $contentCourse->getGrades();
                 
+                break;
+        }
+    }
+    
+    protected function initializeForInfoTab($tab, $options) {
+    	$course = $options['course'];
+        switch ($tab)
+        {
+            case 'index':
+		        //load tab page detail configs
+		        $this->detailFields = $this->getModuleSections('info-detail');
+		        $course->setAttribute('times', 'catalog', $course);
+                $courseDetails =  $this->formatCourseDetails($course);
+                $this->assign('courseDetails', $courseDetails);
+                break;
+                
+            case 'staff':
+                $instructorList = array();
+                $instructors = $course->getInstructors();
+                foreach ($instructors as $instructor){
+                    $value = $instructor->getFullName();
+                    $link = Kurogo::moduleLinkForValue('people', $value, $this, $instructor);
+                    $link['class'] = 'people';
+                    if(!$link){
+                        $link = array(
+                                'title' => $value,
+                        );
+                    }
+                    $instructorList[] = $link;
+                }
+                $this->assign('instructors',$instructorList);
                 break;
         }
     }
@@ -1042,27 +1080,39 @@ class CoursesWebModule extends WebModule {
                 break;
                 
 
-            case 'info': // CATALOG
+            case 'info':
+            	$area = $this->getArg('area');
                 if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
                 }
-
-                $courseDetails =  $this->formatCourseDetails($course);
-                $this->assign('courseDetails', $courseDetails);
                 
                 // Bookmark
                 if ($this->getOptionalModuleVar('BOOKMARKS_ENABLED', 1)) {
                     $cookieParams = array(
-                        'title' => $course->getTitle(),
+                    	'title' => $course->getTitle(),
+                        'id' => $course->getID(),
                         'term'  => rawurlencode($this->selectedTerm),
-                        'id'    => rawurlencode($course->getID())
+                        'area'    => rawurlencode($area)
                     );
 
                     $cookieID = http_build_query($cookieParams);
                     $this->generateBookmarkOptions($cookieID);
                 }
                 
-                break;
+                $options = array(
+                    'course'=> $course
+                );
+                
+                $tabsConfig = $this->getModuleSections('infotabs');
+                $tabs = array();
+                foreach($tabsConfig as $tab => $tabData){
+                    $tabs[] = $tab;
+                    $this->initializeForInfoTab($tab, $options);
+                }
+
+                $this->enableTabs($tabs);
+                $this->assign('tabs',$tabs);
+            	break;
                 
             case 'resourceSeeAll':
                 KurogoDebug::debug($this, true);
