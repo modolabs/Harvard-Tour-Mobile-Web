@@ -998,11 +998,11 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                                 
                                 /*
                                 // Debugging arrival time calculations
-                                if ($oldArrivalTime) {
-                                    error_log('Setting stop time to '.strftime("%H:%M:%S %Y/%m/%d", $arrivalTime).' for '.$this->stops[$stopID]->getName());
-                                } else {
-                                    error_log('Replacing stop time '.strftime("%H:%M:%S %Y/%m/%d", $oldArrivalTime).' with '.strftime("%H:%M:%S %Y/%m/%d", $arrivalTime)." (".strftime("%H:%M:%S %Y/%m/%d", $time).') for stop '.$this->stops[$stopID]['name']);
-                                }
+                                $offset = $arrivalTime - $time;
+                                $mins = floor($offset / 60);
+                                $secs = $offset - ($mins * 60);
+                                $prev = $oldArrivalTime ? strftime("%H:%M:%S", $oldArrivalTime) : 'not set ';
+                                error_log('Arrival time for stop '.str_pad($stopInfo['stopID'], 6).' is in '.str_pad($mins, 3, ' ', STR_PAD_LEFT).'m '.str_pad($secs, 2, ' ', STR_PAD_LEFT).'s (now '.strftime("%H:%M:%S", $arrivalTime).' / was '.$prev.') '.$this->stops[$stopInfo['stopID']]->getName());
                                 */
                             }
                         }

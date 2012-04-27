@@ -144,393 +144,393 @@ class TransitWebModule extends WebModule {
         $this->assign('refreshURL', $this->buildBreadcrumbURL($this->page, $args, false));
       
         switch ($this->page) {
-          case 'pane':
-              $routeConfigs = $view->getRoutes();
-              
-              $routes = array();
-              foreach ($routeConfigs as $routeID => $routeConfig) {
-                  if ($routeConfig['running']) {
-                      $routes[] = array(
-                          'title' => $routeConfig['name'],
-                          'subtitle' => $routeConfig['description'],
-                          'url'   => $this->timesURL($routeID, null, false, true, true),
-                      );
-                  }
-              }
-              uasort($routes, array(get_class($this), 'routeSort'));
-              
-              $this->assign('routes', $routes);
-              break;
-          
-          case 'index':
-              $indexConfig = $this->loadPageConfigFile('index', 'indexConfig');
-              $tabs = array();
-              
-              //
-              // Running and Offline Panes
-              //
-              $routeConfigs = $view->getRoutes();
-              $runningRoutes = array_fill_keys(array_keys($indexConfig['agencies']), false);
-              $offlineRoutes = array_fill_keys(array_keys($indexConfig['agencies']), false);
-      
-              foreach ($routeConfigs as $routeID => $routeConfig) {
-                  $agencyID = $routeConfig['agency'];
-                  $entry = array(
-                      'title' => $routeConfig['name'],
-                      'url'   => $this->timesURL($routeID),
-                  );
-                  
-                  if ($routeConfig['running']) {
-                      if (!isset($runningRoutes[$agencyID]) || !$runningRoutes[$agencyID]) {
-                          $heading = isset($indexConfig['agencies'][$agencyID]) ? 
-                              $indexConfig['agencies'][$agencyID] : $agencyID;
-                      
-                          $runningRoutes[$agencyID] = array(
-                              'heading' => $heading,
-                              'items' => array(),
-                          );
-                      }
-                      $runningRoutes[$agencyID]['items'][$routeID] = $entry;
-                  } else {
-                      if (!isset($offlineRoutes[$agencyID]) || !$offlineRoutes[$agencyID]) {
-                          $heading = isset($indexConfig['agencies'][$agencyID]) ? 
-                              $indexConfig['agencies'][$agencyID] : $agencyID;
-                      
-                          $offlineRoutes[$agencyID] = array(
-                              'heading' => $heading,
-                              'items' => array(),
-                          );
-                      }
-                      $offlineRoutes[$agencyID]['items'][$routeID] = $entry;
-                  }
-              }
-              
-              // Remove empty sections
-              $runningRoutes = array_filter($runningRoutes);
-              $offlineRoutes = array_filter($offlineRoutes);
-      
-              // Sort routes
-              foreach ($runningRoutes as $agencyID => $section) {
-                  uasort($runningRoutes[$agencyID]['items'], array(get_class($this), 'routeSort'));
-              }
-              foreach ($offlineRoutes as $agencyID => $section) {
-                  uasort($offlineRoutes[$agencyID]['items'], array(get_class($this), 'routeSort'));
-              }
-              if ($runningRoutes) {
-                  $tabs[] = 'running';
-              }
-              if ($offlineRoutes) {
-                  $tabs[] = 'offline';
-              }
-      
-              //
-              // News Pane
-              //
-              $news = $this->getNewsForRoutes();
-              if ($news) {
-                  $tabs[] = 'news';
-              }
-              
-              //
-              // Info Pane
-              //
-              $infosections = array();
-              foreach ($indexConfig['infosections'] as $key => $heading) {
-                  $infosection = array(
-                      'heading' => $heading,
-                      'items'   => array(),
-                  );
-                  foreach ($indexConfig[$key]['titles'] as $index => $title) {
-                      $infosection['items'][] = array(
-                          'title'    => $title,
-                          'url'      => isset($indexConfig[$key]['urls'])      ? $indexConfig[$key]['urls'][$index]      : null,
-                          'subtitle' => isset($indexConfig[$key]['subtitles']) ? $indexConfig[$key]['subtitles'][$index] : null,
-                          'class'    => isset($indexConfig[$key]['classes'])   ? $indexConfig[$key]['classes'][$index]   : null,
-                      );
-                  }
-                  if (count($infosection['items'])) {
-                      $infosections[] = $infosection;
-                  }
-              }
-              if ($infosections) {
-                  $tabs[] = 'info';
-              }
-              
-              $this->enableTabs($tabs);
-              
-              $this->assign('runningRoutes', $runningRoutes);
-              $this->assign('offlineRoutes', $offlineRoutes);
-              $this->assign('news',          $news);
-              $this->assign('infosections',  $infosections);
-              break;
+            case 'pane':
+                $routeConfigs = $view->getRoutes();
+                
+                $routes = array();
+                foreach ($routeConfigs as $routeID => $routeConfig) {
+                    if ($routeConfig['running']) {
+                        $routes[] = array(
+                            'title' => $routeConfig['name'],
+                            'subtitle' => $routeConfig['description'],
+                            'url'   => $this->timesURL($routeID, null, false, true, true),
+                        );
+                    }
+                }
+                uasort($routes, array(get_class($this), 'routeSort'));
+                
+                $this->assign('routes', $routes);
+                break;
             
-          case 'route':
-              $routeID = $this->getArg('id');
-              $isAjax = $this->getArg('ajax', 0);
-              
-              unset($this->args['ajax']); // do not propagate 
-              
-              $routeInfo = $view->getRouteInfo($routeID);
-              
-              $direction = $this->getArg('direction', null);
-              if (count($routeInfo['directions']) == 1) {
-                  $directionIDs = array_keys($routeInfo['directions']);
-                  $direction = reset($directionIDs);
-              }
-              
-              if (isset($direction) && isset($routeInfo['directions'][$direction])) {
-                  $this->assign('direction', $direction);
-                  
-                  switch ($routeInfo['view']) {
-                      case 'schedule':
-                          foreach ($routeInfo['directions'][$direction]['stops'] as $i => $stop) {
-                              $routeInfo['directions'][$direction]['stops'][$i]['url'] = $this->stopURL($stop['id']);
-                          }
-                          break;
-                          
-                      case 'list':
-                      default:
-                          $routeInfo['stops'] = $routeInfo['directions'][$direction]['stops'];
-                          
-                          foreach ($routeInfo['stops'] as $i => $stop) {
-                              $routeInfo['stops'][$i]['url']   = $this->stopURL($stop['id']);
-                              $routeInfo['stops'][$i]['title'] = $stop['name'];
-                              
-                              if ($stop['upcoming']) {
-                                  $routeInfo['stops'][$i]['title'] = "<strong>{$stop['name']}</strong>";
-                                  $routeInfo['stops'][$i]['imgAlt'] = $this->getLocalizedString('CURRENT_STOP_ICON_ALT_TEXT');
-                              }
-                              
-                              if ($stop['upcoming'] || $this->pagetype != 'basic') {
-                                  $routeInfo['stops'][$i]['img'] = '/modules/transit/images/';
-                              }
-                              switch ($this->pagetype) {
-                                  case 'basic':
-                                      if ($stop['upcoming']) {
-                                          $routeInfo['stops'][$i]['img'] .= 'shuttle.gif';
-                                      }
-                                      break;
-                                  
-                                  case 'touch':
-                                      $routeInfo['stops'][$i]['img'] .= $stop['upcoming'] ? 'shuttle.gif' : 'shuttle-spacer.gif';
-                                      break;
-                                    
-                                  default:
-                                      $routeInfo['stops'][$i]['img'] .= $stop['upcoming'] ? 'shuttle.png' : 'shuttle-spacer.png';
-                                      break;
-                              }
-                          }
-                          break;
-                  }
+            case 'index':
+                $indexConfig = $this->loadPageConfigFile('index', 'indexConfig');
+                $tabs = array();
                 
-              } else if (count($routeInfo['directions'])) {
-                  $this->setPageTitles('Directions');
-                  $this->setBreadcrumbLongTitle($routeInfo['name'].' Directions');
-          
-                  $this->setTemplatePage('directions');
-                  
-                  $directionArgs = $this->args;
-                  $directionsList = array();
-                  foreach ($routeInfo['directions'] as $direction => $directionInfo) {
-                      $directionArgs['direction'] = $direction;
-                    
-                      $directionList[] = array(
-                          'title' => $directionInfo['name'],
-                          'url'   => $this->buildBreadcrumbURL($this->page, $directionArgs),
-                      );
-                  }
-                  
-                  usort($directionList, array(get_class(), 'directionSort'));
-                  
-                  $this->assign('directionList', $directionList);
-              }
-              
-              $this->assign('routeInfo', $routeInfo);
-      
-              // Ajax page view
-              if ($isAjax) {
-                  $this->setTemplatePage('routeajax');
-                  break;
-              }
-              
-              $tabs = array();
-              $tabsJavascript = array();
-              
-              if ($routeInfo['stops']) {
-                  array_unshift($tabs, 'stops');
-                  array_unshift($tabsJavascript, '');
-                  $this->assign('hasStops', true);
-              }
-              
-              $paths = $view->getRoutePaths($routeID);
-              $vehicles = $view->getRouteVehicles($routeID);
-              if ($paths || $vehicles) {
-                  array_unshift($tabs, 'map');
-                  array_unshift($tabsJavascript, 'mapResizeHandler()');
-                  $this->assign('hasRouteMap', true);
-                
-                  $this->initMapForRoute($routeID, $routeInfo, $paths, $vehicles, $view);
-              } else {
-                  $this->initListUpdate();
-              }
-              
-              if (count($tabs) > 1) {
-                  $this->enableTabs($tabs);
-              }
-              
-              $this->assign('lastRefresh',      time());
-              $this->assign('serviceInfo',      $view->getServiceInfoForRoute($routeID));
-              $this->assign('stopTimeHelpText', $this->getOptionalModuleVar('stopTimeHelpText', ''));
-              break;
-          
-          case 'stop':
-              $stopID = $this->getArg('id');
-              $isAjax = $this->getArg('ajax', 0);
-              
-              unset($this->args['ajax']); // do not propagate 
-      
-              $stopInfo = $view->getStopInfo($stopID);
-              
-              $runningRoutes = array();
-              $offlineRoutes = array();
-              foreach ($stopInfo['routes'] as $routeID => $routeInfo) {
-                  foreach ($routeInfo['directions'] as $directionID => $directionInfo) {
-                      $entry = array(
-                          'title' => $routeInfo['name'],
-                          'url'   => $this->timesURL($routeID, $directionID, false, true), // no breadcrumbs
-                      );
-                      if (isset($directionInfo['predictions'])) {
-                          $entry['predictions'] = $directionInfo['predictions'];
-                      }
-                      if ($directionInfo['name'] && $directionID != TransitDataModel::LOOP_DIRECTION) {
-                          $entry['title'] .= '<br/>'.$directionInfo['name'];
-                      }
+                //
+                // Running and Offline Panes
+                //
+                $routeConfigs = $view->getRoutes();
+                $runningRoutes = array_fill_keys(array_keys($indexConfig['agencies']), false);
+                $offlineRoutes = array_fill_keys(array_keys($indexConfig['agencies']), false);
         
-                      if ($routeInfo['running']) {
-                          $runningRoutes[$routeID] = $entry;
-                      } else {
-                          $offlineRoutes[$routeID] = $entry;
-                      }
-                  }
-              }
-              uasort($runningRoutes, array(get_class($this), 'routeSort'));
-              uasort($offlineRoutes, array(get_class($this), 'routeSort'));
-              
-              $this->assign('runningRoutes', $runningRoutes);
-              $this->assign('offlineRoutes', $offlineRoutes);
-              
-              // Ajax page view
-              if ($isAjax) {
-                  $this->setTemplatePage('stopajax');
-                  break;
-              }
-              
-              $serviceInfo = false;
-              if (count($runningRoutes)) {
-                  $runningRouteIDs = array_keys($runningRoutes);
-                  $serviceInfo = $view->getServiceInfoForRoute(reset($runningRouteIDs));
-              } else if (count($offlineRoutes)) {
-                  $offlineRouteIDs = array_keys($offlineRoutes);
-                  $serviceInfo = $view->getServiceInfoForRoute(reset($offlineRouteIDs));
-              }
-              
-              $mapImageWidth = 298;
-              if ($this->pagetype == 'basic') {
-                  $mapImageWidth = 200;
-              }
-              if ($this->pagetype == 'tablet') {
-                  $mapImageWidth = 600;
-                  $mapImageHeight = floor($mapImageWidth/2);
-              } else {
-                  $mapImageHeight = floor($mapImageWidth/1.5);
-              }
-              $this->assign('mapImageWidth',  $mapImageWidth);
-              $this->assign('mapImageHeight', $mapImageHeight);
-      
-              $staticImage = $view->getMapImageForStop($stopID, $mapImageWidth, $mapImageHeight);
-              $marker = $stopInfo['coordinates'];
-              $markers = array($stopID => array(
-                  'lat' => $stopInfo['coordinates']['lat'],
-                  'lon' => $stopInfo['coordinates']['lon'],
-                  'imageURL' => $stopInfo['stopIconURL'],
-                  'title' => '',
-              ));
-              $this->initMap($staticImage, $markers);
-              
-              $this->assign('stopName',      $stopInfo['name']);
-              $this->assign('lastRefresh',   time());
-              $this->assign('serviceInfo',   $serviceInfo);
-              break;
-          
-          case 'fullscreen':
-              $type = $this->getArg('type');
-              if ($type == 'route') {
-                  $routeID = $this->getArg('id');
-                  
-                  $routeInfo = $view->getRouteInfo($routeID);
-                  $paths = $view->getRoutePaths($routeID);
-                  $vehicles = $view->getRouteVehicles($routeID);
-                  if ($routeInfo && ($paths || $vehicles)) {
-                      $this->initMapForRoute($routeID, $routeInfo, $paths, $vehicles, $view);
-                  } else {
-                      $this->redirectTo('route', array(
-                          'id' => $routeID,
-                      ));
-                  }
+                foreach ($routeConfigs as $routeID => $routeConfig) {
+                    $agencyID = $routeConfig['agency'];
+                    $entry = array(
+                        'title' => $routeConfig['name'],
+                        'url'   => $this->timesURL($routeID),
+                    );
+                    
+                    if ($routeConfig['running']) {
+                        if (!isset($runningRoutes[$agencyID]) || !$runningRoutes[$agencyID]) {
+                            $heading = isset($indexConfig['agencies'][$agencyID]) ? 
+                                $indexConfig['agencies'][$agencyID] : $agencyID;
+                        
+                            $runningRoutes[$agencyID] = array(
+                                'heading' => $heading,
+                                'items' => array(),
+                            );
+                        }
+                        $runningRoutes[$agencyID]['items'][$routeID] = $entry;
+                    } else {
+                        if (!isset($offlineRoutes[$agencyID]) || !$offlineRoutes[$agencyID]) {
+                            $heading = isset($indexConfig['agencies'][$agencyID]) ? 
+                                $indexConfig['agencies'][$agencyID] : $agencyID;
+                        
+                            $offlineRoutes[$agencyID] = array(
+                                'heading' => $heading,
+                                'items' => array(),
+                            );
+                        }
+                        $offlineRoutes[$agencyID]['items'][$routeID] = $entry;
+                    }
+                }
                 
-              } else if ($type == 'stop') {
-                  $stopID = $this->getArg('id');
+                // Remove empty sections
+                $runningRoutes = array_filter($runningRoutes);
+                $offlineRoutes = array_filter($offlineRoutes);
+        
+                // Sort routes
+                foreach ($runningRoutes as $agencyID => $section) {
+                    uasort($runningRoutes[$agencyID]['items'], array(get_class($this), 'routeSort'));
+                }
+                foreach ($offlineRoutes as $agencyID => $section) {
+                    uasort($offlineRoutes[$agencyID]['items'], array(get_class($this), 'routeSort'));
+                }
+                if ($runningRoutes) {
+                    $tabs[] = 'running';
+                }
+                if ($offlineRoutes) {
+                    $tabs[] = 'offline';
+                }
+        
+                //
+                // News Pane
+                //
+                $news = $this->getNewsForRoutes();
+                if ($news) {
+                    $tabs[] = 'news';
+                }
                 
-                  $stopInfo = $view->getStopInfo($stopID);
-                  if ($stopInfo) {
-                      $this->initMapForStop($stopID, $stopInfo, $view);
-                  } else {
-                      $this->redirectTo('stop', array(
-                          'id' => $stopID,
-                      ));
-                  }
-              } else {
-                  $this->redirectTo('index');
-              }
-              break;
-          
-          case 'info':
-              $infoType = $this->getArg('id');
+                //
+                // Info Pane
+                //
+                $infosections = array();
+                foreach ($indexConfig['infosections'] as $key => $heading) {
+                    $infosection = array(
+                        'heading' => $heading,
+                        'items'   => array(),
+                    );
+                    foreach ($indexConfig[$key]['titles'] as $index => $title) {
+                        $infosection['items'][] = array(
+                            'title'    => $title,
+                            'url'      => isset($indexConfig[$key]['urls'])      ? $indexConfig[$key]['urls'][$index]      : null,
+                            'subtitle' => isset($indexConfig[$key]['subtitles']) ? $indexConfig[$key]['subtitles'][$index] : null,
+                            'class'    => isset($indexConfig[$key]['classes'])   ? $indexConfig[$key]['classes'][$index]   : null,
+                        );
+                    }
+                    if (count($infosection['items'])) {
+                        $infosections[] = $infosection;
+                    }
+                }
+                if ($infosections) {
+                    $tabs[] = 'info';
+                }
+                
+                $this->enableTabs($tabs);
+                
+                $this->assign('runningRoutes', $runningRoutes);
+                $this->assign('offlineRoutes', $offlineRoutes);
+                $this->assign('news',          $news);
+                $this->assign('infosections',  $infosections);
+                break;
               
-              $infoConfig = $this->getModuleSections('feeds-info');
-              
-              if (!isset($infoConfig['info']) || !isset($infoConfig['info'][$infoType]) || 
-                  !strlen($infoConfig['info'][$infoType])) {
-                  $this->redirectTo('index', array());
-              }
-              
-              if ($this->pagetype == 'basic' || $this->pagetype == 'touch') {
-                  $infoConfig['info'][$infoType] = str_replace('.png"', '.gif"', $infoConfig['info'][$infoType]);
-              }
-              
-              $this->addInlineCSS('h2 { padding-top: 10pt; }');
+            case 'route':
+                $routeID = $this->getArg('id');
+                $isAjax = $this->getArg('ajax', 0);
+                
+                unset($this->args['ajax']); // do not propagate 
+                
+                $routeInfo = $view->getRouteInfo($routeID);
+                
+                $direction = $this->getArg('direction', null);
+                if (count($routeInfo['directions']) == 1) {
+                    $directionIDs = array_keys($routeInfo['directions']);
+                    $direction = reset($directionIDs);
+                }
+                
+                if (isset($direction) && isset($routeInfo['directions'][$direction])) {
+                    $this->assign('direction', $direction);
+                    
+                    switch ($routeInfo['view']) {
+                        case 'schedule':
+                            foreach ($routeInfo['directions'][$direction]['stops'] as $i => $stop) {
+                                $routeInfo['directions'][$direction]['stops'][$i]['url'] = $this->stopURL($stop['id']);
+                            }
+                            break;
+                            
+                        case 'list':
+                        default:
+                            $routeInfo['stops'] = $routeInfo['directions'][$direction]['stops'];
+                            
+                            foreach ($routeInfo['stops'] as $i => $stop) {
+                                $routeInfo['stops'][$i]['url']   = $this->stopURL($stop['id']);
+                                $routeInfo['stops'][$i]['title'] = $stop['name'];
+                                
+                                if ($stop['upcoming']) {
+                                    $routeInfo['stops'][$i]['title'] = "<strong>{$stop['name']}</strong>";
+                                    $routeInfo['stops'][$i]['imgAlt'] = $this->getLocalizedString('CURRENT_STOP_ICON_ALT_TEXT');
+                                }
+                                
+                                if ($stop['upcoming'] || $this->pagetype != 'basic') {
+                                    $routeInfo['stops'][$i]['img'] = '/modules/transit/images/';
+                                }
+                                switch ($this->pagetype) {
+                                    case 'basic':
+                                        if ($stop['upcoming']) {
+                                            $routeInfo['stops'][$i]['img'] .= 'shuttle.gif';
+                                        }
+                                        break;
+                                    
+                                    case 'touch':
+                                        $routeInfo['stops'][$i]['img'] .= $stop['upcoming'] ? 'shuttle.gif' : 'shuttle-spacer.gif';
+                                        break;
+                                      
+                                    default:
+                                        $routeInfo['stops'][$i]['img'] .= $stop['upcoming'] ? 'shuttle.png' : 'shuttle-spacer.png';
+                                        break;
+                                }
+                            }
+                            break;
+                    }
       
-              $this->assign('content', $infoConfig['info'][$infoType]);
-              break;
+                    $tabs = array();
+                    $tabsJavascript = array();
+                    
+                    if (isset($routeInfo['stops']) && $routeInfo['stops']) {
+                        array_unshift($tabs, 'stops');
+                        array_unshift($tabsJavascript, '');
+                        $this->assign('hasStops', true);
+                    }
+                    
+                    $paths = $view->getRoutePaths($routeID);
+                    $vehicles = $view->getRouteVehicles($routeID);
+                    if ($paths || $vehicles) {
+                        array_unshift($tabs, 'map');
+                        array_unshift($tabsJavascript, 'mapResizeHandler()');
+                        $this->assign('hasRouteMap', true);
+                        
+                        $this->initMapForRoute($routeID, $routeInfo, $paths, $vehicles, $view);
+                    } else {
+                        $this->initListUpdate();
+                    }
+                    
+                    if (count($tabs) > 1) {
+                        $this->enableTabs($tabs);
+                    }
+                    
+                } else if (count($routeInfo['directions'])) {
+                    $this->setPageTitles('Directions');
+                    $this->setBreadcrumbLongTitle($routeInfo['name'].' Directions');
             
-          case 'announcement':
-              $newsID = $this->getArg('id');
-              $news = $this->getNewsForRoutes();
+                    $this->setTemplatePage('directions');
+                    
+                    $directionArgs = $this->args;
+                    $directionsList = array();
+                    foreach ($routeInfo['directions'] as $direction => $directionInfo) {
+                        $directionArgs['direction'] = $direction;
+                      
+                        $directionList[] = array(
+                            'title' => $directionInfo['name'],
+                            'url'   => $this->buildBreadcrumbURL($this->page, $directionArgs),
+                        );
+                    }
+                    
+                    usort($directionList, array(get_class(), 'directionSort'));
+                    
+                    $this->assign('directionList', $directionList);
+                }
+                
+                $this->assign('routeInfo', $routeInfo);
+        
+                // Ajax page view
+                if ($isAjax) {
+                    $this->setTemplatePage('routeajax');
+                    break;
+                }
+                
+                $this->assign('lastRefresh',      time());
+                $this->assign('serviceInfo',      $view->getServiceInfoForRoute($routeID));
+                $this->assign('stopTimeHelpText', $this->getOptionalModuleVar('stopTimeHelpText', ''));
+                break;
+            
+            case 'stop':
+                $stopID = $this->getArg('id');
+                $isAjax = $this->getArg('ajax', 0);
+                
+                unset($this->args['ajax']); // do not propagate 
+        
+                $stopInfo = $view->getStopInfo($stopID);
+                
+                $runningRoutes = array();
+                $offlineRoutes = array();
+                foreach ($stopInfo['routes'] as $routeID => $routeInfo) {
+                    foreach ($routeInfo['directions'] as $directionID => $directionInfo) {
+                        $entry = array(
+                            'title' => $routeInfo['name'],
+                            'url'   => $this->timesURL($routeID, $directionID, false, true), // no breadcrumbs
+                        );
+                        if (isset($directionInfo['predictions'])) {
+                            $entry['predictions'] = $directionInfo['predictions'];
+                        }
+                        if ($directionInfo['name'] && $directionID != TransitDataModel::LOOP_DIRECTION) {
+                            $entry['title'] .= '<br/>'.$directionInfo['name'];
+                        }
+          
+                        if ($routeInfo['running']) {
+                            $runningRoutes[$routeID] = $entry;
+                        } else {
+                            $offlineRoutes[$routeID] = $entry;
+                        }
+                    }
+                }
+                uasort($runningRoutes, array(get_class($this), 'routeSort'));
+                uasort($offlineRoutes, array(get_class($this), 'routeSort'));
+                
+                $this->assign('runningRoutes', $runningRoutes);
+                $this->assign('offlineRoutes', $offlineRoutes);
+                
+                // Ajax page view
+                if ($isAjax) {
+                    $this->setTemplatePage('stopajax');
+                    break;
+                }
+                
+                $serviceInfo = false;
+                if (count($runningRoutes)) {
+                    $runningRouteIDs = array_keys($runningRoutes);
+                    $serviceInfo = $view->getServiceInfoForRoute(reset($runningRouteIDs));
+                } else if (count($offlineRoutes)) {
+                    $offlineRouteIDs = array_keys($offlineRoutes);
+                    $serviceInfo = $view->getServiceInfoForRoute(reset($offlineRouteIDs));
+                }
+                
+                $mapImageWidth = 298;
+                if ($this->pagetype == 'basic') {
+                    $mapImageWidth = 200;
+                }
+                if ($this->pagetype == 'tablet') {
+                    $mapImageWidth = 600;
+                    $mapImageHeight = floor($mapImageWidth/2);
+                } else {
+                    $mapImageHeight = floor($mapImageWidth/1.5);
+                }
+                $this->assign('mapImageWidth',  $mapImageWidth);
+                $this->assign('mapImageHeight', $mapImageHeight);
+        
+                $staticImage = $view->getMapImageForStop($stopID, $mapImageWidth, $mapImageHeight);
+                $marker = $stopInfo['coordinates'];
+                $markers = array($stopID => array(
+                    'lat' => $stopInfo['coordinates']['lat'],
+                    'lon' => $stopInfo['coordinates']['lon'],
+                    'imageURL' => $stopInfo['stopIconURL'],
+                    'title' => '',
+                ));
+                $this->initMap($staticImage, $markers);
+                
+                $this->assign('stopName',      $stopInfo['name']);
+                $this->assign('lastRefresh',   time());
+                $this->assign('serviceInfo',   $serviceInfo);
+                break;
+            
+            case 'fullscreen':
+                $type = $this->getArg('type');
+                if ($type == 'route') {
+                    $routeID = $this->getArg('id');
+                    
+                    $routeInfo = $view->getRouteInfo($routeID);
+                    $paths = $view->getRoutePaths($routeID);
+                    $vehicles = $view->getRouteVehicles($routeID);
+                    if ($routeInfo && ($paths || $vehicles)) {
+                        $this->initMapForRoute($routeID, $routeInfo, $paths, $vehicles, $view);
+                    } else {
+                        $this->redirectTo('route', array(
+                            'id' => $routeID,
+                        ));
+                    }
+                  
+                } else if ($type == 'stop') {
+                    $stopID = $this->getArg('id');
+                  
+                    $stopInfo = $view->getStopInfo($stopID);
+                    if ($stopInfo) {
+                        $this->initMapForStop($stopID, $stopInfo, $view);
+                    } else {
+                        $this->redirectTo('stop', array(
+                            'id' => $stopID,
+                        ));
+                    }
+                } else {
+                    $this->redirectTo('index');
+                }
+                break;
+            
+            case 'info':
+                $infoType = $this->getArg('id');
+                
+                $infoConfig = $this->getModuleSections('feeds-info');
+                
+                if (!isset($infoConfig['info']) || !isset($infoConfig['info'][$infoType]) || 
+                    !strlen($infoConfig['info'][$infoType])) {
+                    $this->redirectTo('index', array());
+                }
+                
+                if ($this->pagetype == 'basic' || $this->pagetype == 'touch') {
+                    $infoConfig['info'][$infoType] = str_replace('.png"', '.gif"', $infoConfig['info'][$infoType]);
+                }
+                
+                $this->addInlineCSS('h2 { padding-top: 10pt; }');
+        
+                $this->assign('content', $infoConfig['info'][$infoType]);
+                break;
               
-              $found = false;
-              foreach ($news as $agencyID => $agencyNews) {
-                  if (isset($agencyNews['items'][$newsID])) {
-                      $this->assign('title',   $agencyNews['items'][$newsID]['title']);
-                      $this->assign('date',    $agencyNews['items'][$newsID]['date']);
-                      $this->assign('content', $agencyNews['items'][$newsID]['html']);
-                      $found = true;
-                      break;
-                  }
-              }
-              if (!$found) {
-                  $this->redirectTo('index', array());
-              }
-              break;
+            case 'announcement':
+                $newsID = $this->getArg('id');
+                $news = $this->getNewsForRoutes();
+                
+                $found = false;
+                foreach ($news as $agencyID => $agencyNews) {
+                    if (isset($agencyNews['items'][$newsID])) {
+                        $this->assign('title',   $agencyNews['items'][$newsID]['title']);
+                        $this->assign('date',    $agencyNews['items'][$newsID]['date']);
+                        $this->assign('content', $agencyNews['items'][$newsID]['html']);
+                        $found = true;
+                        break;
+                    }
+                }
+                if (!$found) {
+                    $this->redirectTo('index', array());
+                }
+                break;
         }
     }
     
