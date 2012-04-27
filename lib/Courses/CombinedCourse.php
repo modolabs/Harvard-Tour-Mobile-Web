@@ -18,7 +18,7 @@ class CombinedCourse implements CourseInterface
 
     public function setAttribute($attribute, $type, CombinedCourse $course) {
         $method = "get".ucfirst($attribute);
-        $value = $course->$method();
+        $value = @call_user_func(array($course, $method));
         if($value) {
 	        $this->attributes[$type][$attribute] = $value;
         }else{
