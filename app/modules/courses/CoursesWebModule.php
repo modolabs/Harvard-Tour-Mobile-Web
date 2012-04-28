@@ -454,6 +454,7 @@ class CoursesWebModule extends WebModule {
             $details[$key] = $this->formatCourseDetail($course, $info, $key);
         }
         //error_log(print_r($details, true));
+        print_r($details);
         return $details;
     }
     
@@ -839,8 +840,23 @@ class CoursesWebModule extends WebModule {
                 break;
                 
             case 'staff':
-                $staffInfo =  $this->formatCourseDetails($course, 'info-staff');
-                $this->assign('staffInfo', $staffInfo);
+            	$instructorList = array();
+                $staff =  $this->formatCourseDetails($course, 'info-staff');
+                foreach($staff as $fieldName=>$instructors) {
+	                foreach ($instructors[$fieldName]['list'] as $instructor){
+	                	$value = $instructor->getFullName();
+	                	$link = Kurogo::moduleLinkForValue('people', $value, $this, $instructor);
+	                	$link['class'] = 'people';
+	                	if(!$link){
+	                		$link = array(
+	                				'title' => $value,
+	                		);
+	                	}
+	                	$instructorList[] = $link;
+	                }
+	                $instructors[$fieldName]['list'] = $instructorList;
+                }
+                $this->assign('staff', $staff);
                 break;
         }
     }
