@@ -52,7 +52,13 @@ class CombinedCourse implements CourseInterface
         }        
     }
     
-    public function getInstructors() {
+    public function getInstructors($type = null) {
+        $type = $type ? $type : 'content';
+        
+        if ($course = $this->getCourse($type)) {
+            return $course->getInstructors();
+        }
+        
         return array();
     }
     

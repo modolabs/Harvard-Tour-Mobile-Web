@@ -11,4 +11,6 @@ abstract class CourseContentCourse extends Course {
     abstract public function getContentById($id, $options);
     abstract public function getTaskById($id, $options);
     abstract public function getFileForContent($id, $options);
+    abstract public function isInstructor(CourseUser $user);
+    abstract public function isStudent(CourseUser $user);
 }

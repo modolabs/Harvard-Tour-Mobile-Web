@@ -396,7 +396,7 @@ class MoodleCourseContentDataParser extends dataParser {
     }
     
     protected function parseUser($data){
-		$User = new CourseUser();
+		$User = new MoodleCourseUser();
 		$User->setId($data['id']);
 		$User->setEmail($data['email']);
 		$User->setRoles($data['roles']);
@@ -533,33 +533,33 @@ class MoodleCourseContentDataParser extends dataParser {
 }
 
 class MoodleCourseContentCourse extends CourseContentCourse {
-	public function getStudents(){
+
+	public function getStudents() {
 		if ($retriever = $this->getRetriever()) {
 			$users = $retriever->getUsersByCourseId($this->getID());
-			$Student = array();
 			$Students = array();
 		    foreach ($users as $user){
-            	$roles = $user->getRoles();
-	            if($roles[0]['roleid'] == 5){ // if rileId eq 5 is Student in moodle
-	            	$Student[] = $user;
-	            }
+		        if ($this->isStudent($user)) {
+		            $Students[] = $user;
+		        }
 		    }
-			return $Student;
+			return $Students;
 		}
 	}
+	
 	public function getInstructors(){
 		if ($retriever = $this->getRetriever()) {
 			$users = $retriever->getUsersByCourseId($this->getID());
 			$instructorLish = array();
 		    foreach ($users as $user){
-            	$roles = $user->getRoles();
-	            if($roles[0]['roleid'] == 3){ // if rileId eq 3 is Teacher in moodle
-	            	$instructorList[] = $user;
+	            if ($this->isInstructor($user)) {
+	                $instructorList[] = $user;
 	            }
             }
 			return $instructorList;
 		}		
 	}
+	
     public function getLastUpdate() {
         if ($courseContents = $this->getUpdates()) {
             $courseContents = $this->sortCourseContent($courseContents, 'publishedDate');
@@ -644,6 +644,26 @@ class MoodleCourseContentCourse extends CourseContentCourse {
         
         return null;
     }
+    
+    public function isInstructor(CourseUser $user) {
+        if ($roles = $user->getRoles()) {
+            if($roles[0]['roleid'] == 3){ // if rileId eq 3 is Teacher in moodle
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    public function isStudent(CourseUser $user) {
+        if ($roles = $user->getRoles()) {
+            if($roles[0]['roleid'] == 5){ // if rileId eq 5 is Student in moodle
+                return true;
+            }
+        }
+        
+        return false;
+    }
 }
 
 class MoodleDownloadCourseContent extends DownloadCourseContent {
@@ -668,6 +688,7 @@ class MoodleDownloadCourseContent extends DownloadCourseContent {
     }
    				
 }
+
 class MoodleLinkCourseContent extends LinkCourseContent {
     public function getSubTitle() {
     
@@ -691,38 +712,11 @@ class MoodlePageCourseContent extends PageCourseContent {
         return $subTitle;
     }
 }
-/*
-class CourseUser implements KurogoObject{
-	protected $id;
-	protected $fullname;
-	protected $email;
+
+class MoodleCourseUser extends CourseUser {
 	protected $roles;
 	protected $enrolledCourses; 
 	
-	public function filterItem($filters){
-		return $filters;
-	}
-	public function getId() {
-		return $this->id;
-	}
-	
-	public function setId($id) {
-		$this->id = $id;
-	}
-	public function getFullName() {
-		return $this->fullname;
-	}
-	
-	public function setFullName($fullname) {
-		$this->fullname = $fullname;
-	}
-	public function getEmail() {
-		return $this->email;
-	}
-	
-	public function setEmail($email) {
-		$this->email = $email;
-	}
 	public function getRoles() {
 		return $this->roles;
 	}
@@ -737,4 +731,4 @@ class CourseUser implements KurogoObject{
 	public function setEnrolledCourses($enrolledCourses) {
 		$this->enrolledCourses = $enrolledCourses;
 	}
-}*/
+}
