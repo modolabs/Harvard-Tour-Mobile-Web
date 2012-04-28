@@ -521,12 +521,22 @@ class CoursesWebModule extends WebModule {
                 
             // new type list, will return a list of values
             case 'list':
-            	$detail['list'] = $values;
+                $info['module'] = 'people';
+                foreach ($values as $key=>$instructor){
+                	//TODO: can set title grabbing methd by config file
+                	$value[] = $instructor->getFullName();
+                }
                 break;
         }
 
         if (isset($info['module'])) {
-            $detail = array_merge($detail, Kurogo::moduleLinkForValue($info['module'], $value, $this, $course));
+            if(is_array($value)) {
+        		foreach($value as $eachValue) {
+		            $detail['list'][] = array_merge($detail, Kurogo::moduleLinkForValue($info['module'], $eachValue, $this, $course));
+        		}
+        	}else{
+	            $detail = array_merge($detail, Kurogo::moduleLinkForValue($info['module'], $value, $this, $course));
+        	}
         }
         
         if (isset($info['urlfunc'])) {
@@ -841,21 +851,6 @@ class CoursesWebModule extends WebModule {
             case 'staff':
             	$instructorList = array();
                 $staff =  $this->formatCourseDetails($course, 'info-staff');
-                foreach($staff as $fieldName=>$instructors) {
-                	if(isset($instructors[$fieldName]['list'])) {
-		                foreach ($instructors[$fieldName]['list'] as $key=>$instructor){
-		                	$value = $instructor->getFullName();
-		                	$link = Kurogo::moduleLinkForValue('people', $value, $this, $instructor);
-		                	$link['class'] = 'people';
-		                	if(!$link){
-		                		$link = array(
-		                				'title' => $value,
-		                		);
-		                	}
-		                	$staff[$fieldName][$fieldName]['list'][$key] = $link;
-		                }
-                	}
-                }
                 $this->assign('staff', $staff);
                 break;
         }

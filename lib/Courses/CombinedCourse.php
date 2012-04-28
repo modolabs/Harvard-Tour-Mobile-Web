@@ -25,9 +25,10 @@ class CombinedCourse implements CourseInterface
         if($type) {
 	        $value = @call_user_func(array($this->courses[$type], $method));
         }else{
-        	foreach($this->courses as $course) {
+        	foreach($this->courses as $courseType=>$course) {
         		$value = @call_user_func(array($course, $method));
         		if($value) {
+        			$type = $courseType;
         			break;
         		}
         	}
