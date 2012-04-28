@@ -16,9 +16,13 @@ class CombinedCourse implements CourseInterface
         );
     }
 
-    public function setAttribute($attribute, $type, CombinedCourse $course) {
+    public function checkInStandardAttributes($attribute) {
+    	return in_array($attribute, $this->standardAttributes());
+    }
+    
+    public function setAttribute($attribute, $type) {
         $method = "get".ucfirst($attribute);
-        $value = @call_user_func(array($course, $method));
+        $value = @call_user_func(array($this->courses[$type], $method));
         if($value) {
 	        $this->attributes[$type][$attribute] = $value;
         }else{

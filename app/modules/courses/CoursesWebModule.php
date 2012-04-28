@@ -336,8 +336,6 @@ class CoursesWebModule extends WebModule {
         $this->controller = CoursesDataModel::factory($this->defaultModel, $this->feeds);
         $this->hasPersonalizedCourses =  $this->controller->canRetrieve('registration') || $this->controller->canRetrieve('content');
         $this->selectedTerm = $this->getArg('term', CoursesDataModel::CURRENT_TERM);
-        //load page detail configs
-        $this->detailFields = $this->loadPageConfigFile('info', 'detailFields');
         //load showCourseNumber setting
         $this->showCourseNumber = $this->getOptionalModuleVar('SHOW_COURSENUMBER_IN_LIST', 1);
     }
@@ -446,25 +444,14 @@ class CoursesWebModule extends WebModule {
         }
     }
 
-    protected function formatCourseDetails(CombinedCourse $course) {
+    protected function formatCourseDetails(CombinedCourse $course, $configName) {
         //error_log(print_r($this->detailFields, true));
-        
+        //load page detail configs
+        $detailFields = $this->getModuleSections($configName);
         $details = array();    
         
-        foreach($this->detailFields as $key => $info) {
-            $section = $this->formatCourseDetail($course, $info, $key);
-            
-            if (count($section)) {
-                if (isset($info['section'])) {
-                    if (!isset($details[$info['section']])) {
-                        $details[$info['section']] = $section;
-                    } else {
-                        $details[$info['section']] = array_merge($details[$info['section']], $section);
-                    }
-                } else {
-                    $details[$key] = $section;
-                }
-            }
+        foreach($detailFields as $key => $info) {
+            $details[$key] = $this->formatCourseDetail($course, $info, $key);
         }
         //error_log(print_r($details, true));
         return $details;
@@ -474,35 +461,23 @@ class CoursesWebModule extends WebModule {
         $section = array();
         $courseType = isset($info['courseType']) ? $info['courseType'] : null;
         
-        if (count($info['attributes']) == 1) {
-            $values = (array)$course->getField($info['attributes'][0], $courseType);
-            if (count($values)) {
-                $section[$key] = $this->formatInfoDetail($this->formatValues($values, $info), $info, $course);
-            }      
-        } else {
-            $valueGroups = array();
-        
-            foreach ($info['attributes'] as $attribute) {
-                $values = $this->formatValues((array)$course->getField($attribute, $courseType), $info);
-            
-                if (count($values)) {
-                    foreach ($values as $i => $value) {
-                        $valueGroups[$i][] = $value;
-                    }
-                }
-            }
-          
-            foreach ($valueGroups as $valueGroup) {
-                $section[$key] = $this->formatInfoDetail($valueGroup, $info, $course);
-            }
+        if(!$course->checkInStandardAttributes($key)) {
+        	//try to set attribute in attributes list.
+	        $course->setAttribute($key, $courseType);
         }
+        $values = (array)$course->getField($key, $courseType);
+        if (count($values)) {
+            $section[$key] = $this->formatInfoDetail($this->formatValues($values, $info), $info, $course);
+        }      
         
         return $section;
     }
     
     protected function formatInfoDetail($values, $info, CombinedCourse $course) {
     	if(isset($values[0]) && is_object($values[0])) {
-    		$detail = array();
+	        $detail = array(
+	        	'head'  => isset($info['title']) ? $info['title'] : null
+	        );
     	}else{
 	    	if (isset($info['format'])) {
 	            $value = vsprintf($this->replaceFormat($info['format']), $values);
@@ -512,8 +487,9 @@ class CoursesWebModule extends WebModule {
 	        }
 	    
 	        $detail = array(
-	            'label' => isset($info['label']) ? $info['label'] : '',
-	            'title' => $value
+	            'label' => isset($info['label']) ? $info['label'] : null,
+	            'title' => $value,
+	        	'head'  => isset($info['title']) ? $info['title'] : null,
 	        );
     	}
     	
@@ -542,6 +518,11 @@ class CoursesWebModule extends WebModule {
             	$detail['subtitle'] = $values[0]->getTime();
                 $info['module'] = 'map';
                 break;
+                
+            // new type list, will return a list of values
+            case 'list':
+            	$detail['list'] = $values;
+                break;
         }
 
         if (isset($info['module'])) {
@@ -552,7 +533,7 @@ class CoursesWebModule extends WebModule {
             $urlFunction = create_function('$value,$course', $info['urlfunc']);
             $detail['url'] = $urlFunction($value, $course);
         }
-    
+
         $detail['title'] = nl2br($detail['title']); 
         return $detail;
     }
@@ -824,22 +805,7 @@ class CoursesWebModule extends WebModule {
 		        //load tab page detail configs
 		        $this->detailFields = $this->getModuleSections($tab . '-detail');
                 
-                $courseDetails =  $this->formatCourseDetails($course);
-
-                $instructorList = array();
-                $instructors = $course->getInstructors();
-                foreach ($instructors as $instructor){
-                    $value = $instructor->getFullName();
-                    $link = Kurogo::moduleLinkForValue('people', $value, $this, $instructor);
-                    $link['class'] = 'people';
-                    if(!$link){
-                        $link = array(
-                                'title' => $value,
-                        );
-                    }
-                    $instructorList[] = $link;
-                }
-                $courseDetails['Instructor(s)'] = $instructorList;
+                $courseDetails =  $this->formatCourseDetails($course, 'course-info');
 				$this->assign('courseDetails', $courseDetails);
 
                 $links = array();
@@ -868,28 +834,13 @@ class CoursesWebModule extends WebModule {
         switch ($tab)
         {
             case 'index':
-		        //load tab page detail configs
-		        $this->detailFields = $this->getModuleSections('info-detail');
-		        $course->setAttribute('times', 'catalog', $course);
-                $courseDetails =  $this->formatCourseDetails($course);
+                $courseDetails =  $this->formatCourseDetails($course, 'info-index');
                 $this->assign('courseDetails', $courseDetails);
                 break;
                 
             case 'staff':
-                $instructorList = array();
-                $instructors = $course->getInstructors();
-                foreach ($instructors as $instructor){
-                    $value = $instructor->getFullName();
-                    $link = Kurogo::moduleLinkForValue('people', $value, $this, $instructor);
-                    $link['class'] = 'people';
-                    if(!$link){
-                        $link = array(
-                                'title' => $value,
-                        );
-                    }
-                    $instructorList[] = $link;
-                }
-                $this->assign('instructors',$instructorList);
+                $staffInfo =  $this->formatCourseDetails($course, 'info-staff');
+                $this->assign('staffInfo', $staffInfo);
                 break;
         }
     }

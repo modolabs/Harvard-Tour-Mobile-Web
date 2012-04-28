@@ -1,4 +1,9 @@
-{if $instructors}
-<h3>Instructor(s)</h3>
-{include file="findInclude:common/templates/navlist.tpl" navlistItems=$instructors accessKey=false subTitleNewline=$contactsSubTitleNewline}
-{/if}
+{foreach $staffInfo as $fieldName=>$item}
+	{if $item['list']}
+		{include file="findInclude:common/templates/navlist.tpl" navListHeading=$item[$fieldName]['head'] navlistItems=$item['list'] subTitleNewline=$contactsSubTitleNewline}
+	{else}
+		{if $item}
+			{include file="findInclude:common/templates/navlist.tpl" navListHeading=$item[$fieldName]['head'] navlistItems=$item subTitleNewline=$contactsSubTitleNewline}
+		{/if}
+	{/if}
+{/foreach}
