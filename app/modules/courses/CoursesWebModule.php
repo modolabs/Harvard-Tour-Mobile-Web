@@ -468,7 +468,15 @@ class CoursesWebModule extends WebModule {
         $values = (array)$course->getField($key, $courseType);
         if (count($values)) {
             $section[$key] = $this->formatInfoDetail($this->formatValues($values, $info), $info, $course);
-        }      
+        }
+    
+        if(isset($info['page'])) {
+        	$courseOptions = $this->getCourseOptions();
+	        $section[$key] = array(
+		        'title' => isset($info['title']) ? $info['title'] : null,
+		        'url'   => $this->buildBreadcrumbURL($info['page'], $courseOptions, false),
+	        );
+        }
         
         return $section;
     }
@@ -543,7 +551,7 @@ class CoursesWebModule extends WebModule {
             $urlFunction = create_function('$value,$course', $info['urlfunc']);
             $detail['url'] = $urlFunction($value, $course);
         }
-
+        
         $detail['title'] = nl2br($detail['title']); 
         return $detail;
     }
