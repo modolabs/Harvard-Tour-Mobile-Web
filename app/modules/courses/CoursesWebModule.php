@@ -473,6 +473,7 @@ class CoursesWebModule extends WebModule {
         if(isset($info['page'])) {
         	$courseOptions = $this->getCourseOptions();
 	        $section[$key] = array(
+	        	'head' => isset($info['title']) ? $info['title'] : null,
 		        'title' => isset($info['title']) ? $info['title'] : null,
 		        'url'   => $this->buildBreadcrumbURL($info['page'], $courseOptions, false),
 	        );
