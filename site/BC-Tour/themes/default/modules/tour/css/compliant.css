@@ -37,7 +37,7 @@ p, dl, ul {
 	height: 34px;
 	padding: 3px 2px 3px 4px;
 	background: #751717 url(/common/images/navback.jpg) bottom repeat-x;
-	font-family: serif;
+	font-family: Georgia, "Times New Roman", Times, serifserif;
 	font-size: 94.12%;
     margin: 0;
 }
@@ -48,7 +48,7 @@ p, dl, ul {
 	float: left;
 	text-decoration: none;
 	color: #fff;
-	text-shadow: rgba(0,0,0,0.13) -1px -1px 1px,rgba(0,0,0,0.85) 1px 1px 1px;
+	text-shadow: rgba(67,0,0,0.13) -1px -1px 1px,rgba(67,0,0,0.85) 1px 1px 1px;
 }
 #homelink img {
 	float: left;
@@ -70,7 +70,7 @@ p, dl, ul {
 #helplinks a {
 	text-decoration: none;
 	color: tan;
-	/*text-shadow: rgba(0,0,0,0.13) -1px -1px 1px,rgba(255,255,255,0.85) 1px 1px 1px;*/
+	text-shadow: rgba(67,0,0,0.13) -1px -1px 1px,rgba(67,0,0,0.85) 1px 1px 1px;
 	padding: 0 8px;
 }
 
@@ -142,9 +142,11 @@ p, dl, ul {
 	color:#fff ;
 	padding: 0 8px;
 	text-decoration: none;
+	text-shadow: rgba(89,81,61,1) 1px 2px 2px
 }
 #pagehead #viewtoggle a.active {
 	color: #EFDDA8;
+	text-shadow: rgba(89,81,61,1) 1px 2px 2px
 }
 #pagehead #viewtoggle .spacer {
   padding: 0;

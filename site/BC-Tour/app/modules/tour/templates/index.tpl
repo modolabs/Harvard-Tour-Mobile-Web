@@ -2,7 +2,7 @@
   <div id="welcomehead">
     {if $resumeURL}
       <a class="startlink logostartlink" href="{$resumeURL}">
-        <img src="/modules/tour/images/logo.png" alt="Boston College Tour" width="300" height="30" border="0" />
+        <img src="/modules/tour/images/logo.png" alt="Tour of the Heights" width="300" height="30" border="0" />
         <br/>
         <img class="resume" src="/modules/tour/images/resume.png" alt="resume your tour" width="300" height="30" border="0" />
       </a>
@@ -12,7 +12,7 @@
       
     {else}
       <a class="startlink logostartlink" href="{$startURL}">
-        <img src="/modules/tour/images/logo.png" alt="Boston College Tour" width="300" height="30" border="0" />
+        <img src="/modules/tour/images/logo.png" alt="Tour of the Heights" width="300" height="30" border="0" />
         <br/>
         <img class="begin" src="/modules/tour/images/begin.png" alt="begin your tour" width="300" height="30" border="0" />
       </a>
