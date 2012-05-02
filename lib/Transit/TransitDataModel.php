@@ -560,7 +560,6 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             $directionID = is_numeric($direction) ? "direction_{$direction}" : $direction;
             
             $segments = $route->getSegmentsForDirection($direction);
-
             $routeInfo['directions'][$directionID] = 
                 $this->getDirectionInfo($route->getAgencyID(), $routeID, $direction, $segments, $time);
         }
@@ -595,7 +594,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             }
             
             $routeInfo['directions'] = $headsignDirections;
-            //error_log(print_r($routeInfo['directions'], true));
+            Kurogo::log(LOG_DEBUG, print_r($routeInfo['directions'], true), 'transit');
         }
         
         $this->setUpcomingRouteStops($routeID, $routeInfo['directions']);
@@ -607,7 +606,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             $routeInfo['directions'] = self::mergeDirections($routeInfo['directions']);
         }
         
-        //error_log(print_r($routeInfo, true));
+        //Kurogo::log(LOG_DEBUG, print_r($routeInfo, true), 'transit');
         
         return $routeInfo;
     }
@@ -814,7 +813,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 }
             }
         }
-        //error_log("Found two trips with no stop overlap");
+        Kurogo::log(LOG_DEBUG, "Found two trips with no stop overlap", 'transit');
         
         // There are no stop overlaps between $a and $b, just order them by first stop time
         $aFirstStopTime = PHP_INT_MAX;
@@ -844,7 +843,6 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     
     protected function getDirectionInfo($agencyID, $routeID, $directionID, $directionSegments, $time) {
         $directionName = '';
-        
         $stopArray = $this->lookupStopOrder($agencyID, $routeID, $directionID, &$directionName);
         if (!$stopArray) {
             // No stop order in config, build with graph
@@ -855,7 +853,6 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 if (!$segment->getService()->isRunning($time)) {
                     continue;
                 }
-                
                 // If we don't have a direction name, try the first segment name (headsign)
                 if (!$directionName && ($segmentName = $segment->getName())) {
                     $directionName = $segmentName;
@@ -882,8 +879,8 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                     }
                 }
             }
-            //error_log("HEADSIGN: $directionName");
-            //error_log(print_r($segmentStopOrders, true));
+            Kurogo::log(LOG_DEBUG, "HEADSIGN: $directionName", 'transit');
+            Kurogo::log(LOG_DEBUG, print_r($segmentStopOrders, true), 'transit');
             
             // The following attempts to fix the problem of cycles in the graph
             // It assumes that there is at least one trip with all the visits to a single
@@ -910,13 +907,13 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 }
             }
             
-            //error_log(print_r($segmentStopOrders, true));
-            //error_log(print_r($stopCounts, true));
+            Kurogo::log(LOG_DEBUG, print_r($segmentStopOrders, true), 'transit');
+            Kurogo::log(LOG_DEBUG, print_r($stopCounts, true), 'transit');
             $directionStops = array();
             $tempStopCounts = $stopCounts;
             $stopSortGraph = $this->buildSortStopGraph($segmentStopOrders);
             $this->topologicalSortStops($stopSortGraph, $tempStopCounts, $directionStops);
-            //error_log(print_r($directionStops, true));
+            Kurogo::log(LOG_DEBUG, print_r($directionStops, true), 'transit');
             
             $stopArray = array();
             foreach ($directionStops as $stopID) {
@@ -956,17 +953,18 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         
         $timeRange = array($time, $time + Kurogo::getOptionalSiteVar('TRANSIT_SCHEDULE_ROUTE_RUNNING_PADDING', 900));
         $runningTime = $this->viewRouteInScheduleView($routeID) ? $timeRange : $time;
-        
         foreach ($directionSegments as $segment) {
-            if (!$segment->isRunning($runningTime)) { continue; }
-            
+            if (!$segment->isRunning($runningTime)) {
+                Kurogo::log(LOG_DEBUG, "segment {$segment->getID()} ({$segment->getName()}) is not running", 'transit');
+                continue;
+            }
             $segmentInfo = array(
                 'id'   => $segment->getID(),
                 'name' => $segment->getName(),
                 'stops' => $stopArray,
             );
 
-            //error_log(print_r($segment->getStops(), true));
+            Kurogo::log(LOG_DEBUG, print_r($segment->getStops(), true), 'transit');
             $remainingStopsIndex = 0;
             foreach ($segment->getStops() as $i => $stopInfo) {
                 $arrivalTime = null;
@@ -976,7 +974,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 } else if (isset($stopInfo['predictions']) && $stopInfo['predictions']) {
                     $arrivalTime = reset($stopInfo['predictions']);
                 }
-                
+
                 for ($j = $remainingStopsIndex; $j < count($segmentInfo['stops']); $j++) {
                     if ($segmentInfo['stops'][$j]['id'] == $stopInfo['stopID']) {
                         $remainingStopsIndex = $j+1;
@@ -1002,7 +1000,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                                 $mins = floor($offset / 60);
                                 $secs = $offset - ($mins * 60);
                                 $prev = $oldArrivalTime ? strftime("%H:%M:%S", $oldArrivalTime) : 'not set ';
-                                error_log('Arrival time for stop '.str_pad($stopInfo['stopID'], 6).' is in '.str_pad($mins, 3, ' ', STR_PAD_LEFT).'m '.str_pad($secs, 2, ' ', STR_PAD_LEFT).'s (now '.strftime("%H:%M:%S", $arrivalTime).' / was '.$prev.') '.$this->stops[$stopInfo['stopID']]->getName());
+                                Kurogo::log(LOG_DEBUG, 'Arrival time for stop '.str_pad($stopInfo['stopID'], 6).' is in '.str_pad($mins, 3, ' ', STR_PAD_LEFT).'m '.str_pad($secs, 2, ' ', STR_PAD_LEFT).'s (now '.strftime("%H:%M:%S", $arrivalTime).' / was '.$prev.') '.$this->stops[$stopInfo['stopID']]->getName(), 'transit');
                                 */
                             }
                         }
@@ -1011,7 +1009,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 }
                 if ($j == count($segmentInfo['stops'])) {
                     Kurogo::log(LOG_WARNING, "Unable to place stop {$stopInfo['stopID']} for direction '$directionName' at index {$stopInfo['i']}", 'transit');
-                    error_log("Unable to place stop {$stopInfo['stopID']} for direction '$directionName' at index {$stopInfo['i']}");
+                    Kurogo::log(LOG_DEBUG, "Unable to place stop {$stopInfo['stopID']} for direction '$directionName' at index {$stopInfo['i']}", 'transit');
                 }
             }
             $segments[] = $segmentInfo;
@@ -1021,9 +1019,9 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         // very noisy output so we really don't want this most of the time
         if ($this->debugStopOrder) {
             foreach ($segments as $i => $segmentInfo) {
-                error_log("Trip {$segmentInfo['id']} ($directionName)");
+                Kurogo::log(LOG_DEBUG, "Trip {$segmentInfo['id']} ($directionName)", 'transit');
                 foreach ($segmentInfo['stops'] as $stop) {
-                    error_log("\t\t".str_pad($stop['id'], 8).' => '.(isset($stop['i']) ? $stop['i'] : 'skipped'));
+                    Kurogo::log(LOG_DEBUG, "\t\t".str_pad($stop['id'], 8).' => '.(isset($stop['i']) ? $stop['i'] : 'skipped'), 'transit');
                 }
             }
         }
@@ -1081,7 +1079,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         }
         
         $stopCounts[$current]--; // remember we will be placing this stop
-        //error_log("Looking at $current (".implode(', ', $stopSortGraph[$current]['before']).')');
+        Kurogo::log(LOG_DEBUG, "Looking at $current (".implode(', ', $stopSortGraph[$current]['before']).')', 'transit');
         
         foreach ($stopSortGraph[$current]['before'] as $stopID) {
             // Each leg of the tree is permitted to have $seenStopCounts[$stopID] of each stop
@@ -1092,7 +1090,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         }
         
         $sortedStops[] = $current;
-        //error_log(print_r($sortedStops, true));
+        Kurogo::log(LOG_DEBUG, print_r($sortedStops, true), 'transit');
     }
 }
 
@@ -1132,12 +1130,12 @@ class TransitTime
     }
     
     private static function createFromComponents($hours, $minutes, $seconds) {
-        if ($seconds > 59) {
+        if ($seconds < 0 || $seconds > 59) {
             $addMinutes = floor($seconds/60);
             $minutes += $addMinutes;
             $seconds -= $addMinutes*60;
         }
-        if ($minutes > 59) {
+        if ($minutes < 0 || $minutes > 59) {
             $addHours = floor($minutes/60);
             $hours += $addHours;
             $minutes -= $addHours*60;
@@ -1215,7 +1213,7 @@ class TransitTime
     }
     
     public static function compare($tt1, $tt2) {
-        //error_log("Comparing ".self::getString($tt1)." to ".self::getString($tt2));
+        Kurogo::log(LOG_DEBUG, "Comparing ".self::getString($tt1)." to ".self::getString($tt2), 'transit');
         if ($tt1 == $tt2) {
             return 0;
         } else {
@@ -1228,21 +1226,33 @@ class TransitTime
         $tt = self::createFromComponents($hours, $minutes, $seconds+$addSeconds);
     }
     
-    public function addMinutes(&$tt, $addMinutes) {
+    public static function addMinutes(&$tt, $addMinutes) {
         list($hours, $minutes, $seconds) = self::getComponents($tt);
         $tt = self::createFromComponents($hours, $minutes+$addMinutes, $seconds);
     }
     
-    public function addHours(&$tt, $addHours) {
+    public static function addHours(&$tt, $addHours) {
         list($hours, $minutes, $seconds) = self::getComponents($tt);
         $tt = self::createFromComponents($hours+$addHours, $minutes, $seconds);
     }
     
-    public function addTime(&$tt, $addTT) {
+    public static function addTime(&$tt, $addTT) {
         list($hours,    $minutes,    $seconds)    = self::getComponents($tt);
         list($addHours, $addMinutes, $addSeconds) = self::getComponents($addTT);
-      
         $tt = self::createFromComponents($hours+$addHours, $minutes+$addMinutes, $seconds+$addSeconds);
+    }
+
+    public static function getDifferenceInSeconds($fromTT, $toTT) {
+        $intervalTT = $toTT;
+        list($hours,   $minutes,   $seconds)    = self::getComponents($fromTT);
+        list($toHours, $toMinutes, $toSeconds) = self::getComponents($toTT);
+
+        return (($toHours-$hours) * 60 + ($toMinutes - $minutes)) * 60 + ($toSeconds - $seconds);
+    }
+
+    public static function timeByAddingSeconds($tt, $addSeconds) {
+        list($hours, $minutes, $seconds) = self::getComponents($tt);
+        return self::createFromComponents($hours, $minutes, $seconds + $addSeconds);
     }
     
     public static function isTimeInRange($timestamp, $fromTT, $toTT) {
@@ -1254,7 +1264,7 @@ class TransitTime
             $toBeforeStart = TransitTime::compare($toTT, $startTT) < 0; // range before timestamp
             $inRange = !$endBeforeFrom && !$toBeforeStart;
             
-            //error_log(TransitTime::getString($startTT).' - '.TransitTime::getString($endTT)." is ".($inRange ? '' : 'not ')."in range ".TransitTime::getString($fromTT).' - '.TransitTime::getString($toTT));
+            Kurogo::log(LOG_DEBUG, TransitTime::getString($startTT).' - '.TransitTime::getString($endTT)." is ".($inRange ? '' : 'not ')."in range ".TransitTime::getString($fromTT).' - '.TransitTime::getString($toTT), 'transit');
           
         } else {
             $tt = TransitTime::createFromTimestamp($timestamp);
@@ -1263,7 +1273,7 @@ class TransitTime
             $beforeEnd  = TransitTime::compare($toTT, $tt) >= 0;
             $inRange = $afterStart && $beforeEnd;
             
-            //error_log(TransitTime::getString($tt)." is ".($inRange ? '' : 'not ')."in range ".TransitTime::getString($fromTT).' - '.TransitTime::getString($toTT));
+            Kurogo::log(LOG_DEBUG, TransitTime::getString($tt)." is ".($inRange ? '' : 'not ')."in range ".TransitTime::getString($fromTT).' - '.TransitTime::getString($toTT), 'transit');
         }
         return $inRange;
     }
@@ -1347,7 +1357,10 @@ class TransitRoute
         $direction = $this->getDirection($direction);
         return $direction['segments'];
     }
-    
+
+    /*
+    // commenting out this function as it does not seem to be used
+    // and the code doesn't look correct
     public function setStopTimes($directionID, $stopID, $arrivesOffset, $departsOffset) {
         if (!isset($this->directions[$directionID])) {
             Kurogo::log(LOG_WARNING, "No direction $directionID for route {$this->id}", 'transit');
@@ -1356,6 +1369,7 @@ class TransitRoute
             $segment->setStopTimes($stopID, $predictions, $arrivesOffset, $departsOffset);
         }
     }
+    */
     
     public function setStopPredictions($directionID, $stopID, $predictions) {
         $direction = $this->getDirection($directionID);
@@ -1399,17 +1413,17 @@ class TransitRoute
         // Check if there is a valid segment
         $servicesForDate = null;
         
-        //error_log(__FUNCTION__."(): Looking at route {$this->id} ({$this->name})");
+        Kurogo::log(LOG_DEBUG, __FUNCTION__."(): Looking at route {$this->id} ({$this->name})", 'transit');
         foreach ($this->directions as $direction) {
             foreach ($direction['segments'] as $segment) {
-                //error_log("    Looking at segment $segment");
+                Kurogo::log(LOG_DEBUG, "    Looking at segment {$segment->getName()}", 'transit');
                 if ($segment->getService()->isRunning($time)) {
                     $inService = true;
                     
                     if ($segment->isRunning($time)) {
                         $name = $segment->getName();
                         if (isset($name) && !isset($runningSegmentNames[$name])) {
-                            //error_log("   Route {$this->name} has named running segment '$name' (direction '$direction')");
+                            Kurogo::log(LOG_DEBUG, "   Route {$this->name} has named running segment '$name' (direction '$direction')", 'transit');
                             $runningSegmentNames[$name] = $name;
                         }
                         $isRunning = true;
@@ -1566,7 +1580,7 @@ class TransitService
         $isException  = in_array($date, $this->exceptions);
         $isAddition   = in_array($date, $this->additions);
     
-        //error_log("service $service is ".($isAddition || ($inValidDateRange && !$isException) ? '' : 'not ').'running');
+        Kurogo::log(LOG_DEBUG, "service $service is ".($isAddition || ($inValidDateRange && !$isException) ? '' : 'not ').'running', 'transit');
         return $isAddition || ($insideValidDateRange && !$isException);
     }
 }
@@ -1661,6 +1675,8 @@ class TransitSegment
         return false;
     }
   
+    /*
+    // commenting out as i can't find where this is used
     public function setStopTimes($stopID, $arrivesTT, $departsTT) {
         $index = $this->getIndexForStop($stopID);
         if ($index !== false) {
@@ -1669,6 +1685,7 @@ class TransitSegment
             $this->stops[$index]['hasTiming'] = true;
         }
     }
+    */
     
     public function setStopPredictions($stopID, $predictions) {
         $index = $this->getIndexForStop($stopID);
@@ -1740,7 +1757,7 @@ class TransitSegment
         if (isset($stopID)) {
             $index = $this->getIndexForStop($stopID);
         }
-        
+
         if ($index !== false && isset($this->stops[$index])) {
             $stop = $this->stops[$index];
             
@@ -1773,7 +1790,7 @@ class TransitSegment
             TransitTime::addTime($firstLoopStopTime, $stop['arrives']);
             
             $arrivalTime = TransitTime::getTimestampOnDate($firstLoopStopTime, $time);
-            //error_log("Stop {$stop['stopID']} default arrival time will be ".$firstLoopStopTime->getString()." start is ".$firstFrequency['range']->getStart()->getString()." offset is ".$stop['arrives']->getString());
+            Kurogo::log(LOG_DEBUG, "Stop {$stop['stopID']} default arrival time will be ".$firstLoopStopTime->getString()." start is ".$firstFrequency['range']->getStart()->getString()." offset is ".$stop['arrives']->getString(), 'transit');
       
             $foundArrivalTime = false;
             foreach ($this->frequencies as $frequencyInfo) {
@@ -1782,7 +1799,7 @@ class TransitSegment
                 
                 while (TransitTime::compare($currentTT, $frequencyInfo['end']) <= 0) {
                     $testTime = TransitTime::getTimestampOnDate($currentTT, $time);
-                    //error_log("Looking at ".$currentTT->getString()." is ".($testTime > $time ? 'after now' : 'before now'));
+                    Kurogo::log(LOG_DEBUG, "Looking at ".$currentTT->getString()." is ".($testTime > $time ? 'after now' : 'before now'), 'transit');
                     if ($testTime > $time && (!$foundArrivalTime || $testTime < $arrivalTime)) { 
                         $arrivalTime = $testTime; 
                         $foundArrivalTime = true;

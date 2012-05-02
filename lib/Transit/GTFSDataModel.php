@@ -176,6 +176,16 @@ class GTFSTransitSegment extends TransitSegment
     public function getFirstTripTime() {
         return $this->firstTripTime;
     }
+
+    private static function frequencyCompare($a, $b) {
+        if ($a['start'] < $b['start']) {
+            return -1;
+        }
+        if ($a['start'] > $b['start']) {
+            return 1;
+        }
+        return 0;
+    }
     
     protected function loadFrequencies() {
         $sql = 'SELECT *'
@@ -197,6 +207,9 @@ class GTFSTransitSegment extends TransitSegment
                 }
                 
                 $this->addFrequency($startTT, $endTT, $frequency);
+            }
+            if ($this->frequencies) {
+                usort($this->frequencies, array(get_class($this), 'frequencyCompare'));
             }
         }
 
@@ -235,40 +248,61 @@ class GTFSTransitSegment extends TransitSegment
     public function getFrequency($time) {
         // we can call hasFrequencies as soon as the above is finished
         if (!$this->hasFrequencies()) {
-            if ($this->secondStopTime === NULL) {
-
-                $sql = 'SELECT s.departure_time AS departure_time'
-                            .'  FROM stop_times s, trips t'
-                            .' WHERE s.stop_sequence = 1'
-                            ."   AND t.route_id = ?"
-                            .'   AND s.trip_id = t.trip_id'
-                            ."   AND s.departure_time > ?"
-                            .' ORDER BY s.departure_time';
+            // for frequency-based trips, $this->firstTripFrequency corresponds
+            // to headway_secs in the frequencies.txt file. since we aren't
+            // using frequencies.txt, we can overload firstTripFrequency to use
+            // as the time between us and the next segment.
+            if (!$this->firstTripFrequency) {
+                $sql = 'SELECT s.departure_time, s.stop_id, t.*'
+                      .'  FROM stop_times s, trips t'
+                      .' WHERE t.route_id = ?'
+                      .'   AND s.trip_id = t.trip_id'
+                      ."   AND s.departure_time > ?"
+                      .' ORDER BY s.departure_time';
                 $params = array($this->route->getID(), $this->firstStopTime);
+
+                // find the time difference between two departures from the same stop.
+                // since not all trips pass through all stops, find the first stop
+                // that is repeated.
+                $firstTripTimes = array();
                 $result = $this->route->query($sql, $params);
-                if ($row = $result->fetch()) {
-                    $this->secondStopTime = $row['departure_time'];
-                } else {
-                    $sql = str_replace('>', '<', $sql) . ' DESC';
-                    $result = $this->route->query($sql, $params);
-                    if ($row = $result->fetch()) {
-                        $this->secondStopTime = $this->firstStopTime;
-                        $this->firstStopTime = $row['departure_time'];
+                while ($row = $result->fetch()) {
+                    $stop = $row['stop_id'];
+                    if (isset($row['direction_id'])) {
+                        // if multiple directions provide the same stop, we only want
+                        // the time interval between stops on the same direction
+                        $stop .= '@@'.$row['direction_id'];
                     }
+
+                    if (isset($firstTripTimes[$stop])) {
+                        $startTT = TransitTime::createFromString($firstTripTimes[$stop]);
+                        $endTT = TransitTime::createFromString($row['departure_time']);
+                        $this->firstTripFrequency = TransitTime::getDifferenceInSeconds($startTT, $endTT);
+                        break;
+                    }
+                    $firstTripTimes[$stop] = $row['departure_time'];
                 }
             }
-            
-            if (isset($this->firstStopTime) && isset($this->secondStopTime)) {
-                $startTT = TransitTime::createFromString($this->firstStopTime);
-                $endTT = TransitTime::createFromString($this->secondStopTime);
-                return $endTT - $startTT;
-            }
-
-            return 0;
+            return $this->firstTripFrequency;
 
         } else {
             return parent::getFrequency($time);
         }
+    }
+
+    private function getCurrentFrequencyInfo($time) {
+        $result = null;
+        if ($this->hasFrequencies()) {
+            // parent's loop works since we always populate frequencies
+            $result = $this->frequencies[0]; // default to first one if we're not currently running
+            foreach ($this->frequencies as $index => $frequencyInfo) {
+                if (TransitTime::isTimeInRange($time, $frequencyInfo['start'], $frequencyInfo['end'])) {
+                    $result = $frequencyInfo;
+                    break;
+                }
+            }
+        }
+        return $result;
     }
     
     public function isRunning($time) {
@@ -277,9 +311,11 @@ class GTFSTransitSegment extends TransitSegment
         }
         
         if ($this->hasFrequencies()) {
-            // parent's loop works since we always populate frequencies
             foreach ($this->frequencies as $index => $frequencyInfo) {
-                if (TransitTime::isTimeInRange($time, $frequencyInfo['start'], $frequencyInfo['end'])) {
+                // if this trip starts within $frequency of the current time,
+                // consider it running
+                $start = TransitTime::timeByAddingSeconds($frequencyInfo['start'], -$frequencyInfo['frequency']);
+                if (TransitTime::isTimeInRange($time, $start, $frequencyInfo['end'])) {
                     return true;
                 }
             }
@@ -299,6 +335,13 @@ class GTFSTransitSegment extends TransitSegment
             $result = $this->route->query($sql, $params);
             if ($result) {
                 $firstTT = TransitTime::createFromString($this->firstStopTime);
+                // we should be using the previous frequency (time between the
+                // previous segment and this segment) and not the current one,
+                // and we could get it with some variation on the code in
+                // $this->getFrequency($time), but for now use the current one
+                // as an approximation.
+                $firstTT = TransitTime::timeByAddingSeconds($firstTT, -$this->getFrequency($time));
+
                 $lastRow = $result->fetch(PDO::FETCH_ASSOC); // discard rest of results
                 $lastTT = TransitTime::createFromString($lastRow['departure_time']);
                 return TransitTime::isTimeInRange($time, $firstTT, $lastTT);
@@ -309,7 +352,13 @@ class GTFSTransitSegment extends TransitSegment
     
     public function getStops() {
         if (!count($this->stops)) {
-            $now = TransitTime::getCurrentTime();
+            if ($this->hasFrequencies()) {
+                $now = TransitTime::getCurrentTime();
+                $frequencyInfo = $this->getCurrentFrequencyInfo($now);
+                if ($frequencyInfo) {
+                    $tripStart = $frequencyInfo['start']; // already in TransitTime format
+                }
+            }
 
             $sql = 'SELECT arrival_time, departure_time, stop_id, stop_sequence'
                         .'  FROM stop_times'
@@ -322,6 +371,10 @@ class GTFSTransitSegment extends TransitSegment
                     $stopIndex = intval($row['stop_sequence']);
                     $arrivesTT = TransitTime::createFromString($row['arrival_time']);
                     $departsTT = TransitTime::createFromString($row['departure_time']);
+                    if (isset($tripStart)) {
+                        TransitTime::addTime($arrivesTT, $tripStart);
+                        TransitTime::addTime($departsTT, $tripStart);
+                    }
                     $stopInfo = array(
                         'stopID' => $row['stop_id'],
                         'i' => $stopIndex,
@@ -333,7 +386,7 @@ class GTFSTransitSegment extends TransitSegment
                 }
             }
         }
-        
+
         return $this->stops;
     }
 
@@ -364,7 +417,7 @@ class GTFSTransitRoute extends TransitRoute
                 if ($segment->isRunning($time)) {
                     $name = $segment->getName();
                     if (isset($name) && !isset($runningSegmentNames[$name])) {
-                        //error_log("   Route ".$this->getName()." has named running segment '$name' (direction '$directionID')");
+                        Kurogo::log(LOG_DEBUG, "   Route {$this->getName()} has named running segment '$name' (direction '$directionID')", 'transit');
                         $runningSegmentNames[$name] = $name;
                     }
                     $isRunning = true;
@@ -379,58 +432,21 @@ class GTFSTransitRoute extends TransitRoute
         // Time between shuttles at the same stop
         $frequency = 0;
         $firstTripTime = 999999;
-        $firstSegment = NULL;
         
-        if ($this->segmentsUseFrequencies()) {
-            foreach ($this->directions as $direction) {
-                foreach ($direction['segments'] as $segment) {
-                    if ($segment->isRunning($time)) {
-                        $frequency = $segment->getFrequency($time);
-                        if ($frequency > 0) { break; }
-                    }
+        foreach ($this->directions as $direction) {
+            foreach ($direction['segments'] as $segment) {
+                if ($segment->isRunning($time)) {
+                    $frequency = $segment->getFrequency($time);
                     if ($frequency > 0) { break; }
-
-                    if (($aTripTime = $segment->getFirstTripTime()) < $firstTripTime) {
-                        $firstTripTime = $aTripTime;
-                        $firstSegment = $segment;
-                    }
                 }
                 if ($frequency > 0) { break; }
-            }
-            
-            if ($frequency == 0) {
-                $frequency = $segment->getFirstTripFrequency();
-            }
 
-        } else {
-            // if nothing is running, these will be populated.
-            // relying on the fact that only in-service segments are ever created
-            $firstStopTime = '99:99:99';
-            $secondStopTime = '99:99:99';
-        
-            $this->getDirections();
-            foreach ($this->directions as $direction) {
-                foreach ($direction['segments'] as $segment) {
-                    if ($segment->isRunning($time)) {
-                        $frequency = $segment->getFrequency($time);
-                        if ($frequency > 0) { break; }
-                    }
-                    if ($frequency > 0) { break; }
-                    if (($aStopTime = $segment->getFirstStopTime()) < $firstStopTime) {
-                        $firstStopTime = $aStopTime;
-                    }
-                    else if ($aStopTime < $secondStopTime) {
-                        $secondStopTime = $aStopTime;
-                    }
+                if (($aTripTime = $segment->getFirstTripTime()) < $firstTripTime) {
+                    $firstTripTime = $aTripTime;
+                    $frequency = $segment->getFirstTripFrequency();
                 }
-                if ($frequency > 0) { break; }
             }
-
-            if ($frequency == 0 && $firstStopTime != '99:99:99' && $secondStopTime != '99:99:99') {
-                $startTT = TransitTime::createFromString($firstStopTime);
-                $endTT = TransitTime::createFromString($secondStopTime);
-                $frequency = $endTT - $startTT;
-            }
+            if ($frequency > 0) { break; }
         }
         
         return $frequency;
@@ -474,26 +490,30 @@ class GTFSTransitRoute extends TransitRoute
             // get all segments that run today regardless of what time it is
             // presence of a segment indicates the route is in service
             $services = array();
-            $sql = 'SELECT t.trip_id AS trip_id, t.service_id AS service_id, t.trip_headsign AS trip_headsign, t.direction_id AS direction_id'
-                        .'  FROM trips t, calendar c'
-                        .' WHERE route_id = ?'
-                        .'   AND t.service_id = c.service_id'
-                        .$exceptionClause
-                        .'   AND ('
-                        .$additionClause
-                        ."(c.$dayOfWeek = 1 AND c.start_date <= ? AND c.end_date >= ?))";
+
+            // trip_id, service_id are required
+            // trip_headsign, direction_id appear optionally
+            $sql = 'SELECT t.*'
+                  .'  FROM trips t, calendar c'
+                  .' WHERE route_id = ?'
+                  .'   AND t.service_id = c.service_id'
+                  .$exceptionClause
+                  .'   AND ('
+                  .$additionClause
+                  ."(c.$dayOfWeek = 1 AND c.start_date <= ? AND c.end_date >= ?))";
             $result = $this->query($sql, $params);
 
             if ($result) {
                 while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
                     $serviceID = $row['service_id'];
-                    $direction = ($row['direction_id'] === NULL) ? TransitDataModel::LOOP_DIRECTION : $row['direction_id'];
+                    $direction = !isset($row['direction_id']) ? TransitDataModel::LOOP_DIRECTION : $row['direction_id'];
+                    $headsign = isset($row['trip_headsign']) ? $row['trip_headsign'] : null;
                     if (!isset($services[$serviceID])) {
                         $services[$serviceID] = new TransitService($serviceID, true /* always running */);
                     }
                     $segment = new GTFSTransitSegment(
                         $row['trip_id'],
-                        $row['trip_headsign'],
+                        $headsign,
                         $services[$serviceID],
                         $direction,
                         $this
