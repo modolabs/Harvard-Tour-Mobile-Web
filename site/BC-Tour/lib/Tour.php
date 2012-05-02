@@ -229,7 +229,8 @@ class TourDataParser {
     protected $cacheLifetime = 86400;
     
     function __construct($useCache=true) {
-        $this->useCache = $useCache;
+        $this->cache = new DiskCache(CACHE_DIR."/tour", $this->cacheLifetime, TRUE);
+        $this->useCache = $useCache; // false means ignore isFresh result
 
         $tourNode = $this->getNodeData(Kurogo::getSiteVar('TOUR_NODE_ID'));
         //error_log(print_r($tourNode, true));
@@ -456,10 +457,13 @@ class TourDataParser {
         return array();
     }
     
-    protected function getURLForNodeFileURI($node) {
-        if (isset($node['uri'])) {
-            if (preg_match(';^public://(.+)$;', $node['uri'], $matches)) {
-                return Kurogo::getSiteVar('TOUR_SERVICE_FILE_PREFIX').str_replace(' ', '%20', $matches[1]);
+    protected function getURLForNodeFile($node, $nodeFile) {
+        if (isset($nodeFile['fid'])) {
+            $files = $this->getNodeFilesData($node['nid']);
+            foreach ($files as $file) {
+                if (isset($file['uri_full']) && $file['fid'] == $nodeFile['fid']) {
+                    return $file['uri_full'];
+                }
             }
         }
         return '';
@@ -484,7 +488,7 @@ class TourDataParser {
         $nodePhotos = $this->getNodeField($node, $fieldName, array());
         
         foreach ($nodePhotos as $nodePhoto) {
-            $photoURL = $this->getURLForNodeFileURI($nodePhoto);
+            $photoURL = $this->getURLForNodeFile($node, $nodePhoto);
             if (!$photoURL) { continue; }
             
             $photos[] = array(
@@ -504,7 +508,7 @@ class TourDataParser {
         return array(
             'type'    => 'video',
             'title'   => $this->getNodeHTML($node, 'field_caption'),
-            'url'     => $this->getURLForNodeFileURI($firstMPEG4Field),
+            'url'     => $this->getURLForNodeFile($node, $firstMPEG4Field),
             'youtube' => $this->getNodeHTML($node, 'field_youtube'),
         );
     }
@@ -556,23 +560,42 @@ class TourDataParser {
     
     protected function getNodeData($nid) {
         $cacheName = "node_$nid";
-
-        if (!$this->cache) {
-            $this->cache = new DiskCache(CACHE_DIR."/tour", $this->cacheLifetime, TRUE);
-        }
-
+        
         if ($this->useCache && $this->cache->isFresh($cacheName)) {
             $results = $this->cache->read($cacheName);
             
         } else {
-            $content = file_get_contents(Kurogo::getSiteVar('TOUR_SERVICE_URL')."$nid.json");
+            $content = file_get_contents(Kurogo::getSiteVar('TOUR_SERVICE_URL')."node/$nid.json");
             $results = json_decode($content, true);
             
             if ($results) {
                 $this->cache->write($results, $cacheName);
                 
             } else {
-                error_log("Error while making foursquare API request: '$content'");
+                error_log("Error while making Services API node '$nid' request: '$content'");
+                $results = $this->cache->read($cacheName);
+            }
+        }
+        
+        return $results;
+    }
+    
+    protected function getNodeFilesData($nid) {
+        $cacheName = "node_{$nid}_files";
+        
+        if ($this->useCache && $this->cache->isFresh($cacheName)) {
+            $results = $this->cache->read($cacheName);
+            
+        } else {
+            // the 0 at the end tells Services to not return the file contents
+            $content = file_get_contents(Kurogo::getSiteVar('TOUR_SERVICE_URL')."node/$nid/files/0.json");
+            $results = json_decode($content, true);
+            
+            if ($results) {
+                $this->cache->write($results, $cacheName);
+                
+            } else {
+                error_log("Error while making Services API node '$nid' files request: '$content'");
                 $results = $this->cache->read($cacheName);
             }
         }
