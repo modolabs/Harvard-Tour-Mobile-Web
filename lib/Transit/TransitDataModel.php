@@ -439,7 +439,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         return $stopInfo;
     }
     
-    public function getMapImageForStop($id, $width=270, $height=270) {
+    public function getMapImageForStop($id, $width, $height) {
         $stop = $this->getStop($id);
         if (!$stop) {
             Kurogo::log(LOG_WARNING, __FUNCTION__."(): No such stop '$id'", 'transit');
@@ -458,7 +458,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         return self::GOOGLE_STATIC_MAPS_URL.$query;
     }
   
-    public function getMapImageForRoute($id, $width=270, $height=270) {
+    public function getMapImageForRoute($id, $width, $height) {
         $route = $this->getRoute($id);
         if (!$route) {
             Kurogo::log(LOG_WARNING, __FUNCTION__."(): No such route '$id'", 'transit');

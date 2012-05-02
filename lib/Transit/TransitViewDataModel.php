@@ -190,7 +190,7 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
         
     }
     
-    public function getMapImageForStop($globalStopID, $width=270, $height=270) {
+    public function getMapImageForStop($globalStopID, $width, $height) {
         $image = false;
         list($system, $stopID) = $this->getRealID($globalStopID);
         $models = $this->modelsForStop($system, $stopID);
@@ -207,7 +207,7 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
         return $image;
     }
   
-    public function getMapImageForRoute($globalRouteID, $width=270, $height=270) {
+    public function getMapImageForRoute($globalRouteID, $width, $height) {
         $image = false;
         list($system, $routeID) = $this->getRealID($globalRouteID);
         $model = $this->modelForRoute($system, $routeID);

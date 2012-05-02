@@ -10,11 +10,11 @@ interface TransitDataModelInterface {
     
     public function getMapImageForRoute($routeID, $width, $height);
     
-    public function getRouteInfo($routeID, $time);
+    public function getRouteInfo($routeID, $time=null);
     public function getRoutePaths($routeID);
     public function getRouteVehicles($routeID);
     
     public function getServiceInfoForRoute($routeID);
     
-    public function getRoutes($time);
+    public function getRoutes($time=null);
 }
