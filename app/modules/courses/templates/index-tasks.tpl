@@ -13,7 +13,7 @@
     {include file="findInclude:modules/courses/templates/tasksList.tpl" tasksListHeading=$tasksListHeading tasks=$group.items}
 {/foreach}
 {else}
-{"NO_TASKS"|getLocalizedString}
+<div class="nonfocal">{"NO_TASKS"|getLocalizedString}</div>
 {/if}
 {/block}
 {block name="tasksFooter"}{/block}
