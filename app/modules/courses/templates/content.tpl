@@ -1,7 +1,7 @@
 {include file="findInclude:common/templates/header.tpl"}
 <div class="nonfocal">
 <h2 class="contenttitle">{$contentTitle}</h2>
-<span class="termtitle">
+<p class="smallprint">
 {if $contentAuthor}
 {$contentAuthor}<br/>
 {/if}
@@ -9,7 +9,7 @@
 {$contentPublished}<br/>
 {/if}
 {$courseTitle}<br/>
-</span>
+</p>
 </div>
 {if $contentDescription}
 <div class="focal">

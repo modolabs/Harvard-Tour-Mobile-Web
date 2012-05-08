@@ -1,10 +1,11 @@
 <div class="nonfocal">
 {block name="courseTitle"}
-<h3>{$courseID} {$courseTitle}</h3>
+{include file="findInclude:common/templates/bookmark.tpl" name=$cookieName item=$bookmarkItem exdate=$expireDate}
+<h2>{$courseID} {$courseTitle}</h2>
 {/block}
 {block name="termTitle"}
 {if $termTitle}
-<h4>{$termTitle}</h4>
+<p class="smallprint">{$termTitle}</p>
 {/if}
 {/block}
 </div>

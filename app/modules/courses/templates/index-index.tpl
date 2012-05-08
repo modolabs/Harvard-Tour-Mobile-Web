@@ -7,10 +7,8 @@
     </div>
 {elseif $hasPersonalizedCourses}
     {block name="welcomeInfo"}
-    <div class="nonfocal">
-        <h2>{$moduleStrings.COURSES_WELCOME_TITLE}</h2>
+        <h3>{$moduleStrings.COURSES_WELCOME_TITLE}</h3>
         <p>{$moduleStrings.COURSES_WELCOME_DESCRIPTION}</p>
-    </div>
     {/block}
     {block name="loginText"}
         <div>

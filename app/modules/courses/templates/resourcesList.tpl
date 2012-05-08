@@ -1,7 +1,7 @@
 {if $resources}
 {if $resourcesListHeading}
 <div class="nonfocal">
-  <h3>{$resourcesListHeading}</h3>
+  <h2>{$resourcesListHeading}</h2>
 </div>
 {/if}
 <ul class="nav">
