@@ -485,6 +485,7 @@ class CoursesWebModule extends WebModule {
     protected function formatInfoDetail($values, $info, CombinedCourse $course) {
     	if(isset($values[0]) && is_object($values[0])) {
 	        $detail = array(
+	            'title' => null,
 	        	'head'  => isset($info['title']) ? $info['title'] : null
 	        );
     	}else{
