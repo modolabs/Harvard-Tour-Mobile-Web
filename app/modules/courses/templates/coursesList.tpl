@@ -1,8 +1,6 @@
 {if $courses}
 {if $courseListHeading}
-<div class="nonfocal">
   <h3>{$courseListHeading}</h3>
-</div>
 {/if}
 <ul class="nav">
 {foreach $courses as $course}

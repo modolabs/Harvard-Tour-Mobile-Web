@@ -1,8 +1,5 @@
 {include file="findInclude:common/templates/header.tpl"}
 {include file="findInclude:modules/courses/templates/coursedetailhead.tpl"}
-<div class="bookmarkicon">
-{include file="findInclude:common/templates/bookmark.tpl" name=$cookieName item=$bookmarkItem exdate=$expireDate}
-</div>
 {$tabBodies=array()}
 {foreach $tabs as $key}
     {if $key=='index'}

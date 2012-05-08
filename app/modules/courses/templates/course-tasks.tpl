@@ -11,7 +11,7 @@
     {include file="findInclude:modules/courses/templates/tasksList.tpl" tasksListHeading=$navListHeading tasks=$group.items}
 {/foreach}
 {else}
-{"NO_TASKS"|getLocalizedString}
+<p>{"NO_TASKS"|getLocalizedString}</p>
 {/if}
 {/block}
 {block name="tasksFooter"}{/block}

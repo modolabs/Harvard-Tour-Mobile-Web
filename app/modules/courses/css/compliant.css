@@ -71,12 +71,6 @@ form {
     display: inline;
 }
 
-.bookmarkicon {
-    position: absolute;
-    right: 10px;
-    top: 100px;
-}
-
 .nav li.icon .content img {
     height: 40px;
     width: 40px;

@@ -1,7 +1,7 @@
 {if $tasks}
 {if $tasksListHeading}
 <div class="nonfocal">
-  <h3>{$tasksListHeading}</h3>
+  <h2>{$tasksListHeading}</h2>
 </div>
 {/if}
 <ul class="nav">

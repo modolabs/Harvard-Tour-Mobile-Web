@@ -1,6 +1,6 @@
 {include file="findInclude:common/templates/header.tpl"}
 
-<h2 class="nonfocal">{$dropTitle}</h2>
+<div class="nonfocal"><h2>{$dropTitle}</h2></div>
 {include file="findInclude:common/templates/navlist.tpl" navlistItems=$links}
 
 {include file="findInclude:common/templates/footer.tpl"}

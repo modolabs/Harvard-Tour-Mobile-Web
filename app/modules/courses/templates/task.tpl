@@ -1,13 +1,13 @@
 {include file="findInclude:common/templates/header.tpl"}
 <div class="nonfocal"><h2>{$taskTitle}</h2>
-<span class="termtitle">
+<p class="smallprint">
 {if $taskDate}
 {$taskDate}<br />
 {/if}
 {if $taskDueDate}
 Due: {$taskDueDate}
 {/if}
-</span>
+</p>
 </div>
 {if $taskDescription}
 <div class="focal">{$taskDescription}</div>
