@@ -2,7 +2,7 @@
 {if $coursesLinks}
     {include file="findInclude:modules/courses/templates/coursesList.tpl"  courses=$coursesLinks}
 {elseif $session_userID}
-    <div>
+    <div class="nonfocal">
     {"NO_COURSES"|getLocalizedString}
     </div>
 {elseif $hasPersonalizedCourses}

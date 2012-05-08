@@ -4,6 +4,7 @@
 {$catalogHeader}
 {/block}
 {if $sections}
+<div id="category-switcher">
 Term: <select id="termID" name="term" onchange="loadSection(this, '{$page}');">
     {foreach $sections as $section}
         {if $section['selected']}
@@ -13,6 +14,7 @@ Term: <select id="termID" name="term" onchange="loadSection(this, '{$page}');">
         {/if}
     {/foreach}
 </select>
+</div>
 {/if}
 
 {block name="navList"}
