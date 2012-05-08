@@ -439,6 +439,7 @@ class MoodleCourseContentDataParser extends dataParser {
                                 break;
                         }
                         if ($contentType) {
+                            $contentType->setContentRetriever($this->getResponseRetriever());
                         	$unsetString = isset($value['modules'])? 'modules' : 'contents';
                         	unset($value[$unsetString]);
                         	$properties['section'] = $value;
@@ -667,16 +668,6 @@ class MoodleCourseContentCourse extends CourseContentCourse {
 }
 
 class MoodleDownloadCourseContent extends DownloadCourseContent {
-    public function getFileType() {
-        $ext = '';
-            if (!is_null($this->getFilename()) && $this->getFilename()) {
-                $filebits = explode('.', $this->getFilename());
-                $ext = strtolower(array_pop($filebits));
-            }
-        
-        return $ext;
-    }
-    
     public function getSubTitle() {
     
         $subTitle = '';
@@ -685,6 +676,14 @@ class MoodleDownloadCourseContent extends DownloadCourseContent {
         }
         
         return $subTitle;
+    }
+    
+    public function getContentFile() {
+        $url = $this->getFileURL();
+        if ($retriever = $this->getContentRetriever()) {
+            $file = $retriever->getFileForUrl($url, $this->getID() . '_' . $this->getFileName());
+            return $file;
+        }   
     }
    				
 }
