@@ -1,12 +1,15 @@
 {include file="findInclude:common/templates/header.tpl"}
-<div class="nonfocal"><h3>{$contentTitle}</h3>
+<div class="nonfocal">
+<h2 class="contenttitle">{$contentTitle}</h2>
+<span class="termtitle">
 {if $contentAuthor}
-<span class="smallprint">{$contentAuthor}</span><br/>
+{$contentAuthor}<br/>
 {/if}
 {if $contentPublished}
-<span class="smallprint">{$contentPublished}</span><br/>
+{$contentPublished}<br/>
 {/if}
-<span class="smallprint">{$courseTitle}</span><br/>
+{$courseTitle}<br/>
+</span>
 </div>
 {if $contentDescription}
 <div class="focal">
