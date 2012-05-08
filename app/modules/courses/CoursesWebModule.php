@@ -237,13 +237,13 @@ class CoursesWebModule extends WebModule {
                     $links[] = array(
                         'title'=>'Download File',
                         'subtitle'=>$content->getFilename(),
-                        'url'=>$this->buildBreadcrumbURL('download', $options, false)
+                        'url'=>$this->buildExternalURL($this->buildBreadcrumbURL('download', $options, false)),
                     );
                 }elseif($downloadMode == $content::MODE_URL) {
                     $links[] = array(
                         'title'=>$content->getTitle(),
                         'subtitle'=>$content->getFilename(),
-                        'url'=>$content->getFileurl(),
+                        'url'=>$this->buildExternalURL($content->getFileurl()),
                         'class'=>'external',
                     );
                 }
@@ -890,15 +890,17 @@ class CoursesWebModule extends WebModule {
                 }
                 
                 if ($this->page=='download') {
+                    //we are downloading a file that the server retrieves
                     if ($content->getContentType()=='file') {
-                        $file = $contentCourse->getFileForContent($contentID);
-                        if($this->controller->getRetriever('content')->shouldDownloadFile()){
-                            header('Content-type: ' . mime_type($file));
+                        if ($file = $content->getContentFile()) {
+                            if ($mime = $content->getContentMimeType()) {
+                                header('Content-type: ' . $mime);
+                            }
                             readfile($file);
                             die();
+                        } else {
+                            throw new KurogoException("Unable to download requested file");
                         }
-                        header('Location: '.$file);
-                        die();
                     } else {
                         throw new KurogoException("Cannot download content of type " . $content->getContentType());
                     }

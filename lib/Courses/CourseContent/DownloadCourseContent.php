@@ -3,6 +3,7 @@
 class DownloadCourseContent extends CourseContent {
     protected $contentType = 'file';
     protected $type;
+    protected $filename;
     protected $filepath;
     protected $filesize;
     protected $fileurl;
@@ -13,6 +14,13 @@ class DownloadCourseContent extends CourseContent {
     protected $author;
     protected $license;
     protected $cacheFile;
+    
+    public function getContentMimeType() {
+        if ($this->filename) {
+            return mime_type($this->filename);
+        }
+        return null;
+    }
     
 	public function getType() {
 		return $this->type;
@@ -107,5 +115,9 @@ class DownloadCourseContent extends CourseContent {
     
     public function getCacheFile() {
         return $this->cacheFile;
+    }
+    
+    public function getContentFile() {
+        return $this->fileUrl;
     }
 }
