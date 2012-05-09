@@ -118,6 +118,6 @@ class DownloadCourseContent extends CourseContent {
     }
     
     public function getContentFile() {
-        return $this->fileUrl;
+        return $this->fileurl;
     }
 }
