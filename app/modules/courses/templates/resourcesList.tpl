@@ -1,8 +1,6 @@
 {if $resources}
 {if $resourcesListHeading}
-<div class="nonfocal">
-  <h2>{$resourcesListHeading}</h2>
-</div>
+<h3>{$resourcesListHeading}</h3>
 {/if}
 <ul class="nav">
 {foreach $resources as $resource}
