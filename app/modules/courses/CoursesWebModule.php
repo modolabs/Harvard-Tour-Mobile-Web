@@ -16,14 +16,14 @@ class CoursesWebModule extends WebModule {
     	foreach(array('Roster', 'Course materials', 'Drop Class', 'Description') as $title){
     		$link['title'] = $title;
     		if($title == 'Roster'){
-    			$link['url'] = $this->buildBreadcrumbURL('roster', array('id'=>$courseId), true);
+    			$link['url'] = $this->buildBreadcrumbURL('roster', array('id'=>$courseId));
     		}
     		if($title == 'Course materials'){
     			$link['url'] = '#';
     		}//waiting
     		if($title == 'Drop Class') {
     		    if ($this->controller->canRetrieve('registation')) {
-    		        $link['url'] = $this->buildBreadcrumbURL('dropclass', array('id'=>$courseId), true);
+    		        $link['url'] = $this->buildBreadcrumbURL('dropclass', array('id'=>$courseId));
     		    } else {
     		        continue;
     		    }
@@ -64,7 +64,7 @@ class CoursesWebModule extends WebModule {
         $options['taskID'] = $task->getID();
         $options['courseID'] = $course->getCommonID();
             
-        $link['url'] = $this->buildBreadcrumbURL('task', $options, true);
+        $link['url'] = $this->buildBreadcrumbURL('task', $options);
         $link['subtitle'] = implode("<br />", $subtitle);
             
         return $link;
@@ -96,7 +96,7 @@ class CoursesWebModule extends WebModule {
         $options = $this->getCourseOptions();
         $options['contentID'] = $resource->getID();
             
-        $link['url'] = $this->buildBreadcrumbURL('content', $options, true);
+        $link['url'] = $this->buildBreadcrumbURL('content', $options);
             
         return $link;
     }
@@ -142,7 +142,7 @@ class CoursesWebModule extends WebModule {
         
         $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
         $link['subtitle'] = implode("<br />", $subtitle);
-        $link['url'] = $this->buildBreadcrumbURL('content', $options, true);
+        $link['url'] = $this->buildBreadcrumbURL('content', $options);
         return $link;
     }
     
@@ -153,7 +153,7 @@ class CoursesWebModule extends WebModule {
         );
         $link = array(
             'title'=> $area->getTitle(),
-            'url'=>$this->buildBreadcrumbURL('area',$options, true)
+            'url'=>$this->buildBreadcrumbURL('area',$options)
         );
         return $link;
     }
@@ -196,7 +196,7 @@ class CoursesWebModule extends WebModule {
             $page = 'info';
         }
         
-        $link['url'] = $this->buildBreadcrumbURL($page, $options , false);
+        $link['url'] = $this->buildBreadcrumbURL($page, $options);
         return $link;
     }
 
@@ -214,7 +214,7 @@ class CoursesWebModule extends WebModule {
         	$link['label'] = $course->getField('courseNumber');
         }
         
-        $link['url'] = $this->buildBreadcrumbURL('info', $options , false);
+        $link['url'] = $this->buildBreadcrumbURL('info', $options);
         return $link;
     }
     
@@ -647,13 +647,13 @@ class CoursesWebModule extends WebModule {
 
                     $catalogItems[] = array(
                         'title' => $this->getFeedTitle('catalog'),
-                        'url'   => $this->buildBreadcrumbURL('catalog', array(), false),
+                        'url'   => $this->buildBreadcrumbURL('catalog', array()),
                     );
 
                     if ($bookmarks = $this->getBookmarks()) {
                         $catalogItems[] = array(
                             'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . " (" . count($bookmarks) . ")",
-                            'url'   => $this->buildBreadcrumbURL('bookmarks', array(), true),
+                            'url'   => $this->buildBreadcrumbURL('bookmarks', array()),
                         );
                     }
                     
@@ -831,7 +831,7 @@ class CoursesWebModule extends WebModule {
                     if ($registrationCourse->canDrop()) {
                         $links[] = array(
                             'title'=> $this->getLocalizedString('DROP_COURSE'),
-                            'url' => $this->buildBreadcrumbURL('dropclass', $options, true)
+                            'url' => $this->buildBreadcrumbURL('dropclass', $options)
                         );
                     }
                 }
@@ -1169,7 +1169,7 @@ class CoursesWebModule extends WebModule {
                 }                                
                                 
                 $options[] = array(
-                		'url' => $this->buildBreadcrumbURL($this->page, array_merge($this->args, array('download'=>1)), true),
+                		'url' => $this->buildBreadcrumbURL($this->page, array_merge($this->args, array('download'=>1))),
                 		'title' => $content->getFileName(),
                 		'subtitle' => 'FileSize: ' . number_format($content->getFileSize())
                 );
