@@ -469,15 +469,6 @@ class CoursesWebModule extends WebModule {
         if (count($values)) {
             $section[$key] = $this->formatInfoDetail($this->formatValues($values, $info), $info, $course);
         }
-    
-        if(isset($info['page'])) {
-        	$courseOptions = $this->getCourseOptions();
-	        $section[$key] = array(
-	        	'head' => isset($info['title']) ? $info['title'] : null,
-		        'title' => isset($info['title']) ? $info['title'] : null,
-		        'url'   => $this->buildBreadcrumbURL($info['page'], $courseOptions, false),
-	        );
-        }
         
         return $section;
     }
@@ -521,17 +512,8 @@ class CoursesWebModule extends WebModule {
                 $detail['class'] = 'phone';
                 break;
  
-            // compatibility
-            case 'map':
-            	$detail['label'] = isset($info['label']) ? $info['label'] : '';
-            	$value = $values[0]->getTitle().' '.$values[0]->getLocation();
-            	$detail['subtitle'] = $values[0]->getTime();
-                $info['module'] = 'map';
-                break;
-                
             // new type list, will return a list of values
             case 'list':
-                $info['module'] = 'people';
                 foreach ($values as $key=>$instructor){
                 	//TODO: can set title grabbing methd by config file
                 	$value[] = $instructor->getFullName();
@@ -547,6 +529,22 @@ class CoursesWebModule extends WebModule {
         	}else{
 	            $detail = array_merge($detail, Kurogo::moduleLinkForValue($info['module'], $value, $this, $course));
         	}
+        } elseif (isset($info['page'])) {
+            $options = array_merge($this->getCourseOptions(), array('value'=>$value));
+            if(is_array($value)) {
+                foreach ($value as $eachValue) {
+		            $detail['list'][] = array_merge($detail, array(
+		                'title'=>$eachValue,
+		                'url'=>$this->buildBreadcrumbURL($info['page'], $options, true)
+		            ));
+                }
+        	} else{
+        	    $detail = array_merge($detail, array(
+                    'title'=>$value,
+                    'url'=>$this->buildBreadcrumbURL($info['page'], $options, true)
+                ));
+        	}
+
         }
         
         if (isset($info['urlfunc'])) {
