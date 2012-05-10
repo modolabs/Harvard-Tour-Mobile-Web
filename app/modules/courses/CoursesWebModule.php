@@ -1238,10 +1238,14 @@ class CoursesWebModule extends WebModule {
                 $Term = $this->assignTerm();
                 $options = array(
                     'term'=>$Term,
-                    'types'=>array('content','registration')
+                    'types'=>array('content','registration'),
+                    'courses'=>array()
                 );
 
-                $options['courses'] = $this->controller->getCourses($options);
+                if ($this->isLoggedIn()) {
+                    $options['courses'] = $this->controller->getCourses($options);
+                }
+                
                 $tabsConfig = $this->getModuleSections('indextabs');
                 $tabs = array();
                 foreach($tabsConfig as $tab => $tabData){
