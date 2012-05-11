@@ -607,10 +607,12 @@ class CoursesWebModule extends WebModule {
         $this->assignGroupLinks('resources', $groupsConfig, $groupOptions);
 
         $group = $this->getArg('resourcesGroup', key($groupsConfig));
+        $key = $this->getArg('key', '');  //particular type
         $this->assign('resourcesGroup', $group);
         $options = array(
             'group'=>$group,
-            'limit'=>$groupsConfig[$group]['max_items']
+            'limit'=>$groupsConfig[$group]['max_items'],
+            'key'  =>$key
         );
         
         return $options;
@@ -755,9 +757,18 @@ class CoursesWebModule extends WebModule {
                 $groups = $contentCourse->getResources($resourcesOptions);
                 $limit = $resourcesOptions['limit'];
                 $group = $resourcesOptions['group'];
+                $key = $resourcesOptions['key'];
                 $seeAllLinks = array();
 
                 foreach ($groups as $groupTitle => $items){
+                    //@Todo when particular type,it wil show the data about the type
+                    if ($key) {
+                        if ($key !== $groupTitle) {
+                            continue;
+                        } else {
+                            $limit = 0;
+                        }
+                    }
                     $hasMoreItems = false;
                     $index = 0;
                     $groupItems = array();
@@ -780,9 +791,10 @@ class CoursesWebModule extends WebModule {
                     );
                     if(count($items) > $limit && $limit != 0){
                         $courseOptions = $this->getCourseOptions();
-                        $courseOptions['group'] = $group;
+                        $courseOptions['resourcesGroup'] = $group;
                         $courseOptions['key'] = $groupTitle;
-                        $resource['url'] = $this->buildBreadcrumbURL('resourceSeeAll', $courseOptions);
+                        $courseOptions['tab'] = 'resources';
+                        $resource['url'] = $this->buildBreadcrumbURL($this->page, $courseOptions, false);
                     }
                     $resourcesLinks[] = $resource;
                 }
