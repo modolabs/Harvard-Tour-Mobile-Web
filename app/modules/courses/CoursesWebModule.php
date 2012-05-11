@@ -1076,7 +1076,8 @@ class CoursesWebModule extends WebModule {
                     	'title' => $course->getTitle(),
                         'id' => $course->getID(),
                         'term'  => rawurlencode($this->selectedTerm),
-                        'area'    => rawurlencode($area)
+                        'area'    => rawurlencode($area),
+                        'courseNumber' => rawurlencode($course->getField('courseNumber'))
                     );
 
                     $cookieID = http_build_query($cookieParams);
@@ -1208,10 +1209,16 @@ class CoursesWebModule extends WebModule {
                     foreach ($this->getBookmarks() as $aBookmark) {
                         if ($aBookmark) {
                             // prevent counting empty string
-                            $bookmarks[] = array(
+                            $bookmark = array(
                                 'title' => $this->getTitleForBookmark($aBookmark),
                                 'url' => $this->detailURLForBookmark($aBookmark),
                             );
+                            
+                            if ($this->showCourseNumber) {
+                                $bookmark['label'] = $this->getBookmarkParam($aBookmark, 'courseNumber');
+                            }
+                            
+                            $bookmarks[] = $bookmark;
                         }
                     }
                     $this->assign('navItems', $bookmarks);
