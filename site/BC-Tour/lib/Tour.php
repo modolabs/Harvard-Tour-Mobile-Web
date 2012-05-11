@@ -438,23 +438,22 @@ class TourDataParser {
     }
     
     protected function getNodeLinks($node, $fieldName) {
+        $tourLinks = array(
+            'type' => 'links',
+            'links' => array(),
+        );
+        
         $links = $this->getNodeField($node, $fieldName, array());
         if (count($links)) {
-            $linkDetails = array();
             foreach ($links as $link) {
-                $linkDetails[] = array(
+                $tourLinks['links'][] = array(
                     'title'    => $this->argValUTF8($link, 'title'),
                     'subtitle' => $this->argValUTF8($link, 'subtitle'),
                     'url'      => $this->argVal($link, 'url'),
                 );
             }
-            return array(
-                'type' => 'links',
-                'links' => $linkDetails,
-            );
         }
-        
-        return array();
+        return $tourLinks;
     }
     
     protected function getURLForNodeFile($node, $nodeFile) {
