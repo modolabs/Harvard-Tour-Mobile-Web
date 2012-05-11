@@ -4,7 +4,7 @@
   <h2>{"COURSES_BOOKMARK_ITEM_TITLE"|getLocalizedString}</h2>
 </div>
 {if $navItems}
-  {include file="findInclude:common/templates/navlist.tpl" navlistItems=$navItems}
+  {include file="findInclude:common/templates/navlist.tpl" boldLabels=true navlistItems=$navItems}
 {else}
   {block name="noResults"}
     <ul class="nav">
