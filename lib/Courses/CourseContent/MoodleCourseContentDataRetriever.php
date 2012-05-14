@@ -605,6 +605,7 @@ class MoodleCourseContentCourse extends CourseContentCourse {
             $announcements = $this->sortCourseContent($announcements, 'publishedDate');
             return current($announcements);
         }
+        return array();
     }
 
     public function getAnnouncements($options=array()){
