@@ -640,6 +640,10 @@ class CoursesWebModule extends WebModule {
         return array();
     }
 
+    protected function getOptionsForCourse($options){
+        return array();
+    }
+
     protected function getOptionsForResources($options) {
         $groupsConfig = $this->getModuleSections('resources');
 
@@ -673,6 +677,7 @@ class CoursesWebModule extends WebModule {
                 $courses = $options['courses'];
 
                 if ($this->isLoggedIn()) {
+                    $options = $this->getOptionsForCourse($options);
                     foreach ($courses as $course) {
                         $courseLink = $this->linkForCourse($course, $options);
                         $coursesLinks[] = $courseLink;
