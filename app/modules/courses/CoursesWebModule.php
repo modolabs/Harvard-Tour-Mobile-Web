@@ -2,7 +2,7 @@
 includePackage('Courses');
 includePackage('DateTime');
 class CoursesWebModule extends WebModule {
-    protected $id = 'courses'; 
+    protected $id = 'courses';
     protected $controller;
     protected $courses;
     protected $hasPersonalizedCourses = false;
@@ -10,7 +10,7 @@ class CoursesWebModule extends WebModule {
     protected $detailFields = array();
     protected $showCourseNumber = true;
     protected $defaultModel = 'CoursesDataModel';
-    
+
     protected function linkforInfo($courseId, $description){
     	$links = array();
     	foreach(array('Roster', 'Course materials', 'Drop Class', 'Description') as $title){
@@ -42,7 +42,7 @@ class CoursesWebModule extends WebModule {
             'title' =>$includeCourseName ? $course->getTitle() : $task->getTitle(),
             'img'   => "/modules/courses/images/content_" . $task->getContentType() . $this->imageExt
         );
-        
+
         $subtitle = array();
         if ($includeCourseName) {
             $subtitle[] = $task->getTitle();
@@ -63,13 +63,13 @@ class CoursesWebModule extends WebModule {
         $options = $this->getCourseOptions();
         $options['taskID'] = $task->getID();
         $options['courseID'] = $course->getCommonID();
-            
+
         $link['url'] = $this->buildBreadcrumbURL('task', $options);
         $link['subtitle'] = implode("<br />", $subtitle);
-            
+
         return $link;
     }
-    
+
     // returns a link for a particular resource
     public function linkForContent($resource, CourseContentCourse $course) {
     	$link = array(
@@ -91,16 +91,16 @@ class CoursesWebModule extends WebModule {
 	    	$link['subtitle'] = $link['updated'] = $updated;
 	    } else {
 	    	$link['subtitle'] = $resource->getSubTitle();
-	    } 
+	    }
 
         $options = $this->getCourseOptions();
         $options['contentID'] = $resource->getID();
-            
+
         $link['url'] = $this->buildBreadcrumbURL('content', $options);
-            
+
         return $link;
     }
-    
+
     public function linkForUpdate(CourseContent $content, CourseContentCourse $course, $includeCourseName=false) {
 
         $contentID = $content->getID();
@@ -128,7 +128,7 @@ class CoursesWebModule extends WebModule {
         if ($content->getSubtitle()) {
             $subtitle[] = $content->getSubTitle();
         }
-        
+
         if ($content->getPublishedDate()){
             $published = $this->elapsedTime($content->getPublishedDate()->format('U'));
             if ($content->getAuthor()) {
@@ -139,13 +139,13 @@ class CoursesWebModule extends WebModule {
             }
             $subtitle[] = $published;
         }
-        
+
         $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
         $link['subtitle'] = implode("<br />", $subtitle);
         $link['url'] = $this->buildBreadcrumbURL('content', $options);
         return $link;
     }
-    
+
     protected function linkForCatalogArea(CourseArea $area, $options=array()) {
         $options = array_merge($options,array(
             'area'=>$area->getCode()
@@ -157,14 +157,14 @@ class CoursesWebModule extends WebModule {
         );
         return $link;
     }
-    
+
     protected function linkForCourse(CourseInterface $course, $options=array()) {
-        
+
         $options = array_merge($options, array(
             'courseID'  => $course->getID()
             )
         );
-    
+
         $link = array(
             'title' => $course->getTitle()
         );
@@ -173,29 +173,29 @@ class CoursesWebModule extends WebModule {
         if ($contentCourse) {
             $page = 'course';
             $subtitle = array();
-            if ($lastUpdateContent = $contentCourse->getLastUpdate()) {
-                $subtitle[] = $lastUpdateContent->getTitle();
-                if ($publishedDate = $lastUpdateContent->getPublishedDate()) {
+            if ($lastAnnouncementContent = $contentCourse->getLastAnnouncement()) {
+                $subtitle[] = $lastAnnouncementContent->getTitle();
+                if ($publishedDate = $lastAnnouncementContent->getPublishedDate()) {
                     $published = $this->elapsedTime($publishedDate->format('U'));
-                    if ($lastUpdateContent->getAuthor()) {
-                        //$published = '<span class="author">'. $lastUpdateContent->getAuthor() .', ' . $published . "</span>";
-                        $published = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $lastUpdateContent->getAuthor(), $published);
+                    if ($lastAnnouncementContent->getAuthor()) {
+                        //$published = '<span class="author">'. $lastAnnouncementContent->getAuthor() .', ' . $published . "</span>";
+                        $published = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $lastAnnouncementContent->getAuthor(), $published);
                     } else {
                         $published = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $published);
                     }
                     $subtitle[] = $published;
                 }
-                $link['type']  = $lastUpdateContent->getContentType();
-                $link['img']   = "/modules/courses/images/content_" . $lastUpdateContent->getContentType() . $this->imageExt;
+                $link['type']  = $lastAnnouncementContent->getContentType();
+                $link['img']   = "/modules/courses/images/content_" . $lastAnnouncementContent->getContentType() . $this->imageExt;
             } else {
                 $subtitle[] = $this->getLocalizedString('NO_UPDATES');
             }
-            
+
             $link['subtitle'] = implode("<br />", $subtitle);
         } else {
             $page = 'info';
         }
-        
+
         $link['url'] = $this->buildBreadcrumbURL($page, $options);
         return $link;
     }
@@ -205,7 +205,7 @@ class CoursesWebModule extends WebModule {
             'courseID'  => $course->getID()
             )
         );
-    
+
         $link = array(
             'title' => $course->getTitle()
         );
@@ -213,11 +213,11 @@ class CoursesWebModule extends WebModule {
         if($this->showCourseNumber) {
         	$link['label'] = $course->getField('courseNumber');
         }
-        
+
         $link['url'] = $this->buildBreadcrumbURL('info', $options);
         return $link;
     }
-    
+
     protected function getContentLinks(CourseContent $content) {
         $links = array();
         switch ($content->getContentType()) {
@@ -265,10 +265,10 @@ class CoursesWebModule extends WebModule {
             default:
                 KurogoDebug::debug($content, true);
         }
-        
+
         return $links;
     }
-    
+
     public function assignTerm(){
         $feedTerms = $this->controller->getAvailableTerms();
 
@@ -293,13 +293,13 @@ class CoursesWebModule extends WebModule {
         $this->assign('termTitle', $Term->getTitle());
         return $Term;
     }
-    
+
     protected function getCourseFromArgs() {
 
         $courseID = $this->getArg('courseID');
         $term = $this->assignTerm();
         $options = $this->getCourseOptions();
-        
+
         if ($course = $this->controller->getCourseByCommonID($courseID, $options)) {
             $this->assign('courseTitle', $course->getTitle());
             $this->assign('courseID', $course->getID());
@@ -339,21 +339,21 @@ class CoursesWebModule extends WebModule {
         //load showCourseNumber setting
         $this->showCourseNumber = $this->getOptionalModuleVar('SHOW_COURSENUMBER_IN_LIST', 1);
     }
-    
+
     protected function getCourseOptions() {
         $courseID = $this->getArg('courseID');
         $area = $this->getArg('area');
         $term = $this->assignTerm();
-        
+
         $options = array(
             'courseID' => $courseID,
             'term' => strval($term),
             'area' => $area
         );
-        
+
         return $options;
     }
-    
+
     protected function assignGroupLinks($tabPage, $groups, $defaultGroupOptions = array()){
         foreach ($groups as $groupIndex => $group) {
             $defaultGroupOptions[$tabPage . 'Group'] = $groupIndex;
@@ -448,19 +448,19 @@ class CoursesWebModule extends WebModule {
         //error_log(print_r($this->detailFields, true));
         //load page detail configs
         $detailFields = $this->getModuleSections($configName);
-        $details = array();    
-        
+        $details = array();
+
         foreach($detailFields as $key => $info) {
             $details[$key] = $this->formatCourseDetail($course, $info, $key);
         }
         //error_log(print_r($details, true));
         return $details;
     }
-    
+
     protected function formatCourseDetail(CombinedCourse $course, $info, $key=0) {
         $section = array();
         $courseType = isset($info['courseType']) ? $info['courseType'] : null;
-        
+
         if(!$course->checkInStandardAttributes($key)) {
         	//try to set attribute in attributes list.
 	        $course->setAttribute($key, $courseType);
@@ -469,10 +469,10 @@ class CoursesWebModule extends WebModule {
         if (count($values)) {
             $section[$key] = $this->formatInfoDetail($this->formatValues($values, $info), $info, $course);
         }
-        
+
         return $section;
     }
-    
+
     protected function formatInfoDetail($values, $info, CombinedCourse $course) {
     	if(isset($values[0]) && is_object($values[0])) {
 	        $detail = array(
@@ -486,32 +486,32 @@ class CoursesWebModule extends WebModule {
 	            $delimiter = isset($info['delimiter']) ? $info['delimiter'] : ' ';
 	            $value = implode($delimiter, $values);
 	        }
-	    
+
 	        $detail = array(
 	            'label' => isset($info['label']) ? $info['label'] : null,
 	            'title' => $value,
 	        	'head'  => isset($info['title']) ? $info['title'] : null,
 	        );
     	}
-    	
-        switch(isset($info['type']) ? $info['type'] : 'text') 
+
+        switch(isset($info['type']) ? $info['type'] : 'text')
         {
             case 'email':
                 $detail['title'] = str_replace('@', '@&shy;', $detail['title']);
                 $detail['url'] = "mailto:$value";
                 $detail['class'] = 'email';
                 break;
-        
+
             case 'phone':
                 $detail['title'] = str_replace('-', '-&shy;', $detail['title']);
-                
-                if (strpos($value, '+1') !== 0) { 
-                    $value = "+1$value"; 
+
+                if (strpos($value, '+1') !== 0) {
+                    $value = "+1$value";
                 }
                 $detail['url'] = PhoneFormatter::getPhoneURL($value);
                 $detail['class'] = 'phone';
                 break;
- 
+
             // new type list, will return a list of values
             case 'list':
                 foreach ($values as $key=>$instructor){
@@ -546,16 +546,16 @@ class CoursesWebModule extends WebModule {
         	}
 
         }
-        
+
         if (isset($info['urlfunc'])) {
             $urlFunction = create_function('$value,$course', $info['urlfunc']);
             $detail['url'] = $urlFunction($value, $course);
         }
-        
-        $detail['title'] = nl2br($detail['title']); 
+
+        $detail['title'] = nl2br($detail['title']);
         return $detail;
     }
-    
+
     protected function formatValues($values, $info) {
         if (isset($info['parse'])) {
             $formatFunction = create_function('$value', $info['parse']);
@@ -563,23 +563,23 @@ class CoursesWebModule extends WebModule {
                 $value = $formatFunction($value);
             }
         }
-        
+
         return $values;
     }
-    
+
     protected function replaceFormat($format) {
         return str_replace(array('\n','\t'),array("\n","\t"), $format);
     }
-    
+
     protected function getOptionsForTasks($options) {
         $section = $this->page == 'index' ? 'alltasks' : 'tasks';
         $taskGroups = $this->getModuleSections($section);
 
         $groupOptions = array('tab'=>'tasks');
-        if ($this->page == 'course') {        
+        if ($this->page == 'course') {
             $groupOptions = array_merge($groupOptions, $this->getCourseOptions());
         }
-        
+
         $this->assignGroupLinks('tasks', $taskGroups, $groupOptions);
 
         $group = $this->getArg('tasksGroup', key($taskGroups));
@@ -588,14 +588,14 @@ class CoursesWebModule extends WebModule {
         $options = array(
             'group'=>$group
         );
-        
+
         return $options;
     }
 
     protected function getOptionsForUpdates($options) {
         return array();
     }
-    
+
     protected function getOptionsForResources($options) {
         $groupsConfig = $this->getModuleSections('resources');
 
@@ -603,7 +603,7 @@ class CoursesWebModule extends WebModule {
         if ($this->page == 'course') {
             $groupOptions = array_merge($groupOptions, $this->getCourseOptions());
         }
-        
+
         $this->assignGroupLinks('resources', $groupsConfig, $groupOptions);
 
         $group = $this->getArg('resourcesGroup', key($groupsConfig));
@@ -614,20 +614,20 @@ class CoursesWebModule extends WebModule {
             'limit'=>$groupsConfig[$group]['max_items'],
             'key'  =>$key
         );
-        
+
         return $options;
-    }    
-    
+    }
+
     protected function initializeForIndexTab($tab, $options) {
 
-        switch ($tab) 
+        switch ($tab)
         {
-            case 'index':        
+            case 'index':
                 $Term = $this->assignTerm();
                 $coursesLinks = array();
                 $this->assign('hasPersonalizedCourses', $this->hasPersonalizedCourses);
                 $courses = $options['courses'];
-        
+
                 if ($this->isLoggedIn()) {
                     foreach ($courses as $course) {
                         $courseLink = $this->linkForCourse($course, $options);
@@ -658,12 +658,12 @@ class CoursesWebModule extends WebModule {
                             'url'   => $this->buildBreadcrumbURL('bookmarks', array()),
                         );
                     }
-                    
+
                     $this->assign('courseCatalogText', $this->getLocalizedString('COURSE_CATALOG_TEXT'));
                     $this->assign('catalogItems', $catalogItems);
                 }
                 break;
-        
+
             case 'updates':
                 $updatesLinks = array();
                 $courses = $options['courses'];
@@ -681,7 +681,7 @@ class CoursesWebModule extends WebModule {
                 $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 5));
                 $this->assign('updatesLinks', $updatesLinks);
                 break;
-            
+
             case 'tasks':
                 $tasks = array();
                 $courses = $options['courses'];
@@ -731,13 +731,13 @@ class CoursesWebModule extends WebModule {
 
                 $this->assign('tasks', $sortedTasks);
                 break;
-            }  
+            }
     }
 
     protected function initializeForCourseTab($tab, $options) {
         $course = $options['course'];
         $contentCourse = $options['contentCourse'];
-    
+
         switch ($tab)
         {
             case 'updates':
@@ -750,7 +750,7 @@ class CoursesWebModule extends WebModule {
                 $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 10));
                 $this->assign('updatesLinks', $updatesLinks);
                 break;
-                
+
             case 'resources':
                 $resourcesLinks = array();
                 $resourcesOptions = $this->getOptionsForResources($options);
@@ -802,7 +802,7 @@ class CoursesWebModule extends WebModule {
                 $this->assign('resourcesLinks',$resourcesLinks);
                 $this->assign('courseResourcesGroup', $group);
                 break;
-                
+
             case 'tasks':
                 $tasksOptions = $this->getOptionsForTasks($options);
 
@@ -834,7 +834,7 @@ class CoursesWebModule extends WebModule {
 
 		        //load tab page detail configs
 		        $this->detailFields = $this->getModuleSections($tab . '-detail');
-                
+
                 $courseDetails =  $this->formatCourseDetails($course, 'course-info');
 				$this->assign('courseDetails', $courseDetails);
 
@@ -848,17 +848,17 @@ class CoursesWebModule extends WebModule {
                     }
                 }
 
-                // @TODO ADD configurable links                    
+                // @TODO ADD configurable links
                 $this->assign('links', $links);
                 break;
-            
+
             case 'grades':
                 $grades = $contentCourse->getGrades();
-                
+
                 break;
         }
     }
-    
+
     protected function initializeForInfoTab($tab, $options) {
     	$course = $options['course'];
         switch ($tab)
@@ -867,7 +867,7 @@ class CoursesWebModule extends WebModule {
                 $courseDetails =  $this->formatCourseDetails($course, 'info-index');
                 $this->assign('courseDetails', $courseDetails);
                 break;
-                
+
             case 'staff':
             	$instructorList = array();
                 $staff =  $this->formatCourseDetails($course, 'info-staff');
@@ -875,21 +875,21 @@ class CoursesWebModule extends WebModule {
                 break;
         }
     }
-    
+
     protected function initializeForPage() {
         switch($this->page) {
             case 'loadFile':
                 $file = $this->getArg('file');
                 break;
-            	
+
             case 'content':
             case 'download':
                 $contentID = $this->getArg('contentID');
-                
+
         	    if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
         	    }
-        	    				                
+
                 if (!$contentCourse = $course->getCourse('content')) {
                     $this->redirectTo('index');
                 }
@@ -898,7 +898,7 @@ class CoursesWebModule extends WebModule {
                 if (!$content = $contentCourse->getContentById($contentID, $options)) {
                     throw new KurogoDataException($this->getLocalizedString('ERROR_CONTENT_NOT_FOUND'));
                 }
-                
+
                 if ($this->page=='download') {
                     //we are downloading a file that the server retrieves
                     if ($content->getContentType()=='file') {
@@ -915,12 +915,12 @@ class CoursesWebModule extends WebModule {
                         throw new KurogoException("Cannot download content of type " . $content->getContentType());
                     }
                 }
-                
+
                 $this->setPageTitle($this->getLocalizedString('CONTENT_TYPE_TITLE_'.strtoupper($content->getContentType())));
                 $this->assign('courseTitle', $course->getTitle());
                 $this->assign('contentType', $content->getContentType());
                 $this->assign('contentTitle', $content->getTitle());
-                $this->assign('contentDescription', $content->getDescription());        	    
+                $this->assign('contentDescription', $content->getDescription());
                 if($content->getAuthor()){
                     $this->assign('contentAuthor', 'Posted by ' . $content->getAuthor());
                 }
@@ -938,15 +938,15 @@ class CoursesWebModule extends WebModule {
 
                 $links = $this->getContentLinks($content);
                 $this->assign('links', $links);
-                
+
                 break;
             case 'task':
                 $taskID = $this->getArg('taskID');
-                
+
         	    if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
         	    }
-        	    				                
+
                 if (!$contentCourse = $course->getCourse('content')) {
                     $this->redirectTo('index');
                 }
@@ -954,7 +954,7 @@ class CoursesWebModule extends WebModule {
                 if (!$task = $contentCourse->getTaskById($taskID)) {
                     throw new KurogoDataException($this->getLocalizedString('ERROR_CONTENT_NOT_FOUND'));
                 }
-                                
+
                 $this->assign('taskTitle', $task->getTitle());
                 $this->assign('taskDescription', $task->getDescription());
                 if($task->getPublishedDate()){
@@ -966,7 +966,7 @@ class CoursesWebModule extends WebModule {
                 $this->assign('links', $task->getLinks());
 
                 break;
-            
+
         	case 'roster':
         	    if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
@@ -980,22 +980,22 @@ class CoursesWebModule extends WebModule {
         			if(!$link){
         				$link = array(
                 			'title' => $value,
-                		);	
+                        );
         			}
         			$links[] = $link;
         		}
         		$this->assign('links',$links);
         		break;
-        		
+
         	case 'dropclass';
         	    if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
         	    }
-        	    
+
         	    $options = $this->getCourseOptions();
 
         		$this->assign('dropTitle', $this->getLocalizedString('NOTIFICATION',$course->getTitle()));
-        		
+
         		$links = array();
         		$links[] = array(
         			    'title'=>$this->getLocalizedString('DROP_CONFIRM'),
@@ -1007,7 +1007,7 @@ class CoursesWebModule extends WebModule {
         		);
 				$this->assign('links',$links);
         	    break;
-        	    
+
             case 'catalog':
                 $term = $this->assignTerm();
 
@@ -1021,9 +1021,9 @@ class CoursesWebModule extends WebModule {
                 }
                 $this->assign('catalogHeader', $this->getOptionalModuleVar('catalogHeader','','catalog'));
                 $this->assign('catalogFooter', $this->getOptionalModuleVar('catalogFooter','','catalog'));
-                
+
                 break;
-                
+
             case 'area':
                 $area = $this->getArg('area');
                 $term = $this->assignTerm();
@@ -1034,7 +1034,7 @@ class CoursesWebModule extends WebModule {
                 }
 
                 $areas = $CourseArea->getAreas();
-                
+
                 $areasList = array();
                 $areaOptions = array('term' => strval($term));
                 foreach ($areas as $CourseArea) {
@@ -1047,29 +1047,29 @@ class CoursesWebModule extends WebModule {
                     'types'=>array('catalog'),
                     'area'=>$area
                 );
-                
+
                 $courses = $this->controller->getCourses($options);
                 $coursesList = array();
- 
+
                 foreach ($courses as $item) {
                     $course = $this->linkForCatalogCourse($item, array('term'=>strval($term), 'area' => $area));
                     $coursesList[] = $course;
                 }
 
-                $this->assign('areaTitle', $CourseArea->getTitle());                
+                $this->assign('areaTitle', $CourseArea->getTitle());
                 $this->assign('description', $CourseArea->getDescription());
                 $this->assign('areas', $areasList);
                 $this->assign('courses', $coursesList);
-                
+
                 break;
-                
+
 
             case 'info':
             	$area = $this->getArg('area');
                 if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
                 }
-                
+
                 // Bookmark
                 if ($this->getOptionalModuleVar('BOOKMARKS_ENABLED', 1)) {
                     $cookieParams = array(
@@ -1083,11 +1083,11 @@ class CoursesWebModule extends WebModule {
                     $cookieID = http_build_query($cookieParams);
                     $this->generateBookmarkOptions($cookieID);
                 }
-                
+
                 $options = array(
                     'course'=> $course
                 );
-                
+
                 $tabsConfig = $this->getModuleSections('infotabs');
                 $tabs = array();
                 foreach($tabsConfig as $tab => $tabData){
@@ -1098,7 +1098,7 @@ class CoursesWebModule extends WebModule {
                 $this->enableTabs($tabs);
                 $this->assign('tabs',$tabs);
             	break;
-                
+
             case 'resourceSeeAll':
                 KurogoDebug::debug($this, true);
                 if (!$course = $this->getCourseFromArgs()) {
@@ -1120,28 +1120,28 @@ class CoursesWebModule extends WebModule {
                 $this->assign('key', $key);
                 $this->assign('resources',$resources);
             	break;
-            	
+
             case 'contents':
                 KurogoDebug::debug($this, true);
                 $id = $this->getArg('id');
                 //$courseId = $this->getArg('courseId');
                 $type = $this->getArg('type');
-                
-                
+
+
                 $items = $this->controller->getCourseContentById($id);
-                
-                
+
+
                 if (!isset($items['resource'][$type])) {
                     throw new KurogoConfigurationException('not found the content for type ' . $type);
                 }
-                
+
                 $options = array(
              //   	'section'  => $section,
              		//'courseId' => $courseId,
                     'type'     => $type,
                     'courseID' => $id
                 );
-                    
+
                 $contents = array();
                 foreach ($items['resource'][$type] as $item) {
                     $content = $this->linkForContent($item, $options);
@@ -1150,7 +1150,7 @@ class CoursesWebModule extends WebModule {
                 $this->setPageTitles($this->getLocalizedString(strtoupper($type) .'_TITLE'));
                 $this->assign('contents', $contents);
                 break;
-                
+
             case 'page':
             	$contentID = $this->getArg('contentID', '');
             	$courseID = $this->getArg('courseID', '');
@@ -1166,7 +1166,7 @@ class CoursesWebModule extends WebModule {
         	    if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
         	    }
-        	    				                
+
                 if (!$contentCourse = $course->getCourse('content')) {
                     $this->redirectTo('index');
                 }
@@ -1174,19 +1174,19 @@ class CoursesWebModule extends WebModule {
                 if (!$content = $contentCourse->getContentById($contentID)) {
                     throw new KurogoDataException($this->getLocalizedString('ERROR_CONTENT_NOT_FOUND'));
                 }
-                
-                
+
+
 
                 if ($this->getArg('download')) {
                     throw new KurogoException('Download of files is not complete');
-                }                                
-                                
+                }
+
                 $options[] = array(
                 		'url' => $this->buildBreadcrumbURL($this->page, array_merge($this->args, array('download'=>1))),
                 		'title' => $content->getFileName(),
                 		'subtitle' => 'FileSize: ' . number_format($content->getFileSize())
                 );
-                
+
                 if ($content->getPublishedDate()){
 		    		if($content->getAuthor()){
 		    			$uploadDate = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U')) .' by '.$content->getAuthor();
@@ -1196,7 +1196,7 @@ class CoursesWebModule extends WebModule {
 	    		} else {
 	    			$uploadDate = $content->getSubTitle();
 	    		}
-	    		
+
 	    		$this->assign('itemName',$content->getTitle());
 	    		$this->assign('uploadDate',$uploadDate);
 	    		$this->assign('links', $options);
@@ -1213,11 +1213,11 @@ class CoursesWebModule extends WebModule {
                                 'title' => $this->getTitleForBookmark($aBookmark),
                                 'url' => $this->detailURLForBookmark($aBookmark),
                             );
-                            
+
                             if ($this->showCourseNumber) {
                                 $bookmark['label'] = $this->getBookmarkParam($aBookmark, 'courseNumber');
                             }
-                            
+
                             $bookmarks[] = $bookmark;
                         }
                     }
@@ -1234,14 +1234,14 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index');
                 }
                 $Term = $this->assignTerm();
-                
+
                 $options = array(
                     'term'=>$Term,
                     'course'=> $course,
                     'contentCourse'=> $contentCourse
                 );
 
-                                
+
                 $tabsConfig = $this->getModuleSections('coursetabs');
                 $tabs = array();
                 foreach($tabsConfig as $tab => $tabData){
@@ -1252,7 +1252,7 @@ class CoursesWebModule extends WebModule {
                 $this->enableTabs($tabs);
                 $this->assign('tabs',$tabs);
                 break;
-                
+
             case 'index':
                 $Term = $this->assignTerm();
                 $options = array(
@@ -1264,7 +1264,7 @@ class CoursesWebModule extends WebModule {
                 if ($this->isLoggedIn()) {
                     $options['courses'] = $this->controller->getCourses($options);
                 }
-                
+
                 $tabsConfig = $this->getModuleSections('indextabs');
                 $tabs = array();
                 foreach($tabsConfig as $tab => $tabData){
@@ -1280,4 +1280,4 @@ class CoursesWebModule extends WebModule {
         }
     }
 }
- 
+
