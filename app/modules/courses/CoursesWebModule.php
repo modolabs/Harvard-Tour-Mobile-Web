@@ -109,7 +109,7 @@ class CoursesWebModule extends WebModule {
             'type'      => $content->getContentType(),
         );
         $link = array(
-            'title' => $includeCourseName ? $course->getTitle() : $content->getTitle(),
+            'title' => $content->getTitle(),
             'type' => $content->getContentType(),
             'class' => "update update_" . $content->getContentType(),
             'img'   => "/modules/courses/images/content_" . $content->getContentType() . $this->imageExt
@@ -120,10 +120,6 @@ class CoursesWebModule extends WebModule {
             }
         }
         $subtitle = array();
-        if ($includeCourseName) {
-            $subtitle[] = $content->getTitle();
-        }
-
         if ($content->getSubtitle()) {
             $subtitle[] = $content->getSubTitle();
         }
