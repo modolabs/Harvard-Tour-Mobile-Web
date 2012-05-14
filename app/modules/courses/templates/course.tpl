@@ -2,6 +2,11 @@
 {include file="findInclude:modules/courses/templates/coursedetailhead.tpl"}
 {$tabBodies=array()}
 {foreach $tabs as $key}
+    {if $key=='announcements'}
+        {capture name="indexTab" assign="tabBody"}
+        {include file="findInclude:modules/courses/templates/course-announcements.tpl"}
+        {/capture}
+    {/if}
     {if $key=='updates'}
         {capture name="indexTab" assign="tabBody"}
         {include file="findInclude:modules/courses/templates/course-updates.tpl"}

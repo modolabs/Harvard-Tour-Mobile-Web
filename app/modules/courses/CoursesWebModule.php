@@ -101,6 +101,50 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    public function linkForAnnouncement(CourseContent $content, CourseContentCourse $course){
+        $contentID = $content->getID();
+        $options = array(
+            'courseID'  => $course->getCommonID(),
+            'contentID' => $contentID,
+            'type'      => $content->getContentType(),
+        );
+        $link = array(
+            'title' => $includeCourseName ? $course->getTitle() : $content->getTitle(),
+            'type' => $content->getContentType(),
+            'class' => "update update_" . $content->getContentType(),
+            'img'   => "/modules/courses/images/content_" . $content->getContentType() . $this->imageExt
+        );
+        foreach (array('courseID') as $field) {
+            if (isset($data[$field])) {
+                $options[$field] = $data[$field];
+            }
+        }
+        $subtitle = array();
+        if ($includeCourseName) {
+            $subtitle[] = $content->getTitle();
+        }
+
+        if ($content->getSubtitle()) {
+            $subtitle[] = $content->getSubTitle();
+        }
+
+        if ($content->getPublishedDate()){
+            $published = $this->elapsedTime($content->getPublishedDate()->format('U'));
+            if ($content->getAuthor()) {
+                $published = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $content->getAuthor(), $published);
+                //$published .= ' by '.$content->getAuthor();
+            } else {
+                $published = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $published);
+            }
+            $subtitle[] = $published;
+        }
+
+        $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
+        $link['subtitle'] = implode("<br />", $subtitle);
+        $link['url'] = $this->buildBreadcrumbURL('content', $options);
+        return $link;
+    }
+
     public function linkForUpdate(CourseContent $content, CourseContentCourse $course, $includeCourseName=false) {
 
         $contentID = $content->getID();
@@ -592,6 +636,10 @@ class CoursesWebModule extends WebModule {
         return $options;
     }
 
+    protected function getOptionsForAnnouncements($options){
+        return array();
+    }
+
     protected function getOptionsForUpdates($options) {
         return array();
     }
@@ -740,6 +788,16 @@ class CoursesWebModule extends WebModule {
 
         switch ($tab)
         {
+            case 'announcements':
+                $announcementsOptions = $this->getOptionsForAnnouncements($options);
+                $announcements = $contentCourse->getAnnouncements();
+                $announcementsLinks = array();
+                foreach ($announcements as $announcement) {
+                    $announcementsLinks[] = $this->linkForAnnouncement($announcement, $contentCourse);
+                }
+                $announcementsLinks = $this->paginateArray($announcementsLinks, $this->getOptionalModuleVar('MAX_ANNOUNCEMENTS', 10));
+                $this->assign('announcementsLinks', $announcementsLinks);
+                break;
             case 'updates':
                 $updatesOptions = $this->getOptionsForUpdates($options);
                 $items = $contentCourse->getUpdates($updatesOptions);
