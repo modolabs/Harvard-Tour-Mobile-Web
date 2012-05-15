@@ -711,7 +711,7 @@ class CoursesWebModule extends WebModule {
                     $this->assign('courseCatalogText', $this->getLocalizedString('COURSE_CATALOG_TEXT'));
                     $this->assign('catalogItems', $catalogItems);
                 }
-                
+
                 return true;
                 break;
 
@@ -795,7 +795,7 @@ class CoursesWebModule extends WebModule {
         {
             case 'announcements':
                 $announcementsOptions = $this->getOptionsForAnnouncements($options);
-                $announcements = $contentCourse->getAnnouncements($announcementOptions);
+                $announcements = $contentCourse->getAnnouncements($announcementsOptions);
                 $announcementsLinks = array();
                 foreach ($announcements as $announcement) {
                     $announcementsLinks[] = $this->linkForAnnouncement($announcement, $contentCourse);
