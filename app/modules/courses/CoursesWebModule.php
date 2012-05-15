@@ -416,14 +416,16 @@ class CoursesWebModule extends WebModule {
         $this->assign($tabPage.'GroupLinks', $groupLinks);
     }
 
-    protected function paginateArray($contents, $limit) {
+    protected function paginateArray($contents, $limit, $localizedStem, $tab) {
+        $localizedPrev = strtoupper($localizedStem) . '_PREV';
+        $localizedNext = strtoupper($localizedStem) . '_NEXT';
         $totalItems = count($contents);
         $start = $this->getArg('start', 0);
         $previousURL = null;
         $nextURL = null;
         if ($totalItems > $limit) {
             $args = $this->args;
-            $args['tab'] = 'updates';
+            $args['tab'] = strtolower($tab);
             if ($start > 0) {
                 $args['start'] = $start - $limit;
                 $previousURL = $this->buildBreadcrumbURL($this->page, $args, false);
@@ -438,7 +440,7 @@ class CoursesWebModule extends WebModule {
         $contents = array_slice($contents, $start, $limit);
 
         if($previousURL) {
-            $title = $this->getLocalizedString('UPDATE_PREV', $limit);
+            $title = $this->getLocalizedString($localizedPrev, $limit);
             $link = array(
                 'title' => $title,
                 'url' => $previousURL,
@@ -450,7 +452,7 @@ class CoursesWebModule extends WebModule {
             if($num > $limit) {
                 $num = $limit;
             }
-            $title = $this->getLocalizedString('UPDATE_NEXT', $num);
+            $title = $this->getLocalizedString($localizedNext, $num);
             $link = array(
                 'title' => $title,
                 'url' => $nextURL,
@@ -733,7 +735,7 @@ class CoursesWebModule extends WebModule {
                     }
                 }
                 $announcementsLinks = $this->sortCourseContent($announcementsLinks, 'sortDate');
-                $announcementsLinks = $this->paginateArray($announcementsLinks, $this->getOptionalModuleVar('MAX_ANNOUNCEMENTS', 5));
+                $announcementsLinks = $this->paginateArray($announcementsLinks, $this->getOptionalModuleVar('MAX_ANNOUNCEMENTS', 5), 'ANNOUNCEMENT', 'announcements');
                 $this->assign('announcementsLinks', $announcementsLinks);
                 return true;
                 break;
@@ -752,7 +754,7 @@ class CoursesWebModule extends WebModule {
                     }
                 }
                 $updatesLinks = $this->sortCourseContent($updatesLinks, 'sortDate');
-                $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 5));
+                $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 5), 'UPDATE', 'updates');
                 $this->assign('updatesLinks', $updatesLinks);
                 return true;
                 break;
@@ -823,7 +825,7 @@ class CoursesWebModule extends WebModule {
                 foreach ($announcements as $announcement) {
                     $announcementsLinks[] = $this->linkForAnnouncement($announcement, $contentCourse);
                 }
-                $announcementsLinks = $this->paginateArray($announcementsLinks, $this->getOptionalModuleVar('MAX_ANNOUNCEMENTS', 10));
+                $announcementsLinks = $this->paginateArray($announcementsLinks, $this->getOptionalModuleVar('MAX_ANNOUNCEMENTS', 10), 'ANNOUNCEMENT', 'announcements');
                 $this->assign('announcementsLinks', $announcementsLinks);
                 return true;
                 break;
@@ -834,7 +836,7 @@ class CoursesWebModule extends WebModule {
                 foreach ($items as $item){
                     $updatesLinks[] = $this->linkForUpdate($item, $contentCourse, false);
                 }
-                $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 10));
+                $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 10), 'UPDATE', updates);
                 $this->assign('updatesLinks', $updatesLinks);
                 return true;
                 break;
