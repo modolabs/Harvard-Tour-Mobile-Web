@@ -650,6 +650,10 @@ class CoursesWebModule extends WebModule {
         return array();
     }
 
+    protected function getOptionsForCourses($options){
+        return $options;
+    }
+
     protected function getOptionsForResources($options) {
         $groupsConfig = $this->getModuleSections('resources');
 
@@ -1358,7 +1362,7 @@ class CoursesWebModule extends WebModule {
                 );
 
                 if ($this->isLoggedIn()) {
-                    $options['courses'] = $this->controller->getCourses($options);
+                    $options['courses'] = $this->controller->getCourses($this->getOptionsForCourses($options));
                 }
 
                 $tabsConfig = $this->getModuleSections('indextabs');
