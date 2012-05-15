@@ -101,7 +101,7 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
-    public function linkForAnnouncement(CourseContent $content, CourseContentCourse $course){
+    public function linkForAnnouncement(CourseContent $content, CourseContentCourse $course, $includeCourseName=false){
         $contentID = $content->getID();
         $options = array(
             'courseID'  => $course->getCommonID(),
@@ -109,7 +109,7 @@ class CoursesWebModule extends WebModule {
             'type'      => $content->getContentType(),
         );
         $link = array(
-            'title' => $content->getTitle(),
+            'title' => $includeCourseName ? $course->getTitle() : $content->getTitle(),
             'type' => $content->getContentType(),
             'class' => "update update_" . $content->getContentType(),
             'img'   => "/modules/courses/images/content_" . $content->getContentType() . $this->imageExt
@@ -120,6 +120,10 @@ class CoursesWebModule extends WebModule {
             }
         }
         $subtitle = array();
+        if ($includeCourseName) {
+            $subtitle[] = $content->getTitle();
+        }
+
         if ($content->getSubtitle()) {
             $subtitle[] = $content->getSubTitle();
         }
@@ -712,6 +716,25 @@ class CoursesWebModule extends WebModule {
                     $this->assign('catalogItems', $catalogItems);
                 }
 
+                return true;
+                break;
+
+            case 'announcements':
+                $announcementsLinks = array();
+                $courses = $options['courses'];
+                foreach($courses as $course){
+                    if ($contentCourse = $course->getCourse('content')) {
+                        $options['course'] = $contentCourse;
+                        if($items = $contentCourse->getAnnouncements($this->getOptionsForAnnouncements($options))) {
+                            foreach ($items as $item){
+                                $announcementsLinks[] = $this->linkForAnnouncement($item, $contentCourse, true);
+                            }
+                        }
+                    }
+                }
+                $announcementsLinks = $this->sortCourseContent($announcementsLinks, 'sortDate');
+                $announcementsLinks = $this->paginateArray($announcementsLinks, $this->getOptionalModuleVar('MAX_ANNOUNCEMENTS', 5));
+                $this->assign('announcementsLinks', $announcementsLinks);
                 return true;
                 break;
 

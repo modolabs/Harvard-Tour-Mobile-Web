@@ -9,6 +9,11 @@
         {include file="findInclude:modules/courses/templates/index-index.tpl"}
         {/capture}
     {/if}
+    {if $key == 'announcements'}
+        {capture name="allannouncementsTab" assign="tabBody"}
+        {include file="findInclude:modules/courses/templates/index-announcements.tpl"}
+        {/capture}
+    {/if}
     {if $key == 'updates'}
         {capture name="allupdatesTab" assign="tabBody"}
         {include file="findInclude:modules/courses/templates/index-updates.tpl"}
