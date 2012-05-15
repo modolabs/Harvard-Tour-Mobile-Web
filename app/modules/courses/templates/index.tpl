@@ -4,26 +4,13 @@
 
 {$tabBodies=array()}
 {foreach $tabs as $key}
-    {if $key=='index'}
-        {capture name="indexTab" assign="tabBody"}
-        {include file="findInclude:modules/courses/templates/index-index.tpl"}
-        {/capture}
-    {/if}
-    {if $key == 'announcements'}
-        {capture name="allannouncementsTab" assign="tabBody"}
-        {include file="findInclude:modules/courses/templates/index-announcements.tpl"}
-        {/capture}
-    {/if}
-    {if $key == 'updates'}
-        {capture name="allupdatesTab" assign="tabBody"}
-        {include file="findInclude:modules/courses/templates/index-updates.tpl"}
-        {/capture}
-    {/if}
-    {if $key == 'tasks'}
-        {capture name="alltasksTab" assign="tabBody"}
-        {include file="findInclude:modules/courses/templates/index-tasks.tpl"}
-        {/capture}
-    {/if}
+    {assign var="captureName" value=$key|cat:"Tab"}
+    {assign var="templateName" value="index-"|cat:$key|cat:".tpl"}
+
+    {capture name=$captureName assign="tabBody"}
+    {include file="findInclude:modules/courses/templates/$templateName"}
+    {/capture}
+
     {$tabBodies[$key] = $tabBody}
 {/foreach}
 {block name="tabs"}

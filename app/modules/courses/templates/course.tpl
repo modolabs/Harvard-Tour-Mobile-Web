@@ -2,36 +2,14 @@
 {include file="findInclude:modules/courses/templates/coursedetailhead.tpl"}
 {$tabBodies=array()}
 {foreach $tabs as $key}
-    {if $key=='announcements'}
-        {capture name="indexTab" assign="tabBody"}
-        {include file="findInclude:modules/courses/templates/course-announcements.tpl"}
-        {/capture}
-    {/if}
-    {if $key=='updates'}
-        {capture name="indexTab" assign="tabBody"}
-        {include file="findInclude:modules/courses/templates/course-updates.tpl"}
-        {/capture}
-    {/if}
-    {if $key == 'resources'}
-        {capture name="allupdatesTab" assign="tabBody"}
-        {include file="findInclude:modules/courses/templates/course-resources.tpl"}
-        {/capture}
-    {/if}
-    {if $key == 'tasks'}
-        {capture name="alltasksTab" assign="tabBody"}
-        {include file="findInclude:modules/courses/templates/course-tasks.tpl"}
-        {/capture}
-    {/if}
-    {if $key == 'info'}
-        {capture name="alltasksTab" assign="tabBody"}
-        {include file="findInclude:modules/courses/templates/course-info.tpl"}
-        {/capture}
-    {/if}
-    {if $key == 'grades'}
-        {capture name="alltasksTab" assign="tabBody"}
-        {include file="findInclude:modules/courses/templates/course-grades.tpl"}
-        {/capture}
-    {/if}
+
+    {assign var="captureName" value=$key|cat:"Tab"}
+    {assign var="templateName" value="course-"|cat:$key|cat:".tpl"}
+
+    {capture name=$captureName assign="tabBody"}
+    {include file="findInclude:modules/courses/templates/$templateName"}
+    {/capture}
+
     {$tabBodies[$key] = $tabBody}
 {/foreach}
 {block name="tabs"}
