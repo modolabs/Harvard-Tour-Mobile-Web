@@ -795,7 +795,7 @@ class CoursesWebModule extends WebModule {
         {
             case 'announcements':
                 $announcementsOptions = $this->getOptionsForAnnouncements($options);
-                $announcements = $contentCourse->getAnnouncements();
+                $announcements = $contentCourse->getAnnouncements($announcementOptions);
                 $announcementsLinks = array();
                 foreach ($announcements as $announcement) {
                     $announcementsLinks[] = $this->linkForAnnouncement($announcement, $contentCourse);
