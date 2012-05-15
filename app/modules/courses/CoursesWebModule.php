@@ -711,6 +711,8 @@ class CoursesWebModule extends WebModule {
                     $this->assign('courseCatalogText', $this->getLocalizedString('COURSE_CATALOG_TEXT'));
                     $this->assign('catalogItems', $catalogItems);
                 }
+                
+                return true;
                 break;
 
             case 'updates':
@@ -729,6 +731,7 @@ class CoursesWebModule extends WebModule {
                 $updatesLinks = $this->sortCourseContent($updatesLinks, 'sortDate');
                 $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 5));
                 $this->assign('updatesLinks', $updatesLinks);
+                return true;
                 break;
 
             case 'tasks':
@@ -779,6 +782,7 @@ class CoursesWebModule extends WebModule {
                 }
 
                 $this->assign('tasks', $sortedTasks);
+                return true;
                 break;
             }
     }
@@ -798,6 +802,7 @@ class CoursesWebModule extends WebModule {
                 }
                 $announcementsLinks = $this->paginateArray($announcementsLinks, $this->getOptionalModuleVar('MAX_ANNOUNCEMENTS', 10));
                 $this->assign('announcementsLinks', $announcementsLinks);
+                return true;
                 break;
             case 'updates':
                 $updatesOptions = $this->getOptionsForUpdates($options);
@@ -808,6 +813,7 @@ class CoursesWebModule extends WebModule {
                 }
                 $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 10));
                 $this->assign('updatesLinks', $updatesLinks);
+                return true;
                 break;
 
             case 'resources':
@@ -860,6 +866,7 @@ class CoursesWebModule extends WebModule {
 
                 $this->assign('resourcesLinks',$resourcesLinks);
                 $this->assign('courseResourcesGroup', $group);
+                return true;
                 break;
 
             case 'tasks':
@@ -886,6 +893,7 @@ class CoursesWebModule extends WebModule {
                     $tasks[] = $task;
                 }
                 $this->assign('tasks', $tasks);
+                return true;
                 break;
 
             case 'info':
@@ -909,11 +917,12 @@ class CoursesWebModule extends WebModule {
 
                 // @TODO ADD configurable links
                 $this->assign('links', $links);
+                return true;
                 break;
 
             case 'grades':
-                $grades = $contentCourse->getGrades();
-
+                $grades = $contentCourse->getGrades(array('user'=>true));
+                return true;
                 break;
         }
     }
@@ -925,12 +934,14 @@ class CoursesWebModule extends WebModule {
             case 'index':
                 $courseDetails =  $this->formatCourseDetails($course, 'info-index');
                 $this->assign('courseDetails', $courseDetails);
+                return true;
                 break;
 
             case 'staff':
             	$instructorList = array();
                 $staff =  $this->formatCourseDetails($course, 'info-staff');
                 $this->assign('staff', $staff);
+                return true;
                 break;
         }
     }
@@ -1304,8 +1315,9 @@ class CoursesWebModule extends WebModule {
                 $tabsConfig = $this->getModuleSections('coursetabs');
                 $tabs = array();
                 foreach($tabsConfig as $tab => $tabData){
-                    $tabs[] = $tab;
-                    $this->initializeForCourseTab($tab, $options);
+                    if ($this->initializeForCourseTab($tab, $options)) {
+                        $tabs[] = $tab;
+                    }
                 }
 
                 $this->enableTabs($tabs);
@@ -1328,8 +1340,9 @@ class CoursesWebModule extends WebModule {
                 $tabs = array();
                 foreach($tabsConfig as $tab => $tabData){
                     if(!$tabData['protected'] || $this->isLoggedIn()) {
-                        $tabs[] = $tab;
-                        $this->initializeForIndexTab($tab, $options);
+                        if ($this->initializeForIndexTab($tab, $options)) {
+                            $tabs[] = $tab;
+                        }
                     }
                 }
 
