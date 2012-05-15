@@ -26,9 +26,12 @@ abstract class WebModule extends Module {
   protected $templatePage = 'index';
 
   protected $deviceClassifier;  
+
   protected $pagetype = 'unknown';
   protected $platform = 'unknown';
   protected $browser = 'unknown';
+
+  protected $ajaxContentLoad = false;
   
   protected $imageExt = '.png';
   
@@ -43,7 +46,7 @@ abstract class WebModule extends Module {
   private $inlineJavascriptBlocks = array();
   private $inlineJavascriptFooterBlocks = array();
   private $onOrientationChangeBlocks = array();
-  private $onLoadBlocks = array('scrollTo(0,1);');
+  private $onLoadBlocks = array('scrollToTop();');
   private $javascriptURLs = array();
 
   private $moduleDebugStrings = array();
@@ -68,6 +71,8 @@ abstract class WebModule extends Module {
   protected $canBeRemoved = true;
   protected $canBeDisabled = true;
   protected $canBeHidden = true;
+  protected $canAllowRobots = true;
+  protected $defaultAllowRobots = true;
   protected $hideFooterLinks = false;
   
   //
@@ -75,31 +80,43 @@ abstract class WebModule extends Module {
   //
   
   protected function enableTabs($tabKeys, $defaultTab=null, $javascripts=array()) {
-    $currentTab = $tabKeys[0];
+    // prefill from config to get order
+    $tabs = array();
+    foreach ($this->pageConfig as $key => $value) {
+      if (strpos($key, 'tab_') === 0) {
+        $tabKey = substr($key, 4);
+        if (in_array($tabKey, $tabKeys)) {
+          $tabs[$tabKey] = array(
+            'title' => $value,
+          );
+        }
+      }
+    }
+    
+    // Fill out rest of tabs
+    foreach ($tabKeys as $tabKey) {
+      // Fill out default titles for tabs not in config:
+      if (!isset($tabs[$tabKey]) || !is_array($tabs[$tabKey])) {
+        $tabs[$tabKey] = array(
+          'title' => ucwords($tabKey),
+        );
+      }
+      
+      $tabArgs = $this->args;
+      $tabArgs['tab'] = $tabKey;
+      $tabs[$tabKey]['url'] = $this->buildBreadcrumbURL($this->page, $tabArgs, false);
+      
+      $tabs[$tabKey]['javascript'] = isset($javascripts[$tabKey]) ? $javascripts[$tabKey] : '';
+    }
+    
+    // Figure which tab should be selected
+    $currentTab = array_keys($tabs);
+    $currentTab = reset($currentTab);    
     if (isset($this->args['tab']) && in_array($this->args['tab'], $tabKeys)) {
       $currentTab = $this->args['tab'];
       
     } else if (isset($defaultTab) && in_array($defaultTab, $tabKeys)) {
       $currentTab = $defaultTab;
-    }
-    
-    $tabs = array();
-    foreach ($tabKeys as $tabKey) {
-      $title = ucwords($tabKey);
-      $configKey = "tab_{$tabKey}";
-      if (isset($this->pageConfig, $this->pageConfig[$configKey]) && 
-          strlen($this->pageConfig[$configKey])) {
-        $title = $this->pageConfig[$configKey];
-      }
-      
-      $tabArgs = $this->args;
-      $tabArgs['tab'] = $tabKey;
-      
-      $tabs[$tabKey] = array(
-        'title' => $title,
-        'url'   => $this->buildBreadcrumbURL($this->page, $tabArgs, false),
-        'javascript' => isset($javascripts[$tabKey]) ? $javascripts[$tabKey] : '',
-      );
     }
     
     $this->tabbedView = array(
@@ -315,6 +332,10 @@ abstract class WebModule extends Module {
   
     return "/$id/$page".(strlen($argString) ? "?$argString" : "");
   }
+
+  protected function buildExternalURL($url) {
+    return $url;
+  }
   
   protected function buildMailToLink($to, $subject, $body) {
     $to = trim($to);
@@ -346,15 +367,18 @@ abstract class WebModule extends Module {
         return false;
   }
 
-  public function redirectToModule($id, $page, $args=array()) {
+  public function redirectToURL($url, $type=Kurogo::REDIRECT_TEMPORARY) {
+    Kurogo::redirectToURL($url, $type);
+  }
+
+  public function redirectToModule($id, $page, $args=array(), $type=Kurogo::REDIRECT_TEMPORARY) {
     $url = self::buildURLForModule($id, $page, $args);
     //error_log('Redirecting to: '.$url);
     Kurogo::log(LOG_DEBUG, "Redirecting to module $id at $url",'module');
-    header("Location: ". URL_PREFIX . ltrim($url, '/'));
-    exit;
+    Kurogo::redirectToURL(URL_PREFIX . ltrim($url, '/'), $type);
   }
 
-  protected function redirectTo($page, $args=null, $preserveBreadcrumbs=false) {
+  protected function redirectTo($page, $args=null, $preserveBreadcrumbs=false, $type=Kurogo::REDIRECT_TEMPORARY) {
     if (!isset($args)) { $args = $this->args; }
     
     $url = '';
@@ -366,8 +390,7 @@ abstract class WebModule extends Module {
     
     //error_log('Redirecting to: '.$url);
     Kurogo::log(LOG_DEBUG, "Redirecting to page $page at $url",'module');
-    header("Location: ". URL_PREFIX . ltrim($url, '/'));
-    exit;
+    Kurogo::redirectToURL(URL_PREFIX . ltrim($url, '/'), $type);
   }
 
     protected function buildURLFromArray($params) {
@@ -482,6 +505,8 @@ abstract class WebModule extends Module {
                 $this->imageExt = '.gif';
                 break;
         }
+
+        $this->ajaxContentLoad = $this->getArg('ajax') ? true : false;
         
         if ($page) {
             // Pull in fontsize
@@ -510,7 +535,7 @@ abstract class WebModule extends Module {
   protected function moduleDisabled() {
     $this->redirectToModule('error', '', array_merge($this->getArrayForRequest(), array('code'=>'disabled')));
   }
-  
+
     public static function getAllThemes() {
         $themes = array();
         $d = dir(SITE_DIR . "/themes");
@@ -542,8 +567,7 @@ abstract class WebModule extends Module {
 
         $redirect= sprintf("https://%s%s%s", $secure_host, $secure_port == 443 ? '': ":$secure_port", $_SERVER['REQUEST_URI']);
         Kurogo::log(LOG_DEBUG, "Redirecting to secure url $redirect",'module');
-        header("Location: $redirect");          
-        exit();
+        Kurogo::redirectToURL($redirect, Kurogo::REDIRECT_PERMANENT);
     }
 
   //
@@ -556,6 +580,19 @@ abstract class WebModule extends Module {
         }
         
         return $modules;
+    }
+    
+    public function allowRobots() {
+        // Returns integers so the admin module can use this function
+        if ($this->canAllowRobots && $this->getOptionalModuleVar('robots', $this->defaultAllowRobots)) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+    
+    public function canAllowRobots() {
+        return $this->canAllowRobots;
     }
     
     public function canBeAddedToHomeScreen() {
@@ -741,7 +778,7 @@ abstract class WebModule extends Module {
         $disabledModules = $includeDisabled || !$disabledIDs ? array() : array_combine($disabledIDs, $disabledIDs);
 
         $modules = array(
-            'home'     => $this->pagetype == 'tablet' ? array('home'=>'Home') : array(),
+            'home'     => $this->pagetype == 'tablet' ? array($this->getHomeModuleID()=>'Home') : array(),
             'primary'  => array_diff_key($moduleNavConfig->getOptionalSection('primary_modules'), $disabledModules),
             'secondary'=> array_diff_key($moduleNavConfig->getOptionalSection('secondary_modules'), $disabledModules)
         );
@@ -757,7 +794,8 @@ abstract class WebModule extends Module {
     protected function getAllModuleNavigationData($includeDisabled=self::INCLUDE_DISABLED_MODULES) {
     
         $moduleConfig = $this->getModuleNavigationIDs($includeDisabled);
-    
+        $homeModuleID = $this->getHomeModuleID();
+        
         $modules = array(
             'home'    => array(),
             'primary' => array(),
@@ -795,7 +833,7 @@ abstract class WebModule extends Module {
                     'url'         => "/$moduleID/",
                     'disableable' => !in_array($moduleID, $modulesThatCannotBeDisabled),
                     'disabled'    => $includeDisabled && in_array($moduleID, $disabledIDs),
-                    'img'         => "/modules/home/images/{$moduleID}{$imgSuffix}".$this->imageExt,
+                    'img'         => "/modules/{$homeModuleID}/images/{$moduleID}{$imgSuffix}".$this->imageExt,
                     'class'       => implode(' ', $classes),
                 );
 
@@ -820,7 +858,7 @@ abstract class WebModule extends Module {
   protected function getUserSortedModules($modules) {
     // sort primary modules if sort cookie is set
     if (isset($_COOKIE[MODULE_ORDER_COOKIE])) {
-      $sortedIDs = array_merge(array('home'), explode(",", $_COOKIE[MODULE_ORDER_COOKIE]));
+      $sortedIDs = array_merge(array($this->getHomeModuleID()), explode(",", $_COOKIE[MODULE_ORDER_COOKIE]));
       $unsortedIDs = array_diff(array_keys($modules['primary']), $sortedIDs);
             
       $sortedModules = array();
@@ -913,7 +951,7 @@ abstract class WebModule extends Module {
       $data = $cache->read($cacheName);
       
     } else {
-      $memberArrays = array(
+      $properties = array(
         'inlineCSSBlocks',
         'cssURLs',
         'inlineJavascriptBlocks',
@@ -922,9 +960,13 @@ abstract class WebModule extends Module {
         'onLoadBlocks',
         'javascriptURLs',
       );
-      $data = array();
-      foreach ($memberArrays as $memberName) {
-        $data[$memberName] = $this->$memberName;
+      $data = array(
+          'properties' => array(),
+          'minifyCSS'  => '',
+          'minifyJS'   => '',
+      );
+      foreach ($properties as $property) {
+        $data['properties'][$property] = $this->$property;
       }
   
       // Add page Javascript and CSS if any
@@ -936,12 +978,12 @@ abstract class WebModule extends Module {
       
       $javascript = @file_get_contents(FULL_URL_PREFIX.ltrim($minifyURLs['js'], '/'), false, $context);
       if ($javascript) {
-        array_unshift($data['inlineJavascriptBlocks'], $javascript);
+        $data['minifyJS'] = $javascript;
       }
   
       $css = @file_get_contents(FULL_URL_PREFIX.ltrim($minifyURLs['css'], '/'), false, $context);
       if ($css) {
-        array_unshift($data['inlineCSSBlocks'], $css);
+        $data['minifyCSS'] = $css;
       }
       
       $cache->write($data, $cacheName);
@@ -950,8 +992,16 @@ abstract class WebModule extends Module {
     return $data;
   }
   protected function importCSSAndJavascript($data) {
-    foreach ($data as $memberName => $arrays) {
+    foreach ($data['properties'] as $memberName => $arrays) {
       $this->$memberName = array_unique(array_merge($this->$memberName, $arrays));
+    }
+    
+    if ($data['minifyCSS']) {
+      array_unshift($this->inlineCSSBlocks, $data['minifyCSS']);
+    }
+    
+    if ($data['minifyJS']) {
+      array_unshift($this->inlineJavascriptBlocks, $data['minifyJS']);
     }
   }
   protected function addJQuery($version='1.5.1') {
@@ -1073,15 +1123,11 @@ abstract class WebModule extends Module {
   //
   
   private function encodeBreadcrumbParam($breadcrumbs) {
-    return urlencode(gzdeflate(json_encode($breadcrumbs), 9));
+    return json_encode($breadcrumbs);
   }
   
   private function decodeBreadcrumbParam($breadcrumbs) {
-    if ($json = @gzinflate(urldecode($breadcrumbs))) {
-        return json_decode($json, true);
-    }
-
-    return null;
+    return json_decode($breadcrumbs, true);
   }
   
   private function loadBreadcrumbs() {
@@ -1389,7 +1435,7 @@ abstract class WebModule extends Module {
         $this->assign('homeLinkText', $this->getLocalizedString('HOME_LINK', Kurogo::getSiteString('SITE_NAME')));
         $this->assign('moduleHomeLinkText', $this->getLocalizedString('HOME_LINK', $this->getModuleName()));
     }
-  
+    
   private function setPageVariables() {
     $this->loadTemplateEngineIfNeeded();
         
@@ -1404,6 +1450,7 @@ abstract class WebModule extends Module {
     $this->assign('isModuleHome', $this->page == 'index');
     $this->assign('request_uri' , $_SERVER['REQUEST_URI']);
     $this->assign('hideFooterLinks' , $this->hideFooterLinks);
+    $this->assign('ajaxContentLoad', $this->ajaxContentLoad);
     $this->assign('charset', Kurogo::getCharset());
     
     // Font size for template
@@ -1466,7 +1513,8 @@ abstract class WebModule extends Module {
     
     $moduleStrings = $this->getOptionalModuleSection('strings');
     $this->assign('moduleStrings', $moduleStrings);
-    $this->assign('homeLink', $this->buildURLForModule('home','',array()));
+    $this->assign('homeLink', $this->buildURLForModule($this->getHomeModuleID(),'',array()));
+    $this->assign('homeModuleID', $this->getHomeModuleID());
     
     $this->assignLocalizedStrings();
 
@@ -1497,7 +1545,7 @@ abstract class WebModule extends Module {
     
     // Access Key Start
     $accessKeyStart = count($this->breadcrumbs);
-    if ($this->configModule != 'home') {
+    if ($this->configModule != $this->getHomeModuleID()) {
       $accessKeyStart++;  // Home link
     }
     $this->assign('accessKeyStart', $accessKeyStart);
@@ -1620,3 +1668,4 @@ abstract class WebModule extends Module {
         ), false);
     }
 }
+  
