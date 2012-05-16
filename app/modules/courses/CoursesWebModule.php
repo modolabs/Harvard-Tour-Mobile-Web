@@ -217,7 +217,8 @@ class CoursesWebModule extends WebModule {
         if ($contentCourse) {
             $page = 'course';
             $subtitle = array();
-            if ($lastAnnouncementContent = $contentCourse->getLastAnnouncement()) {
+            $options['course'] = $contentCourse;
+            if ($lastAnnouncementContent = $contentCourse->getLastAnnouncement($this->getOptionsForAnnouncements($options))) {
                 $subtitle[] = $lastAnnouncementContent->getTitle();
                 if ($publishedDate = $lastAnnouncementContent->getPublishedDate()) {
                     $published = $this->elapsedTime($publishedDate->format('U'));

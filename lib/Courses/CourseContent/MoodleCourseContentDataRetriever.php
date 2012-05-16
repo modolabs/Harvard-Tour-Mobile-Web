@@ -280,7 +280,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         return array();
     }
 
-    public function getLastAnnouncement(){
+    public function getLastAnnouncement($options){
         return array();
     }
 
@@ -600,8 +600,8 @@ class MoodleCourseContentCourse extends CourseContentCourse {
         }
 	}
 
-    public function getLastAnnouncement(){
-        if($announcements = $this->getAnnouncements()){
+    public function getLastAnnouncement($options){
+        if($announcements = $this->getAnnouncements($options)){
             $announcements = $this->sortCourseContent($announcements, 'publishedDate');
             return current($announcements);
         }
