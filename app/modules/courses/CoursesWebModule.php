@@ -71,32 +71,32 @@ class CoursesWebModule extends WebModule {
     }
 
     // returns a link for a particular resource
-    public function linkForContent($resource, CourseContentCourse $course, $type = '') {
+    public function linkForContent(CourseContent $content, CourseContentCourse $course) {
         
     	$link = array(
-            'title' => $resource->getTitle(),
-            'subtitle' => $resource->getSubTitle(),
-            'type'  => $resource->getContentType(),
-            'class' => "content content_" . $resource->getContentType(),
-            'img'   => "/modules/courses/images/content_" . $resource->getContentType() . $this->imageExt
+            'title' => $content->getTitle(),
+            'subtitle' => $content->getSubTitle(),
+            'type'  => $content->getContentType(),
+            'class' => "content content_" . $content->getContentType(),
+            'img'   => "/modules/courses/images/content_" . $content->getContentType() . $this->imageExt
         );
 
-        if($resource->getPublishedDate()){
-	    	if($resource->getAuthor()){
-	    	    $updated = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $resource->getAuthor(), $this->elapsedTime($resource->getPublishedDate()->format('U')));
-	    		//$updated = 'Updated '. $this->elapsedTime($resource->getPublishedDate()->format('U')) .' by '.$resource->getAuthor();
+        if($content->getPublishedDate()){
+	    	if($content->getAuthor()){
+	    	    $updated = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $content->getAuthor(), $this->elapsedTime($content->getPublishedDate()->format('U')));
+	    		//$updated = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U')) .' by '.$content->getAuthor();
 	    	}else{
-	    		//$updated = 'Updated '. $this->elapsedTime($resource->getPublishedDate()->format('U'));
-	    		$updated = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($resource->getPublishedDate()->format('U')));
+	    		//$updated = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U'));
+	    		$updated = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($content->getPublishedDate()->format('U')));
 	    	}
 	    	$link['subtitle'] = $link['updated'] = $updated;
 	    } else {
-	    	$link['subtitle'] = $resource->getSubTitle();
+	    	$link['subtitle'] = $content->getSubTitle();
 	    }
 
         $options = $this->getCourseOptions();
-        $options['contentID'] = $resource->getID();
-        $options['type'] = $type ? $type : $resource->getContentType();
+        $options['contentID'] = $content->getID();
+        $options['type'] = $content->getContentType();
         $link['url'] = $this->buildBreadcrumbURL('content', $options);
 
         return $link;
@@ -873,7 +873,7 @@ class CoursesWebModule extends WebModule {
                         if($index >= $limit && $limit != 0){
                             break;
                         }
-                        $groupItems[] = $this->linkForContent($item, $contentCourse, 'resources');
+                        $groupItems[] = $this->linkForContent($item, $contentCourse);
                         $index++;
                     }
                     if($group == 'type'){
