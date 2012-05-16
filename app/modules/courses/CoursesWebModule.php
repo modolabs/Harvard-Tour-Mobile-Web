@@ -233,7 +233,7 @@ class CoursesWebModule extends WebModule {
                 $link['type']  = $lastAnnouncementContent->getContentType();
                 $link['img']   = "/modules/courses/images/content_" . $lastAnnouncementContent->getContentType() . $this->imageExt;
             } else {
-                $subtitle[] = $this->getLocalizedString('NO_UPDATES');
+                $subtitle[] = $this->getLocalizedString('NO_ANNOUNCEMENTS');
             }
 
             $link['subtitle'] = implode("<br />", $subtitle);
