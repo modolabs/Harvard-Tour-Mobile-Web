@@ -15,6 +15,7 @@ abstract class CourseContent implements KurogoObject {
     protected $priority;
     protected $viewMode;
     protected $downloadMode;
+    protected $attributes;
     const MODE_PAGE = 1;
     const MODE_DOWNLOAD = 2;
     const MODE_URL = 3;
@@ -157,6 +158,24 @@ abstract class CourseContent implements KurogoObject {
         return isset($this->properties[$var]) ?  $this->properties[$var] : '';
     }
 
+    public function setAttributes($attribs) {
+        if (is_array($attribs)) {
+            $this->attributes = $attribs;
+        }
+    }
+    
+    public function getAttributes() {
+        return $this->attributes;
+    }
+    
+    public function setAttribute($key, $value) {
+        $this->attributes[$key] = $value;
+    }
+    
+    public function getAttribute($attrib) {
+        return isset($this->attributes[$attrib]) ? $this->attributes[$attrib] : '';
+    }
+    
     /**
      * Get viewMode.
      *
