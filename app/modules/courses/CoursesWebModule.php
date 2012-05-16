@@ -840,7 +840,8 @@ class CoursesWebModule extends WebModule {
                 foreach ($items as $item){
                     $updatesLinks[] = $this->linkForUpdate($item, $contentCourse, false);
                 }
-                $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 10), 'UPDATE', updates);
+                
+                $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 10), 'UPDATE', 'updates');
                 $this->assign('updatesLinks', $updatesLinks);
                 return true;
                 break;
