@@ -71,7 +71,8 @@ class CoursesWebModule extends WebModule {
     }
 
     // returns a link for a particular resource
-    public function linkForContent($resource, CourseContentCourse $course) {
+    public function linkForContent($resource, CourseContentCourse $course, $type = '') {
+        
     	$link = array(
             'title' => $resource->getTitle(),
             'subtitle' => $resource->getSubTitle(),
@@ -95,7 +96,7 @@ class CoursesWebModule extends WebModule {
 
         $options = $this->getCourseOptions();
         $options['contentID'] = $resource->getID();
-
+        $options['type'] = $type ? $type : $resource->getContentType();
         $link['url'] = $this->buildBreadcrumbURL('content', $options);
 
         return $link;
@@ -872,7 +873,7 @@ class CoursesWebModule extends WebModule {
                         if($index >= $limit && $limit != 0){
                             break;
                         }
-                        $groupItems[] = $this->linkForContent($item, $contentCourse);
+                        $groupItems[] = $this->linkForContent($item, $contentCourse, 'resources');
                         $index++;
                     }
                     if($group == 'type'){
