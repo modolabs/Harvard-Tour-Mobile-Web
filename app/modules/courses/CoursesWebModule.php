@@ -581,6 +581,7 @@ class CoursesWebModule extends WebModule {
             $options = array_merge($this->getCourseOptions(), array('value'=>$value));
             if(is_array($value)) {
                 foreach ($value as $eachValue) {
+                    $options['value'] = $eachValue;
 		            $detail['list'][] = array_merge($detail, array(
 		                'title'=>$eachValue,
 		                'url'=>$this->buildBreadcrumbURL($info['page'], $options, true)
