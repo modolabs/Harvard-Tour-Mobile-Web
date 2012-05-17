@@ -29,6 +29,15 @@ abstract class Course implements CourseInterface {
     }
     
     public function filterItem($filters) {
+        foreach ($filters as $filter=>$value) {
+            switch ($filter) {
+                case 'search':
+                    return (stripos($this->getTitle(), $value)!==FALSE) ||
+                        (stripos($this->getDescription(), $value)!==FALSE);
+                    break;
+            }
+        }
+
         return true;
     }
     
