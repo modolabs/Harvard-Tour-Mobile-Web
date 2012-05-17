@@ -1178,6 +1178,7 @@ class CoursesWebModule extends WebModule {
                 $this->assign('areas', $areasList);
                 $this->assign('courses', $coursesList);
                 $this->assign('hiddenArgs', array('area' => $area, 'term' => strval($term)));
+                $this->assign('placeholder', $this->getLocalizedString("SEARCH_MODULE", $CourseArea->getTitle()));
 
                 break;
 
