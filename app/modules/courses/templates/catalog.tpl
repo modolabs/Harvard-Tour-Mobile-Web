@@ -4,6 +4,9 @@
 {$catalogHeader}
 {/block}
 {if $sections}
+
+{include file="findInclude:common/templates/search.tpl" extraArgs=$hiddenArgs}
+
 <div id="category-switcher">
 Term: <select id="termID" name="term" onchange="loadSection(this, '{$page}');">
     {foreach $sections as $section}
