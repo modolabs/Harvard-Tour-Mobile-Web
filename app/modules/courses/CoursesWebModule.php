@@ -1158,17 +1158,18 @@ class CoursesWebModule extends WebModule {
                 }
 
                 $courses = array();
-                $options = array(
+                $searchOptions = $options = array(
                     'term'=>$term,
-                    'types'=>array('catalog'),
                     'area'=>$area
                 );
+                
+                $searchOptions['type'] = 'catalog';
 
                 $courses = $this->controller->getCourses($options);
                 $coursesList = array();
 
                 foreach ($courses as $item) {
-                    $course = $this->linkForCatalogCourse($item, array('term'=>strval($term)));
+                    $course = $this->linkForCatalogCourse($item, $options);
                     $coursesList[] = $course;
                 }
 
@@ -1413,7 +1414,7 @@ class CoursesWebModule extends WebModule {
                 $coursesList = array();
 
                 foreach ($courses as $item) {
-                    $course = $this->linkForCatalogCourse($item, array('term' => strval($term)));
+                    $course = $this->linkForCatalogCourse($item, $options);
                     $coursesList[] = $course;
                 }
                 $this->assign('results', $coursesList);
