@@ -9,6 +9,7 @@ abstract class CourseContent implements KurogoObject {
     protected $contentType;
     protected $title;
     protected $description;
+    protected $authorID;
     protected $author;
     protected $publishedDate;
     protected $endDate;
@@ -106,6 +107,14 @@ abstract class CourseContent implements KurogoObject {
 
     public function getAuthor() {
         return $this->author;
+    }
+    
+    public function setAuthorID($authorID) {
+        $this->authorID = $authorID;
+    }
+    
+    public function getAuthorID() {
+        return $this->authorID;
     }
 
     public function setUrl($url) {
