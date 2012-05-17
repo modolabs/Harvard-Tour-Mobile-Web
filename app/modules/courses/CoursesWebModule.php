@@ -393,9 +393,12 @@ class CoursesWebModule extends WebModule {
 
         $options = array(
             'courseID' => $courseID,
-            'term' => strval($term),
-            'area' => $area
+            'term' => strval($term)
         );
+        
+        if ($area) {
+            $options['area'] = $area;
+        }
 
         return $options;
     }
