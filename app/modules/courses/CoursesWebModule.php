@@ -711,7 +711,7 @@ class CoursesWebModule extends WebModule {
 
                     $catalogItems[] = array(
                         'title' => $this->getFeedTitle('catalog'),
-                        'url'   => $this->buildBreadcrumbURL('catalog', array()),
+                        'url'   => $this->buildBreadcrumbURL('catalog', array('term'=>$Term))
                     );
 
                     if ($bookmarks = $this->getBookmarks()) {
