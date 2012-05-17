@@ -1162,6 +1162,7 @@ class CoursesWebModule extends WebModule {
                 $this->assign('description', $CourseArea->getDescription());
                 $this->assign('areas', $areasList);
                 $this->assign('courses', $coursesList);
+                $this->assign('hiddenArgs', array('area' => $area, 'term' => strval($term)));
 
                 break;
 
@@ -1389,6 +1390,9 @@ class CoursesWebModule extends WebModule {
                     'term' => $term,
                     'types' => array('catalog')
                 );
+                if($area = $this->getArg('area')) {
+                    $options['area'] = $area;
+                }
 
                 $courses = $this->controller->search($searchTerms, $options);
                 $coursesList = array();

@@ -23,6 +23,10 @@ Term: <select id="termID" name="term" onchange="loadSection(this, '{$page}');">
 {block name="courses"}
   {include file="findInclude:common/templates/navlist.tpl" boldLabels=true navlistItems=$courses}
 {/block}
+{else}
+    <div class="nonfocal">
+    {"NO_COURSES"|getLocalizedString}
+    </div>
 {/if}
 
 {include file="findInclude:common/templates/footer.tpl"}
