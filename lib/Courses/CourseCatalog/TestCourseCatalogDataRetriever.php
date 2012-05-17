@@ -13,6 +13,18 @@ class TestCourseCatalogDataRetriever extends URLDataRetriever implements CourseC
         $this->setParser($this->$parserVar);
         $this->setBaseURL($this->$urlVar);
     }
+
+    public function searchCourses($searchTerms, $options = array()) {
+        $courses = $this->getCourses($options);
+        $items = array();
+        $filters = explode(" ", trim($searchTerms));
+        foreach($courses as $course) {
+            if($course->filterItem($filters)) {
+                $items[] = $course;
+            }
+        }
+        return $items;
+    }
     
     public function getCourses($options = array()) {
         $this->setMode('courses');

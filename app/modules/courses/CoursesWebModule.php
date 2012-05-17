@@ -1154,7 +1154,7 @@ class CoursesWebModule extends WebModule {
                 $coursesList = array();
 
                 foreach ($courses as $item) {
-                    $course = $this->linkForCatalogCourse($item, array('term'=>strval($term), 'area' => $area));
+                    $course = $this->linkForCatalogCourse($item, array('term'=>strval($term)));
                     $coursesList[] = $course;
                 }
 
@@ -1394,7 +1394,7 @@ class CoursesWebModule extends WebModule {
                 $coursesList = array();
 
                 foreach ($courses as $item) {
-                    $course = $this->linkForCatalogCourse($item, array('term' => strval($term), 'area' => $area));
+                    $course = $this->linkForCatalogCourse($item, array('term' => strval($term)));
                     $coursesList[] = $course;
                 }
                 $this->assign('courses', $coursesList);
