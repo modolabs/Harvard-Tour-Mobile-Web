@@ -1381,6 +1381,8 @@ class CoursesWebModule extends WebModule {
                 $this->enableTabs($tabs);
                 $this->assign('tabs', $tabs);
                 break;
+            case 'search':
+                break;
         }
     }
 }
