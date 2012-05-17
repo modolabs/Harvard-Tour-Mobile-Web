@@ -86,6 +86,9 @@ class CoursesDataModel extends DataModel {
         }
     }
 
+    public function search($searchTerms, $options) {
+        return array();
+    }
 
     public function getCourses($options) {
         

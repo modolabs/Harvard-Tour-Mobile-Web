@@ -1,6 +1,6 @@
 {include file="findInclude:common/templates/header.tpl"}
 
-<h2 class="nonfocal">{$searchTitle}</h2>
+<h2 class="nonfocal">{$searchHeader}</h2>
 
 {if $sections}
 

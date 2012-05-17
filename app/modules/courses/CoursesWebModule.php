@@ -1382,6 +1382,23 @@ class CoursesWebModule extends WebModule {
                 $this->assign('tabs', $tabs);
                 break;
             case 'search':
+                $searchTerms = $this->getArg('filter', false);
+                $term = $this->assignTerm();
+
+                $options = array(
+                    'term' => $term,
+                    'types' => array('catalog')
+                );
+
+                $courses = $this->controller->search($searchTerms, $options);
+                $coursesList = array();
+
+                foreach ($courses as $item) {
+                    $course = $this->linkForCatalogCourse($item, array('term' => strval($term), 'area' => $area));
+                    $coursesList[] = $course;
+                }
+                $this->assign('courses', $coursesList);
+                $this->assign('searchHeader', $this->getOptionalModuleVar('searchHeader','','catalog'));
                 break;
         }
     }
