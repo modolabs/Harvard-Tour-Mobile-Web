@@ -87,7 +87,19 @@ class CoursesDataModel extends DataModel {
     }
 
     public function search($searchTerms, $options) {
-        return array();
+        $courses = array();
+        if ($retriever = $this->getRetriever('catalog')) {
+            $retrieverCourses = $retriever->searchCourses($searchTerms, $options);
+            foreach ($retrieverCourses as $course) {
+                if (!isset($courses[$course->getCommonID()])) {
+                    $courses[$course->getCommonID()] = new CombinedCourse();
+                }
+
+                $combinedCourse = $courses[$course->getCommonID()];
+                $combinedCourse->addCourse('catalog', $course);
+            }
+        }
+        return $courses;
     }
 
     public function getCourses($options) {
