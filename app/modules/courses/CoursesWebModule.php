@@ -1124,6 +1124,7 @@ class CoursesWebModule extends WebModule {
                 }
                 $this->assign('catalogHeader', $this->getOptionalModuleVar('catalogHeader','','catalog'));
                 $this->assign('catalogFooter', $this->getOptionalModuleVar('catalogFooter','','catalog'));
+                $this->assign('placeholder', $this->getLocalizedString("CATALOG_SEARCH"));
 
                 break;
 
@@ -1402,7 +1403,11 @@ class CoursesWebModule extends WebModule {
                     $course = $this->linkForCatalogCourse($item, array('term' => strval($term)));
                     $coursesList[] = $course;
                 }
-                $this->assign('courses', $coursesList);
+                $this->assign('results', $coursesList);
+                if ($coursesList) {
+                    $this->assign('resultCount', count($coursesList));
+                }
+                $this->assign('searchTerms', $searchTerms);
                 $this->assign('searchHeader', $this->getOptionalModuleVar('searchHeader','','catalog'));
                 break;
         }
