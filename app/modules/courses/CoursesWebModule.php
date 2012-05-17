@@ -721,7 +721,7 @@ class CoursesWebModule extends WebModule {
                         );
                     }
 
-                    $this->assign('courseCatalogText', $this->getLocalizedString('COURSE_CATALOG_TEXT'));
+                    $this->assign('courseCatalogText', $this->getLocalizedString('COURSE_CATALOG_TEXT', $Term->getTitle()));
                     $this->assign('catalogItems', $catalogItems);
                 }
 
