@@ -678,6 +678,18 @@ class CoursesWebModule extends WebModule {
 
         return $options;
     }
+    
+    protected function getBookmarksForTerm(CourseTerm $Term) {
+        // @TODO filter out bookmarks by term
+        $_bookmarks =  $this->getBookmarks();
+        $bookmarks = array();
+        foreach ($_bookmarks as $aBookmark) {
+            if ($this->getBookmarkParam($aBookmark, 'term')==$Term->getID()) {
+                $bookmarks[] = $aBookmark;
+            }
+        }
+        return $bookmarks;
+    }
 
     protected function initializeForIndexTab($tab, $options) {
 
@@ -714,10 +726,10 @@ class CoursesWebModule extends WebModule {
                         'url'   => $this->buildBreadcrumbURL('catalog', array('term'=>strval($Term)))
                     );
 
-                    if ($bookmarks = $this->getBookmarks()) {
+                    if ($bookmarks = $this->getBookmarksForTerm($Term)) {
                         $catalogItems[] = array(
                             'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . " (" . count($bookmarks) . ")",
-                            'url'   => $this->buildBreadcrumbURL('bookmarks', array()),
+                            'url'   => $this->buildBreadcrumbURL('bookmarks', array('term'=>strval($Term))),
                         );
                     }
 
@@ -1309,9 +1321,10 @@ class CoursesWebModule extends WebModule {
                 break;
 
             case 'bookmarks':
+                $Term = $this->assignTerm();
                 $bookmarks = array();
                 if($this->hasBookmarks()){
-                    foreach ($this->getBookmarks() as $aBookmark) {
+                    foreach ($this->getBookmarksForTerm($Term) as $aBookmark) {
                         if ($aBookmark) {
                             // prevent counting empty string
                             $bookmark = array(
