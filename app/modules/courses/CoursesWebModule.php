@@ -37,36 +37,32 @@ class CoursesWebModule extends WebModule {
     	return $links;
     }
 
-    public function linkForTask($task, CourseContentCourse $course, $includeCourseName=false) {
+    public function linkForTask($task, CourseContentCourse $course, $includeCourseName=true) {
     	$link = array(
-            'title' =>$includeCourseName ? $course->getTitle() : $task->getTitle(),
+            'title' =>$includeCourseName ? $task->getTitle() : $course->getTitle(),
+    		'date' => $task->getDate() ? $task->getDate() : $task->getDueDate(),
             'img'   => "/modules/courses/images/content_" . $task->getContentType() . $this->imageExt
         );
-
+        
         $subtitle = array();
         if ($includeCourseName) {
-            $subtitle[] = $task->getTitle();
+            $subtitle[] = $course->getTitle();
         }
-
-        if($task->getPublishedDate()){
-            if($task->getAuthor()){
-                //$subtitle[] = 'Updated '. $this->elapsedTime($task->getPublishedDate()->format('U')) .' by '.$task->getAuthor();
-                $subtitle[] = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $task->getAuthor(), $this->elapsedTime($task->getPublishedDate()->format('U')));
-            }else{
-                //$subtitle[] = 'Updated '. $this->elapsedTime($task->getPublishedDate()->format('U'));
-                $subtitle[] = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($task->getPublishedDate()->format('U')));
-            }
-        } else {
-            $subtitle[] = $task->getSubTitle();
+        
+        $type = $task->getContentType();
+        if ($task->getContentType() == 'task' && $date = $task->getDueDate()) {
+            $subtitle[] = $this->getLocalizedString('COURSE_TASK_DUE', DateFormatter::formatDate($date, DateFormatter::MEDIUM_STYLE, DateFormatter::NO_STYLE));
+        } elseif ($date = $task->getDate()) {
+            $subtitle[] = DateFormatter::formatDate($date, DateFormatter::LONG_STYLE, DateFormatter::LONG_STYLE);
         }
 
         $options = $this->getCourseOptions();
         $options['taskID'] = $task->getID();
         $options['courseID'] = $course->getCommonID();
-
-        $link['url'] = $this->buildBreadcrumbURL('task', $options);
-        $link['subtitle'] = implode("<br />", $subtitle);
-
+        
+        $link['url'] = $this->buildBreadcrumbURL('task', $options, true);
+        $link['updated'] = implode("<br />", $subtitle);
+        
         return $link;
     }
 

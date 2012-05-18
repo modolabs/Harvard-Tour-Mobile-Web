@@ -106,6 +106,14 @@ abstract class CourseContent implements KurogoObject {
     }
 
     public function getAuthor() {
+        if (!$this->author) {
+            // if the authorID is set then attempt to retrieve the user's name
+            if ($this->authorID && $retriever = $this->getContentRetriever()) {
+                if ($user = $retriever->getUserByID($this->authorID)) {
+                    $this->author = $user->getFullName();
+                }
+            }
+        }
         return $this->author;
     }
     
