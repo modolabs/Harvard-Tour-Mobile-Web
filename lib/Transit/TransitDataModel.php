@@ -1358,19 +1358,6 @@ class TransitRoute
         return $direction['segments'];
     }
 
-    /*
-    // commenting out this function as it does not seem to be used
-    // and the code doesn't look correct
-    public function setStopTimes($directionID, $stopID, $arrivesOffset, $departsOffset) {
-        if (!isset($this->directions[$directionID])) {
-            Kurogo::log(LOG_WARNING, "No direction $directionID for route {$this->id}", 'transit');
-        }
-        foreach ($this->directions[$directionID]['segments'] as &$segment) {
-            $segment->setStopTimes($stopID, $predictions, $arrivesOffset, $departsOffset);
-        }
-    }
-    */
-    
     public function setStopPredictions($directionID, $stopID, $predictions) {
         $direction = $this->getDirection($directionID);
         if ($direction && isset($direction['segments'])) {
@@ -1675,18 +1662,6 @@ class TransitSegment
         return false;
     }
   
-    /*
-    // commenting out as i can't find where this is used
-    public function setStopTimes($stopID, $arrivesTT, $departsTT) {
-        $index = $this->getIndexForStop($stopID);
-        if ($index !== false) {
-            $this->stops[$index]['arrives'] = $arrivesTT;
-            $this->stops[$index]['departs'] = $departsTT;
-            $this->stops[$index]['hasTiming'] = true;
-        }
-    }
-    */
-    
     public function setStopPredictions($stopID, $predictions) {
         $index = $this->getIndexForStop($stopID);
         if ($index !== false) {
