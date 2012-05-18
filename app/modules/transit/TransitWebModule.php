@@ -630,7 +630,7 @@ class TransitWebModule extends WebModule {
     }
     
     function initListUpdate() {
-        $listUpdateURL = FULL_URL_PREFIX.$this->buildURL($this->page, array_merge(array('ajax' => 1), $this->args));
+        $listUpdateURL = FULL_URL_PREFIX.ltrim($this->buildURL($this->page, array_merge(array('ajax' => 1), $this->args)), '/');
         $this->addInlineJavascript("\n".
             'var htmlUpdateURL = "'.$listUpdateURL."\";\n".
             'var listUpdateFrequency = '.$this->getOptionalModuleVar('STOP_LIST_UPDATE_FREQ', 20).";\n"
