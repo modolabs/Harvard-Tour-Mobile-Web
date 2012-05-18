@@ -147,7 +147,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             $firstStopIndex = reset($stopIndexes);
             
             $firstStopPrevIndex  = null;
-            if (count($directions) == 1) {
+            if (count($directions) == 1 && count($stopIndexes)) {
                 // Loop case
                 $firstStopPrevIndex = end($stopIndexes);
                 if (self::isSameStop($directionInfo['stops'][$firstStopIndex]['id'], 
