@@ -1158,7 +1158,7 @@ class CoursesWebModule extends WebModule {
 
                 $courses = array();
                 $searchOptions = $options = array(
-                    'term'=>$term,
+                    'term'=>strval($term),
                     'area'=>$area
                 );
                 
