@@ -9,7 +9,7 @@
     {$resource.courseTitle|default:$resource.title}
     <div class="smallprint">
     {if $resource.img}<img src="{$resource.img}" width="16" height="16" alt="" class="listtype">{/if}
-    {$resource.updated}
+    {$resource.subtitle}
     </div> 
   </a>
 </li>
