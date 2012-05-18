@@ -2,15 +2,10 @@
 
 class LinkCourseContent extends CourseContent {
     protected $contentType = 'link';
-    protected $type;
     protected $url;
     
-    public function getType() {
-    	return $this->type;
-    }
-    
-    public function setType($type) {
-    	$this->type = $type;
+    public function getSubtitle() {
+        return $this->getURL();
     }
     
     public function getURL() {
