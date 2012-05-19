@@ -80,7 +80,7 @@ function mime_type($filename) {
   if (array_key_exists($ext, $mime_types)) {
     return $mime_types[$ext];
     
-  } elseif (function_exists('finfo_open')) {
+  } elseif (function_exists('finfo_open') && is_readable($filename)) {
     $finfo = finfo_open(FILEINFO_MIME);
     $mimetype = finfo_file($finfo, $filename);
     finfo_close($finfo);
