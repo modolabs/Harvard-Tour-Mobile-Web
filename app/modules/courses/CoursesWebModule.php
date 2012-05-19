@@ -260,6 +260,27 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    protected function formatBytes($value) {
+		//needs integer
+		if (!preg_match('/^\d+$/', $value)) {
+			return $value;
+		}
+		
+		//less than 10,000 bytes return bytes
+		if ($value < 10000) {
+			return $value;
+		//less than 1,000,000 bytes return KB
+		} elseif ($value < 1000000) {
+			return sprintf("%.2f KB", $value/1024);
+		} elseif ($value < 1000000000) {
+			return sprintf("%.2f MB", $value/(1048576));
+		} elseif ($value < 1000000000000) {
+			return sprintf("%.2f GB", $value/(1073741824));
+		} else {
+			return sprintf("%.2f TB", $value/(1099511627776));
+		}
+	}
+
     protected function getContentLinks(CourseContent $content) {
         $links = array();
         switch ($content->getContentType()) {
@@ -276,9 +297,15 @@ class CoursesWebModule extends WebModule {
                 if($downloadMode == $content::MODE_DOWNLOAD) {
                     $options = $this->getCourseOptions();
                     $options['contentID'] = $content->getID();
+                    $title = 'Download File';
+                    $subtitle = $content->getFileName();
+                    if ($filesize = $content->getFileSize()) {
+                        $subtitle .= " (" . $this->formatBytes($filesize) . ")";                    
+                    }
+
                     $links[] = array(
-                        'title'=>'Download File',
-                        'subtitle'=>$content->getFilename(),
+                        'title'=>$title, 
+                        'subtitle'=>$subtitle,
                         'url'=>$this->buildExternalURL($this->buildBreadcrumbURL('download', $options, false)),
                     );
                 }elseif($downloadMode == $content::MODE_URL) {
@@ -1019,6 +1046,13 @@ class CoursesWebModule extends WebModule {
                         if ($file = $content->getContentFile()) {
                             if ($mime = $content->getContentMimeType()) {
                                 header('Content-type: ' . $mime);
+                            }
+                            if ($size = $content->getFilesize()) {
+                                header('Content-length: ' . sprintf("%d", $size));
+                            }
+                            
+                            if ($filename = $content->getFilename()) {
+                                header('Content-Disposition: inline; filename="'. $filename . '"');
                             }
                             readfile($file);
                             die();
