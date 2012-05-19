@@ -132,8 +132,6 @@ class MoodleCourseContentDataParser extends dataParser {
                         		$contentType->setCourseID($CourseId);
                         	}
 
-                        	$contentType->setType($module['modname']);
-
                             if (isset($module['contents'][0]['timecreated']) && $module['contents'][0]['timecreated']) {
                                 $datetime = new DateTime(date('Y-n-j H:i:s', $module['contents'][0]['timecreated']));
                                 $contentType->setPublishedDate($datetime);
