@@ -575,52 +575,59 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             'splitByHeadsign' => $this->viewRouteSplitByHeadsign($routeID),
             'directions'      => array(),
         );
-    
-        // Check if there are a valid services and segments
-        // Add a minute to the time checking so we don't tell people about buses 
-        // that are leaving
+        
+        $routeDirections = array();
         
         foreach ($route->getDirections() as $direction) {
             $directionID = is_numeric($direction) ? "direction_{$direction}" : $direction;
             
-            $segments = $route->getSegmentsForDirection($direction);
-            $routeInfo['directions'][$directionID] = 
-                $this->getDirectionInfo($route->getAgencyID(), $routeID, $direction, $segments, $time);
-        }
-        
-        if ($routeInfo['splitByHeadsign']) {
-            $headsignDirections = array();
+            // Check the config file to see if we can get headsign or stop order information
+            $directionName = $directionID;
+            $stopOrder = $this->lookupStopOrder($routeInfo['agency'], $routeID, $direction, &$directionName);
             
-            foreach ($routeInfo['directions'] as $directionID => $directionInfo) {
-                foreach ($directionInfo['segments'] as $segment) {
-                    $headsign = $segment['name'] ? $segment['name'] : $directionInfo['name'];
-                    if (!isset($headsignDirections[$headsign])) {
-                        $headsignDirections[$headsign] = array(
-                            'name'     => $headsign,
-                            'segments' => array(),
-                            'stops'    => array(),
+            $segments = $route->getSegmentsForDirection($direction);
+            
+            if (!$routeInfo['splitByHeadsign']) {
+                $routeDirections[$directionID] = array(
+                    'name'      => $directionName,
+                    'segments'  => $segments,
+                    'stopOrder' => $stopOrder,
+                );
+                
+            } else {
+                // use the headsign as the direction id
+                // note we may end up with more than 2 directions!
+                foreach ($segments as $segment) {
+                    $headsign = trim($segment->getName());
+                    if (!$headsign) {
+                        $headsign = $directionInfo['name'];
+                    }
+                    
+                    if (!isset($routeDirections[$headsign])) {
+                        $routeDirections[$headsign] = array(
+                            'name'      => $headsign,
+                            'segments'  => array(),
+                            'stopOrder' => $stopOrder,
                         );
                     }
-                    $headsignDirections[$headsign]['segments'][] = $segment;
-                    $headsignDirections[$headsign]['stops'][$directionID] = $directionInfo['stops'];
+                    $routeDirections[$headsign]['segments'][] = $segment;
                 }
             }
-            
-            foreach ($headsignDirections as $directionID => $directionInfo) {
-                usort($headsignDirections[$directionID]['segments'], array(get_class(), 'sortDirectionSegments'));
-            
-                // flatten stop lists -- sometimes the same headsign exists in both directions
-                $allStops = array();
-                foreach ($headsignDirections[$directionID]['stops'] as $id => $stops) {
-                    $allStops = array_merge($allStops, $stops);
-                }
-                $headsignDirections[$directionID]['stops'] = $allStops;
-            }
-            
-            $routeInfo['directions'] = $headsignDirections;
-            
-            self::dlog(print_r($routeInfo['directions'], true));
         }
+        
+        self::dlog('routeDirectionIDs: '.implode(', ', array_keys($routeDirections)));
+        
+        foreach ($routeDirections as $directionID => $direction) {
+            self::dlog("HEADSIGN: {$direction['name']}", self::DLOG_STOP_GRAPH_SORT);
+            
+            // Get formatted direction information
+            $routeInfo['directions'][$directionID] = $this->getDirectionInfo(
+                $routeID, $direction['name'], $direction['segments'], $direction['stopOrder'], $time);
+            
+            // sort stops 
+            usort($routeInfo['directions'][$directionID]['segments'], array(get_class(), 'sortDirectionSegments'));
+        }
+        self::dlog('routeInfo[\'directions\']: '.print_r($routeInfo['directions'], true));
         
         $this->setUpcomingRouteStops($routeID, $routeInfo['directions']);
         
@@ -631,7 +638,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             $routeInfo['directions'] = self::mergeDirections($routeInfo['directions']);
         }
         
-        self::dlog(print_r($routeInfo, true), self::DLOG_STOP_GRAPH_SORT);
+        self::dlog('routeInfo: '.print_r($routeInfo, true), self::DLOG_STOP_GRAPH_SORT);
         
         return $routeInfo;
     }
@@ -795,11 +802,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 
                 $stops = array();
                 if (isset($stopOrderConfig['stop_ids'])) {
-                    foreach ($stopOrderConfig['stop_ids'] as $stopID) {
-                        $stops[] = array(
-                            'id' => $stopID,
-                        );
-                    }
+                    $stops = array_values($stopOrderConfig['stop_ids']);
                 }
                 
                 $this->stopOrders[] = array(
@@ -867,100 +870,47 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         return 0;
     }
     
-    protected function getDirectionInfo($agencyID, $routeID, $directionID, $directionSegments, $time) {
-        $directionName = '';
-        $stopArray = $this->lookupStopOrder($agencyID, $routeID, $directionID, &$directionName);
-        if (!$stopArray) {
-            // No stop order in config, build with graph
-            $segmentStopOrders = array(); // reset this
-            $stopCounts = array();  // Keep track of stops that appear more than once in a segment
+    protected function getDirectionInfo($routeID, $directionName, $directionSegments, $directionStops, $time) {
+        if (!$directionStops) {
+            // No direction stop list provided, build with graph
             
+            $segmentStopOrders = array();
             foreach ($directionSegments as $segment) {
                 if (!$segment->getService()->isRunning($time)) {
                     continue;
                 }
-                // If we don't have a direction name, try the first segment name (headsign)
-                if (!$directionName && ($segmentName = $segment->getName())) {
-                    $directionName = $segmentName;
-                }
                 
                 $segmentStopOrder = array();
-                $segmentStopCounts = array();
                 foreach ($segment->getStops() as $stopIndex => $stopInfo) {
                     // skip stops with non-integer ids (things like 'skipped')
                     if (!ctype_digit(strval($stopInfo['i']))) { continue; }
                     
-                    if (!isset($segmentStopCounts[$stopInfo['stopID']])) {
-                        $segmentStopCounts[$stopInfo['stopID']] = 1;
-                    } else {
-                        $segmentStopCounts[$stopInfo['stopID']]++;
-                    }
                     $segmentStopOrder[] = $stopInfo['stopID'];
                 }
+                
                 $segmentStopOrders[] = $segmentStopOrder;
-                
-                foreach ($segmentStopCounts as $stopID => $count) {
-                    if (!isset($stopCounts[$stopID]) || $count > $stopCounts[$stopID]) {
-                        $stopCounts[$stopID] = $count;  // remember max count in any segment
-                    }
-                }
             }
-            
-            self::dlog("HEADSIGN: $directionName\n".print_r($segmentStopOrders, true), self::DLOG_STOP_GRAPH_SORT);
-            
-            // The following attempts to fix the problem of cycles in the graph
-            // It assumes that there is at least one trip with all the visits to a single
-            // stop in it.  It numbers these stops uniquely and then removes all other 
-            // instances of the stop from the other trips
-            foreach ($stopCounts as $stopID => $count) {
-                if ($count > 1) {
-                    foreach ($segmentStopOrders as $i => $segmentStopOrder) {
-                        $matching = array_intersect($segmentStopOrder, array($stopID));
-                        if (count($matching) < $count) {
-                            // remove all elements
-                            $segmentStopOrders[$i] = array_diff($segmentStopOrder, array($stopID));
-                        } else {
-                            // order all elements
-                            $index = 0;
-                            foreach ($segmentStopOrder as $j => $segmentStopID) {
-                                if ($segmentStopID == $stopID) {
-                                    $segmentStopOrders[$i][$j] = $segmentStopID.'___'.$index++;
-                                    $stopCounts[$segmentStopOrders[$i][$j]] = 1;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            
             self::dlog(print_r($segmentStopOrders, true), self::DLOG_STOP_GRAPH_SORT);
-            self::dlog(print_r($stopCounts, true), self::DLOG_STOP_GRAPH_SORT);
             
-            $directionStops = array();
-            $tempStopCounts = $stopCounts;
-            $stopSortGraph = $this->buildSortStopGraph($segmentStopOrders);
-            $this->topologicalSortStops($stopSortGraph, $tempStopCounts, $directionStops);
+            $directionStops = $this->topologicalSortStops($segmentStopOrders);
+            self::dlog('directionStops: '.print_r($directionStops, true), self::DLOG_STOP_GRAPH_SORT);
             
-            self::dlog(print_r($directionStops, true), self::DLOG_STOP_GRAPH_SORT);
-            
-            $stopArray = array();
-            foreach ($directionStops as $stopID) {
-                // strip any index which might have been added
-                $parts = explode('___', $stopID);
-                if ($parts) { $stopID = $parts[0]; }
-                
-                $stopArray[] = array(
-                    'id'      => $stopID,
-                );
-            }
         }
         
+        $stopOrder = array();
+        foreach ($directionStops as $stopID) {
+            $stopOrder[] = array(
+                'id'      => $stopID,
+                'arrives' => null,
+            );
+        }
+
         // initialize arrives field
-        foreach ($stopArray as $i => $stop) {
-            $stopArray[$i]['arrives'] = null;
+        foreach ($stopOrder as $i => $stop) {
+            $stopOrder[$i]['arrives'] = null;
         }
         
-        $fullStopList = $stopArray;
+        $fullStopList = $stopOrder;
         foreach ($fullStopList as $i => $stopInfo) {
             $stop = $this->getStop($stopInfo['id']);
             if (!$stop) {
@@ -989,10 +939,10 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             $segmentInfo = array(
                 'id'   => $segment->getID(),
                 'name' => $segment->getName(),
-                'stops' => $stopArray,
+                'stops' => $stopOrder,
             );
 
-            self::dlog(print_r($segment->getStops(), true), self::DLOG_STOP_GRAPH_SORT);
+            //self::dlog('segment->getStops(): '.print_r($segment->getStops(), true), self::DLOG_STOP_GRAPH_SORT);
             
             $remainingStopsIndex = 0;
             foreach ($segment->getStops() as $i => $stopInfo) {
@@ -1061,67 +1011,58 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             'stops'    => $fullStopList,
         );
     }
-
-    protected function buildSortStopGraph($segmentStopOrders) {
-        // Warning: stops within a trip are in order, but not all trips contain
-        // all stops.  The following sort function attempts to build a graph of the 
-        // stop orders in $sortHelper which is then used below in "topologicalSortStops"
-        $stopSortGraph = array();
-        foreach ($segmentStopOrders as $segmentStopOrder) {
-            foreach ($segmentStopOrder as $i => $stopID) {
-                $before = array_slice($segmentStopOrder, 0, $i);
-                $after = array_slice($segmentStopOrder, $i+1);
-                
-                if (!isset($stopSortGraph[$stopID])) {
-                    $stopSortGraph[$stopID] = array(
-                        'before' => $before,
-                        'after'  => $after,
-                    );
-                } else {
-                    $stopSortGraph[$stopID]['before'] = array_merge($stopSortGraph[$stopID]['before'], $before);
-                    $stopSortGraph[$stopID]['after']  = array_merge($stopSortGraph[$stopID]['after'],  $after);
-                }
-            }
-        }
-        
-        // collapse graph to reduce sort time
-        foreach ($stopSortGraph as $stopID => $stopInfo) {
-            $stopSortGraph[$stopID]['before'] = array_unique($stopSortGraph[$stopID]['before']);
-            $stopSortGraph[$stopID]['after']  = array_unique($stopSortGraph[$stopID]['after']);
-        }
-        
-        return $stopSortGraph;
-    }
     
-    protected function topologicalSortStops($stopSortGraph, &$stopCounts, &$sortedStops, $current=null) {
-        if ($current === null) {
-            foreach ($stopSortGraph as $stopID => $stopInfo) {
-                if (!count($stopInfo['after'])) {
-                    $current = $stopID;
-                    break;
+    protected function topologicalSortStops($segmentStopOrders) {
+        $stopOrder = array();
+        
+        // Build up 2D arrays of stop-before-stop and stop-after-stop relationships
+        // This gives is a directed graph which we can then sort
+        $before = array();
+        $after = array();
+        
+        foreach ($segmentStopOrders as $segmentStopOrder) {
+            $segmentStopOrder = array_values($segmentStopOrder);
+            
+            for ($i = 1; $i < count($segmentStopOrder); $i++) {
+                $before[$segmentStopOrder[$i]][$segmentStopOrder[$i-1]] = true;
+                $after[$segmentStopOrder[$i-1]][$segmentStopOrder[$i]] = true;
+            }
+        }
+        
+        // Sort the directed graph, accounting for cycles
+        // Cycles occur when a stop is visited more than once in a direction
+        // or in difference places in the stop order at different times of day
+        while ($after) {
+            $best = null;
+            $count = null;
+            
+            // Find the stop with fewest stops before it
+            $afterStops = array_keys($after);
+            foreach ($after as $stop => $afterStop) {
+                $beforeStops = isset($before[$stop]) ? array_keys($before[$stop]) : array();
+                if (!isset($count) || count($beforeStops) < $count  ) {
+                    $best = $stop;
+                    $count = count($beforeStops);
+                    if ($count === 0) {
+                        break; // first stop!
+                    }
                 }
             }
-            if ($current === null) {
-                Kurogo::log(LOG_WARNING, "Could not find last stop.", 'transit');
-                return;
+            $stopOrder[] = $best;
+            
+            if ($count > 0) {
+                Kurogo::log(LOG_WARNING, "Stop order contains a cycle, breaking at $best", 'transit');
             }
+            
+            // Unset $best so we don't find it again
+            $afterBestStops = array_keys($after[$best]);
+            foreach ($afterBestStops as $afterBest) {
+                unset($before[$afterBest][$best]);
+            }
+            unset($after[$best]);
         }
         
-        $stopCounts[$current]--; // remember we will be placing this stop
-        
-        self::dlog("Looking at $current (".implode(', ', $stopSortGraph[$current]['before']).')', self::DLOG_STOP_GRAPH_SORT);
-        
-        foreach ($stopSortGraph[$current]['before'] as $stopID) {
-            // Each leg of the tree is permitted to have $seenStopCounts[$stopID] of each stop
-            // Keep track of how many we have allowed into this branch
-            if (isset($stopCounts[$stopID]) && $stopCounts[$stopID] > 0) {
-                $this->topologicalSortStops($stopSortGraph, $stopCounts, $sortedStops, $stopID);
-            }
-        }
-        
-        $sortedStops[] = $current;
-        
-        self::dlog(print_r($sortedStops, true), self::DLOG_STOP_GRAPH_SORT);
+        return $stopOrder;
     }
 }
 
