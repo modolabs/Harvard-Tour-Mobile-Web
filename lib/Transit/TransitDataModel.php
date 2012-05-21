@@ -1103,12 +1103,12 @@ class TransitTime
     
     private static function createFromComponents($hours, $minutes, $seconds) {
         if ($seconds < 0 || $seconds > 59) {
-            $addMinutes = floor($seconds/60);
+            $addMinutes = $seconds < 0 ? ceil($seconds/60) : floor($seconds/60);
             $minutes += $addMinutes;
             $seconds -= $addMinutes*60;
         }
         if ($minutes < 0 || $minutes > 59) {
-            $addHours = floor($minutes/60);
+            $addHours = $minutes < 0 ? ceil($minutes/60) : floor($minutes/60);
             $hours += $addHours;
             $minutes -= $addHours*60;
         }
