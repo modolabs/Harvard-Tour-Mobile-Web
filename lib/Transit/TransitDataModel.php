@@ -627,7 +627,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             // sort stops 
             usort($routeInfo['directions'][$directionID]['segments'], array(get_class(), 'sortDirectionSegments'));
         }
-        self::dlog('routeInfo[\'directions\']: '.print_r($routeInfo['directions'], true));
+        self::dlog('routeInfo[\'directions\']: '.print_r($routeInfo['directions'], true), self::DLOG_STOP_GRAPH_SORT);
         
         $this->setUpcomingRouteStops($routeID, $routeInfo['directions']);
         
