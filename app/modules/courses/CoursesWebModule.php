@@ -1198,7 +1198,7 @@ class CoursesWebModule extends WebModule {
                 
                 $searchOptions['type'] = 'catalog';
 
-                $courses = $this->controller->getCourses($options);
+                $courses = $this->controller->getCourses($searchOptions);
                 $coursesList = array();
 
                 foreach ($courses as $item) {
