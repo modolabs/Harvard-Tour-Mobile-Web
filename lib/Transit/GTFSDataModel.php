@@ -341,7 +341,7 @@ class GTFSTransitSegment extends TransitSegment
                 // $this->getFrequency($time), but for now use the current one
                 // as an approximation.
                 $firstTT = TransitTime::timeByAddingSeconds($firstTT, -$this->getFrequency($time));
-
+                
                 $lastRow = $result->fetch(PDO::FETCH_ASSOC); // discard rest of results
                 $lastTT = TransitTime::createFromString($lastRow['departure_time']);
                 return TransitTime::isTimeInRange($time, $firstTT, $lastTT);
