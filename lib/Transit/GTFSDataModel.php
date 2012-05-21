@@ -417,7 +417,8 @@ class GTFSTransitRoute extends TransitRoute
                 if ($segment->isRunning($time)) {
                     $name = $segment->getName();
                     if (isset($name) && !isset($runningSegmentNames[$name])) {
-                        Kurogo::log(LOG_DEBUG, "   Route {$this->getName()} has named running segment '$name' (direction '$directionID')", 'transit');
+                        TransitDataModel::dlog("   Route {$this->getName()} has named running segment '$name' (direction '$directionID')", TransitDataModel::DLOG_STOP_GRAPH_SORT);
+                        
                         $runningSegmentNames[$name] = $name;
                     }
                     $isRunning = true;

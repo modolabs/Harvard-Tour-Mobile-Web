@@ -29,6 +29,7 @@ abstract class WebModule extends Module {
 
   protected $pagetype = 'unknown';
   protected $platform = 'unknown';
+  protected $browser = 'unknown';
 
   protected $ajaxContentLoad = false;
   
@@ -45,7 +46,7 @@ abstract class WebModule extends Module {
   private $inlineJavascriptBlocks = array();
   private $inlineJavascriptFooterBlocks = array();
   private $onOrientationChangeBlocks = array();
-  private $onLoadBlocks = array('scrollTo(0,1);');
+  private $onLoadBlocks = array('scrollToTop();');
   private $javascriptURLs = array();
 
   private $moduleDebugStrings = array();
@@ -223,7 +224,7 @@ abstract class WebModule extends Module {
   
   private function getMinifyUrls($pageOnly=false) {
     $page = preg_replace('/[\s-]+/', '+', $this->page);
-    $minKey = "{$this->id}-{$page}-{$this->pagetype}-{$this->platform}-".md5(THEME_DIR);
+    $minKey = "{$this->id}-{$page}-{$this->pagetype}-{$this->platform}-{$this->browser}-".md5(THEME_DIR);
     
     return array(
       'css' => "/min/g=css-$minKey".$this->getMinifyArgString($pageOnly),
@@ -331,6 +332,10 @@ abstract class WebModule extends Module {
   
     return "/$id/$page".(strlen($argString) ? "?$argString" : "");
   }
+
+  protected function buildExternalURL($url) {
+    return $url;
+  }
   
   protected function buildMailToLink($to, $subject, $body) {
     $to = trim($to);
@@ -360,6 +365,10 @@ abstract class WebModule extends Module {
         }
         
         return false;
+  }
+
+  public function redirectToURL($url, $type=Kurogo::REDIRECT_TEMPORARY) {
+    Kurogo::redirectToURL($url, $type);
   }
 
   public function redirectToModule($id, $page, $args=array(), $type=Kurogo::REDIRECT_TEMPORARY) {
@@ -461,7 +470,12 @@ abstract class WebModule extends Module {
         $this->loadDeviceClassifierIfNeeded();
         return $this->deviceClassifier->getPlatform();
     }
-    
+
+    protected function getBrowser() {
+        $this->loadDeviceClassifierIfNeeded();
+        return $this->deviceClassifier->getBrowser();
+    }
+
     protected function loadDeviceClassifierIfNeeded() {
         $this->deviceClassifier = Kurogo::deviceClassifier();
     }
@@ -479,6 +493,7 @@ abstract class WebModule extends Module {
 
         $this->pagetype = $this->getPagetype();
         $this->platform = $this->getPlatform();
+        $this->browser  = $this->getBrowser();
 
         switch ($this->getPagetype()) {
             case 'compliant':
@@ -936,7 +951,7 @@ abstract class WebModule extends Module {
       $data = $cache->read($cacheName);
       
     } else {
-      $memberArrays = array(
+      $properties = array(
         'inlineCSSBlocks',
         'cssURLs',
         'inlineJavascriptBlocks',
@@ -945,9 +960,13 @@ abstract class WebModule extends Module {
         'onLoadBlocks',
         'javascriptURLs',
       );
-      $data = array();
-      foreach ($memberArrays as $memberName) {
-        $data[$memberName] = $this->$memberName;
+      $data = array(
+          'properties' => array(),
+          'minifyCSS'  => '',
+          'minifyJS'   => '',
+      );
+      foreach ($properties as $property) {
+        $data['properties'][$property] = $this->$property;
       }
   
       // Add page Javascript and CSS if any
@@ -959,12 +978,12 @@ abstract class WebModule extends Module {
       
       $javascript = @file_get_contents(FULL_URL_PREFIX.ltrim($minifyURLs['js'], '/'), false, $context);
       if ($javascript) {
-        array_unshift($data['inlineJavascriptBlocks'], $javascript);
+        $data['minifyJS'] = $javascript;
       }
   
       $css = @file_get_contents(FULL_URL_PREFIX.ltrim($minifyURLs['css'], '/'), false, $context);
       if ($css) {
-        array_unshift($data['inlineCSSBlocks'], $css);
+        $data['minifyCSS'] = $css;
       }
       
       $cache->write($data, $cacheName);
@@ -973,8 +992,16 @@ abstract class WebModule extends Module {
     return $data;
   }
   protected function importCSSAndJavascript($data) {
-    foreach ($data as $memberName => $arrays) {
+    foreach ($data['properties'] as $memberName => $arrays) {
       $this->$memberName = array_unique(array_merge($this->$memberName, $arrays));
+    }
+    
+    if ($data['minifyCSS']) {
+      array_unshift($this->inlineCSSBlocks, $data['minifyCSS']);
+    }
+    
+    if ($data['minifyJS']) {
+      array_unshift($this->inlineJavascriptBlocks, $data['minifyJS']);
     }
   }
   protected function addJQuery($version='1.5.1') {
