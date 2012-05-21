@@ -59,23 +59,25 @@
   </table>
   </div>
 {else}
-  {foreach $routeInfo['stops'] as $stopID => $stopInfo}
+  {$routeStops = $routeInfo['directions'][$direction]['stops']}
+  
+  {foreach $routeStops as $stopID => $stopInfo}
     {if count($stopInfo['predictions'])}
       {capture name="subtitle" assign="subtitle"}
         {include file="findInclude:modules/transit/templates/include/predictions.tpl" predictions=$stopInfo['predictions']}
       {/capture}
-      {$routeInfo['stops'][$stopID]['subtitle'] = $subtitle}
+      {$routeStops[$stopID]['subtitle'] = $subtitle}
     {elseif $stopInfo['arrives'] && $routeInfo['running']}
       {capture name="label" assign="label"}
         <span class="smallprint stoptime">{$stopInfo['arrives']|date_format:"%l:%M%p"|lower}</span>
       {/capture}
-      {$routeInfo['stops'][$stopID]['label'] = $label}
+      {$routeStops[$stopID]['label'] = $label}
     {/if}
   {/foreach}
   
-  {if count($routeInfo['stops'])}
+  {if count($routeStops)}
     {block name="flatList"}
-      {include file="findInclude:common/templates/results.tpl" results=$routeInfo['stops'] labelColon=false resultslistID="listView"}
+      {include file="findInclude:common/templates/results.tpl" results=$routeStops labelColon=false resultslistID="listView"}
     {/block}
   {else}
     <div class="nonfocal">

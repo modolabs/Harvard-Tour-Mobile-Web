@@ -290,33 +290,31 @@ class TransitWebModule extends WebModule {
                             
                         case 'list':
                         default:
-                            $routeInfo['stops'] = $routeInfo['directions'][$direction]['stops'];
-                            
-                            foreach ($routeInfo['stops'] as $i => $stop) {
-                                $routeInfo['stops'][$i]['url']   = $this->stopURL($stop['id']);
-                                $routeInfo['stops'][$i]['title'] = $stop['name'];
+                            foreach ($routeInfo['directions'][$direction]['stops'] as $i => $stop) {
+                                $routeInfo['directions'][$direction]['stops'][$i]['url']   = $this->stopURL($stop['id']);
+                                $routeInfo['directions'][$direction]['stops'][$i]['title'] = $stop['name'];
                                 
                                 if ($stop['upcoming']) {
-                                    $routeInfo['stops'][$i]['title'] = "<strong>{$stop['name']}</strong>";
-                                    $routeInfo['stops'][$i]['imgAlt'] = $this->getLocalizedString('CURRENT_STOP_ICON_ALT_TEXT');
+                                    $routeInfo['directions'][$direction]['stops'][$i]['title'] = "<strong>{$stop['name']}</strong>";
+                                    $routeInfo['directions'][$direction]['stops'][$i]['imgAlt'] = $this->getLocalizedString('CURRENT_STOP_ICON_ALT_TEXT');
                                 }
                                 
                                 if ($stop['upcoming'] || $this->pagetype != 'basic') {
-                                    $routeInfo['stops'][$i]['img'] = '/modules/transit/images/';
+                                    $routeInfo['directions'][$direction]['stops'][$i]['img'] = '/modules/transit/images/';
                                 }
                                 switch ($this->pagetype) {
                                     case 'basic':
                                         if ($stop['upcoming']) {
-                                            $routeInfo['stops'][$i]['img'] .= 'shuttle.gif';
+                                            $routeInfo['directions'][$direction]['stops'][$i]['img'] .= 'shuttle.gif';
                                         }
                                         break;
                                     
                                     case 'touch':
-                                        $routeInfo['stops'][$i]['img'] .= $stop['upcoming'] ? 'shuttle.gif' : 'shuttle-spacer.gif';
+                                        $routeInfo['directions'][$direction]['stops'][$i]['img'] .= $stop['upcoming'] ? 'shuttle.gif' : 'shuttle-spacer.gif';
                                         break;
                                       
                                     default:
-                                        $routeInfo['stops'][$i]['img'] .= $stop['upcoming'] ? 'shuttle.png' : 'shuttle-spacer.png';
+                                        $routeInfo['directions'][$direction]['stops'][$i]['img'] .= $stop['upcoming'] ? 'shuttle.png' : 'shuttle-spacer.png';
                                         break;
                                 }
                             }
@@ -326,7 +324,7 @@ class TransitWebModule extends WebModule {
                     $tabs = array();
                     $tabsJavascript = array();
                     
-                    if (isset($routeInfo['stops']) && $routeInfo['stops']) {
+                    if ($routeInfo['directions'][$direction]['stops']) {
                         array_unshift($tabs, 'stops');
                         array_unshift($tabsJavascript, '');
                         $this->assign('hasStops', true);
