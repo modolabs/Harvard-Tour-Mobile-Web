@@ -27,6 +27,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
 
     public function clearInternalCache() {
         $this->setMethod('GET');
+        $this->setData(null);
         $this->setSaveToFile(false);
         parent::clearInternalCache();
     }
@@ -277,12 +278,13 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
         return array();
     }
 
-    public function getAnnouncements($options){
+    public function getAnnouncements($courseID, $options){
         return array();
-    }
-
-    public function getLastAnnouncement($options){
-        return array();
+        $this->clearInternalCache();
+        $this->setOption('action', 'getForums');
+        $this->setOption('courseID', $courseID);
+        
+        $forums = $this->getData();
     }
 
     public function searchCourseContent($searchTerms, $options) {

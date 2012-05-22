@@ -1199,7 +1199,7 @@ class CoursesWebModule extends WebModule {
                 
                 $searchOptions['type'] = 'catalog';
 
-                $courses = $this->controller->getCourses($options);
+                $courses = $this->controller->getCourses($searchOptions);
                 $coursesList = array();
 
                 foreach ($courses as $item) {
@@ -1222,13 +1222,14 @@ class CoursesWebModule extends WebModule {
                 if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
                 }
+                $Term = $this->assignTerm();
 
                 // Bookmark
                 if ($this->getOptionalModuleVar('BOOKMARKS_ENABLED', 1)) {
                     $cookieParams = array(
                     	'title' => $course->getTitle(),
                         'id' => $course->getID(),
-                        'term'  => rawurlencode($this->selectedTerm),
+                        'term'  => rawurlencode($Term->getID()),
                         'area'    => rawurlencode($area),
                         'courseNumber' => rawurlencode($course->getField('courseNumber'))
                     );
@@ -1359,8 +1360,8 @@ class CoursesWebModule extends WebModule {
             case 'bookmarks':
                 $Term = $this->assignTerm();
                 $bookmarks = array();
-                if($this->hasBookmarks()){
-                    foreach ($this->getBookmarksForTerm($Term) as $aBookmark) {
+                if($bookmarks = $this->getBookmarksForTerm($Term)) {
+                    foreach ($bookmarks as $aBookmark) {
                         if ($aBookmark) {
                             // prevent counting empty string
                             $bookmark = array(

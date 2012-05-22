@@ -112,8 +112,13 @@ class MoodleCourseContentDataParser extends dataParser {
                             case 'page':
                                 $contentType = new MoodlePageCourseContent();
                                 break;
+                            case 'label':
+                                break;
+                            case 'forum':
+                                break;
 
                             default:
+                                throw new KurogoDataException("Don't know how to handle " . $module['modname']);
                                 break;
                         }
                         if ($contentType) {

@@ -69,7 +69,7 @@ class MoodleCourseContentCourse extends CourseContentCourse {
 
     public function getAnnouncements($options=array()){
         if($retriever = $this->getRetriever()){
-            return $retriever->getAnnouncements($options);
+            return $retriever->getAnnouncements($this->getID(), $options);
         }
     }
 
