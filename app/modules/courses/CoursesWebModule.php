@@ -11,32 +11,6 @@ class CoursesWebModule extends WebModule {
     protected $showCourseNumber = true;
     protected $defaultModel = 'CoursesDataModel';
 
-    protected function linkforInfo($courseId, $description){
-    	$links = array();
-    	foreach(array('Roster', 'Course materials', 'Drop Class', 'Description') as $title){
-    		$link['title'] = $title;
-    		if($title == 'Roster'){
-    			$link['url'] = $this->buildBreadcrumbURL('roster', array('id'=>$courseId));
-    		}
-    		if($title == 'Course materials'){
-    			$link['url'] = '#';
-    		}//waiting
-    		if($title == 'Drop Class') {
-    		    if ($this->controller->canRetrieve('registation')) {
-    		        $link['url'] = $this->buildBreadcrumbURL('dropclass', array('id'=>$courseId));
-    		    } else {
-    		        continue;
-    		    }
-    		}//waiting
-    		if($title == 'Description'){
-    			$link['subtitle'] = $description;
-    		}
-    		$links[] = $link;
-    		unset($link);
-    	}
-    	return $links;
-    }
-
     public function linkForTask($task, CourseContentCourse $course, $includeCourseName=true) {
     	$link = array(
             'title' =>$includeCourseName ? $task->getTitle() : $course->getTitle(),
@@ -338,7 +312,7 @@ class CoursesWebModule extends WebModule {
         return $links;
     }
 
-    public function assignTerm(){
+    protected function assignTerm(){
         $feedTerms = $this->controller->getAvailableTerms();
 
         if (!$Term = $this->controller->getTerm($this->selectedTerm)) {
