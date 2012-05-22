@@ -706,7 +706,6 @@ class CoursesWebModule extends WebModule {
     }
     
     protected function getBookmarksForTerm(CourseTerm $Term) {
-        // @TODO filter out bookmarks by term
         $_bookmarks =  $this->getBookmarks();
         $bookmarks = array();
         foreach ($_bookmarks as $aBookmark) {
