@@ -237,6 +237,7 @@ class CoursesWebModule extends WebModule {
         } else {
             $page = 'info';
         }
+        unset($options['course']);
 
         $link['url'] = $this->buildBreadcrumbURL($page, $options);
         return $link;
