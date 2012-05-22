@@ -1358,8 +1358,8 @@ class CoursesWebModule extends WebModule {
             case 'bookmarks':
                 $Term = $this->assignTerm();
                 $bookmarks = array();
-                if($this->hasBookmarks()){
-                    foreach ($this->getBookmarksForTerm($Term) as $aBookmark) {
+                if($bookmarks = $this->getBookmarksForTerm($Term)) {
+                    foreach ($bookmarks as $aBookmark) {
                         if ($aBookmark) {
                             // prevent counting empty string
                             $bookmark = array(
