@@ -1141,6 +1141,15 @@ class CoursesWebModule extends WebModule {
                     }
                     $this->assign('areas', $areasList);
                 }
+                
+                if ($bookmarks = $this->getBookmarksForTerm($term)) {
+                    $bookmarksList[] = array(
+                        'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . " (" . count($bookmarks) . ")",
+                        'url'   => $this->buildBreadcrumbURL('bookmarks', array('term'=>strval($term))),
+                    );
+                    $this->assign('bookmarksList', $bookmarksList);
+                }
+                
                 $this->assign('catalogHeader', $this->getOptionalModuleVar('catalogHeader','','catalog'));
                 $this->assign('catalogFooter', $this->getOptionalModuleVar('catalogFooter','','catalog'));
                 $this->assign('placeholder', $this->getLocalizedString("CATALOG_SEARCH"));

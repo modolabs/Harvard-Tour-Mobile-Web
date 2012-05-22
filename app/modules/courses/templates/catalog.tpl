@@ -20,7 +20,14 @@ Term: <select id="termID" name="term" onchange="loadSection(this, '{$page}');">
 </div>
 {/if}
 
-{block name="navList"}
+{if $bookmarksList}
+{block name="bookmarksList"}
+{include file="findInclude:common/templates/navlist.tpl" navlistItems=$bookmarksList}
+{/block}
+{/if}
+
+
+{block name="areas"}
   {include file="findInclude:common/templates/navlist.tpl" navlistItems=$areas}
 {/block}
 
