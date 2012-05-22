@@ -67,7 +67,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             // or white-space formatted in a way that errors stand out.  The Kurogo
             // logging system does not support multi-line messages and puts a very
             // large prefix string in front of every message, making the white space
-            // formatting useless if you don't have a 30" monitor ^_^
+            // formatting useless if you don't have a 30" monitor
             if (self::DLOG_ENABLE_ERROR_LOG) {
                 error_log($message);
             }
@@ -582,25 +582,21 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             $directionID = is_numeric($direction) ? "direction_{$direction}" : $direction;
             
             // Check the config file to see if we can get headsign or stop order information
-            $directionName = $directionID;
+            $directionName = '';
             $stopOrder = $this->lookupStopOrder($routeInfo['agency'], $routeID, $direction, &$directionName);
             
             $segments = $route->getSegmentsForDirection($direction);
             
-            if (!$routeInfo['splitByHeadsign']) {
-                $routeDirections[$directionID] = array(
-                    'name'      => $directionName,
-                    'segments'  => $segments,
-                    'stopOrder' => $stopOrder,
-                );
-                
-            } else {
+            if ($routeInfo['splitByHeadsign']) {
                 // use the headsign as the direction id
-                // note we may end up with more than 2 directions!
+                // note that we may end up with more than 2 directions
                 foreach ($segments as $segment) {
                     $headsign = trim($segment->getName());
                     if (!$headsign) {
-                        $headsign = $directionInfo['name'];
+                        $headsign = $directionName;
+                    }
+                    if (!$headsign) {
+                        $headsign = "Direction {$direction}";
                     }
                     
                     if (!isset($routeDirections[$headsign])) {
@@ -612,6 +608,25 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                     }
                     $routeDirections[$headsign]['segments'][] = $segment;
                 }
+                
+            } else {
+                if (!$directionName) {
+                    foreach ($segments as $segment) {
+                        $directionName = trim($segment->getName());
+                        if ($directionName) {
+                            break;
+                        }
+                    }
+                }
+                if (!$directionName) {
+                    $directionName = "Direction {$direction}";
+                }
+                
+                $routeDirections[$directionID] = array(
+                    'name'      => $directionName,
+                    'segments'  => $segments,
+                    'stopOrder' => $stopOrder,
+                );
             }
         }
         

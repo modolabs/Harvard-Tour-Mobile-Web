@@ -246,7 +246,7 @@ class StripGTFSToDB
     
     function writeToDatabase($db, $tableName, $tableConfig, $rows) {
         $params = array_fill(0, count($tableConfig['fields']), '?');
-        $sql = "INSERT INTO $tableName VALUES (".implode(',',$params).')';
+        $sql = "INSERT INTO $tableName VALUES (".implode(',', $params).')';
         $stmt = $db->prepare($sql);
         if (!$stmt) {
             throw new Exception("Failed to prepare statement '$sql' ".print_r($db->errorInfo(), true));
@@ -280,6 +280,13 @@ class StripGTFSToDB
         }
         
         $this->notice("    -- added ".count($rows)." rows to $tableName");
+        
+        // create indices
+        foreach ($tableConfig['indices'] as $indexName => $index) {
+            $this->notice("    -- creating index $indexName $index");
+            $sql = "CREATE INDEX $indexName ON $tableName $index";
+            $db->exec($sql);
+        }
     }
     
     function getTableMappings() {
@@ -296,6 +303,7 @@ class StripGTFSToDB
                 ),
                 'constraint'  => '',
                 'addToFilter' => array(),
+                'indices'     => array(),
             ),
             'routes' => array(
                 'file' => 'routes.txt',
@@ -310,6 +318,7 @@ class StripGTFSToDB
                 ),
                 'constraint'  => '',
                 'addToFilter' => array('agency_id', 'route_id'),
+                'indices'     => array(),
             ),
             'trips' => array(
                 'file' => 'trips.txt',
@@ -322,6 +331,10 @@ class StripGTFSToDB
                 ),
                 'constraint'  => '',
                 'addToFilter' => array('trip_id', 'service_id'),
+                'indices'     => array(
+                    'trips_route_trip'    => '(route_id,trip_id)',
+                    'trips_route_service' => '(route_id,service_id)',
+                ),
             ),
             'calendar' => array(
                 'file' => 'calendar.txt',
@@ -339,6 +352,7 @@ class StripGTFSToDB
                 ),
                 'constraint'  => '',
                 'addToFilter' => array(),
+                'indices'     => array(),
             ),
             'calendar_dates' => array(
                 'file' => 'calendar_dates.txt',
@@ -349,6 +363,7 @@ class StripGTFSToDB
                 ),
                 'constraint'  => '',
                 'addToFilter' => array(),
+                'indices'     => array(),
             ),
             'frequencies' => array(
                 'file' => 'frequencies.txt',
@@ -360,6 +375,7 @@ class StripGTFSToDB
                 ),
                 'constraint'  => '',
                 'addToFilter' => array(),
+                'indices'     => array(),
             ),
             'stop_times' => array(
                 'file' => 'stop_times.txt',
@@ -374,6 +390,10 @@ class StripGTFSToDB
                 ),
                 'constraint'  => 'UNIQUE (trip_id, stop_sequence)',
                 'addToFilter' => array('stop_id'),
+                'indices'     => array(
+                    'stop_times_trip'      => '(trip_id, departure_time)',
+                    'stop_times_stop_trip' => '(stop_id,trip_id)',
+                ),
             ),
             'stops' => array(
                 'file' => 'stops.txt',
@@ -387,6 +407,7 @@ class StripGTFSToDB
                 ),
                 'constraint'  => 'UNIQUE (stop_id)',
                 'addToFilter' => array(),
+                'indices'     => array(),
             ),
         );
     }
