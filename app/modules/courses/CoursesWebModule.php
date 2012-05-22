@@ -1221,13 +1221,14 @@ class CoursesWebModule extends WebModule {
                 if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
                 }
+                $Term = $this->assignTerm();
 
                 // Bookmark
                 if ($this->getOptionalModuleVar('BOOKMARKS_ENABLED', 1)) {
                     $cookieParams = array(
                     	'title' => $course->getTitle(),
                         'id' => $course->getID(),
-                        'term'  => rawurlencode($this->selectedTerm),
+                        'term'  => rawurlencode($Term->getID()),
                         'area'    => rawurlencode($area),
                         'courseNumber' => rawurlencode($course->getField('courseNumber'))
                     );
