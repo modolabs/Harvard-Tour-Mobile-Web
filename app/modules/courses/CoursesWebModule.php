@@ -753,7 +753,7 @@ class CoursesWebModule extends WebModule {
                         }
                     }
                 }
-                $announcementsLinks = $this->sortCourseContent($announcementsLinks, 'sortDate');
+                $announcementsLinks = array_reverse($this->sortCourseContent($announcementsLinks, 'sortDate'));
                 $announcementsLinks = $this->paginateArray($announcementsLinks, $this->getOptionalModuleVar('MAX_ANNOUNCEMENTS', 5), 'ANNOUNCEMENT', 'announcements');
                 $this->assign('announcementsLinks', $announcementsLinks);
                 return true;
