@@ -18,13 +18,17 @@ class TestCourseCatalogDataRetriever extends URLDataRetriever implements CourseC
         if(isset($options['area'])) {
             // retrieve specified area courses
             $area = $this->getCatalogArea($options['area'], $options);
-            $areas = $area->getAreas();
             $courses = array();
-            foreach($areas as $area) {
-                $options['area'] = $area->getCode();
-                $areaCourses = $this->getCourses($options);
-                $courses = array_merge($courses, $areaCourses);
-            }
+            if ($areas = $area->getAreas()) {
+	            foreach($areas as $area) {
+	                $options['area'] = $area->getCode();
+	                $areaCourses = $this->getCourses($options);
+	                $courses = array_merge($courses, $areaCourses);
+	            }
+            } else {
+            	$options['area'] = $options['area'];
+            	$courses = $this->getCourses($options);
+            } 
         }else {
             // retrive all area courses
             $courses = $this->getCourses($options);

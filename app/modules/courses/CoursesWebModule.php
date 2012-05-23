@@ -1432,7 +1432,13 @@ class CoursesWebModule extends WebModule {
                 $courses = $this->controller->search($searchTerms, $options);
                 $coursesList = array();
 
+                $options['term'] = strval($options['term']);
                 foreach ($courses as $item) {
+                	if(!$item->checkInStandardAttributes('areaCode', 'catalog')) {
+			        	//try to set attribute in attributes list.
+				        $item->setAttribute('areaCode', 'catalog');
+			        }
+			        $options['area'] = $item->getField('areaCode', 'catalog');
                     $course = $this->linkForCatalogCourse($item, $options);
                     $coursesList[] = $course;
                 }
@@ -1440,6 +1446,7 @@ class CoursesWebModule extends WebModule {
                 if ($coursesList) {
                     $this->assign('resultCount', count($coursesList));
                 }
+                $this->assign('hiddenArgs', array('area' => $area, 'term' => strval($term)));
                 $this->assign('searchTerms', $searchTerms);
                 $this->assign('searchHeader', $this->getOptionalModuleVar('searchHeader','','catalog'));
                 break;
