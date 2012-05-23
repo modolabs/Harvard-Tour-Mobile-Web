@@ -102,7 +102,7 @@ class MoodleCourseContentDataParser extends dataParser {
                         switch ($module['modname']) {
                             case 'resource':
                             case 'folder':
-                                $contentType = new MoodleDownLoadCourseContent();
+                                $contentType = new MoodleDownloadCourseContent();
                                 break;
 
                             case 'url':
