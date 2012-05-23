@@ -902,10 +902,10 @@ class CoursesWebModule extends WebModule {
                     );
                     if(count($items) > $limit && $limit != 0){
                         $courseOptions = $this->getCourseOptions();
-                        $courseOptions['resourcesGroup'] = $group;
+                        $courseOptions['group'] = $group;
                         $courseOptions['key'] = $groupTitle;
                         $courseOptions['tab'] = 'resources';
-                        $resource['url'] = $this->buildBreadcrumbURL($this->page, $courseOptions, false);
+                        $resource['url'] = $this->buildBreadcrumbURL("resourceSeeAll", $courseOptions, false);
                     }
                     $resourcesLinks[] = $resource;
                 }
@@ -1237,7 +1237,6 @@ class CoursesWebModule extends WebModule {
             	break;
 
             case 'resourceSeeAll':
-                KurogoDebug::debug($this, true);
                 if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
                 }
@@ -1254,7 +1253,7 @@ class CoursesWebModule extends WebModule {
                 foreach ($items as $item){
                     $resources[] = $this->linkForContent($item, $contentCourse);
                 }
-                $this->assign('key', $key);
+                $this->assign('key', ucfirst($key));
                 $this->assign('resources',$resources);
             	break;
 
