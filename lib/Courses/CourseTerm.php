@@ -6,6 +6,7 @@ class CourseTerm {
     protected $title;
     protected $startDate;
     protected $endDate;
+    protected $attributes=array();
         
     public function __toString() {
         return strval($this->id);
@@ -41,5 +42,23 @@ class CourseTerm {
     
     public function getEndDate() {
         return $this->endDate;
+    }
+
+    public function setAttributes($attribs) {
+        if (is_array($attribs)) {
+            $this->attributes = $attribs;
+        }
+    }
+    
+    public function getAttributes() {
+        return $this->attributes;
+    }
+    
+    public function setAttribute($key, $value) {
+        $this->attributes[$key] = $value;
+    }
+    
+    public function getAttribute($attrib) {
+        return isset($this->attributes[$attrib]) ? $this->attributes[$attrib] : '';
     }
 }
