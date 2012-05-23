@@ -753,7 +753,7 @@ class CoursesWebModule extends WebModule {
                         }
                     }
                 }
-                $announcementsLinks = array_reverse($this->sortCourseContent($announcementsLinks, 'sortDate'));
+                $announcementsLinks = $this->sortCourseContent($announcementsLinks, 'sortDate');
                 $announcementsLinks = $this->paginateArray($announcementsLinks, $this->getOptionalModuleVar('MAX_ANNOUNCEMENTS', 5), 'ANNOUNCEMENT', 'announcements');
                 $this->assign('announcementsLinks', $announcementsLinks);
                 return true;
@@ -844,6 +844,7 @@ class CoursesWebModule extends WebModule {
                 foreach ($announcements as $announcement) {
                     $announcementsLinks[] = $this->linkForAnnouncement($announcement, $contentCourse);
                 }
+                $announcementsLinks = $this->sortCourseContent($announcementsLinks, 'sortDate');
                 $announcementsLinks = $this->paginateArray($announcementsLinks, $this->getOptionalModuleVar('MAX_ANNOUNCEMENTS', 10), 'ANNOUNCEMENT', 'announcements');
                 $this->assign('announcementsLinks', $announcementsLinks);
                 return true;
