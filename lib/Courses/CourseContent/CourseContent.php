@@ -16,7 +16,7 @@ abstract class CourseContent implements KurogoObject {
     protected $priority;
     protected $viewMode;
     protected $downloadMode;
-    protected $attributes;
+    protected $attributes=array();
     const MODE_PAGE = 1;
     const MODE_DOWNLOAD = 2;
     const MODE_URL = 3;

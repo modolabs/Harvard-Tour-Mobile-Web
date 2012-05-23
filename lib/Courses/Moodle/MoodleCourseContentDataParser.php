@@ -102,7 +102,7 @@ class MoodleCourseContentDataParser extends dataParser {
                         switch ($module['modname']) {
                             case 'resource':
                             case 'folder':
-                                $contentType = new MoodleDownLoadCourseContent();
+                                $contentType = new MoodleDownloadCourseContent();
                                 break;
 
                             case 'url':
@@ -146,9 +146,6 @@ class MoodleCourseContentDataParser extends dataParser {
                                 $contentType->setPublishedDate($datetime);
                             }
                             if($module['modname'] == 'resource' || $module['modname'] == 'folder'){
-	                            if(isset($module['contents'][0]['type']) && $module['contents'][0]['type']){
-	                            	$contentType->setType($module['contents'][0]['type']);
-	                            }
 	                            if(isset($module['contents'][0]['url']) && $module['contents'][0]['url']){
 	                            	$contentType->setUrl($module['contents'][0]['url']);
 	                            }
