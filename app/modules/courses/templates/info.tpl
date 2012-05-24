@@ -2,16 +2,11 @@
 {include file="findInclude:modules/courses/templates/coursedetailhead.tpl"}
 {$tabBodies=array()}
 {foreach $tabs as $key}
-    {if $key=='index'}
-        {capture name="indexTab" assign="tabBody"}
-        {include file="findInclude:modules/courses/templates/info-index.tpl"}
-        {/capture}
-    {/if}
-    {if $key == 'staff'}
-        {capture name="staffTab" assign="tabBody"}
-        {include file="findInclude:modules/courses/templates/info-staff.tpl"}
-        {/capture}
-    {/if}
+    {assign var="captureName" value=$key|cat:"Tab"}
+    {assign var="templateName" value="info-"|cat:$key|cat:".tpl"}
+    {capture name=$captureName assign="tabBody"}
+    {include file="findInclude:modules/courses/templates/$templateName"}
+    {/capture}
     {$tabBodies[$key] = $tabBody}
 {/foreach}
 {block name="tabs"}
