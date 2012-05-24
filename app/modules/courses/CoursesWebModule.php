@@ -1165,6 +1165,8 @@ class CoursesWebModule extends WebModule {
                 if (!$CourseArea = $this->controller->getCatalogArea($area)) {
                     $this->redirectTo('catalog', array());
                 }
+                $this->setBreadcrumbTitle($CourseArea->getCode());
+                $this->setBreadcrumbLongTitle($CourseArea->getTitle());
 
                 $areas = $CourseArea->getAreas();
 
