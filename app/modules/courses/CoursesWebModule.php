@@ -1098,8 +1098,8 @@ class CoursesWebModule extends WebModule {
                     if ($task->getDueDate()) {
                         $this->assign('taskDueDate', DateFormatter::formatDate($task->getDueDate(), DateFormatter::MEDIUM_STYLE, DateFormatter::NO_STYLE));
                     }
+                    $this->assign('links', $task->getLinks());
                 }
-                $this->assign('links', $task->getLinks());
 
                 break;
 
