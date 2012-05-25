@@ -6,10 +6,10 @@
 {/if}
 <ul class="nav">
 {foreach $tasks as $task}
-<li class="task task_{$task.type}">
+<li class="statusitem task task_{$task.type}">
   <a href="{$task.url}">
     {$task.courseTitle|default:$task.title}
-    <div class="smallprint">
+    <div class="smallprint {if $task.img}icon{/if}">
     {if $task.img}<img src="{$task.img}" width="16" height="16" alt="" class="listtype">{/if}
     {$task.updated}
     </div> 

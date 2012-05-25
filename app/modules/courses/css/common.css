@@ -21,7 +21,25 @@
 #bookmarkContainer {
 	margin-top: 0;
 }
+#category-switcher {
+    margin: 14px 12px 6px 12px;
+}
+#category-switcher form, #category-switcher table {
+    margin: 0;
+}
+#category-switcher th, #category-switcher td {
+    padding: 0;
+    padding: 0;
+}
+li.statusitem div.smallprint.icon {
+    position: relative;
+    padding-left: 20px;
+    padding-top: 5px;
+}
 img.listtype {
-	position: relative;
-	top: 3px;
+	position: absolute; 
+	top: 5px;
+	left: 0px;
+	width: 16px;
+	height: 16px;
 }
