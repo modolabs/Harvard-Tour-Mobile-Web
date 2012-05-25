@@ -866,8 +866,13 @@ class CoursesWebModule extends WebModule {
                 $resourcesLinks = array();
                 $resourcesOptions = $this->getOptionsForResources($options);
                 $groups = $contentCourse->getResources($resourcesOptions);
-                $limit = $resourcesOptions['limit'];
                 $group = $resourcesOptions['group'];
+                if($group == "date") {
+                    $limit = 0;
+                    $pageSize = $resourcesOptions['limit'];
+                }else {
+                    $limit = $resourcesOptions['limit'];
+                }
                 $key = $resourcesOptions['key'];
                 $seeAllLinks = array();
 
@@ -900,7 +905,7 @@ class CoursesWebModule extends WebModule {
                         'items' => $groupItems,
                         'count' => count($items),
                     );
-                    if(count($items) > $limit && $limit != 0){
+                    if($group != "date" && count($items) > $limit && $limit != 0){
                         $courseOptions = $this->getCourseOptions();
                         $courseOptions['group'] = $group;
                         $courseOptions['key'] = $groupTitle;
@@ -908,6 +913,12 @@ class CoursesWebModule extends WebModule {
                         $resource['url'] = $this->buildBreadcrumbURL("resourceSeeAll", $courseOptions, false);
                     }
                     $resourcesLinks[] = $resource;
+                }
+                if($group == "date" && $pageSize && isset($resourcesLinks[0])) {
+                    $resource = $resourcesLinks[0];
+                    $limitedItems = $this->paginateArray($resource['items'], $pageSize, "RESOURCES_DATE", $tab);
+                    $resourcesLinks[0]['items'] = $limitedItems;
+                    $resourcesLinks[0]['count'] = count($limitedItems);
                 }
 
                 $this->assign('resourcesLinks',$resourcesLinks);
