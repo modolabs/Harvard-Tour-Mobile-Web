@@ -1094,8 +1094,10 @@ class CoursesWebModule extends WebModule {
                 if($task->getPublishedDate()){
                     $this->assign('taskDate', 'Published: '.DateFormatter::formatDate($task->getPublishedDate(), DateFormatter::LONG_STYLE, DateFormatter::NO_STYLE));
                 }
-                if($task->getDueDate()){
-                    $this->assign('taskDueDate', DateFormatter::formatDate($task->getDueDate(), DateFormatter::MEDIUM_STYLE, DateFormatter::NO_STYLE));
+                if($task instanceOf TaskCourseContent){
+                    if ($task->getDueDate()) {
+                        $this->assign('taskDueDate', DateFormatter::formatDate($task->getDueDate(), DateFormatter::MEDIUM_STYLE, DateFormatter::NO_STYLE));
+                    }
                 }
                 $this->assign('links', $task->getLinks());
 
