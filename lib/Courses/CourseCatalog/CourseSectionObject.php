@@ -11,11 +11,23 @@ class CourseSectionObject {
     protected $instructor;
     protected $instructorID;
     
+    public function __toString() {
+        return $this->sectionNumber;
+    }
+    
     public function addScheduleItem(CourseScheduleObject $schedule) {
         $this->schedule[] = $schedule;
     }    
     
-    public function getSchedule() {
+    public function getSchedule($delimiter = " ") {
+        $output = array();
+        foreach ($this->schedule as $scheduleItem) {
+            $output[] = strval($scheduleItem);
+        }
+        return implode($delimiter, $output);
+    }
+    
+    public function getScheduleItems() {
         return $this->schedule;
     }
     
