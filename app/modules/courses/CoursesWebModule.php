@@ -562,7 +562,7 @@ class CoursesWebModule extends WebModule {
             $Course = $options['course'];
             $courseType = isset($options['courseType']) ? $options['courseType'] : 'catalog';
             if (!$object = $Course->getCourse($courseType)) {
-                throw new KurogoConfigurationException('Course type ' . $courseType . ' not found');
+                return null;
             }
         } elseif (isset($options['section'])) {
             $object = $options['section'];
@@ -580,27 +580,28 @@ class CoursesWebModule extends WebModule {
             case 'fields':
                 $items = array();
                 foreach ($sectionData['fields'] as $field=>$fieldData) {
-                    $object = $this->getInfoObject(array_merge($fieldData, $options));
-                    if ($item = $this->formatDetailField($object, $field, $fieldData)) {
-                        $items[] = $item;
+                    if ($object = $this->getInfoObject(array_merge($fieldData, $options))) {
+                        if ($item = $this->formatDetailField($object, $field, $fieldData)) {
+                            $items[] = $item;
+                        }
                     }
                 }
                 return $items;
                 break;
 
             case 'list':
-                $method = "get" . $sectionData['items'];
-                $object = $this->getInfoObject(array_merge($sectionData, $options));
-                if (!is_callable(array($object, $method))) {
-                    throw new KurogoDataException("Method $method does not exist on " . get_class($object));
-                }
-                
-                $sectionItems = $object->$method();
-                
                 $items = array();
-                foreach ($sectionItems as $sectionItem) {
-                    if ($item = $this->formatSectionDetailField($object, $sectionItem, $sectionData)) {
-                        $items[] = $item;
+                if ($object = $this->getInfoObject(array_merge($sectionData, $options))) {
+                    $method = "get" . $sectionData['items'];
+                    if (!is_callable(array($object, $method))) {
+                        throw new KurogoDataException("Method $method does not exist on " . get_class($object));
+                    }
+                    
+                    $sectionItems = $object->$method();
+                    foreach ($sectionItems as $sectionItem) {
+                        if ($item = $this->formatSectionDetailField($object, $sectionItem, $sectionData)) {
+                            $items[] = $item;
+                        }
                     }
                 }
 
