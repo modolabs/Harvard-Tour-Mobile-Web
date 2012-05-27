@@ -651,7 +651,10 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function getOptionsForCourse($options){
-        return array();
+        if (isset($options['term']) && is_object($options['term'])) {
+            $options['term'] = strval($options['term']);
+        }
+        return $options;
     }
 
     protected function getOptionsForCourses($options){
