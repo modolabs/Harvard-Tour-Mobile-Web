@@ -10,6 +10,7 @@ class CoursesWebModule extends WebModule {
     protected $detailFields = array();
     protected $showCourseNumber = true;
     protected $defaultModel = 'CoursesDataModel';
+    protected $infoDetails = array();
 
     public function linkForTask($task, CourseContentCourse $course, $includeCourseName=true) {
     	$link = array(
@@ -307,7 +308,7 @@ class CoursesWebModule extends WebModule {
             case 'task':
                 break;
             default:
-                KurogoDebug::debug($content, true);
+                throw new KurogoException("Unhandled content type " . $content->getContentType());
         }
 
         return $links;
@@ -347,6 +348,14 @@ class CoursesWebModule extends WebModule {
         if ($course = $this->controller->getCourseByCommonID($courseID, $options)) {
             $this->assign('courseTitle', $course->getTitle());
             $this->assign('courseID', $course->getID());
+                        
+            if ($section = $this->getArg('section')) {
+                if ($catalogCourse = $course->getCourse('catalog')) {
+                    if ($class = $catalogCourse->getSection($section)) {
+                        $this->assign('sectionNumber', $class->getSectionNumber());
+                    }
+                }
+            }
         }
         return $course;
     }
@@ -492,58 +501,179 @@ class CoursesWebModule extends WebModule {
             break;
         }
     }
+    
+    // takes a config and process the info data
+    protected function formatCourseDetails($options, $configName) {
 
-    protected function formatCourseDetails(CombinedCourse $course, $configName) {
-        //error_log(print_r($this->detailFields, true));
         //load page detail configs
         $detailFields = $this->getModuleSections($configName);
-        $details = array();
+        $sections = array();
 
-        foreach($detailFields as $key => $info) {
-            $details[$key] = $this->formatCourseDetail($course, $info, $key);
+        // the section=xxx value separates the fields into nav sections.
+        foreach ($detailFields as $key=>$keyData) {
+            if (!isset($keyData['section'])) {
+                throw new KurogoConfigurationException("No section value found for field $key");
+            }
+            
+            $section = $keyData['section'];
+            unset($keyData['section']);
+            
+            //set the type - we need to handle list types appropriately
+            $keyData['type'] = isset($keyData['type']) ? $keyData['type'] : 'text';
+
+            switch ($keyData['type'])
+            {
+                case 'list':
+                    $keyData['items'] = $key;
+                    $sections[$section] = $keyData;
+                    break;
+                default:
+                    
+                    //assign field key
+                    $keyData['field'] = $key;
+                
+                    // any field that has the heading attribute can be used as the heading for that section
+                    if (isset($keyData['heading'])) {
+                        $sections[$section]['heading'] = $keyData['heading'];
+                        unset($keyData['heading']);
+                    }
+                    $sections[$section]['type'] = 'fields';
+                    $sections[$section]['fields'][$key] = $keyData;
+                    break;
+            }
         }
-        //error_log(print_r($details, true));
+                
+        $details = array();
+        foreach ($sections as $section=>$sectionData) {
+            if ($items = $this->formatCourseDetailSection($options, $sectionData)) {
+                $details[$section] = array(
+                    'heading'=>isset($sectionData['heading']) ? $sectionData['heading'] : '',
+                    'items'=>$items,
+                    'subTitleNewline'=>isset($sectionData['subTitleNewline']) ? $sectionData['subTitleNewline'] : 0
+                );
+            }
+        }
+                
         return $details;
     }
-
-    protected function formatCourseDetail(CombinedCourse $course, $info, $key=0) {
-        $section = array();
-        $courseType = isset($info['courseType']) ? $info['courseType'] : null;
-
-        if(!$course->checkInStandardAttributes($key)) {
-        	//try to set attribute in attributes list.
-	        $course->setAttribute($key, $courseType);
+    
+    protected function getInfoObject($options) {
+        if (isset($options['course'])) {
+            $Course = $options['course'];
+            $courseType = isset($options['courseType']) ? $options['courseType'] : 'catalog';
+            if (!$object = $Course->getCourse($courseType)) {
+                throw new KurogoConfigurationException('Course type ' . $courseType . ' not found');
+            }
+        } elseif (isset($options['section'])) {
+            $object = $options['section'];
+        } else {
+            throw new KurogoException("No valid object type found. Check trace");
         }
-        $values = (array)$course->getField($key, $courseType);
-        if (count($values)) {
-            $section[$key] = $this->formatInfoDetail($this->formatValues($values, $info), $info, $course);
-        }
+         
+        return $object;
+    }
+    
+    protected function formatCourseDetailSection($options, $sectionData) {
 
-        return $section;
+        switch ($sectionData['type'])
+        {
+            case 'fields':
+                $items = array();
+                foreach ($sectionData['fields'] as $field=>$fieldData) {
+                    $object = $this->getInfoObject(array_merge($fieldData, $options));
+                    if ($item = $this->formatDetailField($object, $field, $fieldData)) {
+                        $items[] = $item;
+                    }
+                }
+                return $items;
+                break;
+
+            case 'list':
+                $method = "get" . $sectionData['items'];
+                $object = $this->getInfoObject(array_merge($sectionData, $options));
+                if (!is_callable(array($object, $method))) {
+                    throw new KurogoDataException("Method $method does not exist on " . get_class($object));
+                }
+                
+                $sectionItems = $object->$method();
+                
+                $items = array();
+                foreach ($sectionItems as $sectionItem) {
+                    if ($item = $this->formatSectionDetailField($object, $sectionItem, $sectionData)) {
+                        $items[] = $item;
+                    }
+                }
+
+                return $items;
+                break;
+        }
     }
 
-    protected function formatInfoDetail($values, $info, CombinedCourse $course) {
-    	if(isset($values[0]) && is_object($values[0])) {
-	        $detail = array(
-	            'title' => null,
-	        	'head'  => isset($info['title']) ? $info['title'] : null
-	        );
-    	}else{
+    protected function formatSectionDetailField($object, $sectionItem, $sectionData) {
+    
+        if (!is_object($sectionItem)) {
+            throw new KurogoDataException("Item passed is not an object");
+        }
+        
+        foreach (array('title','subtitle','label') as $attrib) {
+            if (isset($sectionData[$attrib])) {
+                $method = "get" . $sectionData[$attrib];
+                $sectionData[$attrib] = $sectionItem->$method();
+            }
+        }
+        
+        if (isset($sectionData['params'])) {
+            $params = array();
+            foreach ($sectionData['params'] as $param) {
+                $method = "get" . $param;
+                $params[$param] = $sectionItem->$method();
+            }
+            $sectionData['params'] = $params;
+        }
+
+        $value = isset($sectionData['title']) ? $sectionData['title'] : strval($sectionItem);
+        $fieldData = $sectionData;
+        $fieldData['type'] = isset($fieldData['valuetype']) ? $fieldData['valuetype'] : 'text';
+        
+        return $this->formatInfoDetail($value, $fieldData, $sectionItem);
+    }
+    
+    
+    protected function formatDetailField($object, $field, $fieldData) {
+
+        $method = "get" . $field;
+        if (!is_callable(array($object, $method))) {
+            throw new KurogoDataException("Method $method does not exist on " . get_class($object));
+        }
+
+        $value = $object->$method();
+        return $this->formatInfoDetail($value, $fieldData, $object);
+    }
+
+    protected function formatInfoDetail($value, $info, $object) {
+    
+        $detail = $info;
+    
+        if (is_array($value)) {
 	    	if (isset($info['format'])) {
-	            $value = vsprintf($this->replaceFormat($info['format']), $values);
+	            $value = vsprintf($this->replaceFormat($info['format']), $value);
 	        } else {
 	            $delimiter = isset($info['delimiter']) ? $info['delimiter'] : ' ';
-	            $value = implode($delimiter, $values);
+	            $value = implode($delimiter, $value);
 	        }
+        } elseif (is_object($value)) {
+            throw new KurogoDataException("Value is an object. This needs to be traced");
+        }
+        
+        if (strlen($value)==0) {
+            return null;
+        }
+        
+        $detail['title'] = $value;
 
-	        $detail = array(
-	            'label' => isset($info['label']) ? $info['label'] : null,
-	            'title' => $value,
-	        	'head'  => isset($info['title']) ? $info['title'] : null,
-	        );
-    	}
-
-        switch(isset($info['type']) ? $info['type'] : 'text')
+        $type = isset($info['type']) ? $info['type'] : 'text';
+        $detail['type'] = $type;
+        switch($type)
         {
             case 'email':
                 $detail['title'] = str_replace('@', '@&shy;', $detail['title']);
@@ -560,49 +690,31 @@ class CoursesWebModule extends WebModule {
                 $detail['url'] = PhoneFormatter::getPhoneURL($value);
                 $detail['class'] = 'phone';
                 break;
-
-            // new type list, will return a list of values
-            case 'list':
-                foreach ($values as $key=>$instructor){
-                	//TODO: can set title grabbing methd by config file
-                	$value[] = $instructor->getFullName();
-                }
+            case 'text':
+                break;
+            default:
+                throw new KurogoException("Unhandled type $type");
                 break;
         }
 
         if (isset($info['module'])) {
-            if(is_array($value)) {
-        		foreach($value as $eachValue) {
-		            $detail['list'][] = array_merge($detail, Kurogo::moduleLinkForValue($info['module'], $eachValue, $this, $course));
-        		}
-        	}else{
-	            $detail = array_merge($detail, Kurogo::moduleLinkForValue($info['module'], $value, $this, $course));
-        	}
+            $modValue = $value;
+            if (isset($info['value'])) {
+                $method = "get" . $info['value'];
+                $modValue = $object->$method();
+            }
+            $detail = array_merge(Kurogo::moduleLinkForValue($info['module'], $modValue, $this), $detail);
+
         } elseif (isset($info['page'])) {
-            $options = array_merge($this->getCourseOptions(), array('value'=>$value));
-            if(is_array($value)) {
-                foreach ($value as $eachValue) {
-                    $options['value'] = $eachValue;
-		            $detail['list'][] = array_merge($detail, array(
-		                'title'=>$eachValue,
-		                'url'=>$this->buildBreadcrumbURL($info['page'], $options, true)
-		            ));
-                }
-        	} else{
-        	    $detail = array_merge($detail, array(
-                    'title'=>$value,
-                    'url'=>$this->buildBreadcrumbURL($info['page'], $options, true)
-                ));
-        	}
-
+            $params = isset($info['params']) ? $info['params'] : array();
+            $options = array_merge($this->getCourseOptions(), $params);
+            
+            $detail = array_merge($detail, array(
+                'title'=>$value,
+                'url'=>$this->buildBreadcrumbURL($info['page'], $options, true)
+            ));
         }
 
-        if (isset($info['urlfunc'])) {
-            $urlFunction = create_function('$value,$course', $info['urlfunc']);
-            $detail['url'] = $urlFunction($value, $course);
-        }
-
-        $detail['title'] = nl2br($detail['title']);
         return $detail;
     }
 
@@ -957,13 +1069,13 @@ class CoursesWebModule extends WebModule {
                 break;
 
             case 'info':
-                $options = $this->getCourseOptions();
+                $options = array(
+                    'course'=>$course,
+                    'type'=>'details'
+                );
+                
+                $this->initializeForInfoTab('info', $options);
 
-		        //load tab page detail configs
-		        $this->detailFields = $this->getModuleSections($tab . '-detail');
-
-                $courseDetails =  $this->formatCourseDetails($course, 'course-info');
-				$this->assign('courseDetails', $courseDetails);
 
                 $links = array();
                 if ($registrationCourse = $course->getCourse('registration')) {
@@ -974,6 +1086,8 @@ class CoursesWebModule extends WebModule {
                         );
                     }
                 }
+
+                $this->assign('infoDetails', $this->infoDetails);
 
                 // @TODO ADD configurable links
                 $this->assign('links', $links);
@@ -988,22 +1102,18 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function initializeForInfoTab($tab, $options) {
-    	$course = $options['course'];
-        switch ($tab)
-        {
-            case 'index':
-                $courseDetails =  $this->formatCourseDetails($course, 'info-index');
-                $this->assign('courseDetails', $courseDetails);
-                return true;
-                break;
 
-            case 'staff':
-            	$instructorList = array();
-                $staff =  $this->formatCourseDetails($course, 'info-staff');
-                $this->assign('staff', $staff);
-                return true;
-                break;
-        }
+    	switch ($options['type'])
+    	{
+    	    case 'details':
+    	        $configName = $this->page . '-' . $tab;
+                $this->infoDetails[$tab] = $this->formatCourseDetails($options, $configName);
+    	        break;
+    	    default:
+    	        die();
+    	        throw new KurogoConfigurationException("Unknown type " . $options['type']);
+    	    
+    	}
     }
 
     protected function initializeForPage() {
@@ -1181,6 +1291,8 @@ class CoursesWebModule extends WebModule {
                 if (!$CourseArea = $this->controller->getCatalogArea($area)) {
                     $this->redirectTo('catalog', array());
                 }
+                $this->setBreadcrumbTitle($CourseArea->getCode());
+                $this->setBreadcrumbLongTitle($CourseArea->getTitle());
 
                 $areas = $CourseArea->getAreas();
 
@@ -1222,6 +1334,8 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index');
                 }
                 $Term = $this->assignTerm();
+                $this->setBreadcrumbTitle($course->getField('courseNumber'));
+                $this->setBreadcrumbLongTitle($course->getTitle());
 
                 // Bookmark
                 if ($this->getOptionalModuleVar('BOOKMARKS_ENABLED', 1)) {
@@ -1243,14 +1357,61 @@ class CoursesWebModule extends WebModule {
 
                 $tabsConfig = $this->getModuleSections('infotabs');
                 $tabs = array();
+                $tabTypes = array();
                 foreach($tabsConfig as $tab => $tabData){
                     $tabs[] = $tab;
-                    $this->initializeForInfoTab($tab, $options);
-                }
+                    if (!isset($tabData['type'])) {
+                        $tabData['type'] = 'details';
+                    }
 
+                    $this->initializeForInfoTab($tab, array_merge($tabData, $options));
+                    $tabTypes[$tab] = $tabData['type'];
+                }
+                
                 $this->enableTabs($tabs);
                 $this->assign('tabs',$tabs);
+                $this->assign('tabTypes',$tabTypes);
+                $this->assign('tabDetails', $this->infoDetails);
             	break;
+            	
+            case 'section':
+                if (!$course = $this->getCourseFromArgs()) {
+                    $this->redirectTo('index');
+                }
+                
+                if (!$catalogCourse = $course->getCourse('catalog')) {
+                    $this->redirectTo('info', $this->args);
+                }
+                
+                $sectionNumber = $this->getArg('sectionNumber');
+    
+                if (!$section = $catalogCourse->getSection($sectionNumber)) {
+                    $this->redirectTo('info', $this->args);
+                }                
+
+                $options = array(
+//                    'course'=> $course,
+                    'section'=> $section
+                );
+                
+                $tabsConfig = $this->getModuleSections('sectiontabs');
+                $tabs = array();
+                $tabTypes = array();
+                foreach($tabsConfig as $tab => $tabData){
+                    $tabs[] = $tab;
+                    if (!isset($tabData['type'])) {
+                        $tabData['type'] = 'details';
+                    }
+
+                    $this->initializeForInfoTab($tab, array_merge($tabData, $options));
+                    $tabTypes[$tab] = $tabData['type'];
+                }
+                
+                $this->enableTabs($tabs);
+                $this->assign('tabs',$tabs);
+                $this->assign('tabTypes',$tabTypes);
+                $this->assign('tabDetails', $this->infoDetails);
+                break;
 
             case 'resourceSeeAll':
                 if (!$course = $this->getCourseFromArgs()) {
@@ -1272,36 +1433,6 @@ class CoursesWebModule extends WebModule {
                 $this->assign('key', ucfirst($key));
                 $this->assign('resources',$resources);
             	break;
-
-            case 'contents':
-                KurogoDebug::debug($this, true);
-                $id = $this->getArg('id');
-                //$courseId = $this->getArg('courseId');
-                $type = $this->getArg('type');
-
-
-                $items = $this->controller->getCourseContentById($id);
-
-
-                if (!isset($items['resource'][$type])) {
-                    throw new KurogoConfigurationException('not found the content for type ' . $type);
-                }
-
-                $options = array(
-             //   	'section'  => $section,
-             		//'courseId' => $courseId,
-                    'type'     => $type,
-                    'courseID' => $id
-                );
-
-                $contents = array();
-                foreach ($items['resource'][$type] as $item) {
-                    $content = $this->linkForContent($item, $options);
-                    $contents[] = $content;
-                }
-                $this->setPageTitles($this->getLocalizedString(strtoupper($type) .'_TITLE'));
-                $this->assign('contents', $contents);
-                break;
 
             case 'page':
             	$contentID = $this->getArg('contentID', '');
