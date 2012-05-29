@@ -826,13 +826,17 @@ class CoursesWebModule extends WebModule {
                 if ($this->isLoggedIn()) {
                     $options = $this->getOptionsForCourse($options);
                     $coursesListLinks = array();
-                    foreach ($coursesList as $id => $courses) {
+                    foreach ($coursesList as $id => $coursesTuple) {
                         $coursesLinks = array();
-                        foreach ($courses as $course) {
+                        foreach ($coursesTuple['courses'] as $course) {
                             $courseLink = $this->linkForCourse($course, $options);
                             $coursesLinks[] = $courseLink;
                         }
-                        $coursesListLinks[] = array('courseListHeading' => $this->getLocalizedString('COURSE_LIST_HEADING', $Term->getTitle(), $options['headings'][$id], count($coursesLinks)),
+
+                        $courseListHeading = str_replace("%t", $Term->getTitle(), $coursesTuple['heading']);
+                        $courseListHeading = str_replace("%n", count($coursesLinks), $courseListHeading);
+
+                        $coursesListLinks[] = array('courseListHeading' => $courseListHeading,
                                                     'coursesLinks' => $coursesLinks);
                     }
                     $this->assign('coursesListLinks', $coursesListLinks);
@@ -860,7 +864,8 @@ class CoursesWebModule extends WebModule {
                         );
                     }
 
-                    $this->assign('courseCatalogText', $this->getLocalizedString('COURSE_CATALOG_TEXT', $Term->getTitle()));
+                    $courseCatalogText = str_replace("%t", $Term->getTitle(), $this->getLocalizedString('COURSE_CATALOG_TEXT'));
+                    $this->assign('courseCatalogText', $courseCatalogText);
                     $this->assign('catalogItems', $catalogItems);
                 }
 
@@ -1570,8 +1575,7 @@ class CoursesWebModule extends WebModule {
                         }
                         $courses = $this->controller->getCourses($this->getOptionsForCourses($options));
                         $options['courses'] = array_merge($options['courses'], $courses);
-                        $options['coursesList'][$id] = $courses;
-                        $options['headings'][$id] = $listing['heading'];
+                        $options['coursesList'][$id] = array('courses'=>$courses, 'heading'=>$listing['heading']);
                     }
                 }
 
