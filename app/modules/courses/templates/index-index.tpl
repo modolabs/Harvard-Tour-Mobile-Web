@@ -1,6 +1,8 @@
 {block name="courseList"}
-{if $coursesLinks}
-    {include file="findInclude:modules/courses/templates/coursesList.tpl"  courses=$coursesLinks}
+{if $coursesListLinks}
+    {foreach $coursesListLinks as $coursesLink}
+        {include file="findInclude:modules/courses/templates/coursesList.tpl"  courseListHeading = $coursesLink['courseListHeading'] courses=$coursesLink['coursesLinks']}    
+    {/foreach}
 {elseif $session_userID}
     <div class="nonfocal">
     {"NO_COURSES"|getLocalizedString}
