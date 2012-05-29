@@ -315,6 +315,11 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function assignTerm(){
+        static $Term;
+        if ($Term) {
+            return $Term;
+        }
+        
         $feedTerms = $this->controller->getAvailableTerms();
 
         if (!$Term = $this->controller->getTerm($this->selectedTerm)) {
