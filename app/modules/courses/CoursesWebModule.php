@@ -164,7 +164,8 @@ class CoursesWebModule extends WebModule {
 
     protected function linkForCatalogArea(CourseArea $area, $options=array()) {
         $options = array_merge($options,array(
-            'area'=>$area->getCode()
+            'area'=>$area->getCode(),
+            'parent'=>$area->getParent(),
             )
         );
         $link = array(
@@ -1293,8 +1294,11 @@ class CoursesWebModule extends WebModule {
                 $area = $this->getArg('area');
                 $term = $this->assignTerm();
                 $options = array('term' => $term);
+                if ($parent = $this->getArg('parent')) {
+                    $options['parent'] = $parent;
+                }
 
-                if (!$CourseArea = $this->controller->getCatalogArea($area)) {
+                if (!$CourseArea = $this->controller->getCatalogArea($area, $options)) {
                     $this->redirectTo('catalog', array());
                 }
                 $this->setBreadcrumbTitle($CourseArea->getCode());
@@ -1304,8 +1308,8 @@ class CoursesWebModule extends WebModule {
 
                 $areasList = array();
                 $areaOptions = array('term' => strval($term));
-                foreach ($areas as $CourseArea) {
-                    $areasList[] = $this->linkForCatalogArea($CourseArea, $areaOptions);
+                foreach ($areas as $areaObj) {
+                    $areasList[] = $this->linkForCatalogArea($areaObj, $areaOptions);
                 }
 
                 $courses = array();
