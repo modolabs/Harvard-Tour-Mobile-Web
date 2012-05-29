@@ -53,10 +53,10 @@ class CoursesXMLDataParser extends XMLDataParser {
                 $this->elementStack[] = new CourseXMLObject();
                 break;
             case 'SECTION':
-                $this->elementStack[] = new CourseSectionXMLObject();
+                $this->elementStack[] = new CourseSectionObject();
                 break;
             case 'SCHEDULE':
-                $this->elementStack[] = new CourseScheduleXMLObject();
+                $this->elementStack[] = new CourseScheduleObject();
                 break;
             default:
                 $this->elementStack[] = new XMLElement($name, $attribs);
@@ -104,8 +104,3 @@ class CourseXMLObject extends CourseCatalogCourse {
     protected $commonID_field = 'courseNumber';
 }
 
-class CourseSectionXMLObject extends CourseSectionObject {
-}
-
-class CourseScheduleXMLObject extends CourseScheduleObject {
-}
