@@ -2,31 +2,10 @@
 
 class CourseCatalogCourse extends Course {
 
-    protected $catalogNumber;
     protected $area;
     protected $areaCode;
     protected $sections=array();
-    protected $requirements;
 
-    public function getID() {
-        return $this->catalogNumber;
-    }
-    
-    public function setTermCode($termCode) {
-        if (!$this->term) {
-            $this->term = new CourseTerm();
-        }
-        $this->term->setID($termCode);
-    }
-    
-    public function setCatalogNumber($catalogNumber) {
-        $this->catalogNumber = $catalogNumber;
-    }
-
-    public function getCatalogNumber() {
-        return $this->catalogNumber;
-    }
-    
     public function setArea($area) {
         $this->area = $area;
     }
@@ -35,22 +14,6 @@ class CourseCatalogCourse extends Course {
         return $this->area;
     }
     
-    public function setDescription($description) {
-        $this->description = $description;
-    }
-
-    public function getDescription() {
-        return $this->description;
-    }
-
-    public function setRequirements($requirements) {
-        $this->requirements = $requirements;
-    }
-
-    public function getRequirements() {
-        return $this->requirements;
-    }
-
     public function setAreaCode($areaCode) {
         $this->areaCode = $areaCode;
     }

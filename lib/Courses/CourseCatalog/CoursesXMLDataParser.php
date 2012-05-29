@@ -20,7 +20,6 @@ class CoursesXMLDataParser extends XMLDataParser {
             'TITLE'=>'title',
             'DESCRIPTION'=>'description',
             'COURSE_NUMBER'=>'courseNumber',
-            'CATALOG_NUMBER'=>'catalogNumber',
             'SCHOOL'=>'area',
             'SCHOOL_CODE'=>'areaCode',
             'CLASS_NUMBER'=>'classNumber',
@@ -38,8 +37,14 @@ class CoursesXMLDataParser extends XMLDataParser {
             'ROOM'=>'room',
             'INSTRUCTOR_NAME'=>'instructor',
             'INSTRUCTOR_ID'=>'instructorID',
-            'REQUIREMENTS'=>'requirements'
         );
+    }
+    
+    protected function attributesMap() {
+        return array(
+            'CATALOG_NUMBER'=>'catalogNumber',
+            'REQUIREMENTS'=>'requirements'
+        );        
     }
 
     protected function handleStartElement($name, $attribs) {
@@ -60,9 +65,12 @@ class CoursesXMLDataParser extends XMLDataParser {
 
     protected function handleEndElement($name, $element, $parent) {
         $elementMap = $this->elementMap();
+        $attributesMap = $this->attributesMap();
         if (isset($elementMap[$name])) {
             $method = 'set' . $elementMap[$name];
             $parent->$method($element->value());
+        } elseif (isset($attributesMap[$name])) {
+            $parent->setAttribute($name, $element->value());
         }
         
         switch($name) {

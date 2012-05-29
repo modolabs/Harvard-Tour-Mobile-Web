@@ -9,7 +9,16 @@ abstract class Course implements CourseInterface {
     protected $title;
     protected $description;
     protected $term;
+    protected $attributes = array();
     protected $retriever;
+
+    public function setAttribute($key, $value) {
+        $this->attributes[$key] = $value;
+    }
+    
+    public function getAttribute($attrib) {
+        return isset($this->attributes[$attrib]) ? $this->attributes[$attrib] : '';
+    }
     
     public function setCommonID($commonID) {
         $this->commonID = $commonID;
@@ -88,5 +97,14 @@ abstract class Course implements CourseInterface {
     public function getTerm() {
         return $this->term;
     }
+    
+    public function setTermCode($termCode) {
+        if (!$this->term) {
+            $this->term = new CourseTerm();
+        }
+        $this->term->setID($termCode);
+    }
+    
+    
 }
 
