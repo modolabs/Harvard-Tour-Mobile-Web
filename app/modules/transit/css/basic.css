@@ -1,0 +1,48 @@
+#stops table#listView {
+	width: 100%;
+	margin: 0.75em 0;
+	position: relative;
+	border-bottom: 1px solid #999;
+	border-spacing: 0;
+}
+#stops table#listView td {
+	padding: 6px 0;
+	line-height: 1em;
+	border-top: 1px solid #ccc;
+}
+
+#stops a {
+    color: #000;
+    padding-left: 4px;
+}
+
+#stops .nested {
+  margin-top: 0;
+}
+
+table#scheduleView {
+  border: solid 2px #444;
+  background-color: #fff;
+	border-spacing: 0;
+}
+table#scheduleView td {
+  border-color: #bbb;
+  border-style: solid;
+}
+table#scheduleView .stopicons td,
+table#scheduleView .stoptimes td {
+  border-right: none;
+  border-top: none;
+  border-bottom: none;
+}
+table#scheduleView .stopicons td.first,
+table#scheduleView .stoptimes td.first {
+  border-left: none;
+}
+table#scheduleView .stopnames td {
+  border-top-color: #444;
+  border-top-width: 2px;
+  border-left: none;
+  border-right: none;
+  padding-left: 6px;
+}
