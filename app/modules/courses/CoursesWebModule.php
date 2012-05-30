@@ -5,7 +5,6 @@ class CoursesWebModule extends WebModule {
     protected $id = 'courses';
     protected $controller;
     protected $courses;
-    protected $hasPersonalizedCourses = false;
     protected $selectedTerm;
     protected $detailFields = array();
     protected $showCourseNumber = true;
@@ -393,7 +392,6 @@ class CoursesWebModule extends WebModule {
     protected function initialize() {
         $this->feeds = $this->loadFeedData();
         $this->controller = CoursesDataModel::factory($this->defaultModel, $this->feeds);
-        $this->hasPersonalizedCourses =  $this->controller->canRetrieve('registration') || $this->controller->canRetrieve('content');
         $this->selectedTerm = $this->getArg('term', CoursesDataModel::CURRENT_TERM);
         //load showCourseNumber setting
         $this->showCourseNumber = $this->getOptionalModuleVar('SHOW_COURSENUMBER_IN_LIST', 1);
@@ -820,7 +818,8 @@ class CoursesWebModule extends WebModule {
             case 'courses':
                 $Term = $this->assignTerm();
 
-                $this->assign('hasPersonalizedCourses', $this->hasPersonalizedCourses);
+                $hasPersonalizedCourses =  $this->controller->canRetrieve('registration') || $this->controller->canRetrieve('content');
+                $this->assign('hasPersonalizedCourses', $hasPersonalizedCourses);
                 $coursesList = $options['coursesList'];
 
                 if ($this->isLoggedIn()) {
