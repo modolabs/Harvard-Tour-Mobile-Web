@@ -622,12 +622,7 @@ class CoursesWebModule extends WebModule {
             throw new KurogoDataException("Item passed is not an object");
         }
 
-        $dynamicFields = array('title','subtitle','label');
-        if(isset($sectionData['static']) && $sectionData['static']){
-            $dynamicFields = array_diff($dynamicFields, $sectionData['static']);
-        }
-
-        foreach ($dynamicFields as $attrib) {
+        foreach (array('title','subtitle','label') as $attrib) {
             if (isset($sectionData[$attrib])) {
                 $method = "get" . $sectionData[$attrib];
                 $sectionData[$attrib] = $sectionItem->$method();
