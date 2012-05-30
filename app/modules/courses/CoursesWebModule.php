@@ -1389,7 +1389,7 @@ class CoursesWebModule extends WebModule {
                 $this->assign('tabDetails', $this->infoDetails);
             	break;
 
-            case 'section':
+            case 'catalogsection':
                 if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
                 }
@@ -1409,7 +1409,7 @@ class CoursesWebModule extends WebModule {
                     'section'=> $section
                 );
 
-                $tabsConfig = $this->getModuleSections('sectiontabs');
+                $tabsConfig = $this->getModuleSections('catalogsectiontabs');
                 $tabs = array();
                 $tabTypes = array();
                 foreach($tabsConfig as $tab => $tabData){
