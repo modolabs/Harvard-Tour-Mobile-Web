@@ -623,8 +623,8 @@ class CoursesWebModule extends WebModule {
         }
 
         foreach (array('title','subtitle','label') as $attrib) {
-            if (isset($sectionData[$attrib])) {
-                $method = "get" . $sectionData[$attrib];
+            if (isset($sectionData[$attrib.'field'])) {
+                $method = "get" . $sectionData[$attrib.'field'];
                 $sectionData[$attrib] = $sectionItem->$method();
             }
         }
