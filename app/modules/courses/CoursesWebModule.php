@@ -1564,7 +1564,7 @@ class CoursesWebModule extends WebModule {
                 break;
 
             case 'index':
-                $courseListings = $this->getModuleSections('courseListing');
+                $courseListings = $this->getModuleSections('courses');
                 $Term = $this->assignTerm();
 
                 $options = array(
