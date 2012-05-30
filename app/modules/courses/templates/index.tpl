@@ -1,14 +1,11 @@
 {include file="findInclude:common/templates/header.tpl"}
 
-{include file="findInclude:modules/courses/templates/termselector.tpl"}
+{include file="findInclude:modules/courses/templates/include/termselector.tpl"}
 
 {$tabBodies=array()}
 {foreach $tabs as $key}
-    {assign var="captureName" value=$key|cat:"Tab"}
-    {assign var="templateName" value="index-"|cat:$key|cat:".tpl"}
-
-    {capture name=$captureName assign="tabBody"}
-    {include file="findInclude:modules/courses/templates/$templateName"}
+    {capture name=tab assign="tabBody"}
+    {include file="findInclude:modules/courses/templates/index/$key.tpl"}
     {/capture}
 
     {$tabBodies[$key] = $tabBody}

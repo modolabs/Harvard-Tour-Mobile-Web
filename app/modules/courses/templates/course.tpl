@@ -1,13 +1,9 @@
 {include file="findInclude:common/templates/header.tpl"}
-{include file="findInclude:modules/courses/templates/coursedetailhead.tpl"}
+{include file="findInclude:modules/courses/templates/include/coursedetailhead.tpl"}
 {$tabBodies=array()}
 {foreach $tabs as $key}
-
-    {assign var="captureName" value=$key|cat:"Tab"}
-    {assign var="templateName" value="course-"|cat:$key|cat:".tpl"}
-
-    {capture name=$captureName assign="tabBody"}
-    {include file="findInclude:modules/courses/templates/$templateName"}
+    {capture name=tab assign="tabBody"}
+    {include file="findInclude:modules/courses/templates/course/$key.tpl"}
     {/capture}
 
     {$tabBodies[$key] = $tabBody}

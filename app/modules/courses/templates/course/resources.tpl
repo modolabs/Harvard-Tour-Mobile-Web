@@ -12,7 +12,7 @@
     <div class="seeall"><a href="{$group['url']}" target="_blank">{'SEE_ALL'|getLocalizedString:$group['count']}</a></div>
     {/if}
     {$resourcesListHeading=$group.title|default:''}
-    {include file="findInclude:modules/courses/templates/resourcesList.tpl" resourcesListHeading=$resourcesListHeading resources=$group.items}
+    {include file="findInclude:modules/courses/templates/include/resourcesList.tpl" resourcesListHeading=$resourcesListHeading resources=$group.items}
 {/foreach}
 {/block}
 {block name="resourcesFooter"}{/block}

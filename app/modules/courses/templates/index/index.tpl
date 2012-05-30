@@ -1,7 +1,7 @@
 {block name="courseList"}
 {if $coursesListLinks}
     {foreach $coursesListLinks as $coursesLink}
-        {include file="findInclude:modules/courses/templates/coursesList.tpl"  courseListHeading = $coursesLink['courseListHeading'] courses=$coursesLink['coursesLinks']}    
+        {include file="findInclude:modules/courses/templates/include/coursesList.tpl"  courseListHeading = $coursesLink['courseListHeading'] courses=$coursesLink['coursesLinks']}    
     {/foreach}
 {elseif $session_userID}
     <div class="nonfocal">

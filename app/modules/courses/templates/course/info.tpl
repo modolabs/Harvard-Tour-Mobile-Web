@@ -1,4 +1,4 @@
-{include file="findInclude:modules/courses/templates/info-details.tpl" tabInfoDetails=$infoDetails.info}
+{include file="findInclude:modules/courses/templates/info/details.tpl" tabInfoDetails=$infoDetails.info}
 
 {block name="links"}
 {if $links}
