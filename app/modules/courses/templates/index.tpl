@@ -5,7 +5,9 @@
 {$tabBodies=array()}
 {foreach $tabs as $key}
     {capture name=tab assign="tabBody"}
+    {if $currentTab == $key}
     {include file="findInclude:modules/courses/templates/$key.tpl"}
+    {/if}
     {/capture}
 
     {$tabBodies[$key] = $tabBody}
