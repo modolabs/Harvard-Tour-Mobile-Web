@@ -392,6 +392,7 @@ class CoursesWebModule extends WebModule {
         //load showCourseNumber setting
         $this->showCourseNumber = $this->getOptionalModuleVar('SHOW_COURSENUMBER_IN_LIST', 1);
         $this->Term = $this->assignTerm();
+        $this->assign('hasPersonalizedCourses', $this->controller->canRetrieve('registration') || $this->controller->canRetrieve('content'));
     }
 
     protected function getCourseOptions() {
@@ -848,7 +849,6 @@ class CoursesWebModule extends WebModule {
 
 
         $courseListings = $this->getModuleSections('courses');
-        $this->assign('hasPersonalizedCourses', count($courseListings));
         $courses = array();
 
         foreach($courseListings as $id => $listing){
@@ -1474,19 +1474,24 @@ class CoursesWebModule extends WebModule {
 
                 $tabsConfig = $this->getModuleSections('coursetabs');
                 $tabs = array();
+                $javascripts = array();
+                $args = $this->args;
+                unset($args['_b']);
                 $currentTab = $this->getArg('tab', key($tabsConfig));
                 foreach($tabsConfig as $tabID => $tabData){
                     if ($this->showTab($tabID, $tabData)) {
                         if ($tabID == $currentTab) {
                             $method = "initialize" . $tabID;
                             $this->$method(array('course'=>$course));
-                        }
+                        } else {
+                            $javascripts[$tabID] = sprintf("updateTab('%s','%s');", $tabID, rtrim(FULL_URL_BASE,'/') . $this->buildURL($tabID, $args, false));
+                        }                        
                         $tabs[] = $tabID;
                     }
                 }
                 
                 //@TODO enable javascript for loading content
-                $this->enableTabs($tabs);
+                $this->enableTabs($tabs, null, $javascripts);
                 $this->assign('tabs', $tabs);
                 $this->assign('currentTab', $currentTab);
                 break;
@@ -1500,6 +1505,7 @@ class CoursesWebModule extends WebModule {
             case 'updates':
             case 'tasks':
             case 'announcements':
+            case 'info':
                 $options = array();
                 if ($course = $this->getCourseFromArgs()) {
                     $options['course'] = $course;
@@ -1512,19 +1518,25 @@ class CoursesWebModule extends WebModule {
                 $tabsConfig = $this->getModuleSections('indextabs');
                 $options = array();
                 $tabs = array();
+                $javascripts = array();
                 $currentTab = $this->getArg('tab', key($tabsConfig));
+                $args = $this->args;
+                unset($args['_b']);
                 foreach($tabsConfig as $tabID => $tabData){
                     if ($this->showTab($tabID, $tabData)) {
                         if ($tabID == $currentTab) {
                             $method = "initialize" . $tabID;
                             $this->$method($options);
+                        } else {
+                            $javascripts[$tabID] = sprintf("updateTab('%s','%s');", $tabID, rtrim(FULL_URL_BASE,'/') . $this->buildURL($tabID, $args, false));
                         }
                         $tabs[] = $tabID;
+                        
                     }
                 }
                 
                 //@TODO enable javascript for loading content
-                $this->enableTabs($tabs);
+                $this->enableTabs($tabs, null, $javascripts);
                 $this->assign('tabs', $tabs);
                 $this->assign('currentTab', $currentTab);
                 break;
