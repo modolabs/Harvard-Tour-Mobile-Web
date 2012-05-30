@@ -3,7 +3,7 @@
 {$tabBodies=array()}
 {foreach $tabs as $key}
     {capture name=tab assign="tabBody"}
-    {include file="findInclude:modules/courses/templates/course/$key.tpl"}
+    {include file="findInclude:modules/courses/templates/$key.tpl"}
     {/capture}
 
     {$tabBodies[$key] = $tabBody}

@@ -1,1 +1,1 @@
-{include file="findInclude:modules/courses/templates/info.tpl"}
+{include file="findInclude:modules/courses/templates/catalogcourse.tpl"}

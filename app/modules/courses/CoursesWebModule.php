@@ -170,7 +170,7 @@ class CoursesWebModule extends WebModule {
         );
         $link = array(
             'title'=> $area->getTitle(),
-            'url'=>$this->buildBreadcrumbURL('area',$options)
+            'url'=>$this->buildBreadcrumbURL('catalogarea',$options)
         );
         return $link;
     }
@@ -211,7 +211,7 @@ class CoursesWebModule extends WebModule {
 
             $link['subtitle'] = implode("<br />", $subtitle);
         } else {
-            $page = 'info';
+            $page = 'catalogcourse';
         }
         unset($options['course']);
 
@@ -233,7 +233,7 @@ class CoursesWebModule extends WebModule {
         	$link['label'] = $course->getField('courseNumber');
         }
 
-        $link['url'] = $this->buildBreadcrumbURL('info', $options);
+        $link['url'] = $this->buildBreadcrumbURL('catalogcourse', $options);
         return $link;
     }
 
@@ -1300,7 +1300,7 @@ class CoursesWebModule extends WebModule {
 
                 break;
 
-            case 'area':
+            case 'catalogarea':
                 $area = $this->getArg('area');
                 $term = $this->assignTerm();
                 $options = array('term' => $term);
@@ -1348,7 +1348,7 @@ class CoursesWebModule extends WebModule {
                 break;
 
 
-            case 'info':
+            case 'catalogcourse':
             	$area = $this->getArg('area');
                 if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
@@ -1375,7 +1375,7 @@ class CoursesWebModule extends WebModule {
                     'course'=> $course
                 );
 
-                $tabsConfig = $this->getModuleSections('infotabs');
+                $tabsConfig = $this->getModuleSections('catalogcoursetabs');
                 $tabs = array();
                 $tabTypes = array();
                 foreach($tabsConfig as $tab => $tabData){
