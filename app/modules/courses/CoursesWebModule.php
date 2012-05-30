@@ -817,7 +817,7 @@ class CoursesWebModule extends WebModule {
 
         switch ($tab)
         {
-            case 'index':
+            case 'courses':
                 $Term = $this->assignTerm();
 
                 $this->assign('hasPersonalizedCourses', $this->hasPersonalizedCourses);
