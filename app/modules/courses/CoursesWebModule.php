@@ -1135,10 +1135,6 @@ class CoursesWebModule extends WebModule {
 
     protected function initializeForPage() {
         switch($this->page) {
-            case 'loadFile':
-                $file = $this->getArg('file');
-                break;
-
             case 'content':
             case 'download':
                 $contentID = $this->getArg('contentID');
@@ -1465,46 +1461,7 @@ class CoursesWebModule extends WebModule {
             	$this->assign('content', $content);
             	break;
 
-            case 'file':
-        	    if (!$course = $this->getCourseFromArgs()) {
-                    $this->redirectTo('index');
-        	    }
-
-                if (!$contentCourse = $course->getCourse('content')) {
-                    $this->redirectTo('index');
-                }
-
-                if (!$content = $contentCourse->getContentById($contentID)) {
-                    throw new KurogoDataException($this->getLocalizedString('ERROR_CONTENT_NOT_FOUND'));
-                }
-
-
-
-                if ($this->getArg('download')) {
-                    throw new KurogoException('Download of files is not complete');
-                }
-
-                $options[] = array(
-                		'url' => $this->buildBreadcrumbURL($this->page, array_merge($this->args, array('download'=>1))),
-                		'title' => $content->getFileName(),
-                		'subtitle' => 'FileSize: ' . number_format($content->getFileSize())
-                );
-
-                if ($content->getPublishedDate()){
-		    		if($content->getAuthor()){
-		    			$uploadDate = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U')) .' by '.$content->getAuthor();
-		    		}else{
-		    			$uploadDate = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U'));
-		    		}
-	    		} else {
-	    			$uploadDate = $content->getSubTitle();
-	    		}
-
-	    		$this->assign('itemName',$content->getTitle());
-	    		$this->assign('uploadDate',$uploadDate);
-	    		$this->assign('links', $options);
-	    		$this->assign('description',$content->getDescription());                //$this->outputFile($content);
-                break;
+           
 
             case 'bookmarks':
                 $Term = $this->assignTerm();
