@@ -343,22 +343,23 @@ class CoursesWebModule extends WebModule {
 
     protected function getCourseFromArgs() {
 
-        $courseID = $this->getArg('courseID');
-        $options = $this->getCourseOptions();
-
-        if ($course = $this->controller->getCourseByCommonID($courseID, $options)) {
-            $this->assign('courseTitle', $course->getTitle());
-            $this->assign('courseID', $course->getID());
-
-            if ($section = $this->getArg('section')) {
-                if ($catalogCourse = $course->getCourse('catalog')) {
-                    if ($class = $catalogCourse->getSection($section)) {
-                        $this->assign('sectionNumber', $class->getSectionNumber());
+        if ($courseID = $this->getArg('courseID')) {
+            $options = $this->getCourseOptions();
+    
+            if ($course = $this->controller->getCourseByCommonID($courseID, $options)) {
+                $this->assign('courseTitle', $course->getTitle());
+                $this->assign('courseID', $course->getID());
+    
+                if ($section = $this->getArg('section')) {
+                    if ($catalogCourse = $course->getCourse('catalog')) {
+                        if ($class = $catalogCourse->getSection($section)) {
+                            $this->assign('sectionNumber', $class->getSectionNumber());
+                        }
                     }
                 }
             }
+            return $course;
         }
-        return $course;
     }
 
     protected function getFeedTitle($feed) {
@@ -1467,14 +1468,8 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index');
                 }
 
-                if (!$contentCourse = $course->getCourse('content')) {
-                    $this->redirectTo('index');
-                }
-                
                 $options = array(
-                    'term'=>$this->Term,
                     'course'=> $course,
-                    'contentCourse'=> $contentCourse
                 );
 
                 $tabsConfig = $this->getModuleSections('coursetabs');
@@ -1499,19 +1494,20 @@ class CoursesWebModule extends WebModule {
             case 'courses':
                 $this->initializeCourses();
                 break;
-                
+
+            case 'resources':
+            case 'grades':
             case 'updates':
-                $this->initializeUpdates();
+            case 'tasks':
+            case 'announcements':
+                $options = array();
+                if ($course = $this->getCourseFromArgs()) {
+                    $options['course'] = $course;
+                }
+                $method = "initialize" . $this->page;
+                $this->$method($options);
                 break;
 
-            case 'tasks':
-                $this->initializeTasks();
-                break;
-                
-            case 'announcements':
-                $this->initializeAnnouncements();
-                break;
-            
             case 'index':
                 $tabsConfig = $this->getModuleSections('indextabs');
                 $options = array();
