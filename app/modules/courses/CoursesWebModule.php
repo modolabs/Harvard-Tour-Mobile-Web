@@ -412,7 +412,7 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function assignGroupLinks($tabPage, $groups, $defaultGroupOptions = array()){
-        $page = isset($defaultGroupOptions['page']) ? $defaultGroupOptions['page'] : $this->page;
+        $page = $this->page;
         foreach ($groups as $groupIndex => $group) {
             $defaultGroupOptions[$tabPage . 'Group'] = $groupIndex;
             $groupLinks[$groupIndex]['url'] = $this->buildBreadcrumbURL($page, $defaultGroupOptions, false);
@@ -754,7 +754,9 @@ class CoursesWebModule extends WebModule {
             $groupOptions = array_merge($groupOptions, $this->getCourseOptions());
         }
 
-        $this->assignGroupLinks('tasks', $taskGroups, $groupOptions);
+        if (!$this->getArg('ajaxgroup')) {
+            $this->assignGroupLinks('tasks', $taskGroups, $groupOptions);
+        }
 
         $group = $this->getArg('tasksGroup', key($taskGroups));
         $this->assign('tasksGroup', $group);
@@ -790,7 +792,9 @@ class CoursesWebModule extends WebModule {
             $groupOptions = array_merge($groupOptions, $this->getCourseOptions());
         }
 
-        $this->assignGroupLinks('resources', $groupsConfig, $groupOptions);
+        if (!$this->getArg('ajaxgroup')) {
+            $this->assignGroupLinks('resources', $groupsConfig, $groupOptions);
+        }
 
         $group = $this->getArg('resourcesGroup', key($groupsConfig));
         $key = $this->getArg('key', '');  //particular type
@@ -1498,7 +1502,7 @@ class CoursesWebModule extends WebModule {
                             $method = "initialize" . $tabID;
                             $this->$method(array('course'=>$course,'page'=>$this->page));
                         } else {
-                            $javascripts[$tabID] = sprintf("updateTab('%s','%s');", $tabID, rtrim(FULL_URL_BASE,'/') . $this->buildURL($tabID, $args, false));
+                            $javascripts[$tabID] = sprintf("loadTab('%s','%s');", $tabID, rtrim(FULL_URL_BASE,'/') . $this->buildURL($tabID, $args, false));
                         }                        
                         $tabs[] = $tabID;
                     }
@@ -1546,7 +1550,7 @@ class CoursesWebModule extends WebModule {
                             $method = "initialize" . $tabID;
                             $this->$method($options);
                         } else {
-                            $javascripts[$tabID] = sprintf("updateTab('%s','%s');", $tabID, rtrim(FULL_URL_BASE,'/') . $this->buildURL($tabID, $args, false));
+                            $javascripts[$tabID] = sprintf("loadTab('%s','%s');", $tabID, rtrim(FULL_URL_BASE,'/') . $this->buildURL($tabID, $args, false));
                         }
                         $tabs[] = $tabID;
                         
