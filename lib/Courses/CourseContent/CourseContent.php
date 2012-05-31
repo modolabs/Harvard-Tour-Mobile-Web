@@ -85,6 +85,17 @@ abstract class CourseContent implements KurogoObject {
         return $this->contentType;
     }
 
+    public function getContentClass(){
+        switch ($this->contentType) {
+            case 'file':
+                return $this->getContentMimeType();
+                break;
+            default:
+                return $this->getContentType();
+                break;
+        }
+    }
+
     public function setTitle($title) {
         $this->title = $title;
     }
