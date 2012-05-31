@@ -182,8 +182,9 @@ class CoursesWebModule extends WebModule {
             )
         );
 
+        $title = $this->showCourseNumber ? sprintf("(%s) %s", $course->getField('courseNumber'), $course->getTitle()) : $course->getTitle();
         $link = array(
-            'title' => $course->getTitle()
+            'title' => $title
         );
 
         $contentCourse = $course->getCourse('content');
