@@ -1126,6 +1126,16 @@ class CoursesWebModule extends WebModule {
         if (self::argVal($tabData, 'protected', 0) && !$this->isLoggedIn()) {
             return false;
         }
+        
+        switch ($tabID) {
+            case 'courses':
+                if ($this->pagetype=='tablet' || !$this->isLoggedIn()) {
+                    $this->initializeCourses();
+                    return false;
+                }
+                
+                break;
+        }
 
         return true;
     }
@@ -1557,11 +1567,12 @@ class CoursesWebModule extends WebModule {
                         
                     }
                 }
-                
-                //@TODO enable javascript for loading content
-                $this->enableTabs($tabs, null, $javascripts);
-                $this->assign('tabs', $tabs);
-                $this->assign('currentTab', $currentTab);
+
+                if ($tabs) {
+                    $this->enableTabs($tabs, null, $javascripts);
+                    $this->assign('tabs', $tabs);
+                    $this->assign('currentTab', $currentTab);
+                }
                 break;
                 
             case 'search':
