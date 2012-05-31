@@ -14,7 +14,7 @@ class CoursesWebModule extends WebModule {
 
     public function linkForTask($task, CourseContentCourse $course, $includeCourseName=true) {
     	$link = array(
-            'title' =>$includeCourseName ? $task->getTitle() : $course->getTitle(),
+            'title' =>$includeCourseName ? htmlentities($task->getTitle()) : $course->getTitle(),
     		'date' => $task->getDate() ? $task->getDate() : $task->getDueDate(),
             'img'   => "/modules/courses/images/content_" . $task->getContentType() . $this->imageExt
         );
@@ -45,7 +45,7 @@ class CoursesWebModule extends WebModule {
     public function linkForContent(CourseContent $content, CourseContentCourse $course) {
 
     	$link = array(
-            'title' => $content->getTitle(),
+            'title' => htmlentities($content->getTitle()),
             'subtitle' => $content->getSubTitle(),
             'type'  => $content->getContentType(),
             'class' => "content content_" . $content->getContentType(),
@@ -81,7 +81,7 @@ class CoursesWebModule extends WebModule {
             'type'      => $content->getContentType(),
         );
         $link = array(
-            'title' => $includeCourseName ? $course->getTitle() : $content->getTitle(),
+            'title' => $includeCourseName ? $course->getTitle() : htmlentities($content->getTitle()),
             'type' => $content->getContentType(),
             'class' => "update update_" . $content->getContentType(),
             'img'   => "/modules/courses/images/content_" . $content->getContentType() . $this->imageExt
@@ -126,7 +126,7 @@ class CoursesWebModule extends WebModule {
             'type'      => $content->getContentType(),
         );
         $link = array(
-            'title' => $includeCourseName ? $course->getTitle() : $content->getTitle(),
+            'title' => $includeCourseName ? $course->getTitle() : htmlentities($content->getTitle()),
             'type' => $content->getContentType(),
             'class' => "update update_" . $content->getContentType(),
             'img'   => "/modules/courses/images/content_" . $content->getContentType() . $this->imageExt
