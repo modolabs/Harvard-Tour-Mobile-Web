@@ -582,7 +582,15 @@ class CoursesWebModule extends WebModule {
                 $items = array();
                 foreach ($sectionData['fields'] as $field=>$fieldData) {
                     if ($object = $this->getInfoObject(array_merge($fieldData, $options))) {
-                        if ($item = $this->formatDetailField($object, $field, $fieldData)) {
+                    
+                        if (isset($fieldData['title'])) { 
+                            //static value
+                            $item = $this->formatInfoDetail($fieldData['title'], $fieldData, $object);
+                        } else {
+                            $item = $this->formatDetailField($object, $field, $fieldData);
+                        }
+                        
+                        if ($item) {
                             $items[] = $item;
                         }
                     }
