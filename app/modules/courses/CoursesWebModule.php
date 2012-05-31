@@ -800,9 +800,10 @@ class CoursesWebModule extends WebModule {
         $group = $this->getArg('resourcesGroup', key($groupsConfig));
         $key = $this->getArg('key', '');  //particular type
         $this->assign('resourcesGroup', $group);
+        $maxItems = isset($groupsConfig[$group]['max_items']) ? $groupsConfig[$group]['max_items'] : 0;
         $options = array(
             'group'=>$group,
-            'limit'=>$groupsConfig[$group]['max_items'],
+            'limit'=>$maxItems,
             'key'  =>$key
         );
 
