@@ -1531,6 +1531,7 @@ class CoursesWebModule extends WebModule {
                 $javascripts = array();
                 $currentTab = $this->getArg('tab', key($tabsConfig));
                 $args = $this->args;
+                $args['ajax'] = true;
                 unset($args['_b']);
                 foreach($tabsConfig as $tabID => $tabData){
                     if ($this->showTab($tabID, $tabData)) {
