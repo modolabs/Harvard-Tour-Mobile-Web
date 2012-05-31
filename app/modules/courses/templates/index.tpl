@@ -8,6 +8,8 @@
     <div id="{$key}-tabbody">
     {if $currentTab == $key}
     {include file="findInclude:modules/courses/templates/$key.tpl"}
+    {else}
+    Loading...
     {/if}
     </div>
     {/capture}
