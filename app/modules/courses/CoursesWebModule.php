@@ -1317,7 +1317,7 @@ class CoursesWebModule extends WebModule {
                 $this->assign('description', $CourseArea->getDescription());
                 $this->assign('areas', $areasList);
                 $this->assign('courses', $coursesList);
-                $this->assign('hiddenArgs', array('area' => $area, 'term' => strval($term)));
+                $this->assign('hiddenArgs', array('area' => $area, 'term' => strval($this->Term)));
                 $this->assign('placeholder', $this->getLocalizedString("SEARCH_MODULE", $CourseArea->getTitle()));
 
                 break;
@@ -1336,7 +1336,7 @@ class CoursesWebModule extends WebModule {
                     $cookieParams = array(
                     	'title' => $course->getTitle(),
                         'id' => $course->getID(),
-                        'term'  => rawurlencode($Term->getID()),
+                        'term'  => rawurlencode($this->Term->getID()),
                         'area'    => rawurlencode($area),
                         'courseNumber' => rawurlencode($course->getField('courseNumber'))
                     );
@@ -1352,20 +1352,22 @@ class CoursesWebModule extends WebModule {
                 $tabsConfig = $this->getModuleSections('catalogcoursetabs');
                 $tabs = array();
                 $tabTypes = array();
+                $infoDetails = array();
                 foreach($tabsConfig as $tab => $tabData){
                     $tabs[] = $tab;
                     if (!isset($tabData['type'])) {
                         $tabData['type'] = 'details';
                     }
 
-                    $this->initializeForInfoTab($tab, array_merge($tabData, $options));
+                    $configName = $this->page . '-' . $tab;
+                    $infoDetails[$tab] = $this->formatCourseDetails($options, $configName);
                     $tabTypes[$tab] = $tabData['type'];
                 }
 
                 $this->enableTabs($tabs);
                 $this->assign('tabs',$tabs);
                 $this->assign('tabTypes',$tabTypes);
-                $this->assign('tabDetails', $this->infoDetails);
+                $this->assign('tabDetails', $infoDetails);
             	break;
 
             case 'catalogsection':
