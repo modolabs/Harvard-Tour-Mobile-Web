@@ -35,7 +35,7 @@ class CoursesWebModule extends WebModule {
         $options['taskID'] = $task->getID();
         $options['courseID'] = $course->getCommonID();
 
-        $link['url'] = $this->buildBreadcrumbURL('task', $options, true);
+        $link['url'] = $this->buildBreadcrumbURL('task', $options, !$this->ajaxContentLoad);
         $link['updated'] = implode("<br />", $subtitle);
 
         return $link;
@@ -68,7 +68,7 @@ class CoursesWebModule extends WebModule {
         $options = $this->getCourseOptions();
         $options['contentID'] = $content->getID();
         $options['type'] = $content->getContentType();
-        $link['url'] = $this->buildBreadcrumbURL('content', $options);
+        $link['url'] = $this->buildBreadcrumbURL('content', $options, !$this->ajaxContentLoad);
 
         return $link;
     }
@@ -113,7 +113,7 @@ class CoursesWebModule extends WebModule {
 
         $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
         $link['subtitle'] = implode("<br />", $subtitle);
-        $link['url'] = $this->buildBreadcrumbURL('content', $options);
+        $link['url'] = $this->buildBreadcrumbURL('content', $options, !$this->ajaxContentLoad);
         return $link;
     }
 
@@ -158,7 +158,7 @@ class CoursesWebModule extends WebModule {
 
         $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
         $link['subtitle'] = implode("<br />", $subtitle);
-        $link['url'] = $this->buildBreadcrumbURL('content', $options);
+        $link['url'] = $this->buildBreadcrumbURL('content', $options, !$this->ajaxContentLoad);
         return $link;
     }
 
@@ -412,9 +412,10 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function assignGroupLinks($tabPage, $groups, $defaultGroupOptions = array()){
+        $page = isset($defaultGroupOptions['page']) ? $defaultGroupOptions['page'] : $this->page;
         foreach ($groups as $groupIndex => $group) {
             $defaultGroupOptions[$tabPage . 'Group'] = $groupIndex;
-            $groupLinks[$groupIndex]['url'] = $this->buildBreadcrumbURL($this->page, $defaultGroupOptions, false);
+            $groupLinks[$groupIndex]['url'] = $this->buildBreadcrumbURL($page, $defaultGroupOptions, false);
             $groupLinks[$groupIndex]['title'] = $group['title'];
         }
         $tabCount = count($groups);
@@ -744,11 +745,12 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function getOptionsForTasks($options) {
-        $section = $this->page == 'index' ? 'alltasks' : 'tasks';
+        $page = isset($options['page']) ? $options['page'] : $this->page;
+        $section = $page == 'index' ? 'alltasks' : 'tasks';
         $taskGroups = $this->getModuleSections($section);
 
-        $groupOptions = array('tab'=>'tasks');
-        if ($this->page == 'course') {
+        $groupOptions = array('tab'=>'tasks', 'page'=>$page);
+        if (isset($options['course'])) {
             $groupOptions = array_merge($groupOptions, $this->getCourseOptions());
         }
 
@@ -780,10 +782,11 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function getOptionsForResources($options) {
+        $page = isset($options['page']) ? $options['page'] : $this->page;
         $groupsConfig = $this->getModuleSections('resources');
 
-        $groupOptions = array('tab'=>'resources');
-        if ($this->page == 'course') {
+        $groupOptions = array('tab'=>'resources','page'=>$page);
+        if (isset($options['course'])) {
             $groupOptions = array_merge($groupOptions, $this->getCourseOptions());
         }
 
@@ -1051,7 +1054,7 @@ class CoursesWebModule extends WebModule {
         }
         if($group == "date" && $pageSize && isset($resourcesLinks[0])) {
             $resource = $resourcesLinks[0];
-            $limitedItems = $this->paginateArray($resource['items'], $pageSize, "RESOURCES_DATE", $tab);
+            $limitedItems = $this->paginateArray($resource['items'], $pageSize, "RESOURCES_DATE", $this->getArg('tab'));
             $resourcesLinks[0]['items'] = $limitedItems;
             $resourcesLinks[0]['count'] = count($limitedItems);
         }
@@ -1486,13 +1489,14 @@ class CoursesWebModule extends WebModule {
                 $tabs = array();
                 $javascripts = array();
                 $args = $this->args;
-                unset($args['_b']);
+                $args['ajax'] = true;
+                $args['page'] = $this->page;
                 $currentTab = $this->getArg('tab', key($tabsConfig));
                 foreach($tabsConfig as $tabID => $tabData){
                     if ($this->showTab($tabID, $tabData)) {
                         if ($tabID == $currentTab) {
                             $method = "initialize" . $tabID;
-                            $this->$method(array('course'=>$course));
+                            $this->$method(array('course'=>$course,'page'=>$this->page));
                         } else {
                             $javascripts[$tabID] = sprintf("updateTab('%s','%s');", $tabID, rtrim(FULL_URL_BASE,'/') . $this->buildURL($tabID, $args, false));
                         }                        
@@ -1517,6 +1521,9 @@ class CoursesWebModule extends WebModule {
             case 'announcements':
             case 'info':
                 $options = array();
+                if ($page= $this->getArg('page')) {
+                    $options['page'] = $page;
+                }
                 if ($course = $this->getCourseFromArgs()) {
                     $options['course'] = $course;
                 }
@@ -1526,13 +1533,13 @@ class CoursesWebModule extends WebModule {
 
             case 'index':
                 $tabsConfig = $this->getModuleSections('indextabs');
-                $options = array();
+                $options = array('page'=>$this->page);
                 $tabs = array();
                 $javascripts = array();
                 $currentTab = $this->getArg('tab', key($tabsConfig));
                 $args = $this->args;
                 $args['ajax'] = true;
-                unset($args['_b']);
+                $args['page'] = $this->page;
                 foreach($tabsConfig as $tabID => $tabData){
                     if ($this->showTab($tabID, $tabData)) {
                         if ($tabID == $currentTab) {
