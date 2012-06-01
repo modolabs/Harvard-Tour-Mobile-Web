@@ -116,6 +116,10 @@ class MoodleCourseContentCourse extends CourseContentCourse {
         return null;
     }
 
+    public function getContentByParentId($options = array()){
+        throw new KurogoConfigurationException("Browse Tab not supported in Moodle. Please remove the Broswe tab from coursetabs.ini");
+    }
+
     public function getFileForContent($id, $options=array()) {
         if ($content = $this->getContentById($id, $options)) {
             $url = $content->getFileURL();
