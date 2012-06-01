@@ -1,0 +1,38 @@
+#footer {
+    display: none;
+}
+
+#term-selector {
+    overflow: hidden; /* make sure this has layout */
+}
+
+.courses-splitview {
+    -webkit-box-orient: horizontal;
+    -moz-box-orient: horizontal;
+    display: -webkit-box;
+    display: -moz-box;
+    height: 400px;
+    position: relative;
+}
+
+.courses-splitview-listcontainer {
+    height: 100%;
+    width: 300px;
+    position: relative;
+    border: 1px solid;
+    border-left: none;
+    border-bottom: none;
+}
+
+.courses-splitview-listcontainer > *,
+.courses-splitview-detailwrapper > * {
+    overflow: hidden;
+}
+
+.courses-splitview-detailwrapper {
+    height: 100%;
+    position: relative;
+    border-top: 1px solid;
+    -webkit-box-flex:1;
+    -moz-box-flex:1;
+}

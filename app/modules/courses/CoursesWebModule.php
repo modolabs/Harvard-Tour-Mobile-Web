@@ -239,7 +239,7 @@ class CoursesWebModule extends WebModule {
         }
         unset($options['course']);
 
-        $link['url'] = $this->buildBreadcrumbURL($page, $options);
+        $link['url'] = FULL_URL_PREFIX.ltrim($this->buildBreadcrumbURL($page, $options), '/');
         return $link;
     }
 
@@ -1194,6 +1194,16 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function initializeForPage() {
+        // Ajax loading and error strings
+        $this->addInlineJavascript('var AJAX_CONTENT_LOADING = "<div class=\"loading\">'.
+            $this->getLocalizedString('AJAX_CONTENT_LOADING').'</div>";');
+        $this->addInlineJavascript('var AJAX_CONTENT_LOAD_FAILED = "<div class=\"nonfocal\">'.
+            $this->getLocalizedString('AJAX_CONTENT_LOAD_FAILED').'</div>";');
+        
+        if ($this->pagetype == 'tablet') {
+            $this->addOnOrientationChange('moduleHandleWindowResize();');
+        }
+        
         switch($this->page) {
             case 'content':
             case 'download':
@@ -1566,7 +1576,7 @@ class CoursesWebModule extends WebModule {
                             $method = "initialize" . $tabID;
                             $this->$method(array('course'=>$course,'page'=>$this->page));
                         } else {
-                            $javascripts[$tabID] = sprintf("loadTab('%s','%s');", $tabID, rtrim(FULL_URL_BASE,'/') . $this->buildURL($tabID, $args, false));
+                            $javascripts[$tabID] = sprintf("loadTab('%s','%s');", $tabID, rtrim(FULL_URL_PREFIX,'/') . $this->buildURL($tabID, $args, false));
                         }
                         $tabs[] = $tabID;
                     }
@@ -1615,7 +1625,7 @@ class CoursesWebModule extends WebModule {
                             $method = "initialize" . $tabID;
                             $this->$method($options);
                         } else {
-                            $javascripts[$tabID] = sprintf("loadTab('%s','%s');", $tabID, rtrim(FULL_URL_BASE,'/') . $this->buildURL($tabID, $args, false));
+                            $javascripts[$tabID] = sprintf("loadTab('%s','%s');", $tabID, rtrim(FULL_URL_PREFIX,'/') . $this->buildURL($tabID, $args, false));
                         }
                         $tabs[] = $tabID;
 

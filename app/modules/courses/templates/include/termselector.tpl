@@ -12,7 +12,7 @@
 
 {if $session_isLoggedIn}
     {if count($sections) > 1}
-        <div class="header">
+        <div class="header" id="term-selector">
           <div id="category-switcher" class="category-mode">
             <form method="get" action="index" id="category-form">
               <table border="0" cellspacing="0" cellpadding="0">
