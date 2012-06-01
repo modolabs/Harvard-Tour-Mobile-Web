@@ -16,7 +16,7 @@ class CoursesWebModule extends WebModule {
     	$link = array(
             'title' =>$includeCourseName ? htmlentities($task->getTitle()) : $course->getTitle(),
     		'date' => $task->getDate() ? $task->getDate() : $task->getDueDate(),
-            'img'   => "/modules/courses/images/content_" . $task->getContentType() . $this->imageExt
+            'img'   => "/modules/courses/images/content_" . $task->getContentClass() . $this->imageExt
         );
 
         $subtitle = array();
@@ -48,7 +48,7 @@ class CoursesWebModule extends WebModule {
             'subtitle' => $content->getSubTitle(),
             'type'  => $content->getContentType(),
             'class' => "content content_" . $content->getContentType(),
-            'img'   => "/modules/courses/images/content_" . $content->getContentType() . $this->imageExt
+            'img'   => "/modules/courses/images/content_" . $content->getContentClass() . $this->imageExt
         );
 
         if($content->getPublishedDate()){
@@ -80,7 +80,7 @@ class CoursesWebModule extends WebModule {
             'title' => htmlentities($content->getTitle()),
             'type'  => $content->getContentType(),
             'class' => "content content_" . $content->getContentType(),
-            'img'   => "/modules/courses/images/content_" . $content->getContentType() . $this->imageExt
+            'img'   => "/modules/courses/images/content_" . $content->getContentClass() . $this->imageExt
         );
 
         $options = $this->getCourseOptions();
@@ -103,7 +103,7 @@ class CoursesWebModule extends WebModule {
             'title' => $includeCourseName ? $course->getTitle() : htmlentities($content->getTitle()),
             'type' => $content->getContentType(),
             'class' => "update update_" . $content->getContentType(),
-            'img'   => "/modules/courses/images/content_" . $content->getContentType() . $this->imageExt
+            'img'   => "/modules/courses/images/content_" . $content->getContentClass() . $this->imageExt
         );
         foreach (array('courseID') as $field) {
             if (isset($data[$field])) {
@@ -148,7 +148,7 @@ class CoursesWebModule extends WebModule {
             'title' => $includeCourseName ? $course->getTitle() : htmlentities($content->getTitle()),
             'type' => $content->getContentType(),
             'class' => "update update_" . $content->getContentType(),
-            'img'   => "/modules/courses/images/content_" . $content->getContentType() . $this->imageExt
+            'img'   => "/modules/courses/images/content_" . $content->getContentClass() . $this->imageExt
         );
         foreach (array('courseID') as $field) {
             if (isset($data[$field])) {
