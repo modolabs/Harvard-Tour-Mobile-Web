@@ -2,24 +2,15 @@
 
 {include file="findInclude:modules/courses/templates/include/termselector.tpl"}
 
-{$tabBodies=array()}
-{foreach $tabs as $key}
-    {capture name=tab assign="tabBody"}
-    <div id="{$key}-tabbody">
-    {if $currentTab == $key}
-    {include file="findInclude:modules/courses/templates/$key.tpl"}
-    {else}
-    Loading...
+{if $tabs}
+    {block name="indexTabs"}
+    {include file="findInclude:modules/courses/templates/indexTabs.tpl"}
+    {/block}
+{else}
+    {include file="findInclude:modules/courses/templates/include/nocourses.tpl"}
+    {if $catalogItems}
+        {include file="findInclude:common/templates/navlist.tpl" navListHeading=$courseCatalogText navlistItems=$catalogItems}
     {/if}
-    </div>
-    {/capture}
-
-    {$tabBodies[$key] = $tabBody}
-{/foreach}
-{block name="tabs"}
-<div id="tabscontainer">
-{include file="findInclude:common/templates/tabs.tpl" tabBodies=$tabBodies smallTabs=true}
-</div>
-{/block}
+{/if}
 
 {include file="findInclude:common/templates/footer.tpl"}
