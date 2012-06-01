@@ -132,7 +132,9 @@ class CoursesWebModule extends WebModule {
 
         $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
         $link['subtitle'] = implode("<br />", $subtitle);
-        $link['url'] = $this->buildBreadcrumbURL('content', $options, !$this->ajaxContentLoad);
+        if(!$content instanceOf UnsupportedCourseContent){
+            $link['url'] = $this->buildBreadcrumbURL('content', $options, !$this->ajaxContentLoad);
+        }
         return $link;
     }
 
@@ -177,7 +179,9 @@ class CoursesWebModule extends WebModule {
 
         $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
         $link['subtitle'] = implode("<br />", $subtitle);
-        $link['url'] = $this->buildBreadcrumbURL('content', $options, !$this->ajaxContentLoad);
+        if(!$content instanceOf UnsupportedCourseContent){
+            $link['url'] = $this->buildBreadcrumbURL('content', $options, !$this->ajaxContentLoad);
+        }
         return $link;
     }
 
