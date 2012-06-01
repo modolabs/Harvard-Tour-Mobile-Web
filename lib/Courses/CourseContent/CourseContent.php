@@ -86,14 +86,7 @@ abstract class CourseContent implements KurogoObject {
     }
 
     public function getContentClass(){
-        switch ($this->contentType) {
-            case 'file':
-                return $this->getContentMimeType();
-                break;
-            default:
-                return $this->getContentType();
-                break;
-        }
+        return $this->getContentType();
     }
 
     public function setTitle($title) {
@@ -127,11 +120,11 @@ abstract class CourseContent implements KurogoObject {
         }
         return $this->author;
     }
-    
+
     public function setAuthorID($authorID) {
         $this->authorID = $authorID;
     }
-    
+
     public function getAuthorID() {
         return $this->authorID;
     }
@@ -191,19 +184,19 @@ abstract class CourseContent implements KurogoObject {
             $this->attributes = $attribs;
         }
     }
-    
+
     public function getAttributes() {
         return $this->attributes;
     }
-    
+
     public function setAttribute($key, $value) {
         $this->attributes[$key] = $value;
     }
-    
+
     public function getAttribute($attrib) {
         return isset($this->attributes[$attrib]) ? $this->attributes[$attrib] : '';
     }
-    
+
     /**
      * Get viewMode.
      *
