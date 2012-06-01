@@ -895,13 +895,9 @@ class CoursesWebModule extends WebModule {
         $courseListings = $this->getModuleSections('courses');
         $courses = array();
 
-        foreach($courseListings as $id => $listing){
+        foreach($courseListings as $id => $listingOptions){
             if ($this->isLoggedIn()) {
-                if (isset($listing['types'])) {
-                    $options['types'] = $listing['types'];
-                }
-
-                $courses[$id] = array('heading'=>$listing['heading'], 'courses'=>$this->controller->getCourses($options));
+                $courses[$id] = array('heading'=>$listingOptions['heading'], 'courses'=>$this->controller->getCourses($listingOptions));
             }
         }
 
