@@ -1,5 +1,8 @@
 {if $updates}
 <ul class="nav">
+{if $previousURL}
+<li><a href="{$previousURL}" onclick="switchPage('updates','{$previousURL}'); return false;">{"UPDATE_PREV"|getLocalizedString:$previousCount}</a></li>
+{/if}
 {foreach $updates as $update}
 <li class="statusitem update update_{$update.type}">
   {if $update.url}
@@ -15,5 +18,8 @@
   {/if}
 </li>
 {/foreach}
+{if $nextURL}
+<li><a href="{$nextURL}" onclick="switchPage('updates','{$nextURL}'); return false;">{"UPDATE_NEXT"|getLocalizedString:$nextCount}</a></li>
+{/if}
 </ul>
 {/if}

@@ -10,7 +10,7 @@ class CoursesWebModule extends WebModule {
     protected $defaultModel = 'CoursesDataModel';
     protected $infoDetails = array();
     protected $Term;
-
+    protected $tab;
 
     public function linkForTask($task, CourseContentCourse $course, $includeCourseName=true) {
     	$link = array(
@@ -455,49 +455,36 @@ class CoursesWebModule extends WebModule {
         $this->assign($tabPage.'GroupLinks', $groupLinks);
     }
 
-    protected function paginateArray($contents, $limit, $localizedStem, $tab) {
-        $localizedPrev = strtoupper($localizedStem) . '_PREV';
-        $localizedNext = strtoupper($localizedStem) . '_NEXT';
+    protected function paginateArray($contents, $limit) {
         $totalItems = count($contents);
         $start = $this->getArg('start', 0);
         $previousURL = null;
         $nextURL = null;
+        
         if ($totalItems > $limit) {
             $args = $this->args;
-            $args['tab'] = strtolower($tab);
+            $args['tab'] = $this->tab;
             if ($start > 0) {
                 $args['start'] = $start - $limit;
                 $previousURL = $this->buildBreadcrumbURL($this->page, $args, false);
+                $this->assign('previousURL', $previousURL);
+                $this->assign('previousCount', $limit);
             }
 
             if (($totalItems - $start) > $limit) {
                 $args['start'] = $start + $limit;
                 $nextURL = $this->buildBreadcrumbURL($this->page, $args, false);
+                $num = $totalItems - $start - $limit;
+                if($num > $limit) {
+                    $num = $limit;
+                }
+                
+                $this->assign('nextURL', $nextURL);
+                $this->assign('nextCount', $num);
             }
         }
 
         $contents = array_slice($contents, $start, $limit);
-
-        if($previousURL) {
-            $title = $this->getLocalizedString($localizedPrev, $limit);
-            $link = array(
-                'title' => $title,
-                'url' => $previousURL,
-            );
-            array_unshift($contents, $link);
-        }
-        if($nextURL) {
-            $num = $totalItems - $start - $limit;
-            if($num > $limit) {
-                $num = $limit;
-            }
-            $title = $this->getLocalizedString($localizedNext, $num);
-            $link = array(
-                'title' => $title,
-                'url' => $nextURL,
-            );
-            array_push($contents, $link);
-        }
         return $contents;
     }
 
@@ -937,7 +924,7 @@ class CoursesWebModule extends WebModule {
             }
         }
         $announcementsLinks = $this->sortCourseContent($announcementsLinks, 'sortDate');
-        $announcementsLinks = $this->paginateArray($announcementsLinks, $this->getOptionalModuleVar('MAX_ANNOUNCEMENTS', 5), 'ANNOUNCEMENT', 'announcements');
+        $announcementsLinks = $this->paginateArray($announcementsLinks, $this->getOptionalModuleVar('MAX_ANNOUNCEMENTS', 5));
         $this->assign('announcementsLinks', $announcementsLinks);
         return true;
     }
@@ -964,7 +951,7 @@ class CoursesWebModule extends WebModule {
             }
         }
         $updatesLinks = $this->sortCourseContent($updatesLinks, 'sortDate');
-        $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 5), 'UPDATE', 'updates');
+        $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 5));
         $this->assign('updatesLinks', $updatesLinks);
         return true;
     }
@@ -1087,7 +1074,7 @@ class CoursesWebModule extends WebModule {
         }
         if($group == "date" && $pageSize && isset($resourcesLinks[0])) {
             $resource = $resourcesLinks[0];
-            $limitedItems = $this->paginateArray($resource['items'], $pageSize, "RESOURCES_DATE", $this->getArg('tab'));
+            $limitedItems = $this->paginateArray($resource['items'], $pageSize);
             $resourcesLinks[0]['items'] = $limitedItems;
             $resourcesLinks[0]['count'] = count($limitedItems);
         }
@@ -1569,10 +1556,10 @@ class CoursesWebModule extends WebModule {
                 $args = $this->args;
                 $args['ajax'] = true;
                 $args['page'] = $this->page;
-                $currentTab = $this->getArg('tab', key($tabsConfig));
+                $this->tab = $this->getArg('tab', key($tabsConfig));
                 foreach($tabsConfig as $tabID => $tabData){
                     if ($this->showTab($tabID, $tabData)) {
-                        if ($tabID == $currentTab) {
+                        if ($tabID == $this->tab) {
                             $method = "initialize" . $tabID;
                             $this->$method(array('course'=>$course,'page'=>$this->page));
                         } else {
@@ -1585,7 +1572,7 @@ class CoursesWebModule extends WebModule {
                 //@TODO enable javascript for loading content
                 $this->enableTabs($tabs, null, $javascripts);
                 $this->assign('tabs', $tabs);
-                $this->assign('currentTab', $currentTab);
+                $this->assign('currentTab', $this->tab);
                 break;
 
             case 'courses':
@@ -1615,13 +1602,13 @@ class CoursesWebModule extends WebModule {
                 $options = array('page'=>$this->page);
                 $tabs = array();
                 $javascripts = array();
-                $currentTab = $this->getArg('tab', key($tabsConfig));
+                $this->tab = $this->getArg('tab', key($tabsConfig));
                 $args = $this->args;
                 $args['ajax'] = true;
                 $args['page'] = $this->page;
                 foreach($tabsConfig as $tabID => $tabData){
                     if ($this->showTab($tabID, $tabData)) {
-                        if ($tabID == $currentTab) {
+                        if ($tabID == $this->tab) {
                             $method = "initialize" . $tabID;
                             $this->$method($options);
                         } else {
@@ -1635,7 +1622,7 @@ class CoursesWebModule extends WebModule {
                 if ($tabs) {
                     $this->enableTabs($tabs, null, $javascripts);
                     $this->assign('tabs', $tabs);
-                    $this->assign('currentTab', $currentTab);
+                    $this->assign('currentTab', $this->tab);
                 }
                 break;
 
