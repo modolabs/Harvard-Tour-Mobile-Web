@@ -10,6 +10,7 @@ class CoursesWebModule extends WebModule {
     protected $defaultModel = 'CoursesDataModel';
     protected $infoDetails = array();
     protected $Term;
+    protected $originalPage;
     protected $tab;
 
     public function linkForTask($task, CourseContentCourse $course, $includeCourseName=true) {
@@ -35,7 +36,7 @@ class CoursesWebModule extends WebModule {
         $options['taskID'] = $task->getID();
         $options['courseID'] = $course->getCommonID();
 
-        $link['url'] = $this->buildBreadcrumbURL('task', $options, !$this->ajaxContentLoad);
+        $link['url'] = $this->buildBreadcrumbURL('task', $options, $this->page != 'index');
         $link['updated'] = implode("<br />", $subtitle);
 
         return $link;
@@ -69,7 +70,7 @@ class CoursesWebModule extends WebModule {
         $options['type'] = $content->getContentType();
 
         if(!$content instanceOf UnsupportedCourseContent){
-            $link['url'] = $this->buildBreadcrumbURL('content', $options, !$this->ajaxContentLoad);
+            $link['url'] = $this->buildBreadcrumbURL('content', $options, $this->page != 'index');
         }
 
         return $link;
@@ -87,7 +88,7 @@ class CoursesWebModule extends WebModule {
         $options['contentID'] = $content->getID();
         $options['type'] = $content->getContentType();
         $options['tab'] = 'browse';
-        $link['url'] = $this->buildBreadcrumbURL('course', $options, !$this->ajaxContentLoad);
+        $link['url'] = $this->buildBreadcrumbURL($this->page, $options, false);
 
         return $link;
     }
@@ -133,7 +134,7 @@ class CoursesWebModule extends WebModule {
         $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
         $link['subtitle'] = implode("<br />", $subtitle);
         if(!$content instanceOf UnsupportedCourseContent){
-            $link['url'] = $this->buildBreadcrumbURL('content', $options, !$this->ajaxContentLoad);
+            $link['url'] = $this->buildBreadcrumbURL('content', $options, $this->page != 'index');
         }
         return $link;
     }
@@ -180,7 +181,7 @@ class CoursesWebModule extends WebModule {
         $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
         $link['subtitle'] = implode("<br />", $subtitle);
         if(!$content instanceOf UnsupportedCourseContent){
-            $link['url'] = $this->buildBreadcrumbURL('content', $options, !$this->ajaxContentLoad);
+            $link['url'] = $this->buildBreadcrumbURL('content', $options, $this->page != 'index');
         }
         return $link;
     }
@@ -1181,6 +1182,8 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function initializeForPage() {
+        $this->originalPage = $this->page;
+        
         // Ajax loading and error strings
         $this->addInlineJavascript('var AJAX_CONTENT_LOADING = "<div class=\"loading\">'.
             $this->getLocalizedString('AJAX_CONTENT_LOADING').'</div>";');
@@ -1563,6 +1566,7 @@ class CoursesWebModule extends WebModule {
                             $method = "initialize" . $tabID;
                             $this->$method(array('course'=>$course,'page'=>$this->page));
                         } else {
+                            $args['tab'] = $tabID;
                             $javascripts[$tabID] = sprintf("loadTab('%s','%s');", $tabID, rtrim(FULL_URL_PREFIX,'/') . $this->buildURL($tabID, $args, false));
                         }
                         $tabs[] = $tabID;
@@ -1587,14 +1591,18 @@ class CoursesWebModule extends WebModule {
             case 'browse':
             case 'info':
                 $options = array();
+                $_args = $this->args;
+                unset($this->args['ajax']);
                 if ($page= $this->getArg('page')) {
+                    $this->page = $page;
                     $options['page'] = $page;
                 }
                 if ($course = $this->getCourseFromArgs()) {
                     $options['course'] = $course;
                 }
-                $method = "initialize" . $this->page;
+                $method = "initialize" . $this->originalPage;
                 $this->$method($options);
+                $this->page = $this->originalPage;
                 break;
 
             case 'index':
