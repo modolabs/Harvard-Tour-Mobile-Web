@@ -869,6 +869,8 @@ class CoursesWebModule extends WebModule {
         foreach ($grades as $grade) {
             $gradesLinks[] = $this->linkForGrade($grade);
         }
+
+        $gradesLinks = $this->paginateArray($gradesLinks, $this->getOptionalModuleVar('MAX_GRADES', 5));
         $this->assign('gradesLinks',$gradesLinks);
     }
 
