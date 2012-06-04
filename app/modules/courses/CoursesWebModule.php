@@ -206,7 +206,11 @@ class CoursesWebModule extends WebModule {
             )
         );
 
-        $title = $this->showCourseNumber ? sprintf("(%s) %s", $course->getField('courseNumber'), $course->getTitle()) : $course->getTitle();
+        if($this->showCourseNumber && $course->getField('courseNumber')){
+            $title = sprintf("(%s) %s", $course->getField('courseNumber'), $course->getTitle());
+        }else{
+            $title = $course->getTitle();
+        }
         $link = array(
             'title' => $title
         );
@@ -284,8 +288,8 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
-    protected function pageLinkForValue($page, $value, $object) {    
-    
+    protected function pageLinkForValue($page, $value, $object) {
+
         $args = array_merge(
             $this->args,
             array('value'=>$value)
@@ -294,7 +298,7 @@ class CoursesWebModule extends WebModule {
             'title'=>$value,
             'url'=>$this->buildBreadcrumbURL($page, $args)
         );
-        
+
         return $link;
     }
 
