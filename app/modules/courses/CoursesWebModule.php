@@ -497,14 +497,14 @@ class CoursesWebModule extends WebModule {
         $this->assign('tabstripId', $tabPage.'-'.md5($this->buildURL($this->page, $this->args)));
     }
 
-    protected function paginateArray($contents, $limit, $options) {
+    protected function paginateArray($contents, $limit) {
         $totalItems = count($contents);
         $start = $this->getArg('start', 0);
         $previousURL = null;
         $nextURL = null;
 
         if ($totalItems > $limit) {
-            $args = $options;
+            $args = $this->args;
             $args['tab'] = $this->tab;
             if ($start > 0) {
                 $args['start'] = $start - $limit;
@@ -908,7 +908,7 @@ class CoursesWebModule extends WebModule {
             $gradesLinks[] = $this->linkForGrade($grade);
         }
 
-        $gradesLinks = $this->paginateArray($gradesLinks, $this->getOptionalModuleVar('MAX_GRADES', 5), $options);
+        $gradesLinks = $this->paginateArray($gradesLinks, $this->getOptionalModuleVar('MAX_GRADES', 5));
         $this->assign('gradesLinks',$gradesLinks);
     }
 
@@ -993,7 +993,7 @@ class CoursesWebModule extends WebModule {
             }
         }
         $announcementsLinks = $this->sortCourseContent($announcementsLinks, 'sortDate');
-        $announcementsLinks = $this->paginateArray($announcementsLinks, $this->getOptionalModuleVar('MAX_ANNOUNCEMENTS', 5), $options);
+        $announcementsLinks = $this->paginateArray($announcementsLinks, $this->getOptionalModuleVar('MAX_ANNOUNCEMENTS', 5));
         $this->assign('announcementsLinks', $announcementsLinks);
         return true;
     }
@@ -1020,7 +1020,7 @@ class CoursesWebModule extends WebModule {
             }
         }
         $updatesLinks = $this->sortCourseContent($updatesLinks, 'sortDate');
-        $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 5), $options);
+        $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 5));
         $this->assign('updatesLinks', $updatesLinks);
         return true;
     }
@@ -1143,7 +1143,7 @@ class CoursesWebModule extends WebModule {
         }
         if($group == "date" && $pageSize && isset($resourcesLinks[0])) {
             $resource = $resourcesLinks[0];
-            $limitedItems = $this->paginateArray($resource['items'], $pageSize, $options);
+            $limitedItems = $this->paginateArray($resource['items'], $pageSize);
             $resourcesLinks[0]['items'] = $limitedItems;
             $resourcesLinks[0]['count'] = count($limitedItems);
         }
