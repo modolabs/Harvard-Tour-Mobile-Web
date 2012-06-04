@@ -4,6 +4,8 @@ class GradeScore {
     protected $id;
     protected $date;
     protected $score;
+    protected $comment;
+    protected $status;
 
     public function getId() {
         return $this->id;
@@ -19,7 +21,7 @@ class GradeScore {
     }
 
     public function setDate($date) {
-        $this->date = $date;
+        $this->date = new DateTime('@'.$date);
         return $this;
     }
 
@@ -29,6 +31,28 @@ class GradeScore {
 
     public function setScore($score) {
         $this->score = $score;
+        return $this;
+    }
+
+    public function getComment()
+    {
+        return $this->comment;
+    }
+
+    public function setComment($comment)
+    {
+        $this->comment = $comment;
+        return $this;
+    }
+
+    public function getStatus()
+    {
+        return $this->status;
+    }
+
+    public function setStatus($status)
+    {
+        $this->status = $status;
         return $this;
     }
 }

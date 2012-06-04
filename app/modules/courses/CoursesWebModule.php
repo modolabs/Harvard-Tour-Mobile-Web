@@ -273,7 +273,7 @@ class CoursesWebModule extends WebModule {
         }elseif($content->getDateCreated()){
             $subtitle[] = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($content->getDateCreated()->format('U')));
         }
-        $subtitle[] = 'Grade: ' . number_format($content->getLatestGradeScore()->getScore()) . ' - Possible Points: ' . number_format($content->getPossiblePoints());
+        $subtitle[] = 'Grade: ' . number_format($content->getGrade()->getScore()) . ' - Possible Points: ' . number_format($content->getPossiblePoints());
 
         $link['subtitle'] = implode('<br/>', $subtitle);
 
