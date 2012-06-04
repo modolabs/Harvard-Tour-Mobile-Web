@@ -3,7 +3,7 @@
     {capture name=tab assign="tabBody"}
     <div id="{$key}-tabbody">
     {if $currentTab == $key}
-        {include file="findInclude:modules/courses/templates/$key.tpl"}
+        {include file="findInclude:modules/courses/templates/$key.tpl" ajaxContentLoad=true}
     {/if}
     </div>
     {/capture}
