@@ -284,6 +284,20 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    protected function pageLinkForValue($page, $value, $object) {    
+    
+        $args = array_merge(
+            $this->args,
+            array('value'=>$value)
+        );
+        $link = array(
+            'title'=>$value,
+            'url'=>$this->buildBreadcrumbURL($page, $args)
+        );
+        
+        return $link;
+    }
+
     protected function formatBytes($value) {
 		//needs integer
 		if (!preg_match('/^\d+$/', $value)) {
