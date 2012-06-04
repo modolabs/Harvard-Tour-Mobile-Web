@@ -438,7 +438,7 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function assignGroupLinks($tabPage, $groups, $defaultGroupOptions = array()){
-        $page = $this->page;
+        $page = $this->originalPage;
         foreach ($groups as $groupIndex => $group) {
             $defaultGroupOptions[$tabPage . 'Group'] = $groupIndex;
             $groupLinks[$groupIndex]['url'] = $this->buildBreadcrumbURL($page, $defaultGroupOptions, false);
