@@ -10,9 +10,9 @@ function switchPage(tab, contentURL) {
     loadTab(tab, contentURL, true);
 }
 
-function loadTab(tab, contentURL, force) {
+function loadTab(tabId, contentURL, force) {
     //console.log('loading ' + tab + ' from ' + contentURL);
-    var element = document.getElementById(tab + '-tabbody');
+    var element = document.getElementById(tabId+'-tabbody');
     
     if (force || !hasClass(element, 'loaded')) {
         element.innerHTML = AJAX_CONTENT_LOADING;

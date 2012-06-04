@@ -4,13 +4,18 @@
 <div id="tabletCourses" class="courses-splitview">
   <div id="coursesListWrapper" class="courses-splitview-listcontainer">
     <div id="courseList">
-      {include file="findInclude:modules/courses/templates/courses.tpl"}
+      {$courseLinkCount = 0}
+      {include file="findInclude:modules/courses/templates/include/courses.tpl"}
     </div>
   </div>
   <div id="courseDetailWrapper" class="courses-splitview-detailwrapper">
     <div id="courseDetail">
-      {include file="findInclude:modules/courses/templates/indexTabs.tpl"}
-    </div>
+      <div id="course_all_detail">
+        {include file="findInclude:modules/courses/templates/include/indexTabs.tpl"}
+      </div>
+      {for $i = 0 to ($courseLinkCount-1)}
+        <div id="course_{$i}_detail"></div>
+      {/for}
   </div>
 </div>
 {/block}

@@ -1,4 +1,5 @@
 {include file="findInclude:common/templates/header.tpl"}
+
 <h2 class="nonfocal">{$areaTitle}</h2>
 
 {include file="findInclude:common/templates/search.tpl" extraArgs=$hiddenArgs}

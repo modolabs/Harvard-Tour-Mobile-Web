@@ -1,4 +1,5 @@
 {include file="findInclude:common/templates/header.tpl"}
+
 <div class="nonfocal"><h2>{$taskTitle}</h2>
 <p class="smallprint">
 {if $taskDate}

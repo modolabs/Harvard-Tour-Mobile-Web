@@ -1,3 +1,5 @@
+{include file="findInclude:common/templates/header.tpl"}
+
 {block name="announcementsHeader"}{/block}
 {block name="announcementsList"}
 {if $announcementsLinks}
@@ -7,3 +9,5 @@
 {/if}
 {/block}
 {block name="announcementsFooter"}{/block}
+
+{include file="findInclude:common/templates/footer.tpl"}

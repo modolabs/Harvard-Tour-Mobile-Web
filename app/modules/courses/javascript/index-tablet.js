@@ -1,25 +1,44 @@
-function updateTabletDetail(contentURL) {
-    var element = document.getElementById('courseDetail');
+function updateTabletDetail(link, contentURL) {
+    var detailId = link.id+"_detail"
     
-    element.innerHTML = AJAX_CONTENT_LOADING;
+    var list = document.getElementById('coursesListWrapper');
+    var links = list ? list.getElementsByTagName('a') : [];
+    for (var i = 0; i < links.length; i++) {
+        removeClass(links[i], 'selected');
+    }
+    addClass(link, 'selected');
     
-    ajaxContentIntoContainer({ 
-        url: contentURL, // the url to get the page content from 
-        container: element, // the container to dump the content into 
-        timeout: 30, // how long to wait for the server before returning an error 
-        success: function() {
-            onAjaxContentLoad();
-        },
-        error: function(e) {
-            element.innerHTML = AJAX_CONTENT_LOAD_FAILED;
-            onAjaxContentLoad();
-        }
-    });
+    var detailContainer = document.getElementById('courseDetail');
+    var details = detailContainer ? detailContainer.childNodes : [];
+    for (var i = 0; i < details.length; i++) {
+        details[i].style.display = (details[i].id == detailId) ? "block" : "none";
+    }
 
+    if (!hasClass(link, 'loaded')) {
+        var element = document.getElementById(detailId);
+        
+        element.innerHTML = AJAX_CONTENT_LOADING;
+        
+        ajaxContentIntoContainer({ 
+            url: contentURL, // the url to get the page content from 
+            container: element, // the container to dump the content into 
+            timeout: 30, // how long to wait for the server before returning an error 
+            success: function() {
+                onAjaxContentLoad();
+            },
+            error: function(e) {
+                element.innerHTML = AJAX_CONTENT_LOAD_FAILED;
+                removeClass(link, 'loaded');
+                onAjaxContentLoad();
+            }
+        });
+        
+        addClass(link, 'loaded');
+    }
 }
 
-function showCourse(url) {
-    updateTabletDetail(url+'&ajax=1');
+function showCourse(link, url) {
+    updateTabletDetail(link, url+'&ajax=1');
 }
 
 var courseListScroller = null;
@@ -31,9 +50,8 @@ function moduleInit() {
     var detail = document.getElementById('courseDetailWrapper');
     if (!list || !detail) { return; } // safety check
     
-    containerScroller.destroy();
-    delete containerScroller;
-    containerScroller = null;
+    moduleProvidesScrollers = true;
+    
     document.getElementById('container').style.height = "100%";
     document.getElementById('container').style.overflow = "hidden";
     
