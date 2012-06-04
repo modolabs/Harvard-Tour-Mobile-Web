@@ -262,22 +262,24 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
-    protected function linkForGrade(GradeAssignment $content) {
-        $link = array();
+    protected function linkForGrade(GradeAssignment $gradeAssignment) {
+        $options = $this->getCourseOptions();
+        $options['gradeID'] = $gradeAssignment->getId();
 
-        $link['title'] = $content->getTitle();
+        $link = array();
+        $link['title'] = $gradeAssignment->getTitle();
 
         $subtitle = array();
-        if($content->getDateModified()){
-            $subtitle[] = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($content->getDateModified()->format('U')));
-        }elseif($content->getDateCreated()){
-            $subtitle[] = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($content->getDateCreated()->format('U')));
+        if($gradeAssignment->getDateModified()){
+            $subtitle[] = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($gradeAssignment->getDateModified()->format('U')));
+        }elseif($gradeAssignment->getDateCreated()){
+            $subtitle[] = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($gradeAssignment->getDateCreated()->format('U')));
         }
-        $subtitle[] = 'Grade: ' . number_format($content->getGrade()->getScore()) . ' - Possible Points: ' . number_format($content->getPossiblePoints());
+        $subtitle[] = 'Grade: ' . number_format($gradeAssignment->getGrade()->getScore()) . ' - Possible Points: ' . number_format($gradeAssignment->getPossiblePoints());
 
         $link['subtitle'] = implode('<br/>', $subtitle);
 
-        $link['url'] = $this->buildBreadcrumbURL('grade', array(), true);
+        $link['url'] = $this->buildBreadcrumbURL('grade', $options, true);
 
         return $link;
     }
@@ -1724,6 +1726,19 @@ class CoursesWebModule extends WebModule {
                 $this->assign('searchHeader', $this->getOptionalModuleVar('searchHeader','','catalog'));
                 break;
             case 'grade':
+                $gradeID = $this->getArg('gradeID');
+
+                if (!$course = $this->getCourseFromArgs()) {
+                    $this->redirectTo('index');
+                }
+
+                if (!$contentCourse = $course->getCourse('content')) {
+                    $this->redirectTo('index');
+                }
+
+                if (!$gradeAssignment = $contentCourse->getGradeById($gradeID)) {
+                    throw new KurogoDataException($this->getLocalizedString('ERROR_GRADE_NOT_FOUND'));
+                }
                 break;
         }
     }
