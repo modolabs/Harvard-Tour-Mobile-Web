@@ -662,6 +662,9 @@ class CoursesWebModule extends WebModule {
         foreach (array('title','subtitle','label') as $attrib) {
             if (isset($sectionData[$attrib.'field'])) {
                 $method = "get" . $sectionData[$attrib.'field'];
+                if (!is_callable(array($sectionItem, $method))) {
+                    throw new KurogoDataException("Method $method does not exist on " . get_class($sectionItem));
+                }
                 $sectionData[$attrib] = $sectionItem->$method();
             }
         }
@@ -670,6 +673,9 @@ class CoursesWebModule extends WebModule {
             $params = array();
             foreach ($sectionData['params'] as $param) {
                 $method = "get" . $param;
+                if (!is_callable(array($sectionItem, $method))) {
+                    throw new KurogoDataException("Method $method does not exist on " . get_class($sectionItem));
+                }
                 $params[$param] = $sectionItem->$method();
             }
             $sectionData['params'] = $params;
@@ -745,18 +751,24 @@ class CoursesWebModule extends WebModule {
             $modValue = $value;
             if (isset($info['value'])) {
                 $method = "get" . $info['value'];
+                if (!is_callable(array($object, $method))) {
+                    throw new KurogoDataException("Method $method does not exist on " . get_class($object));
+                }
                 $modValue = $object->$method();
             }
             $detail = array_merge(Kurogo::moduleLinkForValue($info['module'], $modValue, $this), $detail);
 
         } elseif (isset($info['page'])) {
-            $params = isset($info['params']) ? $info['params'] : array();
-            $options = array_merge($this->getCourseOptions(), $params);
+            $pageValue = $value;
+            if (isset($info['value'])) {
+                $method = "get" . $info['value'];
+                if (!is_callable(array($object, $method))) {
+                    throw new KurogoDataException("Method $method does not exist on " . get_class($object));
+                }
+                $pageValue = $object->$method();
+            }
 
-            $detail = array_merge($detail, array(
-                'title'=>$value,
-                'url'=>$this->buildBreadcrumbURL($info['page'], $options, true)
-            ));
+            $detail = array_merge($this->pageLinkForValue($info['page'], $pageValue, $object), $detail);
         }
 
         return $detail;
@@ -1594,6 +1606,9 @@ class CoursesWebModule extends WebModule {
                     if ($this->showTab($tabID, $tabData)) {
                         if ($tabID == $this->tab) {
                             $method = "initialize" . $tabID;
+                            if (!is_callable(array($this, $method))) {
+                                throw new KurogoDataException("Method $this does not exist on " . get_class($this));
+                            }
                             $this->$method(array('course'=>$course,'page'=>$this->page));
                         } else {
                             $args['tab'] = $tabID;
@@ -1631,6 +1646,10 @@ class CoursesWebModule extends WebModule {
                     $options['course'] = $course;
                 }
                 $method = "initialize" . $this->originalPage;
+                if (!is_callable(array($this, $method))) {
+                    throw new KurogoDataException("Method $method does not exist on " . get_class($this));
+                }
+
                 $this->$method($options);
                 $this->page = $this->originalPage;
                 break;
@@ -1648,6 +1667,9 @@ class CoursesWebModule extends WebModule {
                     if ($this->showTab($tabID, $tabData)) {
                         if ($tabID == $this->tab) {
                             $method = "initialize" . $tabID;
+                            if (!is_callable(array($this, $method))) {
+                                throw new KurogoDataException("Method $method does not exist on " . get_class($this));
+                            }
                             $this->$method($options);
                         } else {
                             $javascripts[$tabID] = sprintf("loadTab('%s','%s');", $tabID, rtrim(FULL_URL_PREFIX,'/') . $this->buildURL($tabID, $args, false));
