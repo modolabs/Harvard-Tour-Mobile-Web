@@ -4,14 +4,14 @@
 {if $resourcesLinks}
 {block name="groupSelector"}
 {if $resourcesGroupLinks}
-<ul class="tabstrip {$resourcesTabCount}tabs" id="resources-grouplist">
+<ul class="tabstrip {$resourcesTabCount}tabs" id="{$tabstripId}-tabstrip">
 {foreach $resourcesGroupLinks as $index => $groupLink}
-<li{if $resourcesGroup == $index} class="active"{/if} index="{$index}"><a href="{$groupLink.url}" onclick="return updateGroupTab('resources', '{$index}', '{$groupLink.url}');">{$groupLink.title}</a></li>
+<li{if $resourcesGroup == $index} class="active"{/if}><a href="{$groupLink.url}" onclick="updateGroupTab(this, '{$tabstripId}', '{$groupLink.url}'); return false;">{$groupLink.title}</a></li>
 {/foreach}
 </ul>
 {/if}
 {/block}
-<div id="resources-content">
+<div id="{$tabstripId}-content">
 {block name="resourcesList"}
 {foreach $resourcesLinks as $group}
     {if $group['url']}

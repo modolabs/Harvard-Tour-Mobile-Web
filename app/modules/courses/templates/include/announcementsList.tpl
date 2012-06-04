@@ -1,7 +1,8 @@
 {if $announcements}
+<div class="pager-container">
 <ul class="nav">
 {if $previousURL}
-<li><a href="{$previousURL}" onclick="switchPage('announcements','{$previousURL}'); return false;">{"ANNOUNCEMENT_PREV"|getLocalizedString:$previousCount}</a></li>
+<li><a href="{$previousURL}" onclick="switchPage(this, '{$previousURL}'); return false;">{"ANNOUNCEMENT_PREV"|getLocalizedString:$previousCount}</a></li>
 {/if}
 {foreach $announcements as $announcement}
 <li class="statusitem announcement announcement_{$announcement.type}">
@@ -15,7 +16,8 @@
 </li>
 {/foreach}
 {if $nextURL}
-<li><a href="{$nextURL}" onclick="switchPage('announcements','{$nextURL}'); return false;">{"ANNOUNCEMENT_NEXT"|getLocalizedString:$nextCount}</a></li>
+<li><a href="{$nextURL}" onclick="switchPage(this, '{$nextURL}'); return false;">{"ANNOUNCEMENT_NEXT"|getLocalizedString:$nextCount}</a></li>
 {/if}
 </ul>
+</div>
 {/if}

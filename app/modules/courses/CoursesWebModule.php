@@ -481,7 +481,7 @@ class CoursesWebModule extends WebModule {
         $page = $this->originalPage;
         foreach ($groups as $groupIndex => $group) {
             $defaultGroupOptions[$tabPage . 'Group'] = $groupIndex;
-            $groupLinks[$groupIndex]['url'] = $this->buildBreadcrumbURL($page, $defaultGroupOptions, false);
+            $groupLinks[$groupIndex]['url'] = rtrim(FULL_URL_PREFIX, '/').$this->buildBreadcrumbURL($page, $defaultGroupOptions, false);
             $groupLinks[$groupIndex]['title'] = $group['title'];
         }
         $tabCount = count($groups);
@@ -494,6 +494,7 @@ class CoursesWebModule extends WebModule {
         );
         $this->assign($tabPage.'TabCount', $tabCountMap[$tabCount]);
         $this->assign($tabPage.'GroupLinks', $groupLinks);
+        $this->assign('tabstripId', $tabPage.'-'.md5($this->buildURL($this->page, $this->args)));
     }
 
     protected function paginateArray($contents, $limit) {
@@ -507,14 +508,14 @@ class CoursesWebModule extends WebModule {
             $args['tab'] = $this->tab;
             if ($start > 0) {
                 $args['start'] = $start - $limit;
-                $previousURL = $this->buildBreadcrumbURL($this->originalPage, $args, false);
+                $previousURL = rtrim(FULL_URL_PREFIX, '/').$this->buildBreadcrumbURL($this->originalPage, $args, false);
                 $this->assign('previousURL', $previousURL);
                 $this->assign('previousCount', $limit);
             }
 
             if (($totalItems - $start) > $limit) {
                 $args['start'] = $start + $limit;
-                $nextURL = $this->buildBreadcrumbURL($this->originalPage, $args, false);
+                $nextURL = rtrim(FULL_URL_PREFIX, '/').$this->buildBreadcrumbURL($this->originalPage, $args, false);
                 $num = $totalItems - $start - $limit;
                 if($num > $limit) {
                     $num = $limit;

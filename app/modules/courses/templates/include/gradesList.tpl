@@ -1,7 +1,8 @@
 {if $grades}
+<div class="pager-container">
 <ul class="nav">
 {if $previousURL}
-<li><a href="{$previousURL}" onclick="switchPage('grades','{$previousURL}'); return false;">{"GRADE_PREV"|getLocalizedString:$previousCount}</a></li>
+<li><a href="{$previousURL}" onclick="switchPage(this, '{$previousURL}'); return false;">{"GRADE_PREV"|getLocalizedString:$previousCount}</a></li>
 {/if}
 {foreach $grades as $grade}
 <li class="statusitem update update_{$grade.type}">
@@ -19,7 +20,8 @@
 </li>
 {/foreach}
 {if $nextURL}
-<li><a href="{$nextURL}" onclick="switchPage('grades','{$nextURL}'); return false;">{"GRADE_NEXT"|getLocalizedString:$nextCount}</a></li>
+<li><a href="{$nextURL}" onclick="switchPage(this, '{$nextURL}'); return false;">{"GRADE_NEXT"|getLocalizedString:$nextCount}</a></li>
 {/if}
 </ul>
+</div>
 {/if}
