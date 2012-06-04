@@ -6,4 +6,5 @@
 {block name="resources"}
 {include file="findInclude:common/templates/results.tpl" results=$resources}
 {/block}
+
 {include file="findInclude:common/templates/footer.tpl"}

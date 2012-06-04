@@ -3,11 +3,9 @@
 {$tabBodies=array()}
 {foreach $tabs as $key}
     {capture name=tab assign="tabBody"}
-    <div id="{$key}-tabbody">
-    {if $currentTab == $key}
+      {if $currentTab == $key}
         {include file="findInclude:modules/courses/templates/$key.tpl"}
-    {/if}
-    </div>
+      {/if}
     {/capture}
 
     {$tabBodies[$key] = $tabBody}

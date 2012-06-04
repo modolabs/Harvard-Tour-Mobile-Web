@@ -1,4 +1,5 @@
 {include file="findInclude:common/templates/header.tpl"}
+
 {include file="findInclude:modules/courses/templates/include/coursedetailhead.tpl"}
 {$tabBodies=array()}
 {foreach $tabs as $key}

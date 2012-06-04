@@ -1,3 +1,5 @@
+{include file="findInclude:common/templates/header.tpl"}
+
 {block name="gradesHeader"}{/block}
 {block name="gradesList"}
 {if $gradesLinks}
@@ -7,3 +9,5 @@
 {/if}
 {/block}
 {block name="gradesFooter"}{/block}
+
+{include file="findInclude:common/templates/footer.tpl"}

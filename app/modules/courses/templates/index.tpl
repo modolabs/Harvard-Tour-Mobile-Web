@@ -4,7 +4,7 @@
 
 {if $tabs}
     {block name="indexTabs"}
-    {include file="findInclude:modules/courses/templates/indexTabs.tpl"}
+    {include file="findInclude:modules/courses/templates/include/indexTabs.tpl"}
     {/block}
 {else}
     {include file="findInclude:modules/courses/templates/include/nocourses.tpl"}

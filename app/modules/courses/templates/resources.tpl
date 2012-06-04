@@ -1,3 +1,5 @@
+{include file="findInclude:common/templates/header.tpl"}
+
 {block name="resourcesHeader"}{/block}
 {if $resourcesLinks}
 {block name="groupSelector"}
@@ -24,3 +26,5 @@
 <p>{"NO_RESOURCES"|getLocalizedString}</p>
 {/if}
 {block name="resourcesFooter"}{/block}
+
+{include file="findInclude:common/templates/footer.tpl"}

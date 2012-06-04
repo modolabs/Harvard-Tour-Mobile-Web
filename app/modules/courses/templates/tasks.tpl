@@ -1,3 +1,5 @@
+{include file="findInclude:common/templates/header.tpl"}
+
 {block name="tasksHeader"}{/block}
 {block name="tasksList"}
 {if $tasks}
@@ -21,3 +23,5 @@
 {/if}
 {/block}
 {block name="tasksFooter"}{/block}
+
+{include file="findInclude:common/templates/footer.tpl"}

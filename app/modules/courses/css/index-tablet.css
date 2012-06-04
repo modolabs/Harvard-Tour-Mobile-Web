@@ -36,3 +36,11 @@
     -webkit-box-flex:1;
     -moz-box-flex:1;
 }
+
+.courses-splitview-listcontainer a.selected {
+    background: #444;
+    color: white;
+}
+.courses-splitview-listcontainer a.selected .smallprint {
+    color: white;
+}

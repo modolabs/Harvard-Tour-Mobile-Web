@@ -1,3 +1,5 @@
+{include file="findInclude:common/templates/header.tpl"}
+
 {block name="browseHeader"}{/block}
 {block name="browseList"}
 {if $browseLinks}
@@ -7,3 +9,5 @@
 {/if}
 {/block}
 {block name="browseFooter"}{/block}
+
+{include file="findInclude:common/templates/footer.tpl"}

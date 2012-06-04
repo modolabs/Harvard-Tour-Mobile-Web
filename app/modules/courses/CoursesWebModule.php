@@ -240,7 +240,7 @@ class CoursesWebModule extends WebModule {
         }
         unset($options['course']);
 
-        $link['url'] = FULL_URL_PREFIX.ltrim($this->buildBreadcrumbURL($page, $options), '/');
+        $link['url'] = rtrim(FULL_URL_PREFIX,'/').$this->buildBreadcrumbURL($page, $options);
         return $link;
     }
 
@@ -1633,7 +1633,7 @@ class CoursesWebModule extends WebModule {
                             $this->$method(array('course'=>$course,'page'=>$this->page));
                         } else {
                             $args['tab'] = $tabID;
-                            $javascripts[$tabID] = sprintf("loadTab('%s','%s');", $tabID, rtrim(FULL_URL_PREFIX,'/') . $this->buildURL($tabID, $args, false));
+                            $javascripts[$tabID] = sprintf("loadTab(tabId, '%s');", rtrim(FULL_URL_PREFIX,'/') . $this->buildURL($tabID, $args, false));
                         }
                         $tabs[] = $tabID;
                     }
@@ -1676,6 +1676,7 @@ class CoursesWebModule extends WebModule {
                 break;
 
             case 'index':
+            case 'allCourses':
                 $tabsConfig = $this->getModuleSections('indextabs');
                 $options = array('page'=>$this->page);
                 $tabs = array();
@@ -1693,7 +1694,7 @@ class CoursesWebModule extends WebModule {
                             }
                             $this->$method($options);
                         } else {
-                            $javascripts[$tabID] = sprintf("loadTab('%s','%s');", $tabID, rtrim(FULL_URL_PREFIX,'/') . $this->buildURL($tabID, $args, false));
+                            $javascripts[$tabID] = sprintf("loadTab(tabId, '%s');", rtrim(FULL_URL_PREFIX,'/') . $this->buildURL($tabID, $args, false));
                         }
                         $tabs[] = $tabID;
 
@@ -1706,7 +1707,7 @@ class CoursesWebModule extends WebModule {
                     $this->assign('currentTab', $this->tab);
                 }
                 break;
-
+            
             case 'search':
                 $searchTerms = $this->getArg('filter', false);
 
