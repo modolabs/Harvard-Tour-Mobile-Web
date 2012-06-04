@@ -1753,6 +1753,35 @@ class CoursesWebModule extends WebModule {
                 if (!$gradeAssignment = $contentCourse->getGradeById($gradeID)) {
                     throw new KurogoDataException($this->getLocalizedString('ERROR_GRADE_NOT_FOUND'));
                 }
+
+                $gradeContent = array();
+
+                $gradeContent['title'] = $gradeAssignment->getTitle();
+                if($gradeAssignment->getDueDate()){
+                    $gradeContent['dueDate'] = DateFormatter::formatDate($gradeAssignment->getDueDate(), DateFormatter::LONG_STYLE, DateFormatter::SHORT_STYLE);
+                }
+                if($gradeAssignment->getDateModified()){
+                    $gradeContent['dateModified'] = DateFormatter::formatDate($gradeAssignment->getDateModified(), DateFormatter::LONG_STYLE, DateFormatter::SHORT_STYLE);
+                }
+
+                if($gradeScore = $gradeAssignment->getGrade()){
+                    // Strict type checking in case score is 0.
+                    if($gradeScore->getScore() !== null){
+
+                        $gradeContent['grade'] = number_format($gradeScore->getScore());
+                    }
+
+                    if($gradeScore->getComment()){
+                        $gradeContent['comment'] = $gradeScore->getComment();
+                    }
+                }
+
+                // Strict type checking in case possible points is 0.
+                if($gradeAssignment->getPossiblePoints() !== null){
+                    $gradeContent['possiblePoints'] = number_format($gradeAssignment->getPossiblePoints());
+                }
+
+                $this->assign('grade', $gradeContent);
                 break;
         }
     }
