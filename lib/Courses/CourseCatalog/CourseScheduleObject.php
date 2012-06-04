@@ -3,6 +3,7 @@
 includePackage('DateTime');
 class CourseScheduleObject 
 {
+    protected $title;
     protected $days;
     protected $startTime;
     protected $endTime;
@@ -13,9 +14,22 @@ class CourseScheduleObject
     protected $range;
         
     public function __toString() {
+        return $this->getSchedule();
+    }
+    
+    public function getSchedule() {
+        $output = array();
         $output[] = $this->timeOutput();
         $output[] = $this->locationOutput(); 
         return implode(" - ", array_filter($output));
+    }
+    
+    public function setTitle($title) {
+        $this->title = $title;
+    }
+
+    public function getTitle() {
+        return $this->title;
     }
     
     protected function locationOutput() {
