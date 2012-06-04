@@ -467,14 +467,14 @@ class CoursesWebModule extends WebModule {
             $args['tab'] = $this->tab;
             if ($start > 0) {
                 $args['start'] = $start - $limit;
-                $previousURL = $this->buildBreadcrumbURL($this->page, $args, false);
+                $previousURL = $this->buildBreadcrumbURL($this->originalPage, $args, false);
                 $this->assign('previousURL', $previousURL);
                 $this->assign('previousCount', $limit);
             }
 
             if (($totalItems - $start) > $limit) {
                 $args['start'] = $start + $limit;
-                $nextURL = $this->buildBreadcrumbURL($this->page, $args, false);
+                $nextURL = $this->buildBreadcrumbURL($this->originalPage, $args, false);
                 $num = $totalItems - $start - $limit;
                 if($num > $limit) {
                     $num = $limit;
