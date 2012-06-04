@@ -262,6 +262,26 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    protected function linkForGrade(GradeAssignment $content) {
+        $link = array();
+
+        $link['title'] = $content->getTitle();
+
+        $subtitle = array();
+        if($content->getDateModified()){
+            $subtitle[] = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($content->getDateModified()->format('U')));
+        }elseif($content->getDateCreated()){
+            $subtitle[] = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($content->getDateCreated()->format('U')));
+        }
+        $subtitle[] = 'Grade: ' . number_format($content->getLatestGradeScore()->getScore()) . ' - Possible Points: ' . number_format($content->getPossiblePoints());
+
+        $link['subtitle'] = implode('<br/>', $subtitle);
+
+        $link['url'] = $this->buildBreadcrumbURL('grade', array(), true);
+
+        return $link;
+    }
+
     protected function formatBytes($value) {
 		//needs integer
 		if (!preg_match('/^\d+$/', $value)) {
@@ -461,7 +481,7 @@ class CoursesWebModule extends WebModule {
         $start = $this->getArg('start', 0);
         $previousURL = null;
         $nextURL = null;
-        
+
         if ($totalItems > $limit) {
             $args = $this->args;
             $args['tab'] = $this->tab;
@@ -479,7 +499,7 @@ class CoursesWebModule extends WebModule {
                 if($num > $limit) {
                     $num = $limit;
                 }
-                
+
                 $this->assign('nextURL', $nextURL);
                 $this->assign('nextCount', $num);
             }
@@ -841,7 +861,15 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function initializeGrades($options) {
-       // $grades = $contentCourse->getGrades(array('user'=>true));
+        $course = $options['course'];
+        $contentCourse = $course->getCourse('content');
+        $grades = $contentCourse->getGrades();
+
+        $gradesLinks = array();
+        foreach ($grades as $grade) {
+            $gradesLinks[] = $this->linkForGrade($grade);
+        }
+        $this->assign('gradesLinks',$gradesLinks);
     }
 
     protected function initializeInfo($options) {
@@ -1183,17 +1211,17 @@ class CoursesWebModule extends WebModule {
 
     protected function initializeForPage() {
         $this->originalPage = $this->page;
-        
+
         // Ajax loading and error strings
         $this->addInlineJavascript('var AJAX_CONTENT_LOADING = "<div class=\"loading\">'.
             $this->getLocalizedString('AJAX_CONTENT_LOADING').'</div>";');
         $this->addInlineJavascript('var AJAX_CONTENT_LOAD_FAILED = "<div class=\"nonfocal\">'.
             $this->getLocalizedString('AJAX_CONTENT_LOAD_FAILED').'</div>";');
-        
+
         if ($this->pagetype == 'tablet') {
             $this->addOnOrientationChange('moduleHandleWindowResize();');
         }
-        
+
         switch($this->page) {
             case 'content':
             case 'download':
@@ -1665,6 +1693,8 @@ class CoursesWebModule extends WebModule {
                 $this->assign('hiddenArgs', array('area' => $area, 'term' => strval($term)));
                 $this->assign('searchTerms', $searchTerms);
                 $this->assign('searchHeader', $this->getOptionalModuleVar('searchHeader','','catalog'));
+                break;
+            case 'grade':
                 break;
         }
     }
