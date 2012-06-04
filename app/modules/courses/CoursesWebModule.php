@@ -861,7 +861,12 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function initializeGrades($options) {
-        $course = $options['course'];
+        if (isset($options['course'])) {
+            $course = $options['course'];
+        } else {
+            throw new KurogoConfigurationException("Aggregated grades not currently supported");
+        }
+
         $contentCourse = $course->getCourse('content');
         $grades = $contentCourse->getGrades();
 
