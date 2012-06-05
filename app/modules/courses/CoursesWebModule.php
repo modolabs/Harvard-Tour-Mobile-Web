@@ -36,7 +36,7 @@ class CoursesWebModule extends WebModule {
         $options['taskID'] = $task->getID();
         $options['courseID'] = $course->getCommonID();
 
-        $link['url'] = $this->buildBreadcrumbURL('task', $options, !$this->ajaxContentLoad);
+        $link['url'] = $this->buildBreadcrumbURL('task', $options);
         $link['updated'] = implode("<br />", $subtitle);
 
         return $link;
@@ -70,7 +70,7 @@ class CoursesWebModule extends WebModule {
         $options['type'] = $content->getContentType();
 
         if (!$content instanceOf UnsupportedCourseContent) {
-            $link['url'] = $this->buildBreadcrumbURL('content', $options, !$this->ajaxContentLoad);
+            $link['url'] = $this->buildBreadcrumbURL('content', $options);
         }
 
         return $link;
@@ -88,7 +88,7 @@ class CoursesWebModule extends WebModule {
         $options['contentID'] = $content->getID();
         $options['type'] = $content->getContentType();
         $options['tab'] = 'browse';
-        $link['url'] = $this->buildBreadcrumbURL($this->page, $options, false);
+        $link['url'] = $this->buildAjaxBreadcrumbURL($this->page, $options, false);
 
         return $link;
     }
@@ -134,7 +134,7 @@ class CoursesWebModule extends WebModule {
         $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
         $link['subtitle'] = implode("<br />", $subtitle);
         if(!$content instanceOf UnsupportedCourseContent){
-            $link['url'] = $this->buildBreadcrumbURL('content', $options, !$this->ajaxContentLoad);
+            $link['url'] = $this->buildBreadcrumbURL('content', $options);
         }
         return $link;
     }
@@ -181,7 +181,7 @@ class CoursesWebModule extends WebModule {
         $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
         $link['subtitle'] = implode("<br />", $subtitle);
         if(!$content instanceOf UnsupportedCourseContent){
-            $link['url'] = $this->buildBreadcrumbURL('content', $options, !$this->ajaxContentLoad);
+            $link['url'] = $this->buildBreadcrumbURL('content', $options);
         }
         return $link;
     }
@@ -194,7 +194,7 @@ class CoursesWebModule extends WebModule {
         );
         $link = array(
             'title'=> $area->getTitle(),
-            'url'=>$this->buildBreadcrumbURL('catalogarea', $options, !$this->ajaxContentLoad)
+            'url'=>$this->buildBreadcrumbURL('catalogarea', $options)
         );
         return $link;
     }
@@ -206,9 +206,9 @@ class CoursesWebModule extends WebModule {
             )
         );
 
-        if($this->showCourseNumber && $course->getField('courseNumber')){
+        if ($this->showCourseNumber && $course->getField('courseNumber')) {
             $title = sprintf("(%s) %s", $course->getField('courseNumber'), $course->getTitle());
-        }else{
+        } else {
             $title = $course->getTitle();
         }
         $link = array(
@@ -243,8 +243,12 @@ class CoursesWebModule extends WebModule {
             $page = 'catalogcourse';
         }
         unset($options['course']);
-
-        $link['url'] = rtrim(FULL_URL_PREFIX,'/').$this->buildBreadcrumbURL($page, $options, !$this->ajaxContentLoad);
+        
+        if ($this->pagetype == 'tablet') {
+            $link['url'] = $this->buildAjaxBreadcrumbURL($page, $options);
+        } else {
+            $link['url'] = $this->buildBreadcrumbURL($page, $options);
+        }
         return $link;
     }
 
@@ -262,7 +266,7 @@ class CoursesWebModule extends WebModule {
         	$link['label'] = $course->getField('courseNumber');
         }
 
-        $link['url'] = $this->buildBreadcrumbURL('catalogcourse', $options, !$this->ajaxContentLoad);
+        $link['url'] = $this->buildBreadcrumbURL('catalogcourse', $options);
         return $link;
     }
 
@@ -274,16 +278,16 @@ class CoursesWebModule extends WebModule {
         $link['title'] = $gradeAssignment->getTitle();
 
         $subtitle = array();
-        if($gradeAssignment->getDateModified()){
+        if ($gradeAssignment->getDateModified()) {
             $subtitle[] = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($gradeAssignment->getDateModified()->format('U')));
-        }elseif($gradeAssignment->getDateCreated()){
+        } elseif ($gradeAssignment->getDateCreated()) {
             $subtitle[] = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($gradeAssignment->getDateCreated()->format('U')));
         }
         $subtitle[] = 'Grade: ' . number_format($gradeAssignment->getGrade()->getScore()) . ' - Possible Points: ' . number_format($gradeAssignment->getPossiblePoints());
 
         $link['subtitle'] = implode('<br/>', $subtitle);
 
-        $link['url'] = $this->buildBreadcrumbURL('grade', $options, !$this->ajaxContentLoad);
+        $link['url'] = $this->buildBreadcrumbURL('grade', $options);
 
         return $link;
     }
@@ -296,7 +300,7 @@ class CoursesWebModule extends WebModule {
         );
         $link = array(
             'title'=>$value,
-            'url'=>$this->buildBreadcrumbURL($page, $args, !$this->ajaxContentLoad)
+            'url'=>$this->buildBreadcrumbURL($page, $args)
         );
 
         return $link;
@@ -348,7 +352,7 @@ class CoursesWebModule extends WebModule {
                     $links[] = array(
                         'title'=>$title,
                         'subtitle'=>$subtitle,
-                        'url'=>$this->buildExternalURL($this->buildBreadcrumbURL('download', $options, false)),
+                        'url'=>$this->buildExternalURL($this->buildURL('download', $options)),
                     );
                 }elseif($downloadMode == $content::MODE_URL) {
                     $links[] = array(
@@ -437,7 +441,7 @@ class CoursesWebModule extends WebModule {
             'courseID'  => $this->getBookmarkParam($aBookmark, 'id'),
             'term'      => $this->getBookmarkParam($aBookmark, 'term'),
             'area'      => $this->getBookmarkParam($aBookmark, 'area'),
-        ), !$this->ajaxContentLoad);
+        ));
     }
 
     protected function getTitleForBookmark($aBookmark) {
@@ -481,7 +485,7 @@ class CoursesWebModule extends WebModule {
         $page = $this->originalPage;
         foreach ($groups as $groupIndex => $group) {
             $defaultGroupOptions[$tabPage . 'Group'] = $groupIndex;
-            $groupLinks[$groupIndex]['url'] = rtrim(FULL_URL_PREFIX, '/').$this->buildBreadcrumbURL($page, $defaultGroupOptions, false);
+            $groupLinks[$groupIndex]['url'] = $this->buildAjaxBreadcrumbURL($page, $defaultGroupOptions, false);
             $groupLinks[$groupIndex]['title'] = $group['title'];
         }
         $tabCount = count($groups);
@@ -508,14 +512,14 @@ class CoursesWebModule extends WebModule {
             $args['tab'] = $this->tab;
             if ($start > 0) {
                 $args['start'] = $start - $limit;
-                $previousURL = rtrim(FULL_URL_PREFIX, '/').$this->buildBreadcrumbURL($this->originalPage, $args, false);
+                $previousURL = $this->buildAjaxBreadcrumbURL($this->originalPage, $args, false);
                 $this->assign('previousURL', $previousURL);
                 $this->assign('previousCount', $limit);
             }
 
             if (($totalItems - $start) > $limit) {
                 $args['start'] = $start + $limit;
-                $nextURL = rtrim(FULL_URL_PREFIX, '/').$this->buildBreadcrumbURL($this->originalPage, $args, false);
+                $nextURL = $this->buildAjaxBreadcrumbURL($this->originalPage, $args, false);
                 $num = $totalItems - $start - $limit;
                 if($num > $limit) {
                     $num = $limit;
@@ -921,7 +925,7 @@ class CoursesWebModule extends WebModule {
             if ($registrationCourse->canDrop()) {
                 $links[] = array(
                     'title'=> $this->getLocalizedString('DROP_COURSE'),
-                    'url' => $this->buildBreadcrumbURL('dropclass', $options, !$this->ajaxContentLoad)
+                    'url' => $this->buildBreadcrumbURL('dropclass', $options)
                 );
             }
         }
@@ -1134,7 +1138,9 @@ class CoursesWebModule extends WebModule {
                 $courseOptions['group'] = $group;
                 $courseOptions['key'] = $groupTitle;
                 $courseOptions['tab'] = 'resources';
-                $resource['url'] = $this->buildBreadcrumbURL("resourceSeeAll", $courseOptions, true);
+                
+                // currently a separate page
+                $resource['url'] = $this->buildBreadcrumbURL("resourceSeeAll", $courseOptions);
             }
             $resourcesLinks[] = $resource;
         }
@@ -1210,13 +1216,13 @@ class CoursesWebModule extends WebModule {
 
             $catalogItems[] = array(
                 'title' => $this->getFeedTitle('catalog'),
-                'url'   => $this->buildBreadcrumbURL('catalog', array('term'=>strval($this->Term)), !$this->ajaxContentLoad)
+                'url'   => $this->buildBreadcrumbURL('catalog', array('term'=>strval($this->Term)))
             );
 
             if ($bookmarks = $this->getBookmarksForTerm($this->Term)) {
                 $catalogItems[] = array(
                     'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . " (" . count($bookmarks) . ")",
-                    'url'   => $this->buildBreadcrumbURL('bookmarks', array('term'=>strval($this->Term)), !$this->ajaxContentLoad),
+                    'url'   => $this->buildBreadcrumbURL('bookmarks', array('term'=>strval($this->Term))),
                 );
             }
 
@@ -1386,11 +1392,11 @@ class CoursesWebModule extends WebModule {
         		$links = array();
         		$links[] = array(
         			    'title'=>$this->getLocalizedString('DROP_CONFIRM'),
-        			    'url'=>$this->buildBreadcrumbURL('dropclass', $options, false)
+        			    'url'=>$this->buildBreadcrumbURL('dropclass', $options)
         		);
         		$links[] = array(
         		    'title'=>$this->getLocalizedString('DROP_CANCEL'),
-        		    'url'=>$this->buildBreadcrumbURL('info', $options, false)
+        		    'url'=>$this->buildBreadcrumbURL('info', $options)
         		);
 				$this->assign('links',$links);
         	    break;
@@ -1408,7 +1414,7 @@ class CoursesWebModule extends WebModule {
                 if ($bookmarks = $this->getBookmarksForTerm($this->Term)) {
                     $bookmarksList[] = array(
                         'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . " (" . count($bookmarks) . ")",
-                        'url'   => $this->buildBreadcrumbURL('bookmarks', array('term'=>strval($this->Term)), !$this->ajaxContentLoad),
+                        'url'   => $this->buildBreadcrumbURL('bookmarks', array('term' => strval($this->Term))),
                     );
                     $this->assign('bookmarksList', $bookmarksList);
                 }
@@ -1634,8 +1640,7 @@ class CoursesWebModule extends WebModule {
                             $this->originalPage = $this->page;
                         } else {
                             $args['tab'] = $tabID;
-                            $javascripts[$tabID] = "loadTab(tabId, '".
-                                rtrim(FULL_URL_PREFIX,'/').$this->buildBreadcrumbURL($tabID, $args, true)."');";
+                            $javascripts[$tabID] = "loadTab(tabId, '".$this->buildAjaxBreadcrumbURL($tabID, $args)."');";
                         }
                         $tabs[] = $tabID;
                     }
@@ -1696,8 +1701,7 @@ class CoursesWebModule extends WebModule {
                             }
                             $this->$method($options);
                         } else {
-                            $javascripts[$tabID] = "loadTab(tabId, '".
-                                rtrim(FULL_URL_PREFIX,'/').$this->buildBreadcrumbURL($tabID, $args, false)."');";
+                            $javascripts[$tabID] = "loadTab(tabId, '".$this->buildAjaxBreadcrumbURL($tabID, $args)."');";
                         }
                         $tabs[] = $tabID;
 
