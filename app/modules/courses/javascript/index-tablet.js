@@ -48,30 +48,36 @@ function moduleInit() {
     // no split view on this page
     var list = document.getElementById('coursesListWrapper');
     var detail = document.getElementById('courseDetailWrapper');
-    if (!list || !detail) { return; } // safety check
-    
-    moduleProvidesScrollers = true;
-    
-    document.getElementById('container').style.height = "100%";
-    document.getElementById('container').style.overflow = "hidden";
-    
-    document.getElementById('footer').style.display = 'none';
-    
-    courseListScroller = new iScroll('coursesListWrapper', { 
-        checkDOMChanges: false, 
-        hScrollbar: false,
-        desktopCompatibility: true,
-        bounce: false,
-        bounceLock: true
-    });
-    
-    courseDetailScroller = new iScroll('courseDetailWrapper', { 
-        checkDOMChanges: true, 
-        hScrollbar: false,
-        desktopCompatibility: true,
-        bounce: false,
-        bounceLock: true
-    });
+    var container = document.getElementById('container');
+    if (list && detail && container) {
+        // only splitview in logged-in state
+        moduleProvidesScrollers = true;
+        
+        container.style.height = "100%";
+        container.style.overflow = "hidden";
+        
+        var footer = document.getElementById('footer');
+        if (footer) {
+            // only suppress footer in logged in state
+            footer.style.display = "none";
+        }
+        
+        courseListScroller = new iScroll('coursesListWrapper', { 
+            checkDOMChanges: false, 
+            hScrollbar: false,
+            desktopCompatibility: true,
+            bounce: false,
+            bounceLock: true
+        });
+        
+        courseDetailScroller = new iScroll('courseDetailWrapper', { 
+            checkDOMChanges: true, 
+            hScrollbar: false,
+            desktopCompatibility: true,
+            bounce: false,
+            bounceLock: true
+        });
+    }
     
     moduleHandleWindowResize();
 }
@@ -80,11 +86,12 @@ function moduleHandleWindowResize() {
     var wrapper = document.getElementById('wrapper');
     var header = document.getElementById('term-selector');
     var splitview = document.getElementById('tabletCourses');
-    if (!header || !splitview) { return; }  // safety check
-    
-    var height = wrapper.offsetHeight - header.offsetHeight;
-    splitview.style.height = height+"px";
-    
+    if (wrapper && header && splitview) {
+        // logged in state
+        var height = wrapper.offsetHeight - header.offsetHeight;
+        splitview.style.height = height+"px";
+    }
+        
     if (courseListScroller) {
         courseListScroller.refresh();
     }

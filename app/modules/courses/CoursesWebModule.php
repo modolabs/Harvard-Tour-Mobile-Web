@@ -36,7 +36,7 @@ class CoursesWebModule extends WebModule {
         $options['taskID'] = $task->getID();
         $options['courseID'] = $course->getCommonID();
 
-        $link['url'] = $this->buildBreadcrumbURL('task', $options, $this->page != 'index');
+        $link['url'] = $this->buildBreadcrumbURL('task', $options, !$this->ajaxContentLoad);
         $link['updated'] = implode("<br />", $subtitle);
 
         return $link;
@@ -52,11 +52,11 @@ class CoursesWebModule extends WebModule {
             'img'   => "/modules/courses/images/content_" . $content->getContentClass() . $this->imageExt
         );
 
-        if($content->getPublishedDate()){
-	    	if($content->getAuthor()){
+        if ($content->getPublishedDate()){
+	    	if ($content->getAuthor()) {
 	    	    $updated = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $content->getAuthor(), $this->elapsedTime($content->getPublishedDate()->format('U')));
 	    		//$updated = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U')) .' by '.$content->getAuthor();
-	    	}else{
+	    	} else {
 	    		//$updated = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U'));
 	    		$updated = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($content->getPublishedDate()->format('U')));
 	    	}
@@ -69,8 +69,8 @@ class CoursesWebModule extends WebModule {
         $options['contentID'] = $content->getID();
         $options['type'] = $content->getContentType();
 
-        if(!$content instanceOf UnsupportedCourseContent){
-            $link['url'] = $this->buildBreadcrumbURL('content', $options, $this->page != 'index');
+        if (!$content instanceOf UnsupportedCourseContent) {
+            $link['url'] = $this->buildBreadcrumbURL('content', $options, !$this->ajaxContentLoad);
         }
 
         return $link;
@@ -134,7 +134,7 @@ class CoursesWebModule extends WebModule {
         $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
         $link['subtitle'] = implode("<br />", $subtitle);
         if(!$content instanceOf UnsupportedCourseContent){
-            $link['url'] = $this->buildBreadcrumbURL('content', $options, $this->page != 'index');
+            $link['url'] = $this->buildBreadcrumbURL('content', $options, !$this->ajaxContentLoad);
         }
         return $link;
     }
@@ -181,7 +181,7 @@ class CoursesWebModule extends WebModule {
         $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
         $link['subtitle'] = implode("<br />", $subtitle);
         if(!$content instanceOf UnsupportedCourseContent){
-            $link['url'] = $this->buildBreadcrumbURL('content', $options, $this->page != 'index');
+            $link['url'] = $this->buildBreadcrumbURL('content', $options, !$this->ajaxContentLoad);
         }
         return $link;
     }
@@ -194,7 +194,7 @@ class CoursesWebModule extends WebModule {
         );
         $link = array(
             'title'=> $area->getTitle(),
-            'url'=>$this->buildBreadcrumbURL('catalogarea',$options)
+            'url'=>$this->buildBreadcrumbURL('catalogarea', $options, !$this->ajaxContentLoad)
         );
         return $link;
     }
@@ -244,7 +244,7 @@ class CoursesWebModule extends WebModule {
         }
         unset($options['course']);
 
-        $link['url'] = rtrim(FULL_URL_PREFIX,'/').$this->buildBreadcrumbURL($page, $options);
+        $link['url'] = rtrim(FULL_URL_PREFIX,'/').$this->buildBreadcrumbURL($page, $options, !$this->ajaxContentLoad);
         return $link;
     }
 
@@ -262,7 +262,7 @@ class CoursesWebModule extends WebModule {
         	$link['label'] = $course->getField('courseNumber');
         }
 
-        $link['url'] = $this->buildBreadcrumbURL('catalogcourse', $options);
+        $link['url'] = $this->buildBreadcrumbURL('catalogcourse', $options, !$this->ajaxContentLoad);
         return $link;
     }
 
@@ -283,7 +283,7 @@ class CoursesWebModule extends WebModule {
 
         $link['subtitle'] = implode('<br/>', $subtitle);
 
-        $link['url'] = $this->buildBreadcrumbURL('grade', $options, true);
+        $link['url'] = $this->buildBreadcrumbURL('grade', $options, !$this->ajaxContentLoad);
 
         return $link;
     }
@@ -296,7 +296,7 @@ class CoursesWebModule extends WebModule {
         );
         $link = array(
             'title'=>$value,
-            'url'=>$this->buildBreadcrumbURL($page, $args)
+            'url'=>$this->buildBreadcrumbURL($page, $args, !$this->ajaxContentLoad)
         );
 
         return $link;
@@ -437,7 +437,7 @@ class CoursesWebModule extends WebModule {
             'courseID'  => $this->getBookmarkParam($aBookmark, 'id'),
             'term'      => $this->getBookmarkParam($aBookmark, 'term'),
             'area'      => $this->getBookmarkParam($aBookmark, 'area'),
-        ));
+        ), !$this->ajaxContentLoad);
     }
 
     protected function getTitleForBookmark($aBookmark) {
@@ -541,7 +541,7 @@ class CoursesWebModule extends WebModule {
 
     // sort type for content
     private function sortByField($contentA, $contentB) {
-        switch ($this->sortType){
+        switch ($this->sortType) {
             case 'sortDate':
                 $updateA_time = $contentA['sortDate'] ? $contentA['sortDate']->format('U') : 0;
                 $updateB_time = $contentB['sortDate'] ? $contentB['sortDate']->format('U') : 0;
@@ -550,7 +550,7 @@ class CoursesWebModule extends WebModule {
                 }
                 return ($updateA_time > $updateB_time) ? -1 : 1;
             default:
-                if($contentA->sortBy() == $contentB->sortBy()){
+                if ($contentA->sortBy() == $contentB->sortBy()) {
                     return 0;
                 }
                 return ($contentA->sortBy() > $contentB->sortBy()) ? -1 : 1;
@@ -577,8 +577,7 @@ class CoursesWebModule extends WebModule {
             //set the type - we need to handle list types appropriately
             $keyData['type'] = isset($keyData['type']) ? $keyData['type'] : 'text';
 
-            switch ($keyData['type'])
-            {
+            switch ($keyData['type']) {
                 case 'list':
                     $keyData['items'] = $key;
                     $sections[$section] = $keyData;
@@ -631,8 +630,7 @@ class CoursesWebModule extends WebModule {
 
     protected function formatCourseDetailSection($options, $sectionData) {
 
-        switch ($sectionData['type'])
-        {
+        switch ($sectionData['type']) {
             case 'fields':
                 $items = array();
                 foreach ($sectionData['fields'] as $field=>$fieldData) {
@@ -736,7 +734,7 @@ class CoursesWebModule extends WebModule {
             throw new KurogoDataException("Value is an object. This needs to be traced");
         }
 
-        if (strlen($value)==0) {
+        if (strlen($value) == 0) {
             return null;
         }
 
@@ -744,8 +742,7 @@ class CoursesWebModule extends WebModule {
 
         $type = isset($info['type']) ? $info['type'] : 'text';
         $detail['type'] = $type;
-        switch($type)
-        {
+        switch($type) {
             case 'email':
                 $detail['title'] = str_replace('@', '@&shy;', $detail['title']);
                 $detail['url'] = "mailto:$value";
@@ -843,7 +840,7 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function getOptionsForBrowse($options){
-        if($contentID = $this->getArg('contentID', '')){
+        if ($contentID = $this->getArg('contentID', '')) {
             return array('contentID'=>$contentID);
         }
         return array();
@@ -924,7 +921,7 @@ class CoursesWebModule extends WebModule {
             if ($registrationCourse->canDrop()) {
                 $links[] = array(
                     'title'=> $this->getLocalizedString('DROP_COURSE'),
-                    'url' => $this->buildBreadcrumbURL('dropclass', $options)
+                    'url' => $this->buildBreadcrumbURL('dropclass', $options, !$this->ajaxContentLoad)
                 );
             }
         }
@@ -955,7 +952,7 @@ class CoursesWebModule extends WebModule {
         $courseListings = $this->getModuleSections('courses');
         $courses = array();
 
-        foreach($courseListings as $id => $listingOptions){
+        foreach ($courseListings as $id => $listingOptions) {
             if ($this->isLoggedIn()) {
                 $courses[$id] = array('heading'=>$listingOptions['heading'], 'courses'=>$this->controller->getCourses($listingOptions));
             }
@@ -985,8 +982,8 @@ class CoursesWebModule extends WebModule {
         foreach($courses as $course){
             if ($contentCourse = $course->getCourse('content')) {
                 $options['course'] = $contentCourse;
-                if($items = $contentCourse->getAnnouncements($this->getOptionsForAnnouncements($options))) {
-                    foreach ($items as $item){
+                if ($items = $contentCourse->getAnnouncements($this->getOptionsForAnnouncements($options))) {
+                    foreach ($items as $item) {
                         $announcementsLinks[] = $this->linkForAnnouncement($item, $contentCourse, $showCourseTitle);
                     }
                 }
@@ -1035,15 +1032,15 @@ class CoursesWebModule extends WebModule {
 
         $tasks = array();
 
-        foreach($courses as $course){
+        foreach ($courses as $course) {
             if ($contentCourse = $course->getCourse('content')) {
                 $tasksOptions = $this->getOptionsForTasks($options);
                 $group = $tasksOptions['group'];
                 $groups = $contentCourse->getTasks($tasksOptions);
                 foreach ($groups as $groupTitle => $items){
-                    if($group == 'priority'){
+                    if ($group == 'priority') {
                         $title = $this->getLocalizedString('CONTENT_PRIORITY_TITLE_'.strtoupper($groupTitle));
-                    }else{
+                    } else {
                         $title = $groupTitle;
                     }
                     $task = array(
@@ -1051,9 +1048,9 @@ class CoursesWebModule extends WebModule {
                         'items' => $items,
                     );
 
-                    if(isset($tasks[$title])){
+                    if (isset($tasks[$title])) {
                         $tasks[$title]['items'] = array_merge($tasks[$title]['items'], $task['items']);
-                    }else{
+                    } else {
                         $tasks[$title]['items'] = $task['items'];
                     }
                 }
@@ -1061,19 +1058,19 @@ class CoursesWebModule extends WebModule {
         }
         //Sort aggregated content
         $sortedTasks = array();
-        foreach($tasks as $title => $group){
+        foreach ($tasks as $title => $group) {
             $items = $this->sortCourseContent($group['items']);
             $tasksLinks = array();
-            foreach($items as $item){
+            foreach ($items as $item) {
                 $tasksLinks[] = $this->linkForTask($item, $item->getContentCourse());
             }
             $task = array(
                 'title' => $title,
                 'items' => $tasksLinks,
             );
-            if(isset($sortedTasks[$title])){
+            if (isset($sortedTasks[$title])) {
                 $sortedTasks[$title] = array_merge($tasks[$title], $task);
-            }else{
+            } else {
                 $sortedTasks[$title] = $task;
             }
         }
@@ -1094,10 +1091,10 @@ class CoursesWebModule extends WebModule {
         $resourcesOptions = $this->getOptionsForResources($options);
         $groups = $contentCourse->getResources($resourcesOptions);
         $group = $resourcesOptions['group'];
-        if($group == "date") {
+        if ($group == "date") {
             $limit = 0;
             $pageSize = $resourcesOptions['limit'];
-        }else {
+        } else {
             $limit = $resourcesOptions['limit'];
         }
         $key = $resourcesOptions['key'];
@@ -1116,15 +1113,15 @@ class CoursesWebModule extends WebModule {
             $index = 0;
             $groupItems = array();
             foreach ($items as $item) {
-                if($index >= $limit && $limit != 0){
+                if ($index >= $limit && $limit != 0) {
                     break;
                 }
                 $groupItems[] = $this->linkForContent($item, $contentCourse);
                 $index++;
             }
-            if($group == 'type'){
+            if ($group == 'type') {
                 $title = $this->getLocalizedString('CONTENT_TYPE_TITLE_'.strtoupper($groupTitle));
-            }else{
+            } else {
                 $title = $groupTitle;
             }
             $resource = array(
@@ -1132,23 +1129,23 @@ class CoursesWebModule extends WebModule {
                 'items' => $groupItems,
                 'count' => count($items),
             );
-            if($group != "date" && count($items) > $limit && $limit != 0){
+            if ($group != "date" && count($items) > $limit && $limit != 0) {
                 $courseOptions = $this->getCourseOptions();
                 $courseOptions['group'] = $group;
                 $courseOptions['key'] = $groupTitle;
                 $courseOptions['tab'] = 'resources';
-                $resource['url'] = $this->buildBreadcrumbURL("resourceSeeAll", $courseOptions, false);
+                $resource['url'] = $this->buildBreadcrumbURL("resourceSeeAll", $courseOptions, true);
             }
             $resourcesLinks[] = $resource;
         }
-        if($group == "date" && $pageSize && isset($resourcesLinks[0])) {
+        if ($group == "date" && $pageSize && isset($resourcesLinks[0])) {
             $resource = $resourcesLinks[0];
             $limitedItems = $this->paginateArray($resource['items'], $pageSize);
             $resourcesLinks[0]['items'] = $limitedItems;
             $resourcesLinks[0]['count'] = count($limitedItems);
         }
 
-        $this->assign('resourcesLinks',$resourcesLinks);
+        $this->assign('resourcesLinks', $resourcesLinks);
         $this->assign('courseResourcesGroup', $group);
     }
 
@@ -1213,13 +1210,13 @@ class CoursesWebModule extends WebModule {
 
             $catalogItems[] = array(
                 'title' => $this->getFeedTitle('catalog'),
-                'url'   => $this->buildBreadcrumbURL('catalog', array('term'=>strval($this->Term)))
+                'url'   => $this->buildBreadcrumbURL('catalog', array('term'=>strval($this->Term)), !$this->ajaxContentLoad)
             );
 
             if ($bookmarks = $this->getBookmarksForTerm($this->Term)) {
                 $catalogItems[] = array(
                     'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . " (" . count($bookmarks) . ")",
-                    'url'   => $this->buildBreadcrumbURL('bookmarks', array('term'=>strval($this->Term))),
+                    'url'   => $this->buildBreadcrumbURL('bookmarks', array('term'=>strval($this->Term)), !$this->ajaxContentLoad),
                 );
             }
 
@@ -1309,14 +1306,14 @@ class CoursesWebModule extends WebModule {
                 $this->assign('contentType', $content->getContentType());
                 $this->assign('contentTitle', $content->getTitle());
                 $this->assign('contentDescription', $content->getDescription());
-                if($content->getAuthor()){
+                if ($content->getAuthor()) {
                     $this->assign('contentAuthor', 'Posted by ' . $content->getAuthor());
                 }
-                if($content->getPublishedDate()){
+                if ($content->getPublishedDate()) {
                     $this->assign('contentPublished', $this->elapsedTime($content->getPublishedDate()->format('U')));
                 }
 
-                if($content->getContentType() == "page") {
+                if ($content->getContentType() == "page") {
                     if($content->getViewMode() == $content::MODE_PAGE) {
                         $contentDataUrl = $contentCourse->getFileForContent($content->getID());
                         $contentData = file_get_contents($contentDataUrl);
@@ -1326,8 +1323,8 @@ class CoursesWebModule extends WebModule {
 
                 $links = $this->getContentLinks($content);
                 $this->assign('links', $links);
-
                 break;
+                
             case 'task':
                 $taskID = $this->getArg('taskID');
 
@@ -1345,10 +1342,10 @@ class CoursesWebModule extends WebModule {
 
                 $this->assign('taskTitle', $task->getTitle());
                 $this->assign('taskDescription', $task->getDescription());
-                if($task->getPublishedDate()){
+                if ($task->getPublishedDate()) {
                     $this->assign('taskDate', 'Published: '.DateFormatter::formatDate($task->getPublishedDate(), DateFormatter::LONG_STYLE, DateFormatter::NO_STYLE));
                 }
-                if($task instanceOf TaskCourseContent){
+                if ($task instanceOf TaskCourseContent) {
                     if ($task->getDueDate()) {
                         $this->assign('taskDueDate', DateFormatter::formatDate($task->getDueDate(), DateFormatter::MEDIUM_STYLE, DateFormatter::NO_STYLE));
                     }
@@ -1364,10 +1361,10 @@ class CoursesWebModule extends WebModule {
 
         		$students = $course->getStudents();
         		$links = array();
-        		foreach ($students as $student){
+        		foreach ($students as $student) {
         			$value = $student->getFullName();
         			$link = Kurogo::moduleLinkForValue('people', $value, $this, $student);
-        			if(!$link){
+        			if (!$link) {
         				$link = array(
                 			'title' => $value,
                         );
@@ -1399,7 +1396,6 @@ class CoursesWebModule extends WebModule {
         	    break;
 
             case 'catalog':
-
                 if ($areas = $this->controller->getCatalogAreas()) {
                     $areasList = array();
                     $areaOptions = array('term' => strval($this->Term));
@@ -1412,7 +1408,7 @@ class CoursesWebModule extends WebModule {
                 if ($bookmarks = $this->getBookmarksForTerm($this->Term)) {
                     $bookmarksList[] = array(
                         'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . " (" . count($bookmarks) . ")",
-                        'url'   => $this->buildBreadcrumbURL('bookmarks', array('term'=>strval($this->Term))),
+                        'url'   => $this->buildBreadcrumbURL('bookmarks', array('term'=>strval($this->Term)), !$this->ajaxContentLoad),
                     );
                     $this->assign('bookmarksList', $bookmarksList);
                 }
@@ -1500,7 +1496,7 @@ class CoursesWebModule extends WebModule {
                 $tabs = array();
                 $tabTypes = array();
                 $infoDetails = array();
-                foreach($tabsConfig as $tab => $tabData){
+                foreach ($tabsConfig as $tab => $tabData) {
                     $tabs[] = $tab;
                     if (!isset($tabData['type'])) {
                         $tabData['type'] = 'details';
@@ -1539,7 +1535,7 @@ class CoursesWebModule extends WebModule {
                 $tabsConfig = $this->getModuleSections('catalogsectiontabs');
                 $tabs = array();
                 $tabTypes = array();
-                foreach($tabsConfig as $tab => $tabData){
+                foreach ($tabsConfig as $tab => $tabData) {
                     $tabs[] = $tab;
                     if (!isset($tabData['type'])) {
                         $tabData['type'] = 'details';
@@ -1587,8 +1583,6 @@ class CoursesWebModule extends WebModule {
             	$this->assign('content', $content);
             	break;
 
-
-
             case 'bookmarks':
                 $bookmarks = array();
                 if($bookmarks = $this->getBookmarksForTerm($Term)) {
@@ -1628,7 +1622,7 @@ class CoursesWebModule extends WebModule {
                 $args['ajax'] = true;
                 $args['page'] = $this->page;
                 $this->tab = $this->getArg('tab', key($tabsConfig));
-                foreach($tabsConfig as $tabID => $tabData){
+                foreach ($tabsConfig as $tabID => $tabData) {
                     if ($this->showTab($tabID, $tabData)) {
                         if ($tabID == $this->tab) {
                             $method = "initialize" . $tabID;
@@ -1636,11 +1630,12 @@ class CoursesWebModule extends WebModule {
                                 throw new KurogoDataException("Method $this does not exist on " . get_class($this));
                             }
                             $this->originalPage = $tabID;
-                            $this->$method(array('course'=>$course,'page'=>$this->page));
+                            $this->$method(array('course' => $course, 'page' => $this->page));
                             $this->originalPage = $this->page;
                         } else {
                             $args['tab'] = $tabID;
-                            $javascripts[$tabID] = sprintf("loadTab(tabId, '%s');", rtrim(FULL_URL_PREFIX,'/') . $this->buildURL($tabID, $args, false));
+                            $javascripts[$tabID] = "loadTab(tabId, '".
+                                rtrim(FULL_URL_PREFIX,'/').$this->buildBreadcrumbURL($tabID, $args, true)."');";
                         }
                         $tabs[] = $tabID;
                     }
@@ -1701,7 +1696,8 @@ class CoursesWebModule extends WebModule {
                             }
                             $this->$method($options);
                         } else {
-                            $javascripts[$tabID] = sprintf("loadTab(tabId, '%s');", rtrim(FULL_URL_PREFIX,'/') . $this->buildURL($tabID, $args, false));
+                            $javascripts[$tabID] = "loadTab(tabId, '".
+                                rtrim(FULL_URL_PREFIX,'/').$this->buildBreadcrumbURL($tabID, $args, false)."');";
                         }
                         $tabs[] = $tabID;
 
