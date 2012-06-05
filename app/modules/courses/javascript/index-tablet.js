@@ -83,13 +83,18 @@ function moduleInit() {
 }
 
 function moduleHandleWindowResize() {
-    var wrapper = document.getElementById('wrapper');
-    var header = document.getElementById('term-selector');
     var splitview = document.getElementById('tabletCourses');
-    if (wrapper && header && splitview) {
+    var container = document.getElementById('containerinset');
+    if (container && splitview) {
         // logged in state
-        var height = wrapper.offsetHeight - header.offsetHeight;
-        splitview.style.height = height+"px";
+        var marginHeight = 0;
+        var elements = container.childNodes;
+        for (var i = 0; i < elements.length; i++) {
+            if (elements[i].id != splitview.id && !isNaN(elements[i].offsetHeight)) {
+                marginHeight += Math.max(0, elements[i].offsetHeight);
+            }
+        }
+        splitview.style.height = (container.offsetHeight - marginHeight)+"px";
     }
         
     if (courseListScroller) {
