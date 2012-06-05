@@ -295,6 +295,12 @@ class TemplateEngine extends Smarty {
         $this->stripWhitespaceReplace("@@@SMARTY:TRIM:PRE@@@", $preBlocks, $source);
         $this->stripWhitespaceReplace("@@@SMARTY:TRIM:SCRIPT@@@", $scriptBlocks, $source);
         $this->stripWhitespaceReplace("@@@SMARTY:TRIM:STYLE@@@", $styleBlocks, $source);
+    
+        if (KurogoWebBridge::shouldRewriteAssetPaths()) {
+            // Need to rewrite Kurogo assets to use filenames used in native templates
+            $rewriter = new KurogoWebBridge($smarty->getTemplateVars('configModule'));
+            $source = $rewriter->rewriteURLsToFilePaths($source);
+        }
         
         return $source;
     }
