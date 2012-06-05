@@ -243,7 +243,7 @@ class CoursesWebModule extends WebModule {
             $page = 'catalogcourse';
         }
         unset($options['course']);
-        
+
         if ($this->pagetype == 'tablet') {
             $link['url'] = $this->buildAjaxBreadcrumbURL($page, $options);
         } else {
@@ -278,12 +278,23 @@ class CoursesWebModule extends WebModule {
         $link['title'] = $gradeAssignment->getTitle();
 
         $subtitle = array();
-        if ($gradeAssignment->getDateModified()) {
-            $subtitle[] = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($gradeAssignment->getDateModified()->format('U')));
-        } elseif ($gradeAssignment->getDateCreated()) {
-            $subtitle[] = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($gradeAssignment->getDateCreated()->format('U')));
+        if ($gradeScore = $gradeAssignment->getGrade()) {
+            if($gradeScore->getExempt()){
+                $subtitle[] = $this->getLocalizedString('GRADE_STATUS', $this->getLocalizedString('GRADE_STATUS_EXEMPT'));
+            }else{
+                if($gradeScore->getStatus() == GradeScore::SCORE_STATUS_GRADED){
+                    $subtitle[] = $this->getLocalizedString('GRADE_STATUS', $this->getLocalizedString('GRADE_STATUS_GRADED'));
+                }elseif($gradeScore->getStatus() == GradeScore::SCORE_STATUS_GRADED){
+                    $subtitle[] = $this->getLocalizedString('GRADE_STATUS', $this->getLocalizedString('GRADE_STATUS_NEEDS_GRADING'));
+                }
+            }
         }
-        $subtitle[] = 'Grade: ' . number_format($gradeAssignment->getGrade()->getScore()) . ' - Possible Points: ' . number_format($gradeAssignment->getPossiblePoints());
+
+        if($gradeAssignment->getGrade()){
+            $subtitle[] = $this->getLocalizedString('GRADE_OUT_OF_POSSIBLE', number_format($gradeAssignment->getGrade()->getScore()), number_format($gradeAssignment->getPossiblePoints()));
+        }else{
+            $subtitle[] = $this->getLocalizedString('GRADE_POSSIBLE', number_format($gradeAssignment->getPossiblePoints()));
+        }
 
         $link['subtitle'] = implode('<br/>', $subtitle);
 
@@ -1138,7 +1149,7 @@ class CoursesWebModule extends WebModule {
                 $courseOptions['group'] = $group;
                 $courseOptions['key'] = $groupTitle;
                 $courseOptions['tab'] = 'resources';
-                
+
                 // currently a separate page
                 $resource['url'] = $this->buildBreadcrumbURL("resourceSeeAll", $courseOptions);
             }
@@ -1330,7 +1341,7 @@ class CoursesWebModule extends WebModule {
                 $links = $this->getContentLinks($content);
                 $this->assign('links', $links);
                 break;
-                
+
             case 'task':
                 $taskID = $this->getArg('taskID');
 
@@ -1714,7 +1725,7 @@ class CoursesWebModule extends WebModule {
                     $this->assign('currentTab', $this->tab);
                 }
                 break;
-            
+
             case 'search':
                 $searchTerms = $this->getArg('filter', false);
 
@@ -1758,7 +1769,7 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index');
                 }
 
-                if (!$gradeAssignment = $contentCourse->getGradeById($gradeID)) {
+                if (!$gradeAssignment = $contentCourse->getGradeById($gradeID, array('user'=>true))) {
                     throw new KurogoDataException($this->getLocalizedString('ERROR_GRADE_NOT_FOUND'));
                 }
 
@@ -1779,8 +1790,12 @@ class CoursesWebModule extends WebModule {
                         $gradeContent['grade'] = number_format($gradeScore->getScore());
                     }
 
-                    if($gradeScore->getComment()){
-                        $gradeContent['comment'] = $gradeScore->getComment();
+                    if($gradeScore->getInstructorComment()){
+                        $gradeContent['instructorComment'] = $gradeScore->getInstructorComment();
+                    }
+
+                    if($gradeScore->getStudentComment()){
+                        $gradeContent['studentComment'] = $gradeScore->getStudentComment();
                     }
                 }
 
