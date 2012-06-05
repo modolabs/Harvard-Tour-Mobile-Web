@@ -21,7 +21,18 @@
 {if $grade.possiblePoints !== null}
 <h3>Possible Points</h3>
 <p>{$grade.possiblePoints}</p>
-</div>
 {/if}
+
+{if $grade.instructorComment}
+<h3>Instructor Comment</h3>
+<p>{$grade.instructorComment}</p>
+{/if}
+
+{if $grade.studentComment}
+<h3>Student Comment</h3>
+<p>{$grade.studentComment}</p>
+{/if}
+
+</div>
 
 {include file="findInclude:common/templates/footer.tpl"}
