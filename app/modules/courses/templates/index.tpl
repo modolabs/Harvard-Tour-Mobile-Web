@@ -1,6 +1,8 @@
 {include file="findInclude:common/templates/header.tpl"}
 
+{block name="termselector"}
 {include file="findInclude:modules/courses/templates/include/termselector.tpl"}
+{/block}
 
 {if $tabs}
     {block name="indexTabs"}
