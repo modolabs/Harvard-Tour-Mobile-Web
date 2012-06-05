@@ -902,7 +902,7 @@ class CoursesWebModule extends WebModule {
         }
 
         $contentCourse = $course->getCourse('content');
-        $grades = $contentCourse->getGrades();
+        $grades = $contentCourse->getGrades(array('user'=>true));
 
         $gradesLinks = array();
         foreach ($grades as $grade) {
