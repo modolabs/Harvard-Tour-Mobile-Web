@@ -232,7 +232,7 @@ class CoursesWebModule extends WebModule {
                 foreach($courseTabs as $tab=>$data) {
                     if (in_array($tab, array('announcements','resources','tasks'))) {
                         $count = rand(0,5);
-                        $subtitle[] = sprintf('<img src="/modules/courses/images/updates_%s.png" height="16" width="16" valign="middle" alt="%s" title="%2$s" /> %d ', $tab, $this->getTitleForTab($tab, 'course'), $count);
+                        $subtitle[] = sprintf('<span class="updateitem"><img src="/modules/courses/images/updates_%s.png" height="16" width="16" valign="middle" alt="%s" title="%2$s" /> %d</span>', $tab, $this->getTitleForTab($tab, 'course'), $count);
                     }
                 }
             } else {
