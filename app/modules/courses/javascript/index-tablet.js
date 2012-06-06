@@ -13,7 +13,11 @@ function updateTabletDetail(link, contentURL) {
     for (var i = 0; i < details.length; i++) {
         details[i].style.display = (details[i].id == detailId) ? "block" : "none";
     }
-
+    
+    if (courseDetailScroller) {
+        courseDetailScroller.scrollTo(0, 0, 50);
+    }
+    
     if (!hasClass(link, 'loaded')) {
         var element = document.getElementById(detailId);
         
