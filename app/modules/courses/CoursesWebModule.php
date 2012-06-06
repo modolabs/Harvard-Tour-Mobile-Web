@@ -102,33 +102,28 @@ class CoursesWebModule extends WebModule {
         );
         $link = array(
             'title' => $includeCourseName ? $course->getTitle() : htmlentities($announcement->getTitle()),
-            'type' => $announcement->getContentType(),
-            'class' => "update update_" . $announcement->getContentType(),
         );
         foreach (array('courseID') as $field) {
             if (isset($data[$field])) {
                 $options[$field] = $data[$field];
             }
         }
-        $subtitle = array();
         
         if ($includeCourseName) {
-            $subtitle[] = "<div class=\"announcementTitle\">". htmlentities($announcement->getTitle()) . "</div>";
+            $link['announcementTitle'] = $announcement->getTitle();
         }
         
         $link['url'] = $this->buildBreadcrumbURL('content', $options);
 
         if ($this->pagetype == 'tablet') {
-            $body = $announcement->getDescription();
-            $maxLength = $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MAX_LENGTH', 250);
-            if (strlen($body) > $maxLength) {
-                $body = substr($body, 0, $maxLength) . "...";
-            } else {
+            $body = strip_tags($announcement->getDescription());
+            $maxLength = $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MAX_LENGTH', 500);
+            if (strlen($body) < $maxLength) {
                 unset($link['url']);
+            } else {
+                $body = substr($body, 0, $maxLength - 50) ."...";
             }
-            
-        
-            $subtitle[] = "<div class=\"announcementBody\">" . htmlentities($body) . "</div>";
+            $link['body'] = $body;
         }
 
 
@@ -139,11 +134,10 @@ class CoursesWebModule extends WebModule {
             } else {
                 $published = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $published);
             }
-            $subtitle[] = "<div class=\"announcementPublished\">$published</div>";
+            $link['published'] = $published;
         }
 
         $link['sortDate'] = $announcement->getPublishedDate() ? $announcement->getPublishedDate() : 0;
-        $link['subtitle'] = implode("", $subtitle);
         return $link;
     }
 
@@ -206,6 +200,9 @@ class CoursesWebModule extends WebModule {
         );
         return $link;
     }
+    
+    protected function getTitleForTab($page, $tab) {
+    }
 
     protected function linkForCourse(CourseInterface $course, $options=array()) {
 
@@ -228,22 +225,34 @@ class CoursesWebModule extends WebModule {
             $page = 'course';
             $subtitle = array();
             $options['course'] = $contentCourse;
-            if ($lastUpdateContent = $contentCourse->getLastUpdate()) {
-                $subtitle[] = $lastUpdateContent->getTitle();
-                if ($publishedDate = $lastUpdateContent->getPublishedDate()) {
-                    $published = $this->elapsedTime($publishedDate->format('U'));
-                    if ($lastUpdateContent->getAuthor()) {
-                        $published = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $lastUpdateContent->getAuthor(), $published);
-                    } else {
-                        $published = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $published);
+            
+            if ($this->pagetype=='tablet') {
+                $courseTabs = $this->getModuleSections('coursetabs');
+                foreach($courseTabs as $tab=>$data) {
+                    if (in_array($tab, array('announcements','updates','resources','tasks'))) {
+                        $count = rand(0,5);
+                        $subtitle[] = sprintf('<img src="/modules/courses/images/content_%s.png" height="16" width="16" valign="middle" alt="%s" title="%2$s" /> %d ', $tab, $this->getTitleForTab($tab, 'course'), $count);
                     }
-                    $subtitle[] = $published;
                 }
-                $link['type']  = $lastUpdateContent->getContentType();
-                $link['img']   = "/modules/courses/images/content_" . $lastUpdateContent->getContentType() . $this->imageExt;
+            } else {
+            
+                if ($lastUpdateContent = $contentCourse->getLastUpdate()) {
+                    $subtitle[] = $lastUpdateContent->getTitle();
+                    if ($publishedDate = $lastUpdateContent->getPublishedDate()) {
+                        $published = $this->elapsedTime($publishedDate->format('U'));
+                        if ($lastUpdateContent->getAuthor()) {
+                            $published = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $lastUpdateContent->getAuthor(), $published);
+                        } else {
+                            $published = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $published);
+                        }
+                        $subtitle[] = $published;
+                    }
+                    $link['type']  = $lastUpdateContent->getContentType();
+                    $link['img']   = "/modules/courses/images/content_" . $lastUpdateContent->getContentType() . $this->imageExt;
+                }
             }
 
-            $link['subtitle'] = implode("<br />", $subtitle);
+            $link['subtitle'] = implode("", $subtitle);
         } else {
             $page = 'catalogcourse';
         }
