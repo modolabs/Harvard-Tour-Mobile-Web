@@ -1620,7 +1620,7 @@ class CoursesWebModule extends WebModule {
 
             case 'bookmarks':
                 $bookmarks = array();
-                if($bookmarks = $this->getBookmarksForTerm($Term)) {
+                if($bookmarks = $this->getBookmarksForTerm($this->Term)) {
                     foreach ($bookmarks as $aBookmark) {
                         if ($aBookmark) {
                             // prevent counting empty string
