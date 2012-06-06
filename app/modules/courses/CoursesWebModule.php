@@ -104,7 +104,6 @@ class CoursesWebModule extends WebModule {
             'title' => $includeCourseName ? $course->getTitle() : htmlentities($announcement->getTitle()),
             'type' => $announcement->getContentType(),
             'class' => "update update_" . $announcement->getContentType(),
-            'img'   => "/modules/courses/images/content_" . $announcement->getContentClass() . $this->imageExt
         );
         foreach (array('courseID') as $field) {
             if (isset($data[$field])) {
