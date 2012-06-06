@@ -11,6 +11,7 @@
   <div id="courseDetailWrapper" class="courses-splitview-detailwrapper">
     <div id="courseDetail">
       <div id="course_all_detail">
+        <div class="nonfocal coursetitle"><h2>{$viewAllCoursesHeading}</h2></div>
         {include file="findInclude:modules/courses/templates/include/indexTabs.tpl"}
       </div>
       {for $i = 0 to ($courseLinkCount-1)}

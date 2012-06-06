@@ -6,6 +6,11 @@ function onAjaxContentLoad() {
     onDOMChange();
 }
 
+// needs to be overridden by tablet
+function scrollContentToTop() {
+    scrollToTop();
+}
+
 function switchPage(link, contentURL) {
     var element = link.parentNode;
     while (element) {
@@ -17,6 +22,8 @@ function switchPage(link, contentURL) {
     if (!element) { return; }
     
     element.innerHTML = AJAX_CONTENT_LOADING;
+    
+    scrollContentToTop();
     
     ajaxContentIntoContainer({ 
         url: contentURL+"&ajax=1", // the url to get the page content from 
