@@ -230,9 +230,9 @@ class CoursesWebModule extends WebModule {
             if ($this->pagetype=='tablet') {
                 $courseTabs = $this->getModuleSections('coursetabs');
                 foreach($courseTabs as $tab=>$data) {
-                    if (in_array($tab, array('announcements','updates','resources','tasks'))) {
+                    if (in_array($tab, array('announcements','resources','tasks'))) {
                         $count = rand(0,5);
-                        $subtitle[] = sprintf('<img src="/modules/courses/images/content_%s.png" height="16" width="16" valign="middle" alt="%s" title="%2$s" /> %d ', $tab, $this->getTitleForTab($tab, 'course'), $count);
+                        $subtitle[] = sprintf('<img src="/modules/courses/images/updates_%s.png" height="16" width="16" valign="middle" alt="%s" title="%2$s" /> %d ', $tab, $this->getTitleForTab($tab, 'course'), $count);
                     }
                 }
             } else {
