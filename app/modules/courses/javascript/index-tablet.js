@@ -91,7 +91,10 @@ function moduleHandleWindowResize() {
         var elements = container.childNodes;
         for (var i = 0; i < elements.length; i++) {
             if (elements[i].id != splitview.id && !isNaN(elements[i].offsetHeight)) {
-                marginHeight += Math.max(0, elements[i].offsetHeight);
+                // add up the heights of elements above and below the splitview
+                marginHeight += Math.max(0, elements[i].offsetHeight
+                    + parseFloat(getCSSValue(elements[i], 'margin-top'))
+                    + parseFloat(getCSSValue(elements[i], 'margin-bottom')));
             }
         }
         splitview.style.height = (container.offsetHeight - marginHeight)+"px";
