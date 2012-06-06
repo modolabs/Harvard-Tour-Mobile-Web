@@ -1,3 +1,11 @@
+function scrollContentToTop() {
+    if (courseDetailScroller) {
+        courseDetailScroller.scrollTo(0, 0, 50);
+    } else {
+        scrollToTop();
+    }
+}
+
 function updateTabletDetail(link, contentURL) {
     var detailId = link.id+"_detail"
     

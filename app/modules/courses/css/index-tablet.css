@@ -41,7 +41,19 @@
     color: white;
 }
 
+#courseDetail #tabs {
+    width: 100%;
+}
 #courseDetail #tabs li {
     width: auto;
     min-width: 20%;
+}
+#courseDetail .tabscount-6 #tabs li {
+    min-width: 16%;
+}
+#courseDetail .tabscount-7 #tabs li {
+    min-width: 14%;
+}
+#courseDetail .tabscount-8 #tabs li {
+    min-width: 12%;
 }

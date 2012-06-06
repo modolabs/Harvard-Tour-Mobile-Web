@@ -10,7 +10,7 @@
     {$tabBodies[$key] = $tabBody}
 {/foreach}
 {block name="tabs"}
-<div id="tabscontainer">
+<div id="tabscontainer" class="tabscount-{count($tabBodies)}">
 {include file="findInclude:common/templates/tabs.tpl" tabBodies=$tabBodies smallTabs=true}
 </div>
 {/block}
