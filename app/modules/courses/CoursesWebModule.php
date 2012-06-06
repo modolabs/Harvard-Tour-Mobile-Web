@@ -112,7 +112,7 @@ class CoursesWebModule extends WebModule {
         if ($includeCourseName) {
             $link['announcementTitle'] = $announcement->getTitle();
         }
-        
+
         $link['url'] = $this->buildBreadcrumbURL('content', $options);
 
         if ($this->pagetype == 'tablet') {
@@ -123,6 +123,7 @@ class CoursesWebModule extends WebModule {
             } else {
                 $body = substr($body, 0, $maxLength - 50) ."...";
             }
+
             $link['body'] = $body;
         }
 
@@ -302,10 +303,12 @@ class CoursesWebModule extends WebModule {
                     $subtitle[] = $this->getLocalizedString('GRADE_STATUS', $this->getLocalizedString('GRADE_STATUS_NEEDS_GRADING'));
                 }
             }
-        }
 
-        if($gradeAssignment->getGrade()){
-            $subtitle[] = $this->getLocalizedString('GRADE_OUT_OF_POSSIBLE', number_format($gradeAssignment->getGrade()->getScore()), number_format($gradeAssignment->getPossiblePoints()));
+            if($gradeScore->getScore()){
+                $subtitle[] = $this->getLocalizedString('GRADE_OUT_OF_POSSIBLE', number_format($gradeAssignment->getGrade()->getScore()), number_format($gradeAssignment->getPossiblePoints()));
+            }else{
+                $subtitle[] = $this->getLocalizedString('GRADE_POSSIBLE', number_format($gradeAssignment->getPossiblePoints()));
+            }
         }else{
             $subtitle[] = $this->getLocalizedString('GRADE_POSSIBLE', number_format($gradeAssignment->getPossiblePoints()));
         }
