@@ -4,8 +4,13 @@ class GradeScore {
     protected $id;
     protected $date;
     protected $score;
-    protected $comment;
-    protected $status;
+    protected $studentComment;
+    protected $status = GradeScore::SCORE_STATUS_GRADED;
+
+    const SCORE_STATUS_GRADED        = 'SCORE_STATUS_GRADED';
+    const SCORE_STATUS_NEEDS_GRADING = 'SCORE_STATUS_NEEDS_GRADING';
+    const SCORE_STATUS_EXEMPT        = 'SCORE_STATUS_EXEMPT';
+    const SCORE_STATUS_NO_GRADE      = 'SCORE_STATUS_NO_GRADE';
 
     public function getId() {
         return $this->id;
@@ -34,14 +39,14 @@ class GradeScore {
         return $this;
     }
 
-    public function getComment()
+    public function getStudentComment()
     {
-        return $this->comment;
+        return $this->studentComment;
     }
 
-    public function setComment($comment)
+    public function setStudentComment($comment)
     {
-        $this->comment = $comment;
+        $this->studentComment = $comment;
         return $this;
     }
 
