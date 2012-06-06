@@ -294,26 +294,16 @@ class CoursesWebModule extends WebModule {
 
         $subtitle = array();
         if ($gradeScore = $gradeAssignment->getGrade()) {
-            if($gradeScore->getExempt()){
-                $subtitle[] = $this->getLocalizedString('GRADE_STATUS', $this->getLocalizedString('GRADE_STATUS_EXEMPT'));
+            if($gradeScore->getStatus() == GradeScore::SCORE_STATUS_GRADED){
+                $subtitle = $this->getLocalizedString('GRADE_OUT_OF_POSSIBLE', number_format($gradeAssignment->getGrade()->getScore(), 2), $gradeAssignment->getPossiblePoints());
             }else{
-                if($gradeScore->getStatus() == GradeScore::SCORE_STATUS_GRADED){
-                    $subtitle[] = $this->getLocalizedString('GRADE_STATUS', $this->getLocalizedString('GRADE_STATUS_GRADED'));
-                }elseif($gradeScore->getStatus() == GradeScore::SCORE_STATUS_GRADED){
-                    $subtitle[] = $this->getLocalizedString('GRADE_STATUS', $this->getLocalizedString('GRADE_STATUS_NEEDS_GRADING'));
-                }
-            }
-
-            if($gradeScore->getScore()){
-                $subtitle[] = $this->getLocalizedString('GRADE_OUT_OF_POSSIBLE', number_format($gradeAssignment->getGrade()->getScore()), number_format($gradeAssignment->getPossiblePoints()));
-            }else{
-                $subtitle[] = $this->getLocalizedString('GRADE_POSSIBLE', number_format($gradeAssignment->getPossiblePoints()));
+                $subtitle = $this->getLocalizedString('GRADE_OUT_OF_POSSIBLE', $this->getLocalizedString($gradeScore->getStatus()), $gradeAssignment->getPossiblePoints());
             }
         }else{
-            $subtitle[] = $this->getLocalizedString('GRADE_POSSIBLE', number_format($gradeAssignment->getPossiblePoints()));
+            $subtitle = $this->getLocalizedString('GRADE_OUT_OF_POSSIBLE', $this->getLocalizedString('SCORE_STATUS_NO_GRADE'), $gradeAssignment->getPossiblePoints());
         }
 
-        $link['subtitle'] = implode('<br/>', $subtitle);
+        $link['subtitle'] = $subtitle;
 
         $link['url'] = $this->buildBreadcrumbURL('grade', $options);
 
@@ -1808,25 +1798,26 @@ class CoursesWebModule extends WebModule {
                     $gradeContent['dateModified'] = DateFormatter::formatDate($gradeAssignment->getDateModified(), DateFormatter::LONG_STYLE, DateFormatter::SHORT_STYLE);
                 }
 
-                if($gradeScore = $gradeAssignment->getGrade()){
-                    // Strict type checking in case score is 0.
-                    if($gradeScore->getScore() !== null){
 
-                        $gradeContent['grade'] = number_format($gradeScore->getScore());
-                    }
-
-                    if($gradeScore->getInstructorComment()){
-                        $gradeContent['instructorComment'] = $gradeScore->getInstructorComment();
+                if ($gradeScore = $gradeAssignment->getGrade()) {
+                    if($gradeScore->getStatus() == GradeScore::SCORE_STATUS_GRADED){
+                        $grade = number_format($gradeAssignment->getGrade()->getScore(), 2);
+                    }else{
+                        $grade = $this->getLocalizedString($gradeScore->getStatus());
                     }
 
                     if($gradeScore->getStudentComment()){
                         $gradeContent['studentComment'] = $gradeScore->getStudentComment();
                     }
+                }else{
+                    $grade = $this->getLocalizedString('SCORE_STATUS_NO_GRADE');
                 }
+
+                $gradeContent['grade'] = $grade;
 
                 // Strict type checking in case possible points is 0.
                 if($gradeAssignment->getPossiblePoints() !== null){
-                    $gradeContent['possiblePoints'] = number_format($gradeAssignment->getPossiblePoints());
+                    $gradeContent['possiblePoints'] = $gradeAssignment->getPossiblePoints();
                 }
 
                 $this->assign('grade', $gradeContent);

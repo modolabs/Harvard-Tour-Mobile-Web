@@ -13,6 +13,11 @@
 <p>{$grade.dateModified}</p>
 {/if}
 
+{if $grade.status}
+<h3>Status</h3>
+<p>{$grade.status}</p>
+{/if}
+
 {if $grade.grade !== null}
 <h3>Grade</h3>
 <p>{$grade.grade}</p>
@@ -23,13 +28,8 @@
 <p>{$grade.possiblePoints}</p>
 {/if}
 
-{if $grade.instructorComment}
-<h3>Instructor Comment</h3>
-<p>{$grade.instructorComment}</p>
-{/if}
-
 {if $grade.studentComment}
-<h3>Student Comment</h3>
+<h3>Feedback to Student</h3>
 <p>{$grade.studentComment}</p>
 {/if}
 

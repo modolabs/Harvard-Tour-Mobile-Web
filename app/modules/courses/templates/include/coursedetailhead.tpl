@@ -1,4 +1,4 @@
-<div class="nonfocal">
+<div class="nonfocal coursetitle">
 {block name="courseTitle"}
 {include file="findInclude:common/templates/bookmark.tpl" name=$cookieName item=$bookmarkItem exdate=$expireDate}
 <h2>{$courseID} {$courseTitle}</h2>
