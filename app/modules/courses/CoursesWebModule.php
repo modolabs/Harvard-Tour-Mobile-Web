@@ -1297,12 +1297,6 @@ class CoursesWebModule extends WebModule {
     protected function initializeForPage() {
         $this->originalPage = $this->page;
 
-        // Ajax loading and error strings
-        $this->addInlineJavascript('var AJAX_CONTENT_LOADING = "<div class=\"loading\">'.
-            $this->getLocalizedString('AJAX_CONTENT_LOADING').'</div>";');
-        $this->addInlineJavascript('var AJAX_CONTENT_LOAD_FAILED = "<div class=\"nonfocal\">'.
-            $this->getLocalizedString('AJAX_CONTENT_LOAD_FAILED').'</div>";');
-
         if ($this->pagetype == 'tablet') {
             $this->addOnOrientationChange('moduleHandleWindowResize();');
         }

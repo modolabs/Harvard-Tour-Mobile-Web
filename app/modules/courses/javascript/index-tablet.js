@@ -26,26 +26,20 @@ function updateTabletDetail(link, contentURL) {
         courseDetailScroller.scrollTo(0, 0, 50);
     }
     
-    if (!hasClass(link, 'loaded')) {
-        var element = document.getElementById(detailId);
-        
-        element.innerHTML = AJAX_CONTENT_LOADING;
-        
+    var element = document.getElementById(detailId);
+    if (element && !hasClass(element, 'loaded')) {
         ajaxContentIntoContainer({ 
             url: contentURL, // the url to get the page content from 
             container: element, // the container to dump the content into 
             timeout: 30, // how long to wait for the server before returning an error 
             success: function() {
+                addClass(element, 'loaded');
                 onAjaxContentLoad();
             },
             error: function(e) {
-                element.innerHTML = AJAX_CONTENT_LOAD_FAILED;
-                removeClass(link, 'loaded');
                 onAjaxContentLoad();
             }
         });
-        
-        addClass(link, 'loaded');
     }
 }
 

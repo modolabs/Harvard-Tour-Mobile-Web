@@ -21,8 +21,6 @@ function switchPage(link, contentURL) {
     }
     if (!element) { return; }
     
-    element.innerHTML = AJAX_CONTENT_LOADING;
-    
     scrollContentToTop();
     
     ajaxContentIntoContainer({ 
@@ -33,7 +31,6 @@ function switchPage(link, contentURL) {
             onAjaxContentLoad();
         },
         error: function(e) {
-            element.innerHTML = AJAX_CONTENT_LOAD_FAILED;
             onAjaxContentLoad();
         }
     });
@@ -44,8 +41,6 @@ function loadTab(tabId, contentURL) {
     var element = document.getElementById(tabId+'-tabbody');
     
     if (!hasClass(element, 'loaded')) {
-        element.innerHTML = AJAX_CONTENT_LOADING;
-        
         ajaxContentIntoContainer({ 
             url: contentURL, // the url to get the page content from 
             container: element, // the container to dump the content into 
@@ -55,7 +50,6 @@ function loadTab(tabId, contentURL) {
                 onAjaxContentLoad();
             },
             error: function(e) {
-                element.innerHTML = AJAX_CONTENT_LOAD_FAILED;
                 onAjaxContentLoad();
             }
         });
@@ -71,8 +65,6 @@ function updateGroupTab(clicked, tabId, contentURL) {
         items[i].className = items[i] == clicked.parentNode ? 'active' :'';
     }
     
-    element.innerHTML = AJAX_CONTENT_LOADING;
-
     ajaxContentIntoContainer({ 
         url: contentURL + '&ajax=1&ajaxgroup=1', // the url to get the page content from 
         container: element, // the container to dump the content into 
@@ -81,7 +73,6 @@ function updateGroupTab(clicked, tabId, contentURL) {
             onAjaxContentLoad();
         },
         error: function(e) {
-            element.innerHTML = AJAX_CONTENT_LOAD_FAILED;
             onAjaxContentLoad();
         }
     });
