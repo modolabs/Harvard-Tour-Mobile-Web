@@ -229,22 +229,19 @@ class CoursesWebModule extends WebModule {
             $page = 'course';
             $subtitle = array();
             $options['course'] = $contentCourse;
-            if ($lastAnnouncementContent = $contentCourse->getLastAnnouncement($this->getOptionsForAnnouncements($options))) {
-                $subtitle[] = $lastAnnouncementContent->getTitle();
-                if ($publishedDate = $lastAnnouncementContent->getPublishedDate()) {
+            if ($lastUpdateContent = $contentCourse->getLastUpdate()) {
+                $subtitle[] = $lastUpdateContent->getTitle();
+                if ($publishedDate = $lastUpdateContent->getPublishedDate()) {
                     $published = $this->elapsedTime($publishedDate->format('U'));
-                    if ($lastAnnouncementContent->getAuthor()) {
-                        //$published = '<span class="author">'. $lastAnnouncementContent->getAuthor() .', ' . $published . "</span>";
-                        $published = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $lastAnnouncementContent->getAuthor(), $published);
+                    if ($lastUpdateContent->getAuthor()) {
+                        $published = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $lastUpdateContent->getAuthor(), $published);
                     } else {
                         $published = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $published);
                     }
                     $subtitle[] = $published;
                 }
-                $link['type']  = $lastAnnouncementContent->getContentType();
-                $link['img']   = "/modules/courses/images/content_" . $lastAnnouncementContent->getContentType() . $this->imageExt;
-            } else {
-                $subtitle[] = $this->getLocalizedString('NO_ANNOUNCEMENTS');
+                $link['type']  = $lastUpdateContent->getContentType();
+                $link['img']   = "/modules/courses/images/content_" . $lastUpdateContent->getContentType() . $this->imageExt;
             }
 
             $link['subtitle'] = implode("<br />", $subtitle);

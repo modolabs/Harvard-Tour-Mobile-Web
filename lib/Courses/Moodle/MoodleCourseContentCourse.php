@@ -59,14 +59,6 @@ class MoodleCourseContentCourse extends CourseContentCourse {
         }
 	}
 
-    public function getLastAnnouncement($options){
-        if($announcements = $this->getAnnouncements($options)){
-            $announcements = $this->sortCourseContent($announcements, 'publishedDate');
-            return current($announcements);
-        }
-        return array();
-    }
-
     public function getAnnouncements($options=array()){
         if($retriever = $this->getRetriever()){
             return $retriever->getAnnouncements($this->getID(), $options);
