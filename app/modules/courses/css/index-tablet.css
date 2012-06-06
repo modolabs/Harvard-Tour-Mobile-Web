@@ -40,3 +40,8 @@
 .courses-splitview-listcontainer a.selected .smallprint {
     color: white;
 }
+
+#courseDetail #tabs li {
+    width: auto;
+    min-width: 20%;
+}
