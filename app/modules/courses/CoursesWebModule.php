@@ -1208,6 +1208,14 @@ class CoursesWebModule extends WebModule {
         }
         $this->assign('browseLinks', $browseLinks);
     }
+    
+    protected function getTabletViewAllHeadingText($options) {
+        return $this->getLocalizedString('COURSES_VIEW_ALL_CLASSES_TEXT');
+    }
+
+    protected function getTabletViewAllLinkText($options) {
+        return $this->getTabletViewAllHeadingText($options);
+    }
 
     protected function initializeCourses() {
 
@@ -1231,6 +1239,11 @@ class CoursesWebModule extends WebModule {
                                             'coursesLinks' => $coursesLinks);
             }
             $this->assign('coursesListLinks', $coursesListLinks);
+            if ($this->pagetype == 'tablet') {
+                $options['courses'] = $courses;
+                $this->assign('viewAllCoursesHeading', $this->getTabletViewAllHeadingText($options));
+                $this->assign('viewAllCoursesLink', $this->getTabletViewAllLinkText($options));
+            }
         } else {
             $loginLink = array(
                 'title' => $this->getLocalizedString('SIGN_IN_SITE', Kurogo::getSiteString('SITE_NAME')),
