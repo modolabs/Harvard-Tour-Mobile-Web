@@ -929,7 +929,7 @@ class CoursesWebModule extends WebModule {
             $gradesLinks[] = $this->linkForGrade($grade);
         }
 
-        $gradesLinks = $this->paginateArray($gradesLinks, $this->getOptionalModuleVar('MAX_GRADES', 5));
+        $gradesLinks = $this->paginateArray($gradesLinks, $this->getOptionalModuleVar('MAX_GRADES', 10));
         $this->assign('gradesLinks',$gradesLinks);
     }
 
@@ -1014,7 +1014,7 @@ class CoursesWebModule extends WebModule {
             }
         }
         $announcementsLinks = $this->sortCourseContent($announcementsLinks, 'sortDate');
-        $announcementsLinks = $this->paginateArray($announcementsLinks, $this->getOptionalModuleVar('MAX_ANNOUNCEMENTS', 5));
+        $announcementsLinks = $this->paginateArray($announcementsLinks, $this->getOptionalModuleVar('MAX_ANNOUNCEMENTS', 10));
         $this->assign('announcementsLinks', $announcementsLinks);
         return true;
     }
@@ -1041,7 +1041,7 @@ class CoursesWebModule extends WebModule {
             }
         }
         $updatesLinks = $this->sortCourseContent($updatesLinks, 'sortDate');
-        $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 5));
+        $updatesLinks = $this->paginateArray($updatesLinks, $this->getOptionalModuleVar('MAX_UPDATES', 10));
         $this->assign('updatesLinks', $updatesLinks);
         return true;
     }
