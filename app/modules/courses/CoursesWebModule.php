@@ -93,18 +93,18 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
-    public function linkForAnnouncement(CourseContent $content, CourseContentCourse $course, $includeCourseName=false){
-        $contentID = $content->getID();
+    public function linkForAnnouncement(AnnouncementCourseContent $announcement, CourseContentCourse $course, $includeCourseName=false){
+        $contentID = $announcement->getID();
         $options = array(
             'courseID'  => $course->getCommonID(),
             'contentID' => $contentID,
-            'type'      => $content->getContentType(),
+            'type'      => $announcement->getContentType(),
         );
         $link = array(
-            'title' => $includeCourseName ? $course->getTitle() : htmlentities($content->getTitle()),
-            'type' => $content->getContentType(),
-            'class' => "update update_" . $content->getContentType(),
-            'img'   => "/modules/courses/images/content_" . $content->getContentClass() . $this->imageExt
+            'title' => $includeCourseName ? $course->getTitle() : htmlentities($announcement->getTitle()),
+            'type' => $announcement->getContentType(),
+            'class' => "update update_" . $announcement->getContentType(),
+            'img'   => "/modules/courses/images/content_" . $announcement->getContentClass() . $this->imageExt
         );
         foreach (array('courseID') as $field) {
             if (isset($data[$field])) {
@@ -112,30 +112,39 @@ class CoursesWebModule extends WebModule {
             }
         }
         $subtitle = array();
+        
         if ($includeCourseName) {
-            $subtitle[] = $content->getTitle();
+            $subtitle[] = "<div class=\"announcementTitle\">". $announcement->getTitle() . "</div>";
+        }
+        
+        $link['url'] = $this->buildBreadcrumbURL('content', $options);
+
+        if ($this->pagetype == 'tablet') {
+            $body = $announcement->getDescription();
+            $maxLength = $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MAX_LENGTH', 250);
+            if (strlen($body) > $maxLength) {
+                $body = substr($body, 0, $maxLength) . "...";
+            } else {
+                unset($link['url']);
+            }
+            
+        
+            $subtitle[] = "<div class=\"announcementBody\">" . $body . "</div>";
         }
 
-        if ($content->getSubtitle()) {
-            $subtitle[] = $content->getSubTitle();
-        }
 
-        if ($content->getPublishedDate()){
-            $published = $this->elapsedTime($content->getPublishedDate()->format('U'));
-            if ($content->getAuthor()) {
-                $published = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $content->getAuthor(), $published);
-                //$published .= ' by '.$content->getAuthor();
+        if ($announcement->getPublishedDate()){
+            $published = $this->elapsedTime($announcement->getPublishedDate()->format('U'));
+            if ($announcement->getAuthor()) {
+                $published = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $announcement->getAuthor(), $published);
             } else {
                 $published = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $published);
             }
-            $subtitle[] = $published;
+            $subtitle[] = "<div class=\"announcementPublished\">$published</div>";
         }
 
-        $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
-        $link['subtitle'] = implode("<br />", $subtitle);
-        if(!$content instanceOf UnsupportedCourseContent){
-            $link['url'] = $this->buildBreadcrumbURL('content', $options);
-        }
+        $link['sortDate'] = $announcement->getPublishedDate() ? $announcement->getPublishedDate() : 0;
+        $link['subtitle'] = implode("", $subtitle);
         return $link;
     }
 
