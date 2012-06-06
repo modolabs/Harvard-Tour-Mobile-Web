@@ -974,6 +974,7 @@ class CoursesWebModule extends WebModule {
         $courses = array();
 
         foreach ($courseListings as $id => $listingOptions) {
+            $listingOptions = array_merge($options, $listingOptions);
             if ($this->isLoggedIn()) {
                 $courses[$id] = array('heading'=>$listingOptions['heading'], 'courses'=>$this->controller->getCourses($listingOptions));
             }
