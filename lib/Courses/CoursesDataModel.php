@@ -15,14 +15,18 @@ class CoursesDataModel extends DataModel {
         if ($this->termsRetriever) {
             return $this->termsRetriever->getAvailableTerms();
         } else {
-            return array(self::getCurrentTerm());
+            return array($this->getCurrentTerm());
         }
     }
     
-    protected function getCurrentTerm() {
+    public function getCurrentTerm() {
         if($this->currentTerm) {
             $term = $this->currentTerm;
-        }else {
+        } elseif ($this->termsRetriever) {
+            if (!$this->termsRetriever->getTerm(self::CURRENT_TERM)) {
+                throw new KurogoDataException("Unable to retrieve Current Term");
+            }
+        } else {
             $term = new CourseTermCurrent();
         }
         return $term;
@@ -36,7 +40,7 @@ class CoursesDataModel extends DataModel {
         if ($this->termsRetriever) {
             return $this->termsRetriever->getTerm($termCode);
         } elseif ($termCode==self::CURRENT_TERM) {
-            return self::getCurrentTerm();
+            return $this->getCurrentTerm();
         } else {
             /** @TODO retrieve term values */
             return null;
