@@ -111,11 +111,11 @@ class CoursesWebModule extends WebModule {
             }
         }
         $subtitle = array();
-        
+
         if ($includeCourseName) {
             $subtitle[] = "<div class=\"announcementTitle\">". $announcement->getTitle() . "</div>";
         }
-        
+
         $link['url'] = $this->buildBreadcrumbURL('content', $options);
 
         if ($this->pagetype == 'tablet') {
@@ -126,8 +126,8 @@ class CoursesWebModule extends WebModule {
             } else {
                 unset($link['url']);
             }
-            
-        
+
+
             $subtitle[] = "<div class=\"announcementBody\">" . $body . "</div>";
         }
 
@@ -293,10 +293,12 @@ class CoursesWebModule extends WebModule {
                     $subtitle[] = $this->getLocalizedString('GRADE_STATUS', $this->getLocalizedString('GRADE_STATUS_NEEDS_GRADING'));
                 }
             }
-        }
 
-        if($gradeAssignment->getGrade()){
-            $subtitle[] = $this->getLocalizedString('GRADE_OUT_OF_POSSIBLE', number_format($gradeAssignment->getGrade()->getScore()), number_format($gradeAssignment->getPossiblePoints()));
+            if($gradeScore->getScore()){
+                $subtitle[] = $this->getLocalizedString('GRADE_OUT_OF_POSSIBLE', number_format($gradeAssignment->getGrade()->getScore()), number_format($gradeAssignment->getPossiblePoints()));
+            }else{
+                $subtitle[] = $this->getLocalizedString('GRADE_POSSIBLE', number_format($gradeAssignment->getPossiblePoints()));
+            }
         }else{
             $subtitle[] = $this->getLocalizedString('GRADE_POSSIBLE', number_format($gradeAssignment->getPossiblePoints()));
         }
