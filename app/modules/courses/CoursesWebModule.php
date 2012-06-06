@@ -113,7 +113,7 @@ class CoursesWebModule extends WebModule {
         $subtitle = array();
         
         if ($includeCourseName) {
-            $subtitle[] = "<div class=\"announcementTitle\">". $announcement->getTitle() . "</div>";
+            $subtitle[] = "<div class=\"announcementTitle\">". htmlentities($announcement->getTitle()) . "</div>";
         }
         
         $link['url'] = $this->buildBreadcrumbURL('content', $options);
@@ -128,7 +128,7 @@ class CoursesWebModule extends WebModule {
             }
             
         
-            $subtitle[] = "<div class=\"announcementBody\">" . $body . "</div>";
+            $subtitle[] = "<div class=\"announcementBody\">" . htmlentities($body) . "</div>";
         }
 
 
