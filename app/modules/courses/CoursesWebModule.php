@@ -455,7 +455,7 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function detailURLForBookmark($aBookmark) {
-        return $this->buildBreadcrumbURL('info', array(
+        return $this->buildBreadcrumbURL('catalogcourse', array(
             'courseID'  => $this->getBookmarkParam($aBookmark, 'id'),
             'term'      => $this->getBookmarkParam($aBookmark, 'term'),
             'area'      => $this->getBookmarkParam($aBookmark, 'area'),
@@ -1422,7 +1422,7 @@ class CoursesWebModule extends WebModule {
         		);
         		$links[] = array(
         		    'title'=>$this->getLocalizedString('DROP_CANCEL'),
-        		    'url'=>$this->buildBreadcrumbURL('info', $options)
+        		    'url'=>$this->buildBreadcrumbURL('catalogcourse', $options, false)
         		);
 				$this->assign('links',$links);
         	    break;
@@ -1551,13 +1551,13 @@ class CoursesWebModule extends WebModule {
                 }
 
                 if (!$catalogCourse = $course->getCourse('catalog')) {
-                    $this->redirectTo('info', $this->args);
+                    $this->redirectTo('catalogcourse', $this->args);
                 }
 
                 $sectionNumber = $this->getArg('sectionNumber');
 
                 if (!$section = $catalogCourse->getSection($sectionNumber)) {
-                    $this->redirectTo('info', $this->args);
+                    $this->redirectTo('catalogcourse', $this->args);
                 }
 
                 $options = array(
