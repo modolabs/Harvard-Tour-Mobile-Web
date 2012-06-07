@@ -108,7 +108,7 @@ class CoursesWebModule extends WebModule {
                 $options[$field] = $data[$field];
             }
         }
-        
+
         if ($includeCourseName) {
             $link['announcementTitle'] = $announcement->getTitle();
         }
@@ -201,7 +201,7 @@ class CoursesWebModule extends WebModule {
         );
         return $link;
     }
-    
+
     protected function getTitleForTab($page, $tab) {
     }
 
@@ -226,7 +226,7 @@ class CoursesWebModule extends WebModule {
             $page = 'course';
             $subtitle = array();
             $options['course'] = $contentCourse;
-            
+
             if ($this->pagetype=='tablet') {
                 $courseTabs = $this->getModuleSections('coursetabs');
                 foreach($courseTabs as $tab=>$data) {
@@ -236,7 +236,7 @@ class CoursesWebModule extends WebModule {
                     }
                 }
             } else {
-            
+
                 if ($lastUpdateContent = $contentCourse->getLastUpdate()) {
                     $subtitle[] = $lastUpdateContent->getTitle();
                     if ($publishedDate = $lastUpdateContent->getPublishedDate()) {
@@ -1197,8 +1197,25 @@ class CoursesWebModule extends WebModule {
             }
         }
         $this->assign('browseLinks', $browseLinks);
+
+        $browseHeader = array();
+        if(isset($browseOptions['contentID'])){
+            $currentContent = $contentCourse->getContentById($browseOptions['contentID']);
+            $parentID = $currentContent->getParentID();
+            if($parentID){
+                $parentContent = $contentCourse->getContentById($parentID);
+                $browseHeader = $this->linkForFolder($parentContent, $contentCourse);
+            }else{
+                $options = $this->getCourseOptions();
+                $options['tab'] = 'browse';
+                $browseHeader['url'] = $this->buildAjaxBreadcrumbURL($this->page, $options, false);
+                $browseHeader['title'] = $this->getLocalizedString('ROOT_LEVEL_TITLE');
+            }
+            $browseHeader['current'] = $currentContent->getTitle();
+        }
+        $this->assign('browseHeader', $browseHeader);
     }
-    
+
     protected function getTabletViewAllHeadingText($options) {
         return $this->getLocalizedString('COURSES_VIEW_ALL_CLASSES_TEXT');
     }
