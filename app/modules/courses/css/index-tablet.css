@@ -57,3 +57,12 @@
 #courseDetail .tabscount-8 #tabs li {
     min-width: 11%;
 }
+
+#courseDetail > div > .loading > div {
+    display: inline-block;
+    background: @@@focal_background_color@@@;
+    border: solid 1px @@@focal_border_color@@@;
+    -webkit-border-radius: 9px;
+    border-radius: 9px;
+    padding: 11px;
+}
