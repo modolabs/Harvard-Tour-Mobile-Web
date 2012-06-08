@@ -312,10 +312,18 @@ class CoursesWebModule extends WebModule {
 
     protected function pageLinkForValue($page, $value, $object) {
 
-        $args = array_merge(
-            $this->args,
-            array('value'=>$value)
-        );
+        $args = $this->args;
+        switch ($page)
+        {
+            case 'catalogsection':
+                $args['sectionNumber'] = $value;
+                break;
+                
+            default:                
+                $args['value'] = $value;
+                break;
+        }
+
         $link = array(
             'title'=>$value,
             'url'=>$this->buildBreadcrumbURL($page, $args)
@@ -668,6 +676,8 @@ class CoursesWebModule extends WebModule {
                         if ($item) {
                             $items[] = $item;
                         }
+                    } else {
+                        throw new KurogoException("Unable to get an object for $field");
                     }
                 }
                 return $items;
@@ -687,6 +697,8 @@ class CoursesWebModule extends WebModule {
                             $items[] = $item;
                         }
                     }
+                } else {
+                    throw new KurogoException("Unable to get an object for list");
                 }
 
                 return $items;
@@ -1590,14 +1602,15 @@ class CoursesWebModule extends WebModule {
                         $tabData['type'] = 'details';
                     }
 
-                    $this->initializeForInfoTab($tab, array_merge($tabData, $options));
+                    $configName = $this->page . '-' . $tab;
+                    $infoDetails[$tab] = $this->formatCourseDetails($options, $configName);
                     $tabTypes[$tab] = $tabData['type'];
                 }
 
                 $this->enableTabs($tabs);
                 $this->assign('tabs',$tabs);
                 $this->assign('tabTypes',$tabTypes);
-                $this->assign('tabDetails', $this->infoDetails);
+                $this->assign('tabDetails', $infoDetails);
                 break;
 
             case 'resourceSeeAll':
