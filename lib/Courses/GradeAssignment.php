@@ -9,6 +9,7 @@ class GradeAssignment {
     protected $dateModified;
     protected $dueDate;
     protected $gradeScore;
+    protected $attributes = array();
 
     public function getId()
     {
@@ -93,5 +94,23 @@ class GradeAssignment {
 
     public function addGradeScore(GradeScore $gradeScore){
         $this->gradeScore = $gradeScore;
+    }
+
+    public function setAttributes($attribs) {
+        if (is_array($attribs)) {
+            $this->attributes = $attribs;
+        }
+    }
+
+    public function getAttributes() {
+        return $this->attributes;
+    }
+
+    public function setAttribute($key, $value) {
+        $this->attributes[$key] = $value;
+    }
+
+    public function getAttribute($attrib) {
+        return isset($this->attributes[$attrib]) ? $this->attributes[$attrib] : '';
     }
 }
