@@ -1,6 +1,6 @@
 <?php
 
-class DownloadCourseContent extends CourseContent {
+class DownloadCourseContent extends CourseContent implements Downloadable{
     protected $contentType = 'file';
     protected $type;
     protected $filename; // original filename of content
@@ -14,6 +14,8 @@ class DownloadCourseContent extends CourseContent {
     protected $author;
     protected $license;
     protected $cacheFile;
+
+    const SUBTITLE_MULTIPLE_FILES = 'SUBTITLE_MULTIPLE_FILES';
 
     public function getContentMimeType() {
         if ($filename = $this->getContentFile()) {
@@ -119,6 +121,10 @@ class DownloadCourseContent extends CourseContent {
 
     public function getContentFile() {
         return $this->fileurl;
+    }
+
+    public function getFiles(){
+        return array($this);
     }
 
     public function getContentClass(){

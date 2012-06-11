@@ -55,14 +55,16 @@ class CoursesWebModule extends WebModule {
         if ($content->getPublishedDate()){
 	    	if ($content->getAuthor()) {
 	    	    $updated = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $content->getAuthor(), $this->elapsedTime($content->getPublishedDate()->format('U')));
-	    		//$updated = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U')) .' by '.$content->getAuthor();
 	    	} else {
-	    		//$updated = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U'));
 	    		$updated = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($content->getPublishedDate()->format('U')));
 	    	}
 	    	$link['subtitle'] = $link['updated'] = $updated;
 	    } else {
-	    	$link['subtitle'] = $content->getSubTitle();
+            if($content->getSubtitle() == DownloadCourseContent::SUBTITLE_MULTIPLE_FILES){
+                $link['subtitle'] = $this->getLocalizedString('SUBTITLE_MULTIPLE_FILES');
+            }else{
+                $link['subtitle'] = $content->getSubTitle();
+            }
 	    }
 
         $options = $this->getCourseOptions();
@@ -108,7 +110,7 @@ class CoursesWebModule extends WebModule {
                 $options[$field] = $data[$field];
             }
         }
-        
+
         if ($includeCourseName) {
             $link['announcementTitle'] = $announcement->getTitle();
         }
@@ -201,7 +203,7 @@ class CoursesWebModule extends WebModule {
         );
         return $link;
     }
-    
+
     protected function getTitleForTab($page, $tab) {
     }
 
@@ -226,7 +228,7 @@ class CoursesWebModule extends WebModule {
             $page = 'course';
             $subtitle = array();
             $options['course'] = $contentCourse;
-            
+
             if ($this->pagetype=='tablet') {
                 $courseTabs = $this->getModuleSections('coursetabs');
                 foreach($courseTabs as $tab=>$data) {
@@ -236,7 +238,7 @@ class CoursesWebModule extends WebModule {
                     }
                 }
             } else {
-            
+
                 if ($lastUpdateContent = $contentCourse->getLastUpdate()) {
                     $subtitle[] = $lastUpdateContent->getTitle();
                     if ($publishedDate = $lastUpdateContent->getPublishedDate()) {
@@ -312,10 +314,18 @@ class CoursesWebModule extends WebModule {
 
     protected function pageLinkForValue($page, $value, $object) {
 
-        $args = array_merge(
-            $this->args,
-            array('value'=>$value)
-        );
+        $args = $this->args;
+        switch ($page)
+        {
+            case 'catalogsection':
+                $args['sectionNumber'] = $value;
+                break;
+
+            default:
+                $args['value'] = $value;
+                break;
+        }
+
         $link = array(
             'title'=>$value,
             'url'=>$this->buildBreadcrumbURL($page, $args)
@@ -362,16 +372,23 @@ class CoursesWebModule extends WebModule {
                     $options = $this->getCourseOptions();
                     $options['contentID'] = $content->getID();
                     $title = 'Download File';
-                    $subtitle = $content->getFileName();
-                    if ($filesize = $content->getFileSize()) {
-                        $subtitle .= " (" . $this->formatBytes($filesize) . ")";
-                    }
+                    if($files = $content->getFiles()){
+                        foreach ($files as $file) {
+                            if($fileID = $file->getID()){
+                                $options['fileID'] = $fileID;
+                            }
+                            $subtitle = $file->getFileName();
+                            if ($filesize = $file->getFileSize()) {
+                                $subtitle .= " (" . $this->formatBytes($filesize) . ")";
+                            }
 
-                    $links[] = array(
-                        'title'=>$title,
-                        'subtitle'=>$subtitle,
-                        'url'=>$this->buildExternalURL($this->buildURL('download', $options)),
-                    );
+                            $links[] = array(
+                                'title'=>$title,
+                                'subtitle'=>$subtitle,
+                                'url'=>$this->buildExternalURL($this->buildURL('download', $options)),
+                            );
+                        }
+                    }
                 }elseif($downloadMode == $content::MODE_URL) {
                     $links[] = array(
                         'title'=>$content->getTitle(),
@@ -668,6 +685,8 @@ class CoursesWebModule extends WebModule {
                         if ($item) {
                             $items[] = $item;
                         }
+                    } else {
+                        throw new KurogoException("Unable to get an object for $field");
                     }
                 }
                 return $items;
@@ -687,6 +706,8 @@ class CoursesWebModule extends WebModule {
                             $items[] = $item;
                         }
                     }
+                } else {
+                    throw new KurogoException("Unable to get an object for list");
                 }
 
                 return $items;
@@ -1197,8 +1218,25 @@ class CoursesWebModule extends WebModule {
             }
         }
         $this->assign('browseLinks', $browseLinks);
+
+        $browseHeader = array();
+        if(isset($browseOptions['contentID'])){
+            $currentContent = $contentCourse->getContentById($browseOptions['contentID']);
+            $parentID = $currentContent->getParentID();
+            if($parentID){
+                $parentContent = $contentCourse->getContentById($parentID);
+                $browseHeader = $this->linkForFolder($parentContent, $contentCourse);
+            }else{
+                $options = $this->getCourseOptions();
+                $options['tab'] = 'browse';
+                $browseHeader['url'] = $this->buildAjaxBreadcrumbURL($this->page, $options, false);
+                $browseHeader['title'] = $this->getLocalizedString('ROOT_LEVEL_TITLE');
+            }
+            $browseHeader['current'] = $currentContent->getTitle();
+        }
+        $this->assign('browseHeader', $browseHeader);
     }
-    
+
     protected function getTabletViewAllHeadingText($options) {
         return $this->getLocalizedString('COURSES_VIEW_ALL_CLASSES_TEXT');
     }
@@ -1312,15 +1350,16 @@ class CoursesWebModule extends WebModule {
                 if ($this->page=='download') {
                     //we are downloading a file that the server retrieves
                     if ($content->getContentType()=='file') {
-                        if ($file = $content->getContentFile()) {
-                            if ($mime = $content->getContentMimeType()) {
+                        $fileID = $this->getArg('fileID', null);
+                        if ($file = $content->getContentFile($fileID)) {
+                            if ($mime = $content->getContentMimeType($fileID)) {
                                 header('Content-type: ' . $mime);
                             }
-                            if ($size = $content->getFilesize()) {
+                            if ($size = $content->getFilesize($fileID)) {
                                 header('Content-length: ' . sprintf("%d", $size));
                             }
 
-                            if ($filename = $content->getFilename()) {
+                            if ($filename = $content->getFilename($fileID)) {
                                 header('Content-Disposition: inline; filename="'. $filename . '"');
                             }
                             readfile($file);
@@ -1573,14 +1612,15 @@ class CoursesWebModule extends WebModule {
                         $tabData['type'] = 'details';
                     }
 
-                    $this->initializeForInfoTab($tab, array_merge($tabData, $options));
+                    $configName = $this->page . '-' . $tab;
+                    $infoDetails[$tab] = $this->formatCourseDetails($options, $configName);
                     $tabTypes[$tab] = $tabData['type'];
                 }
 
                 $this->enableTabs($tabs);
                 $this->assign('tabs',$tabs);
                 $this->assign('tabTypes',$tabTypes);
-                $this->assign('tabDetails', $this->infoDetails);
+                $this->assign('tabDetails', $infoDetails);
                 break;
 
             case 'resourceSeeAll':
