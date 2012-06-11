@@ -1355,11 +1355,11 @@ class CoursesWebModule extends WebModule {
                             if ($mime = $content->getContentMimeType($fileID)) {
                                 header('Content-type: ' . $mime);
                             }
-                            if ($size = $content->getFilesize()) {
+                            if ($size = $content->getFilesize($fileID)) {
                                 header('Content-length: ' . sprintf("%d", $size));
                             }
 
-                            if ($filename = $content->getFilename()) {
+                            if ($filename = $content->getFilename($fileID)) {
                                 header('Content-Disposition: inline; filename="'. $filename . '"');
                             }
                             readfile($file);
