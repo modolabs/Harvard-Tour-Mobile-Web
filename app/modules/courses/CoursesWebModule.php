@@ -55,14 +55,16 @@ class CoursesWebModule extends WebModule {
         if ($content->getPublishedDate()){
 	    	if ($content->getAuthor()) {
 	    	    $updated = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $content->getAuthor(), $this->elapsedTime($content->getPublishedDate()->format('U')));
-	    		//$updated = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U')) .' by '.$content->getAuthor();
 	    	} else {
-	    		//$updated = 'Updated '. $this->elapsedTime($content->getPublishedDate()->format('U'));
 	    		$updated = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $this->elapsedTime($content->getPublishedDate()->format('U')));
 	    	}
 	    	$link['subtitle'] = $link['updated'] = $updated;
 	    } else {
-	    	$link['subtitle'] = $content->getSubTitle();
+            if($content->getSubtitle() == DownloadCourseContent::SUBTITLE_MULTIPLE_FILES){
+                $link['subtitle'] = $this->getLocalizedString('SUBTITLE_MULTIPLE_FILES');
+            }else{
+                $link['subtitle'] = $content->getSubTitle();
+            }
 	    }
 
         $options = $this->getCourseOptions();
@@ -318,8 +320,8 @@ class CoursesWebModule extends WebModule {
             case 'catalogsection':
                 $args['sectionNumber'] = $value;
                 break;
-                
-            default:                
+
+            default:
                 $args['value'] = $value;
                 break;
         }
@@ -370,16 +372,23 @@ class CoursesWebModule extends WebModule {
                     $options = $this->getCourseOptions();
                     $options['contentID'] = $content->getID();
                     $title = 'Download File';
-                    $subtitle = $content->getFileName();
-                    if ($filesize = $content->getFileSize()) {
-                        $subtitle .= " (" . $this->formatBytes($filesize) . ")";
-                    }
+                    if($files = $content->getFiles()){
+                        foreach ($files as $file) {
+                            if($fileID = $file->getID()){
+                                $options['fileID'] = $fileID;
+                            }
+                            $subtitle = $file->getFileName();
+                            if ($filesize = $file->getFileSize()) {
+                                $subtitle .= " (" . $this->formatBytes($filesize) . ")";
+                            }
 
-                    $links[] = array(
-                        'title'=>$title,
-                        'subtitle'=>$subtitle,
-                        'url'=>$this->buildExternalURL($this->buildURL('download', $options)),
-                    );
+                            $links[] = array(
+                                'title'=>$title,
+                                'subtitle'=>$subtitle,
+                                'url'=>$this->buildExternalURL($this->buildURL('download', $options)),
+                            );
+                        }
+                    }
                 }elseif($downloadMode == $content::MODE_URL) {
                     $links[] = array(
                         'title'=>$content->getTitle(),
@@ -1341,8 +1350,9 @@ class CoursesWebModule extends WebModule {
                 if ($this->page=='download') {
                     //we are downloading a file that the server retrieves
                     if ($content->getContentType()=='file') {
-                        if ($file = $content->getContentFile()) {
-                            if ($mime = $content->getContentMimeType()) {
+                        $fileID = $this->getArg('fileID', null);
+                        if ($file = $content->getContentFile($fileID)) {
+                            if ($mime = $content->getContentMimeType($fileID)) {
                                 header('Content-type: ' . $mime);
                             }
                             if ($size = $content->getFilesize()) {
