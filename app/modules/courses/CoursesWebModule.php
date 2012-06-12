@@ -940,14 +940,13 @@ class CoursesWebModule extends WebModule {
         }
 
         $contentCourse = $course->getCourse('content');
-        $grades = $contentCourse->getGrades(array('user'=>true));
-
         $gradesLinks = array();
-        foreach ($grades as $grade) {
-            $gradesLinks[] = $this->linkForGrade($grade);
+        if($grades = $contentCourse->getGrades(array('user'=>true))){
+            foreach ($grades as $grade) {
+                $gradesLinks[] = $this->linkForGrade($grade);
+            }
+            $gradesLinks = $this->paginateArray($gradesLinks, $this->getOptionalModuleVar('MAX_GRADES', 10));
         }
-
-        $gradesLinks = $this->paginateArray($gradesLinks, $this->getOptionalModuleVar('MAX_GRADES', 10));
         $this->assign('gradesLinks',$gradesLinks);
     }
 
