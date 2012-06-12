@@ -236,6 +236,7 @@ class CoursesWebModule extends WebModule {
                         $subtitle[] = sprintf('<span class="updateitem"><img src="/modules/courses/images/updates_%s.png" height="16" width="16" valign="middle" alt="%s" title="%2$s" /> %d</span>', $tab, $this->getTitleForTab($tab, 'course'), $count);
                     }
                 }
+                $link['subtitle'] = implode("", $subtitle);
             } else {
 
                 if ($lastUpdateContent = $contentCourse->getLastUpdate()) {
@@ -252,9 +253,9 @@ class CoursesWebModule extends WebModule {
                     $link['type']  = $lastUpdateContent->getContentType();
                     $link['img']   = "/modules/courses/images/content_" . $lastUpdateContent->getContentType() . $this->imageExt;
                 }
+                $link['subtitle'] = implode("<br />", $subtitle);
             }
 
-            $link['subtitle'] = implode("", $subtitle);
         } else {
             $page = 'catalogcourse';
         }
