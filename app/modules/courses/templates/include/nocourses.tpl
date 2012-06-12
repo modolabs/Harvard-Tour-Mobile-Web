@@ -8,4 +8,8 @@
     {block name="loginText"}
         {include file="findInclude:common/templates/navlist.tpl" navlistItems=$loginLink navListHeading=$loginText subTitleNewline=true}
     {/block}
+{elseif $session_userID}
+    {block name="noCoursesText"}
+        {include file="findInclude:common/templates/navlist.tpl" navlistItems=$noCoursesText}
+    {/block}
 {/if}

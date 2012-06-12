@@ -4,7 +4,7 @@
 {include file="findInclude:modules/courses/templates/include/termselector.tpl"}
 {/block}
 
-{if $tabs}
+{if $tabs && $hasCourses}
     {block name="indexTabs"}
     {include file="findInclude:modules/courses/templates/include/indexTabs.tpl"}
     {/block}

@@ -1250,10 +1250,11 @@ class CoursesWebModule extends WebModule {
             $options = $this->getOptionsForCourse();
 
             $coursesListLinks = array();
-
+            $hasCourses = false;
             foreach ($courses as $id => $coursesTuple) {
                 $coursesLinks = array();
                 foreach ($coursesTuple['courses'] as $course) {
+                    $hasCourses = true;
                     $courseLink = $this->linkForCourse($course, $options);
                     $coursesLinks[] = $courseLink;
                 }
@@ -1264,6 +1265,11 @@ class CoursesWebModule extends WebModule {
                 $coursesListLinks[] = array('courseListHeading' => $courseListHeading,
                                             'coursesLinks' => $coursesLinks);
             }
+            if(!$hasCourses){
+                $noCoursesText = array(array('title'=>$this->getLocalizedString('NO_COURSES')));
+                $this->assign('noCoursesText', $noCoursesText);
+            }
+            $this->assign('hasCourses', $hasCourses);
             $this->assign('coursesListLinks', $coursesListLinks);
             if ($this->pagetype == 'tablet') {
                 $options['courses'] = $courses;
