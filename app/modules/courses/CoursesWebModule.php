@@ -261,8 +261,10 @@ class CoursesWebModule extends WebModule {
         }
         unset($options['course']);
 
-        if ($this->pagetype == 'tablet') {
+        if ($this->pagetype == 'tablet' && $page == 'course') {
             $link['url'] = $this->buildAjaxBreadcrumbURL($page, $options);
+            $link['updateIconsURL'] = $this->buildAjaxBreadcrumbURL('courseUpdateIcons', $options);
+            
         } else {
             $link['url'] = $this->buildBreadcrumbURL($page, $options);
         }

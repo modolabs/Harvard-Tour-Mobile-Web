@@ -6,6 +6,23 @@ function scrollContentToTop() {
     }
 }
 
+function loadCourseUpdateIcons(childImage, contentURL) {
+    var container = childImage.parentNode;
+    if (container) {
+        ajaxContentIntoContainer({ 
+            url: contentURL, // the url to get the page content from 
+            container: container, // the container to dump the content into 
+            timeout: 30, // how long to wait for the server before returning an error 
+            success: function() {
+                onAjaxContentLoad();
+            },
+            error: function(e) {
+                onAjaxContentLoad();
+            }
+        });
+    }
+}
+
 function updateTabletDetail(link, contentURL) {
     var detailId = link.id+"_detail"
     
