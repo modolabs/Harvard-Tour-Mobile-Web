@@ -11,8 +11,8 @@
     {$course.title}
     <div class="smallprint courseListUpdates {if $course.img}icon{/if}">
     {if $course.img}<img src="{$course.img}" width="16" height="16" alt="" class="listtype">{/if}
-    {$course.subtitle}
-    </div> 
+    {include file="findInclude:modules/courses/templates/include/coursesListItemSubtitle.tpl" subtitle=$course.subtitle}
+    </div>
   </a>
 </li>
 {/foreach}

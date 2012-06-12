@@ -1869,6 +1869,46 @@ class CoursesWebModule extends WebModule {
 
                 $this->assign('grade', $gradeContent);
                 break;
+            case 'courseUpdateIcons':
+                if (!$course = $this->getCourseFromArgs()) {
+                    _404();
+                }
+
+                if (!$contentCourse = $course->getCourse('content')) {
+                    _404();
+                }
+
+                $courseTabs = $this->getModuleSections('coursetabs');
+                $courseUpdateIcons = array();
+                foreach($courseTabs as $tab=>$data) {
+                    if (in_array($tab, array('announcements', 'resources', 'tasks'))){
+                        $method = 'get'.ucfirst($tab);
+                        $optionsMethod = 'getOptionsFor'.ucfirst($tab);
+                        $options = $this->$optionsMethod(array('course' => $course, 'page' => $this->page));
+                        $content = $contentCourse->$method($options);
+                        switch ($tab) {
+                            case 'resources':
+                                $count = 0;
+                                foreach ($content as $courseContent) {
+                                    $count += count($courseContent);
+                                }
+                                break;
+                            case 'tasks':
+                                $count = 0;
+                                foreach ($content as $courseContent) {
+                                    $count += count($courseContent);
+                                }
+                                break;
+                            default:
+                                $count = count($content);
+                                break;
+                        }
+                        $courseUpdateIcons[] = sprintf('<span class="updateitem"><img src="/modules/courses/images/updates_%s.png" height="16" width="16" valign="middle" alt="%s" title="%2$s" /> %d</span>', $tab, $this->getTitleForTab($tab, 'course'), $count);
+                    }
+                }
+                $courseUpdateIcons = implode("", $courseUpdateIcons);
+                $this->assign('courseUpdateIcons', $courseUpdateIcons);
+                break;
         }
     }
 }
