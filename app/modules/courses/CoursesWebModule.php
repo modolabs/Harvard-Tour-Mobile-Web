@@ -492,7 +492,9 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function initialize() {
-        $this->feeds = $this->loadFeedData();
+        if(!$this->feeds = $this->loadFeedData()){
+            throw new KurogoConfigurationException("Feeds configuration cannot be empty.");
+        }
         $this->controller = CoursesDataModel::factory($this->defaultModel, $this->feeds);
         //load showCourseNumber setting
         $this->showCourseNumber = $this->getOptionalModuleVar('SHOW_COURSENUMBER_IN_LIST', 1);
