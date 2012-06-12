@@ -176,7 +176,6 @@ class CoursesWebModule extends WebModule {
             $published = $this->elapsedTime($content->getPublishedDate()->format('U'));
             if ($content->getAuthor()) {
                 $published = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $content->getAuthor(), $published);
-                //$published .= ' by '.$content->getAuthor();
             } else {
                 $published = $this->getLocalizedString('CONTENTS_PUBLISHED_STRING', $published);
             }
@@ -1378,7 +1377,7 @@ class CoursesWebModule extends WebModule {
                 $this->assign('contentTitle', $content->getTitle());
                 $this->assign('contentDescription', $content->getDescription());
                 if ($content->getAuthor()) {
-                    $this->assign('contentAuthor', 'Posted by ' . $content->getAuthor());
+                    $this->assign('contentAuthor', $this->getLocalizedString('POSTED_BY_AUTHOR', $content->getAuthor()));
                 }
                 if ($content->getPublishedDate()) {
                     $this->assign('contentPublished', $this->elapsedTime($content->getPublishedDate()->format('U')));
@@ -1478,7 +1477,7 @@ class CoursesWebModule extends WebModule {
 
                 if ($bookmarks = $this->getBookmarksForTerm($this->Term)) {
                     $bookmarksList[] = array(
-                        'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . " (" . count($bookmarks) . ")",
+                        'title' => $this->getLocalizedString('COURSES_BOOKMARK_ITEM_TITLE', count($bookmarks)),
                         'url'   => $this->buildBreadcrumbURL('bookmarks', array('term' => strval($this->Term))),
                     );
                     $this->assign('bookmarksList', $bookmarksList);
