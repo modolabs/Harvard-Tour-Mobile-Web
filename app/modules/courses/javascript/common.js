@@ -14,7 +14,7 @@ function scrollContentToTop() {
 function switchPage(link, contentURL) {
     var element = link.parentNode;
     while (element) {
-        if (hasClass(element, "pager-container")) {
+        if (hasClass(element, "tabbody")) {
             break;
         }
         element = element.parentNode;
