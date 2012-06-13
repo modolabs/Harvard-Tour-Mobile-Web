@@ -118,12 +118,17 @@ class CoursesWebModule extends WebModule {
         $link['url'] = $this->buildBreadcrumbURL('content', $options);
 
         if ($this->pagetype == 'tablet') {
-            $body = strip_tags($announcement->getDescription());
+            $body = $announcement->getDescription();
             $maxLength = $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MAX_LENGTH', 500);
-            if (strlen($body) < $maxLength) {
-                unset($link['url']);
-            } else {
-                $body = substr($body, 0, $maxLength - 50) ."...";
+            
+            $body = Sanitizer::sanitizeAndTruncateHTML($body, $truncated, 
+                $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MAX_LENGTH', 500), 
+                $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MAX_LENGTH_MARGIN', 50),
+                $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MIN_LINE_LENGTH', 50),
+                'editor', $announcement->getContentRetriever()->getEncoding());
+            
+            if (!$truncated) {
+                unset($link['url']); // didn't truncate html -- displaying entire announcement
             }
 
             $link['body'] = $body;
