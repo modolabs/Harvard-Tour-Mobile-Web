@@ -13,7 +13,14 @@ class CoursesWebModule extends WebModule {
     protected $originalPage;
     protected $tab;
 
-    public function linkForTask($task, CourseContentCourse $course, $includeCourseName=true) {
+    /**
+     * Creates a list item link for Tasks
+     * @param  CourseContent       $task                   The task to link to
+     * @param  CourseContentCourse $course                 The Course the task belongs to
+     * @param  boolean             $includeCourseName=true Whether to include the Course name in the subtitle
+     * @return array
+     */
+    public function linkForTask(TaskCourseContent $task, CourseContentCourse $course, $includeCourseName=true) {
     	$link = array(
             'title' =>$includeCourseName ? htmlentities($task->getTitle()) : $course->getTitle(),
     		'date' => $task->getDate() ? $task->getDate() : $task->getDueDate(),
@@ -42,7 +49,12 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
-    // returns a link for a particular resource
+    /**
+     * Creates a list item link for Content
+     * @param  CourseContent       $content The content to link to
+     * @param  CourseContentCourse $course  The Course the content belongs to
+     * @return array
+     */
     public function linkForContent(CourseContent $content, CourseContentCourse $course) {
     	$link = array(
             'title' => htmlentities($content->getTitle()),
@@ -52,6 +64,7 @@ class CoursesWebModule extends WebModule {
             'img'   => "/modules/courses/images/content_" . $content->getContentClass() . $this->imageExt
         );
 
+        // Display published date and author
         if ($content->getPublishedDate()){
 	    	if ($content->getAuthor()) {
 	    	    $updated = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $content->getAuthor(), $this->elapsedTime($content->getPublishedDate()->format('U')));
@@ -60,6 +73,7 @@ class CoursesWebModule extends WebModule {
 	    	}
 	    	$link['subtitle'] = $link['updated'] = $updated;
 	    } else {
+            // If the content has multiple files indicate that. Otherwise get the subtitle from the content.
             if($content->getSubtitle() == DownloadCourseContent::SUBTITLE_MULTIPLE_FILES){
                 $link['subtitle'] = $this->getLocalizedString('SUBTITLE_MULTIPLE_FILES');
             }else{
@@ -78,7 +92,13 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
-    public function linkForFolder(CourseContent $content, CourseContentCourse $course) {
+    /**
+     * Creates a list item link for Folders
+     * @param  CourseContent       $content The folder to link to
+     * @param  CourseContentCourse $course  The Course the folder belongs to
+     * @return array
+     */
+    public function linkForFolder(FolderCourseContent $content, CourseContentCourse $course) {
         $link = array(
             'title' => htmlentities($content->getTitle()),
             'type'  => $content->getContentType(),
@@ -95,6 +115,13 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    /**
+     * Creates a list item link for Announcements
+     * @param  AnnouncementCourseContent $announcement            The announcement to link to
+     * @param  CourseContentCourse       $course                  The Course the announcement belongs to
+     * @param  boolean                   $includeCourseName=false Whether to include the Course title in the subtitle or not
+     * @return array
+     */
     public function linkForAnnouncement(AnnouncementCourseContent $announcement, CourseContentCourse $course, $includeCourseName=false){
         $contentID = $announcement->getID();
         $options = array(
@@ -144,6 +171,13 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    /**
+     * Creates a list item link for Updates
+     * @param  CourseContent       $content                 The updates to link to
+     * @param  CourseContentCourse $course                  The Course the update belongs to
+     * @param  boolean             $includeCourseName=false Whether to include the Course title in the subtitle or not
+     * @return array
+     */
     public function linkForUpdate(CourseContent $content, CourseContentCourse $course, $includeCourseName=false) {
 
         $contentID = $content->getID();
@@ -190,6 +224,12 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    /**
+     * Create a list item link to a Catalog Area
+     * @param  CourseArea $area            The area to link to
+     * @param  array      $options=array() Any options needed to create the link
+     * @return array
+     */
     protected function linkForCatalogArea(CourseArea $area, $options=array()) {
         $options = array_merge($options,array(
             'area'=>$area->getCode(),
@@ -203,9 +243,22 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    /**
+     * Return the title of the tab for a particular page.
+     * @param  string $page The page the tab is on
+     * @param  string $tab  The tab to get the title for
+     * @return string
+     */
     protected function getTitleForTab($page, $tab) {
+        // TODO: Finish this
     }
 
+    /**
+     * Create a list item link for Courses
+     * @param  CourseInterface $course          The course to link to
+     * @param  array           $options=array() Any options needed to create the link
+     * @return array
+     */
     protected function linkForCourse(CourseInterface $course, $options=array()) {
 
         $options = array_merge($options, array(
@@ -228,6 +281,7 @@ class CoursesWebModule extends WebModule {
             $subtitle = array();
             $options['course'] = $contentCourse;
 
+            // TODO: Change this to be anything but tablet
             if ($this->pagetype=='tablet') {
                 $courseTabs = $this->getModuleSections('coursetabs');
                 foreach($courseTabs as $tab=>$data) {
@@ -238,7 +292,7 @@ class CoursesWebModule extends WebModule {
                 }
                 $link['subtitle'] = implode("", $subtitle);
             } else {
-
+                // If we can get the last update display some info about it in the subtitle
                 if ($lastUpdateContent = $contentCourse->getLastUpdate()) {
                     $subtitle[] = $lastUpdateContent->getTitle();
                     if ($publishedDate = $lastUpdateContent->getPublishedDate()) {
@@ -261,6 +315,7 @@ class CoursesWebModule extends WebModule {
         }
         unset($options['course']);
 
+        // Set variables for use with AJAX
         if ($this->pagetype == 'tablet' && $page == 'course') {
             $link['url'] = $this->buildAjaxBreadcrumbURL($page, $options);
             $link['updateIconsURL'] = $this->buildAjaxBreadcrumbURL('courseUpdateIcons', $options);
@@ -271,6 +326,12 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    /**
+     * Create a list item link for a Catalog Course
+     * @param  CourseInterface $course  The course to link to
+     * @param  array           $options Any options needed to create the link
+     * @return array
+     */
     protected function linkForCatalogCourse(CourseInterface $course, $options = array()) {
         $options = array_merge($options, array(
             'courseID'  => $course->getID()
@@ -289,6 +350,11 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    /**
+     * Create a list item link for a Grade
+     * @param  GradeAssignment $gradeAssignment The assignment to link to
+     * @return array
+     */
     protected function linkForGrade(GradeAssignment $gradeAssignment) {
         $options = $this->getCourseOptions();
         $options['gradeID'] = $gradeAssignment->getId();
@@ -297,7 +363,9 @@ class CoursesWebModule extends WebModule {
         $link['title'] = $gradeAssignment->getTitle();
 
         $subtitle = array();
+        // If a score is available
         if ($gradeScore = $gradeAssignment->getGrade()) {
+            // If the score has been graded display the grade, otherwise display the status
             if($gradeScore->getStatus() == GradeScore::SCORE_STATUS_GRADED){
                 $subtitle = $this->getLocalizedString('GRADE_OUT_OF_POSSIBLE', number_format($gradeAssignment->getGrade()->getScore(), 2), $gradeAssignment->getPossiblePoints());
             }else{
@@ -314,6 +382,13 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    /**
+     * Create a link to a given page setting value in the parameters
+     * @param  string $page   The page to link to
+     * @param  string $value  The value to assign
+     * @param  mixed  $object Not used
+     * @return array
+     */
     protected function pageLinkForValue($page, $value, $object) {
 
         $args = $this->args;
@@ -336,6 +411,11 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    /**
+     * Formats an integer into bytes, kilobytes, etc
+     * @param  int $value The integer to format
+     * @return string     The formatted string
+     */
     protected function formatBytes($value) {
 		//needs integer
 		if (!preg_match('/^\d+$/', $value)) {
@@ -357,9 +437,16 @@ class CoursesWebModule extends WebModule {
 		}
 	}
 
+    /**
+     * Returns an array of links to the content itself,
+     * or files associated with the content.
+     * @param  CourseContent $content The content being linked to or used for linking
+     * @return array
+     */
     protected function getContentLinks(CourseContent $content) {
         $links = array();
         switch ($content->getContentType()) {
+            // Create a link to the content
             case 'link':
                 $links[] = array(
                     'title'=>$content->getTitle(),
@@ -368,6 +455,14 @@ class CoursesWebModule extends WebModule {
                     'class'=>'external',
                 );
                 break;
+            /**
+             * If the mode is download:
+             *    Iterate through all the files associated with the content. These may
+             *    instances of DownloadCourseContent or DownloadFileAttachment. Create
+             *    links to the content/files for downloading.
+             * If the mode is url:
+             *    Create an external link to the content/files
+             */
             case 'file':
                 $downloadMode = $content->getDownloadMode();
                 if($downloadMode == $content::MODE_DOWNLOAD) {
@@ -391,6 +486,7 @@ class CoursesWebModule extends WebModule {
                             );
                         }
                     }
+                // TODO: Change this to account for multiple files
                 }elseif($downloadMode == $content::MODE_URL) {
                     $links[] = array(
                         'title'=>$content->getTitle(),
@@ -400,6 +496,7 @@ class CoursesWebModule extends WebModule {
                     );
                 }
                 break;
+            // Create an external link to the content
             case 'page':
                 $viewMode = $content->getViewMode();
                 if($viewMode == $content::MODE_URL) {
@@ -411,6 +508,7 @@ class CoursesWebModule extends WebModule {
                     );
                 }
                 break;
+            // These types of content do not have links
             case 'announcement':
             case 'task':
             case 'unsupported':
@@ -422,6 +520,10 @@ class CoursesWebModule extends WebModule {
         return $links;
     }
 
+    /**
+     * Sets the current term, and assigns the available terms
+     * @return CourseTerm
+     */
     protected function assignTerm(){
         $feedTerms = $this->controller->getAvailableTerms();
 
