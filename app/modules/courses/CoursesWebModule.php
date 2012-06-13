@@ -550,6 +550,11 @@ class CoursesWebModule extends WebModule {
         return $Term;
     }
 
+    /**
+     * Gets the course from the request args.
+     * Sets the courseTitle, courseID, and sectionNumber if available
+     * @return Course
+     */
     protected function getCourseFromArgs() {
 
         if ($courseID = $this->getArg('courseID')) {
@@ -571,10 +576,20 @@ class CoursesWebModule extends WebModule {
         }
     }
 
+    /**
+     * Gets the title of the feed IDed by $feed
+     * @param  string $feed The feed to lookup
+     * @return string
+     */
     protected function getFeedTitle($feed) {
         return isset($this->feeds[$feed]['TITLE']) ? $this->feeds[$feed]['TITLE'] : '';
     }
 
+    /**
+     * Returns the URL for a saved bookmark.
+     * @param  string $aBookmark  The bookmark to link to
+     * @return string
+     */
     protected function detailURLForBookmark($aBookmark) {
         return $this->buildBreadcrumbURL('catalogcourse', array(
             'courseID'  => $this->getBookmarkParam($aBookmark, 'id'),
@@ -583,10 +598,21 @@ class CoursesWebModule extends WebModule {
         ));
     }
 
+    /**
+     * Gets the title of a bookmark.
+     * @param  string $aBookmark The bookmark to get the title of
+     * @return string
+     */
     protected function getTitleForBookmark($aBookmark) {
         return $this->getBookmarkParam($aBookmark, 'title');
     }
 
+    /**
+     * Retrieves a parameter from the bookmark string.
+     * @param  string $aBookmark The bookmark to get the parameter from
+     * @param  string $param     A paramter (title, id, term, area, etc) to get from the bookmark
+     * @return string
+     */
     protected function getBookmarkParam($aBookmark, $param){
         parse_str($aBookmark, $params);
         if(isset($params[$param])){
@@ -595,6 +621,11 @@ class CoursesWebModule extends WebModule {
         return null;
     }
 
+    /**
+     * Initializes the module. Gets the feed data, creates the controller,
+     * and assigns the term.
+     * @return null
+     */
     protected function initialize() {
         if(!$this->feeds = $this->loadFeedData()){
             throw new KurogoConfigurationException("Feeds configuration cannot be empty.");
@@ -606,6 +637,11 @@ class CoursesWebModule extends WebModule {
         $this->assign('hasPersonalizedCourses', $this->controller->canRetrieve('registration') || $this->controller->canRetrieve('content'));
     }
 
+    /**
+     * Gets an array of options based on the current page arguements.
+     * Used to pass options from one page to another.
+     * @return array
+     */
     protected function getCourseOptions() {
         $courseID = $this->getArg('courseID');
         $area = $this->getArg('area');
@@ -622,6 +658,13 @@ class CoursesWebModule extends WebModule {
         return $options;
     }
 
+    /**
+     * Assigns the group links for the groups in a tabstrip on a page.
+     * @param  string $tabPage             The tab
+     * @param  array  $groups              The array of groups to link to
+     * @param  array  $defaultGroupOptions An array of options to include in the page link
+     * @return null
+     */
     protected function assignGroupLinks($tabPage, $groups, $defaultGroupOptions = array()){
         $page = $this->originalPage;
         foreach ($groups as $groupIndex => $group) {
@@ -642,6 +685,12 @@ class CoursesWebModule extends WebModule {
         $this->assign('tabstripId', $tabPage.'-'.md5($this->buildURL($this->page, $this->args)));
     }
 
+    /**
+     * Paginates an array of items.
+     * @param  array  $contents The array of items to paginate
+     * @param  int    $limit    The maximum number of items per page
+     * @return array
+     */
     protected function paginateArray($contents, $limit) {
         $totalItems = count($contents);
         $start = $this->getArg('start', 0);
@@ -675,6 +724,12 @@ class CoursesWebModule extends WebModule {
         return $contents;
     }
 
+    /**
+     * Sorts an array of content by the specified method, or by the content's sortBy() function.
+     * @param  array  $courseContents The array of content being sorted
+     * @param  string $sort=null      The way of sorting. May be a key used in sortByField.
+     * @return array
+     */
     public function sortCourseContent($courseContents, $sort=null) {
         if (empty($courseContents)) {
             return array();
@@ -684,7 +739,12 @@ class CoursesWebModule extends WebModule {
         return $courseContents;
     }
 
-    // sort type for content
+    /**
+     * Callback function used for sorting in sortCourseContent. Returns 0, -1, or 1.
+     * @param  mixed  $contentA One object being compared.
+     * @param  mixed  $contentB The second object being compared
+     * @return int
+     */
     private function sortByField($contentA, $contentB) {
         switch ($this->sortType) {
             case 'sortDate':
@@ -704,6 +764,12 @@ class CoursesWebModule extends WebModule {
     }
 
     // takes a config and process the info data
+    /**
+     * Takes a config and processes the info
+     * @param  array  $options    An array of options to be passed to formatCourseDetailSection
+     * @param  string $configName The name of the config to load
+     * @return array
+     */
     protected function formatCourseDetails($options, $configName) {
 
         //load page detail configs
@@ -757,6 +823,11 @@ class CoursesWebModule extends WebModule {
         return $details;
     }
 
+    /**
+     * Returns the course or section object from the options array.
+     * @param  array  $options
+     * @return mixed
+     */
     protected function getInfoObject($options) {
         if (isset($options['course'])) {
             $Course = $options['course'];
@@ -773,6 +844,12 @@ class CoursesWebModule extends WebModule {
         return $object;
     }
 
+    /**
+     * Returns the items details
+     * @param  array  $options
+     * @param  array  $sectionData Data for a particular section
+     * @return array
+     */
     protected function formatCourseDetailSection($options, $sectionData) {
 
         switch ($sectionData['type']) {
@@ -821,6 +898,13 @@ class CoursesWebModule extends WebModule {
         }
     }
 
+    /**
+     * Formats a particular detail field
+     * @param  mxied  $object      A course or section object
+     * @param  mixed  $sectionItem
+     * @param  array $sectionData
+     * @return array
+     */
     protected function formatSectionDetailField($object, $sectionItem, $sectionData) {
 
         if (!is_object($sectionItem)) {
@@ -856,7 +940,13 @@ class CoursesWebModule extends WebModule {
         return $this->formatInfoDetail($value, $fieldData, $sectionItem);
     }
 
-
+    /**
+     * Retrieves and formats a detail field.
+     * @param  mixed  $object    The object to get the field value from
+     * @param  string $field     The field to retrieve
+     * @param  array  $fieldData
+     * @return array
+     */
     protected function formatDetailField($object, $field, $fieldData) {
 
         $method = "get" . $field;
@@ -868,6 +958,13 @@ class CoursesWebModule extends WebModule {
         return $this->formatInfoDetail($value, $fieldData, $object);
     }
 
+    /**
+     * Formats a value based on it's type and other info
+     * @param  mixed  $value  The value to format
+     * @param  array  $info   Information about the value/field
+     * @param  mixed  $object The object the value came from
+     * @return array
+     */
     protected function formatInfoDetail($value, $info, $object) {
 
         $detail = $info;
@@ -941,6 +1038,12 @@ class CoursesWebModule extends WebModule {
         return $detail;
     }
 
+    /**
+     * Format the value with a callback function if it's set
+     * @param  array  $values The value to format
+     * @param  array  $info   Array holding the callback function
+     * @return array
+     */
     protected function formatValues($values, $info) {
         if (isset($info['parse'])) {
             $formatFunction = create_function('$value', $info['parse']);
@@ -952,6 +1055,11 @@ class CoursesWebModule extends WebModule {
         return $values;
     }
 
+    /**
+     * Replaces newline and tab characters with actual newlines and tabs
+     * @param  mixed  $format The string or array to replace newlines/tabs in
+     * @return mixed
+     */
     protected function replaceFormat($format) {
         return str_replace(array('\n','\t'),array("\n","\t"), $format);
     }
