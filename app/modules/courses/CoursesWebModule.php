@@ -120,12 +120,14 @@ class CoursesWebModule extends WebModule {
         if ($this->pagetype == 'tablet') {
             $body = $announcement->getDescription();
             $maxLength = $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MAX_LENGTH', 500);
+            $retriever = $announcement->getContentRetriever();
             
             $body = Sanitizer::sanitizeAndTruncateHTML($body, $truncated, 
                 $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MAX_LENGTH', 500), 
                 $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MAX_LENGTH_MARGIN', 50),
                 $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MIN_LINE_LENGTH', 50),
-                'editor', $announcement->getContentRetriever()->getEncoding());
+                'editor', // allowed tags list for user-entered html
+                $retriever ? $retriever->getEncoding() : 'utf-8');
             
             if (!$truncated) {
                 unset($link['url']); // didn't truncate html -- displaying entire announcement
