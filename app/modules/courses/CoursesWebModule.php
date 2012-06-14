@@ -13,7 +13,14 @@ class CoursesWebModule extends WebModule {
     protected $originalPage;
     protected $tab;
 
-    public function linkForTask($task, CourseContentCourse $course, $includeCourseName=true) {
+    /**
+     * Creates a list item link for Tasks
+     * @param  CourseContent       $task                   The task to link to
+     * @param  CourseContentCourse $course                 The Course the task belongs to
+     * @param  boolean             $includeCourseName=true Whether to include the Course name in the subtitle
+     * @return array
+     */
+    public function linkForTask(TaskCourseContent $task, CourseContentCourse $course, $includeCourseName=true) {
     	$link = array(
             'title' =>$includeCourseName ? htmlentities($task->getTitle()) : $course->getTitle(),
     		'date' => $task->getDate() ? $task->getDate() : $task->getDueDate(),
@@ -42,7 +49,12 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
-    // returns a link for a particular resource
+    /**
+     * Creates a list item link for Content
+     * @param  CourseContent       $content The content to link to
+     * @param  CourseContentCourse $course  The Course the content belongs to
+     * @return array
+     */
     public function linkForContent(CourseContent $content, CourseContentCourse $course) {
     	$link = array(
             'title' => htmlentities($content->getTitle()),
@@ -52,6 +64,7 @@ class CoursesWebModule extends WebModule {
             'img'   => "/modules/courses/images/content_" . $content->getContentClass() . $this->imageExt
         );
 
+        // Display published date and author
         if ($content->getPublishedDate()){
 	    	if ($content->getAuthor()) {
 	    	    $updated = $this->getLocalizedString('CONTENTS_AUTHOR_PUBLISHED_STRING', $content->getAuthor(), $this->elapsedTime($content->getPublishedDate()->format('U')));
@@ -60,6 +73,7 @@ class CoursesWebModule extends WebModule {
 	    	}
 	    	$link['subtitle'] = $link['updated'] = $updated;
 	    } else {
+            // If the content has multiple files indicate that. Otherwise get the subtitle from the content.
             if($content->getSubtitle() == DownloadCourseContent::SUBTITLE_MULTIPLE_FILES){
                 $link['subtitle'] = $this->getLocalizedString('SUBTITLE_MULTIPLE_FILES');
             }else{
@@ -78,7 +92,13 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
-    public function linkForFolder(CourseContent $content, CourseContentCourse $course) {
+    /**
+     * Creates a list item link for Folders
+     * @param  CourseContent       $content The folder to link to
+     * @param  CourseContentCourse $course  The Course the folder belongs to
+     * @return array
+     */
+    public function linkForFolder(FolderCourseContent $content, CourseContentCourse $course) {
         $link = array(
             'title' => htmlentities($content->getTitle()),
             'type'  => $content->getContentType(),
@@ -95,6 +115,13 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    /**
+     * Creates a list item link for Announcements
+     * @param  AnnouncementCourseContent $announcement            The announcement to link to
+     * @param  CourseContentCourse       $course                  The Course the announcement belongs to
+     * @param  boolean                   $includeCourseName=false Whether to include the Course title in the subtitle or not
+     * @return array
+     */
     public function linkForAnnouncement(AnnouncementCourseContent $announcement, CourseContentCourse $course, $includeCourseName=false){
         $contentID = $announcement->getID();
         $options = array(
@@ -151,6 +178,13 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    /**
+     * Creates a list item link for Updates
+     * @param  CourseContent       $content                 The updates to link to
+     * @param  CourseContentCourse $course                  The Course the update belongs to
+     * @param  boolean             $includeCourseName=false Whether to include the Course title in the subtitle or not
+     * @return array
+     */
     public function linkForUpdate(CourseContent $content, CourseContentCourse $course, $includeCourseName=false) {
 
         $contentID = $content->getID();
@@ -197,6 +231,12 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    /**
+     * Create a list item link to a Catalog Area
+     * @param  CourseArea $area            The area to link to
+     * @param  array      $options=array() Any options needed to create the link
+     * @return array
+     */
     protected function linkForCatalogArea(CourseArea $area, $options=array()) {
         $options = array_merge($options,array(
             'area'=>$area->getCode(),
@@ -210,9 +250,22 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    /**
+     * Return the title of the tab for a particular page.
+     * @param  string $page The page the tab is on
+     * @param  string $tab  The tab to get the title for
+     * @return string
+     */
     protected function getTitleForTab($page, $tab) {
+        // TODO: Finish this
     }
 
+    /**
+     * Create a list item link for Courses
+     * @param  CourseInterface $course          The course to link to
+     * @param  array           $options=array() Any options needed to create the link
+     * @return array
+     */
     protected function linkForCourse(CourseInterface $course, $options=array()) {
 
         $options = array_merge($options, array(
@@ -235,6 +288,7 @@ class CoursesWebModule extends WebModule {
             $subtitle = array();
             $options['course'] = $contentCourse;
 
+            // TODO: Change this to be anything but tablet
             if ($this->pagetype=='tablet') {
                 $courseTabs = $this->getModuleSections('coursetabs');
                 foreach($courseTabs as $tab=>$data) {
@@ -245,7 +299,7 @@ class CoursesWebModule extends WebModule {
                 }
                 $link['subtitle'] = implode("", $subtitle);
             } else {
-
+                // If we can get the last update display some info about it in the subtitle
                 if ($lastUpdateContent = $contentCourse->getLastUpdate()) {
                     $subtitle[] = $lastUpdateContent->getTitle();
                     if ($publishedDate = $lastUpdateContent->getPublishedDate()) {
@@ -268,6 +322,7 @@ class CoursesWebModule extends WebModule {
         }
         unset($options['course']);
 
+        // Set variables for use with AJAX
         if ($this->pagetype == 'tablet' && $page == 'course') {
             $link['url'] = $this->buildAjaxBreadcrumbURL($page, $options);
             $link['updateIconsURL'] = $this->buildAjaxBreadcrumbURL('courseUpdateIcons', $options);
@@ -278,6 +333,12 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    /**
+     * Create a list item link for a Catalog Course
+     * @param  CourseInterface $course  The course to link to
+     * @param  array           $options Any options needed to create the link
+     * @return array
+     */
     protected function linkForCatalogCourse(CourseInterface $course, $options = array()) {
         $options = array_merge($options, array(
             'courseID'  => $course->getID()
@@ -296,6 +357,11 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    /**
+     * Create a list item link for a Grade
+     * @param  GradeAssignment $gradeAssignment The assignment to link to
+     * @return array
+     */
     protected function linkForGrade(GradeAssignment $gradeAssignment) {
         $options = $this->getCourseOptions();
         $options['gradeID'] = $gradeAssignment->getId();
@@ -304,7 +370,9 @@ class CoursesWebModule extends WebModule {
         $link['title'] = $gradeAssignment->getTitle();
 
         $subtitle = array();
+        // If a score is available
         if ($gradeScore = $gradeAssignment->getGrade()) {
+            // If the score has been graded display the grade, otherwise display the status
             if($gradeScore->getStatus() == GradeScore::SCORE_STATUS_GRADED){
                 $subtitle = $this->getLocalizedString('GRADE_OUT_OF_POSSIBLE', number_format($gradeAssignment->getGrade()->getScore(), 2), $gradeAssignment->getPossiblePoints());
             }else{
@@ -321,6 +389,13 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    /**
+     * Create a link to a given page setting value in the parameters
+     * @param  string $page   The page to link to
+     * @param  string $value  The value to assign
+     * @param  mixed  $object Not used
+     * @return array
+     */
     protected function pageLinkForValue($page, $value, $object) {
 
         $args = $this->args;
@@ -343,6 +418,11 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    /**
+     * Formats an integer into bytes, kilobytes, etc
+     * @param  int $value The integer to format
+     * @return string     The formatted string
+     */
     protected function formatBytes($value) {
 		//needs integer
 		if (!preg_match('/^\d+$/', $value)) {
@@ -364,9 +444,16 @@ class CoursesWebModule extends WebModule {
 		}
 	}
 
+    /**
+     * Returns an array of links to the content itself,
+     * or files associated with the content.
+     * @param  CourseContent $content The content being linked to or used for linking
+     * @return array
+     */
     protected function getContentLinks(CourseContent $content) {
         $links = array();
         switch ($content->getContentType()) {
+            // Create a link to the content
             case 'link':
                 $links[] = array(
                     'title'=>$content->getTitle(),
@@ -375,6 +462,14 @@ class CoursesWebModule extends WebModule {
                     'class'=>'external',
                 );
                 break;
+            /**
+             * If the mode is download:
+             *    Iterate through all the files associated with the content. These may
+             *    instances of DownloadCourseContent or DownloadFileAttachment. Create
+             *    links to the content/files for downloading.
+             * If the mode is url:
+             *    Create an external link to the content/files
+             */
             case 'file':
                 $downloadMode = $content->getDownloadMode();
                 if($downloadMode == $content::MODE_DOWNLOAD) {
@@ -398,6 +493,7 @@ class CoursesWebModule extends WebModule {
                             );
                         }
                     }
+                // TODO: Change this to account for multiple files
                 }elseif($downloadMode == $content::MODE_URL) {
                     $links[] = array(
                         'title'=>$content->getTitle(),
@@ -407,6 +503,7 @@ class CoursesWebModule extends WebModule {
                     );
                 }
                 break;
+            // Create an external link to the content
             case 'page':
                 $viewMode = $content->getViewMode();
                 if($viewMode == $content::MODE_URL) {
@@ -418,6 +515,7 @@ class CoursesWebModule extends WebModule {
                     );
                 }
                 break;
+            // These types of content do not have links
             case 'announcement':
             case 'task':
             case 'unsupported':
@@ -429,6 +527,10 @@ class CoursesWebModule extends WebModule {
         return $links;
     }
 
+    /**
+     * Sets the current term, and assigns the available terms
+     * @return CourseTerm
+     */
     protected function assignTerm(){
         $feedTerms = $this->controller->getAvailableTerms();
 
@@ -455,6 +557,11 @@ class CoursesWebModule extends WebModule {
         return $Term;
     }
 
+    /**
+     * Gets the course from the request args.
+     * Sets the courseTitle, courseID, and sectionNumber if available
+     * @return Course
+     */
     protected function getCourseFromArgs() {
 
         if ($courseID = $this->getArg('courseID')) {
@@ -476,10 +583,20 @@ class CoursesWebModule extends WebModule {
         }
     }
 
+    /**
+     * Gets the title of the feed IDed by $feed
+     * @param  string $feed The feed to lookup
+     * @return string
+     */
     protected function getFeedTitle($feed) {
         return isset($this->feeds[$feed]['TITLE']) ? $this->feeds[$feed]['TITLE'] : '';
     }
 
+    /**
+     * Returns the URL for a saved bookmark.
+     * @param  string $aBookmark  The bookmark to link to
+     * @return string
+     */
     protected function detailURLForBookmark($aBookmark) {
         return $this->buildBreadcrumbURL('catalogcourse', array(
             'courseID'  => $this->getBookmarkParam($aBookmark, 'id'),
@@ -488,10 +605,21 @@ class CoursesWebModule extends WebModule {
         ));
     }
 
+    /**
+     * Gets the title of a bookmark.
+     * @param  string $aBookmark The bookmark to get the title of
+     * @return string
+     */
     protected function getTitleForBookmark($aBookmark) {
         return $this->getBookmarkParam($aBookmark, 'title');
     }
 
+    /**
+     * Retrieves a parameter from the bookmark string.
+     * @param  string $aBookmark The bookmark to get the parameter from
+     * @param  string $param     A paramter (title, id, term, area, etc) to get from the bookmark
+     * @return string
+     */
     protected function getBookmarkParam($aBookmark, $param){
         parse_str($aBookmark, $params);
         if(isset($params[$param])){
@@ -500,6 +628,10 @@ class CoursesWebModule extends WebModule {
         return null;
     }
 
+    /**
+     * Initializes the module. Gets the feed data, creates the controller,
+     * and assigns the term.
+     */
     protected function initialize() {
         if(!$this->feeds = $this->loadFeedData()){
             throw new KurogoConfigurationException("Feeds configuration cannot be empty.");
@@ -511,6 +643,11 @@ class CoursesWebModule extends WebModule {
         $this->assign('hasPersonalizedCourses', $this->controller->canRetrieve('registration') || $this->controller->canRetrieve('content'));
     }
 
+    /**
+     * Gets an array of options based on the current page arguements.
+     * Used to pass options from one page to another.
+     * @return array
+     */
     protected function getCourseOptions() {
         $courseID = $this->getArg('courseID');
         $area = $this->getArg('area');
@@ -527,6 +664,12 @@ class CoursesWebModule extends WebModule {
         return $options;
     }
 
+    /**
+     * Assigns the group links for the groups in a tabstrip on a page.
+     * @param  string $tabPage             The tab
+     * @param  array  $groups              The array of groups to link to
+     * @param  array  $defaultGroupOptions An array of options to include in the page link
+     */
     protected function assignGroupLinks($tabPage, $groups, $defaultGroupOptions = array()){
         $page = $this->originalPage;
         foreach ($groups as $groupIndex => $group) {
@@ -547,6 +690,12 @@ class CoursesWebModule extends WebModule {
         $this->assign('tabstripId', $tabPage.'-'.md5($this->buildURL($this->page, $this->args)));
     }
 
+    /**
+     * Paginates an array of items.
+     * @param  array  $contents The array of items to paginate
+     * @param  int    $limit    The maximum number of items per page
+     * @return array
+     */
     protected function paginateArray($contents, $limit) {
         $totalItems = count($contents);
         $start = $this->getArg('start', 0);
@@ -580,6 +729,12 @@ class CoursesWebModule extends WebModule {
         return $contents;
     }
 
+    /**
+     * Sorts an array of content by the specified method, or by the content's sortBy() function.
+     * @param  array  $courseContents The array of content being sorted
+     * @param  string $sort=null      The way of sorting. May be a key used in sortByField.
+     * @return array
+     */
     public function sortCourseContent($courseContents, $sort=null) {
         if (empty($courseContents)) {
             return array();
@@ -589,7 +744,12 @@ class CoursesWebModule extends WebModule {
         return $courseContents;
     }
 
-    // sort type for content
+    /**
+     * Callback function used for sorting in sortCourseContent. Returns 0, -1, or 1.
+     * @param  mixed  $contentA One object being compared.
+     * @param  mixed  $contentB The second object being compared
+     * @return int
+     */
     private function sortByField($contentA, $contentB) {
         switch ($this->sortType) {
             case 'sortDate':
@@ -609,6 +769,12 @@ class CoursesWebModule extends WebModule {
     }
 
     // takes a config and process the info data
+    /**
+     * Takes a config and processes the info
+     * @param  array  $options    An array of options to be passed to formatCourseDetailSection
+     * @param  string $configName The name of the config to load
+     * @return array
+     */
     protected function formatCourseDetails($options, $configName) {
 
         //load page detail configs
@@ -662,6 +828,11 @@ class CoursesWebModule extends WebModule {
         return $details;
     }
 
+    /**
+     * Returns the course or section object from the options array.
+     * @param  array  $options
+     * @return mixed
+     */
     protected function getInfoObject($options) {
         if (isset($options['course'])) {
             $Course = $options['course'];
@@ -678,6 +849,12 @@ class CoursesWebModule extends WebModule {
         return $object;
     }
 
+    /**
+     * Returns the items details
+     * @param  array  $options
+     * @param  array  $sectionData Data for a particular section
+     * @return array
+     */
     protected function formatCourseDetailSection($options, $sectionData) {
 
         switch ($sectionData['type']) {
@@ -726,6 +903,13 @@ class CoursesWebModule extends WebModule {
         }
     }
 
+    /**
+     * Formats a particular detail field
+     * @param  mxied  $object      A course or section object
+     * @param  mixed  $sectionItem
+     * @param  array $sectionData
+     * @return array
+     */
     protected function formatSectionDetailField($object, $sectionItem, $sectionData) {
 
         if (!is_object($sectionItem)) {
@@ -761,7 +945,13 @@ class CoursesWebModule extends WebModule {
         return $this->formatInfoDetail($value, $fieldData, $sectionItem);
     }
 
-
+    /**
+     * Retrieves and formats a detail field.
+     * @param  mixed  $object    The object to get the field value from
+     * @param  string $field     The field to retrieve
+     * @param  array  $fieldData
+     * @return array
+     */
     protected function formatDetailField($object, $field, $fieldData) {
 
         $method = "get" . $field;
@@ -773,6 +963,13 @@ class CoursesWebModule extends WebModule {
         return $this->formatInfoDetail($value, $fieldData, $object);
     }
 
+    /**
+     * Formats a value based on it's type and other info
+     * @param  mixed  $value  The value to format
+     * @param  array  $info   Information about the value/field
+     * @param  mixed  $object The object the value came from
+     * @return array
+     */
     protected function formatInfoDetail($value, $info, $object) {
 
         $detail = $info;
@@ -846,6 +1043,12 @@ class CoursesWebModule extends WebModule {
         return $detail;
     }
 
+    /**
+     * Format the value with a callback function if it's set
+     * @param  array  $values The value to format
+     * @param  array  $info   Array holding the callback function
+     * @return array
+     */
     protected function formatValues($values, $info) {
         if (isset($info['parse'])) {
             $formatFunction = create_function('$value', $info['parse']);
@@ -857,10 +1060,20 @@ class CoursesWebModule extends WebModule {
         return $values;
     }
 
+    /**
+     * Replaces newline and tab characters with actual newlines and tabs
+     * @param  mixed  $format The string or array to replace newlines/tabs in
+     * @return mixed
+     */
     protected function replaceFormat($format) {
         return str_replace(array('\n','\t'),array("\n","\t"), $format);
     }
 
+    /**
+     * Return options relevant to retrieving tasks
+     * @param  array  $options
+     * @return array
+     */
     protected function getOptionsForTasks($options) {
         $page = isset($options['page']) ? $options['page'] : $this->page;
         $section = $page == 'index' ? 'alltasks' : 'tasks';
@@ -885,14 +1098,31 @@ class CoursesWebModule extends WebModule {
         return $options;
     }
 
+    /**
+     * Return options relevant to retrieving announcements
+     * @param  array $options
+     * @return array
+     */
     protected function getOptionsForAnnouncements($options){
         return array();
     }
 
+    /**
+     * Return options relevant to retrieving updates
+     * @param  array $options
+     * @return array
+     */
     protected function getOptionsForUpdates($options) {
         return array();
     }
 
+    /**
+     * Return options relevant to retrieving all content
+     * for the browse view. Sets the contentID option if
+     * it is available.
+     * @param  array $options
+     * @return array
+     */
     protected function getOptionsForBrowse($options){
         if ($contentID = $this->getArg('contentID', '')) {
             return array('contentID'=>$contentID);
@@ -900,6 +1130,11 @@ class CoursesWebModule extends WebModule {
         return array();
     }
 
+    /**
+     * Return options relevant to retrieving a course.
+     * Sets the term option to the string value of the term
+     * @return array
+     */
     protected function getOptionsForCourse(){
         $options = array(
             'term' => strval($this->Term)
@@ -907,6 +1142,11 @@ class CoursesWebModule extends WebModule {
         return $options;
     }
 
+    /**
+     * Return options relevant to retrieving resources
+     * @param  array $options
+     * @return array
+     */
     protected function getOptionsForResources($options) {
         $page = isset($options['page']) ? $options['page'] : $this->page;
         $groupsConfig = $this->getModuleSections('resources');
@@ -933,6 +1173,11 @@ class CoursesWebModule extends WebModule {
         return $options;
     }
 
+    /**
+     * Gets all bookmarks for a given term
+     * @param  CourseTerm $Term The term to get bookmarks for
+     * @return array
+     */
     protected function getBookmarksForTerm(CourseTerm $Term) {
         $_bookmarks =  $this->getBookmarks();
         $bookmarks = array();
@@ -944,6 +1189,10 @@ class CoursesWebModule extends WebModule {
         return $bookmarks;
     }
 
+    /**
+     * Initializes the grades tab, assigns grades data.
+     * @param  array  $options
+     */
     protected function initializeGrades($options) {
         if (isset($options['course'])) {
             $course = $options['course'];
@@ -962,6 +1211,11 @@ class CoursesWebModule extends WebModule {
         $this->assign('gradesLinks',$gradesLinks);
     }
 
+    /**
+     * Initializes the info tab, formats and assigns info details
+     * @param  array  $options
+     * @return boolean
+     */
     protected function initializeInfo($options) {
 
         $course = $options['course'];
@@ -984,6 +1238,11 @@ class CoursesWebModule extends WebModule {
         break;
     }
 
+    /**
+     * Return options relevant to retrieving courses.
+     * Sets the term option to the term
+     * @return array
+     */
     protected function getOptionsForCourses() {
         $options = array(
             'term'=>$this->Term
@@ -992,6 +1251,12 @@ class CoursesWebModule extends WebModule {
         return $options;
     }
 
+    /**
+     * Returns an array of courses
+     * @param  array   $options
+     * @param  boolean $grouped=false Whether the courses should be grouped by listing or not
+     * @return array
+     */
     protected function getCourses($options, $grouped=false) {
 
         /** prevent this from being called more than once **/
@@ -1023,6 +1288,12 @@ class CoursesWebModule extends WebModule {
         return $courses;
     }
 
+    /**
+     * Initialize announcements, either for aggregated view or single view.
+     * Assigns announcements with pagination
+     * @param  array  $options
+     * @return boolean
+     */
     protected function initializeAnnouncements($options) {
         $announcementsLinks = array();
         if (isset($options['course'])) {
@@ -1049,6 +1320,12 @@ class CoursesWebModule extends WebModule {
         return true;
     }
 
+    /**
+     * Initialize updates, either for aggregated view or single view.
+     * Assigns updates with pagination
+     * @param  array  $options
+     * @return boolean
+     */
     protected function initializeUpdates($options) {
         $updatesLinks = array();
 
@@ -1076,6 +1353,12 @@ class CoursesWebModule extends WebModule {
         return true;
     }
 
+    /**
+     * Initializes tasks, either for aggregated view or single view.
+     * Sorts tasks and assigns data
+     * @param  [type] $options [description]
+     * @return [type]          [description]
+     */
     protected function initializeTasks($options) {
 
         if (isset($options['course'])) {
@@ -1132,6 +1415,11 @@ class CoursesWebModule extends WebModule {
         $this->assign('tasks', $sortedTasks);
     }
 
+    /**
+     * Initializes resources, assigns group data.
+     * Assigns resources with pagination.
+     * @param  array  $options
+     */
     protected function initializeResources($options) {
 
         if (isset($options['course'])) {
@@ -1205,6 +1493,10 @@ class CoursesWebModule extends WebModule {
         $this->assign('courseResourcesGroup', $group);
     }
 
+    /**
+     * Initialize the browse view.
+     * @param  array  $options
+     */
     protected function initializeBrowse($options){
         if (isset($options['course'])) {
             $course = $options['course'];
@@ -1247,14 +1539,29 @@ class CoursesWebModule extends WebModule {
         $this->assign('browseHeader', $browseHeader);
     }
 
+    /**
+     * Get the tablet heading text for viewing all classes
+     * @param  array  $options
+     * @return string
+     */
     protected function getTabletViewAllHeadingText($options) {
         return $this->getLocalizedString('COURSES_VIEW_ALL_CLASSES_TEXT');
     }
 
+    /**
+     * Get the tablet link text for viewing all classes
+     * @param  array  $options
+     * @return string
+     */
     protected function getTabletViewAllLinkText($options) {
         return $this->getTabletViewAllHeadingText($options);
     }
 
+    /**
+     * Initialize courses tab. Create courses links,
+     * and catalog link if it exists.
+     * @return boolean
+     */
     protected function initializeCourses() {
 
         if ($this->isLoggedIn()) {
@@ -1320,6 +1627,13 @@ class CoursesWebModule extends WebModule {
         return true;
     }
 
+    /**
+     * Whether to show a particular tab or not.
+     * Will not show if tab is protected and user is not logged in.
+     * @param  string $tabID   The tab ID to check
+     * @param  array  $tabData The tab's Data
+     * @return boolean
+     */
     protected function showTab($tabID, $tabData) {
         if (self::argVal($tabData, 'protected', 0) && !$this->isLoggedIn()) {
             return false;
@@ -1338,6 +1652,9 @@ class CoursesWebModule extends WebModule {
         return true;
     }
 
+    /**
+     * Initialize the requested page. Set template variables.
+     */
     protected function initializeForPage() {
         $this->originalPage = $this->page;
 
