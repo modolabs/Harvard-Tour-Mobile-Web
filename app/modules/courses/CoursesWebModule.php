@@ -1509,6 +1509,9 @@ class CoursesWebModule extends WebModule {
                 case 'folder':
                     $browseLinks[] = $this->linkForFolder($content, $contentCourse);
                     break;
+                case 'task':
+                    $browseLinks[] = $this->linkForTask($content, $contentCourse);
+                    break;
                 default:
                     $browseLinks[] = $this->linkForContent($content, $contentCourse);
                     break;
