@@ -624,7 +624,6 @@ class CoursesWebModule extends WebModule {
     /**
      * Initializes the module. Gets the feed data, creates the controller,
      * and assigns the term.
-     * @return null
      */
     protected function initialize() {
         if(!$this->feeds = $this->loadFeedData()){
@@ -663,7 +662,6 @@ class CoursesWebModule extends WebModule {
      * @param  string $tabPage             The tab
      * @param  array  $groups              The array of groups to link to
      * @param  array  $defaultGroupOptions An array of options to include in the page link
-     * @return null
      */
     protected function assignGroupLinks($tabPage, $groups, $defaultGroupOptions = array()){
         $page = $this->originalPage;
@@ -1064,6 +1062,11 @@ class CoursesWebModule extends WebModule {
         return str_replace(array('\n','\t'),array("\n","\t"), $format);
     }
 
+    /**
+     * Return options relevant to retrieving tasks
+     * @param  array  $options
+     * @return array
+     */
     protected function getOptionsForTasks($options) {
         $page = isset($options['page']) ? $options['page'] : $this->page;
         $section = $page == 'index' ? 'alltasks' : 'tasks';
@@ -1088,14 +1091,31 @@ class CoursesWebModule extends WebModule {
         return $options;
     }
 
+    /**
+     * Return options relevant to retrieving announcements
+     * @param  array $options
+     * @return array
+     */
     protected function getOptionsForAnnouncements($options){
         return array();
     }
 
+    /**
+     * Return options relevant to retrieving updates
+     * @param  array $options
+     * @return array
+     */
     protected function getOptionsForUpdates($options) {
         return array();
     }
 
+    /**
+     * Return options relevant to retrieving all content
+     * for the browse view. Sets the contentID option if
+     * it is available.
+     * @param  array $options
+     * @return array
+     */
     protected function getOptionsForBrowse($options){
         if ($contentID = $this->getArg('contentID', '')) {
             return array('contentID'=>$contentID);
@@ -1103,6 +1123,11 @@ class CoursesWebModule extends WebModule {
         return array();
     }
 
+    /**
+     * Return options relevant to retrieving a course.
+     * Sets the term option to the string value of the term
+     * @return array
+     */
     protected function getOptionsForCourse(){
         $options = array(
             'term' => strval($this->Term)
@@ -1110,6 +1135,11 @@ class CoursesWebModule extends WebModule {
         return $options;
     }
 
+    /**
+     * Return options relevant to retrieving resources
+     * @param  array $options
+     * @return array
+     */
     protected function getOptionsForResources($options) {
         $page = isset($options['page']) ? $options['page'] : $this->page;
         $groupsConfig = $this->getModuleSections('resources');
@@ -1136,6 +1166,11 @@ class CoursesWebModule extends WebModule {
         return $options;
     }
 
+    /**
+     * Gets all bookmarks for a given term
+     * @param  CourseTerm $Term The term to get bookmarks for
+     * @return array
+     */
     protected function getBookmarksForTerm(CourseTerm $Term) {
         $_bookmarks =  $this->getBookmarks();
         $bookmarks = array();
@@ -1147,6 +1182,10 @@ class CoursesWebModule extends WebModule {
         return $bookmarks;
     }
 
+    /**
+     * Initializes the grades tab, assigns grades data.
+     * @param  array  $options
+     */
     protected function initializeGrades($options) {
         if (isset($options['course'])) {
             $course = $options['course'];
@@ -1165,6 +1204,11 @@ class CoursesWebModule extends WebModule {
         $this->assign('gradesLinks',$gradesLinks);
     }
 
+    /**
+     * Initializes the info tab, formats and assigns info details
+     * @param  array  $options
+     * @return boolean
+     */
     protected function initializeInfo($options) {
 
         $course = $options['course'];
@@ -1187,6 +1231,11 @@ class CoursesWebModule extends WebModule {
         break;
     }
 
+    /**
+     * Return options relevant to retrieving courses.
+     * Sets the term option to the term
+     * @return array
+     */
     protected function getOptionsForCourses() {
         $options = array(
             'term'=>$this->Term
@@ -1195,6 +1244,12 @@ class CoursesWebModule extends WebModule {
         return $options;
     }
 
+    /**
+     * Returns an array of courses
+     * @param  array   $options
+     * @param  boolean $grouped=false Whether the courses should be grouped by listing or not
+     * @return array
+     */
     protected function getCourses($options, $grouped=false) {
 
         /** prevent this from being called more than once **/
@@ -1226,6 +1281,12 @@ class CoursesWebModule extends WebModule {
         return $courses;
     }
 
+    /**
+     * Initialize announcements, either for aggregated view or single view.
+     * Assigns announcements with pagination
+     * @param  array  $options
+     * @return boolean
+     */
     protected function initializeAnnouncements($options) {
         $announcementsLinks = array();
         if (isset($options['course'])) {
@@ -1252,6 +1313,12 @@ class CoursesWebModule extends WebModule {
         return true;
     }
 
+    /**
+     * Initialize updates, either for aggregated view or single view.
+     * Assigns updates with pagination
+     * @param  array  $options
+     * @return boolean
+     */
     protected function initializeUpdates($options) {
         $updatesLinks = array();
 
@@ -1279,6 +1346,12 @@ class CoursesWebModule extends WebModule {
         return true;
     }
 
+    /**
+     * Initializes tasks, either for aggregated view or single view.
+     * Sorts tasks and assigns data
+     * @param  [type] $options [description]
+     * @return [type]          [description]
+     */
     protected function initializeTasks($options) {
 
         if (isset($options['course'])) {
@@ -1335,6 +1408,11 @@ class CoursesWebModule extends WebModule {
         $this->assign('tasks', $sortedTasks);
     }
 
+    /**
+     * Initializes resources, assigns group data.
+     * Assigns resources with pagination.
+     * @param  array  $options
+     */
     protected function initializeResources($options) {
 
         if (isset($options['course'])) {
@@ -1408,6 +1486,10 @@ class CoursesWebModule extends WebModule {
         $this->assign('courseResourcesGroup', $group);
     }
 
+    /**
+     * Initialize the browse view.
+     * @param  array  $options
+     */
     protected function initializeBrowse($options){
         if (isset($options['course'])) {
             $course = $options['course'];
@@ -1450,14 +1532,29 @@ class CoursesWebModule extends WebModule {
         $this->assign('browseHeader', $browseHeader);
     }
 
+    /**
+     * Get the tablet heading text for viewing all classes
+     * @param  array  $options
+     * @return string
+     */
     protected function getTabletViewAllHeadingText($options) {
         return $this->getLocalizedString('COURSES_VIEW_ALL_CLASSES_TEXT');
     }
 
+    /**
+     * Get the tablet link text for viewing all classes
+     * @param  array  $options
+     * @return string
+     */
     protected function getTabletViewAllLinkText($options) {
         return $this->getTabletViewAllHeadingText($options);
     }
 
+    /**
+     * Initialize courses tab. Create courses links,
+     * and catalog link if it exists.
+     * @return boolean
+     */
     protected function initializeCourses() {
 
         if ($this->isLoggedIn()) {
@@ -1523,6 +1620,13 @@ class CoursesWebModule extends WebModule {
         return true;
     }
 
+    /**
+     * Whether to show a particular tab or not.
+     * Will not show if tab is protected and user is not logged in.
+     * @param  string $tabID   The tab ID to check
+     * @param  array  $tabData The tab's Data
+     * @return boolean
+     */
     protected function showTab($tabID, $tabData) {
         if (self::argVal($tabData, 'protected', 0) && !$this->isLoggedIn()) {
             return false;
@@ -1541,6 +1645,9 @@ class CoursesWebModule extends WebModule {
         return true;
     }
 
+    /**
+     * Initialize the requested page. Set template variables.
+     */
     protected function initializeForPage() {
         $this->originalPage = $this->page;
 
