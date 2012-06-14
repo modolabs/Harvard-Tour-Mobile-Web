@@ -153,11 +153,15 @@ class CoursesWebModule extends WebModule {
                 $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MAX_LENGTH', 500),
                 $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MAX_LENGTH_MARGIN', 50),
                 $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MIN_LINE_LENGTH', 50),
-                'editor', // allowed tags list for user-entered html
+                'inline|block|link|media|list|table', // allowed tags list for user-entered html
                 $retriever ? $retriever->getEncoding() : 'utf-8');
 
-            if (!$truncated) {
-                unset($link['url']); // didn't truncate html -- displaying entire announcement
+            if ($truncated) {
+                // remove links (outer nav <a> will confuse browser)
+                $body = Sanitizer::sanitizeHTML($body, 'inline|block|media|list|table');
+            } else {
+                // didn't truncate html -- displaying entire announcement
+                unset($link['url']);
             }
 
             $link['body'] = $body;
