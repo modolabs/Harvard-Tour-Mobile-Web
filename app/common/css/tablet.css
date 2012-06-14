@@ -625,19 +625,11 @@ ul.focal li:first-child {
 .tabbody .nav {
 	margin: 0 -8px;
 	border: none;
-	-webkit-border-bottom-right-radius: 8px;	
-	-webkit-border-bottom-left-radius: 8px;	
-	border-bottom-right-radius: 8px;
-	border-bottom-left-radius: 8px;
 }
 
 .tabbody .results {
 	margin: 8px 4px 0 4px;
 	border-width: 1px 0 0 0;
-	-webkit-border-bottom-right-radius: 8px;	
-	-webkit-border-bottom-left-radius: 8px;	
-	border-bottom-right-radius: 8px;
-	border-bottom-left-radius: 8px;
 }
 
 .tabbody .nested {
@@ -1211,8 +1203,6 @@ h2.icon {
 	margin: -12px -12px 0 -12px;
 	clear: both;
 	border-top: 1px solid #bbb;
-	-webkit-border-bottom-right-radius: 8px;	
-	-webkit-border-bottom-left-radius: 8px;	
 }
 
 .shaded #tabbodies {
@@ -1221,8 +1211,8 @@ h2.icon {
 
 .tabbody {
 	position: relative;
-	min-height: 230px;
-	padding: 8px;
+	min-height: 400px;
+	padding: 12px;
 }
 
 .tabbody h3 {
