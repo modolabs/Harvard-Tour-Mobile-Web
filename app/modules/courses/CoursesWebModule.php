@@ -148,14 +148,14 @@ class CoursesWebModule extends WebModule {
             $body = $announcement->getDescription();
             $maxLength = $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MAX_LENGTH', 500);
             $retriever = $announcement->getContentRetriever();
-            
-            $body = Sanitizer::sanitizeAndTruncateHTML($body, $truncated, 
-                $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MAX_LENGTH', 500), 
+
+            $body = Sanitizer::sanitizeAndTruncateHTML($body, $truncated,
+                $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MAX_LENGTH', 500),
                 $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MAX_LENGTH_MARGIN', 50),
                 $this->getOptionalModuleVar('ANNOUNCEMENT_TABLET_MIN_LINE_LENGTH', 50),
                 'editor', // allowed tags list for user-entered html
                 $retriever ? $retriever->getEncoding() : 'utf-8');
-            
+
             if (!$truncated) {
                 unset($link['url']); // didn't truncate html -- displaying entire announcement
             }
@@ -289,16 +289,7 @@ class CoursesWebModule extends WebModule {
             $options['course'] = $contentCourse;
 
             // TODO: Change this to be anything but tablet
-            if ($this->pagetype=='tablet') {
-                $courseTabs = $this->getModuleSections('coursetabs');
-                foreach($courseTabs as $tab=>$data) {
-                    if (in_array($tab, array('announcements','resources','tasks'))) {
-                        $count = rand(0,5);
-                        $subtitle[] = sprintf('<span class="updateitem"><img src="/modules/courses/images/updates_%s.png" height="16" width="16" valign="middle" alt="%s" title="%2$s" /> %d</span>', $tab, $this->getTitleForTab($tab, 'course'), $count);
-                    }
-                }
-                $link['subtitle'] = implode("", $subtitle);
-            } else {
+            if ($this->pagetype !='tablet') {
                 // If we can get the last update display some info about it in the subtitle
                 if ($lastUpdateContent = $contentCourse->getLastUpdate()) {
                     $subtitle[] = $lastUpdateContent->getTitle();
