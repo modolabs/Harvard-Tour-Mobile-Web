@@ -13,7 +13,7 @@
 
 .courses-splitview-listcontainer {
     height: 100%;
-    width: 320px;
+    width: 280px;
     position: relative;
     border: 1px solid;
     border-left: none;
@@ -35,6 +35,11 @@
     border-top: 1px solid;
     -webkit-box-flex:1;
     -moz-box-flex:1;
+}
+
+.courses-splitview-listcontainer a {
+    background-image: none;
+    padding: 10px;
 }
 
 .courses-splitview-listcontainer a.selected {
@@ -110,6 +115,14 @@
     margin-top: 1em;
 }
 
-.coursetitle {
-    margin-top: 6px
+.seeall {
+    float: right;
+}
+
+.seeall a {
+    display: block;
+    text-decoration: none;
+    font-size: 88.2%;
+    padding: 5px 22px;
+    background: url(/common/images/action-arrow.png) right no-repeat;
 }
