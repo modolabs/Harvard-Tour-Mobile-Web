@@ -20,6 +20,13 @@
     border-bottom: none;
 }
 
+@media only screen and (min-width: 900px) {
+    .courses-splitview-listcontainer {
+        width: 33%;
+        max-width: 360px;
+    }
+}
+
 .courses-splitview-listcontainer > *,
 .courses-splitview-detailwrapper > * {
     overflow: hidden;
@@ -107,22 +114,19 @@
     font-weight: bold;
 }
 
-.announcementBody {
-
-}
-
 .announcementPublished {
     margin-top: 1em;
 }
 
 .seeall {
     float: right;
+    margin-right: 4px;
 }
 
 .seeall a {
     display: block;
     text-decoration: none;
-    font-size: 88.2%;
-    padding: 5px 22px;
+    font-size: 82.4%;
+    padding: 5px 21px;
     background: url(/common/images/action-arrow.png) right no-repeat;
 }
