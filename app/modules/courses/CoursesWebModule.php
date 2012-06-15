@@ -2278,5 +2278,25 @@ class CoursesWebModule extends WebModule {
                 break;
         }
     }
+    public function nativeWebTemplateAssets() {
+        return array(
+            '/modules/courses/images/content_announcement.png',
+            '/modules/courses/images/content_blog.png',
+            '/modules/courses/images/content_file_doc.png',
+            '/modules/courses/images/content_file_img.png',
+            '/modules/courses/images/content_file_pdf.png',
+            '/modules/courses/images/content_file_ppt.png',
+            '/modules/courses/images/content_file_txt.png',
+            '/modules/courses/images/content_file_video.png',
+            '/modules/courses/images/content_file_xls.png',
+            '/modules/courses/images/content_file_zip.png',
+            '/modules/courses/images/content_file.png',
+            '/modules/courses/images/content_folder.png',
+            '/modules/courses/images/content_link.png',
+            '/modules/courses/images/content_page.png',
+            '/modules/courses/images/content_task.png',
+        );
+    }
+
 }
 
