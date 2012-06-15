@@ -10,12 +10,12 @@
   </div>
   <div id="courseDetailWrapper" class="courses-splitview-detailwrapper">
     <div id="courseDetail">
-      <div id="course_all_detail" class="loaded">
+      <div id="{$courseIdPrefix}{$courseIdAll}_detail" class="loaded">
         <div class="nonfocal coursetitle"><h2>{$viewAllCoursesHeading}</h2></div>
         {include file="findInclude:modules/courses/templates/include/indexTabs.tpl"}
       </div>
       {for $i = 0 to ($courseLinkCount-1)}
-        <div id="course_{$i}_detail"></div>
+        <div id="{$courseIdPrefix}{$i}_detail"></div>
       {/for}
   </div>
 </div>

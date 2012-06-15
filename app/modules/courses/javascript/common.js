@@ -24,7 +24,7 @@ function switchPage(link, contentURL) {
     scrollContentToTop();
     
     ajaxContentIntoContainer({ 
-        url: contentURL+"&ajax=1", // the url to get the page content from 
+        url: contentURL, // the url to get the page content from 
         container: element, // the container to dump the content into 
         timeout: 30, // how long to wait for the server before returning an error 
         success: function() {
@@ -40,7 +40,7 @@ function loadTab(tabId, contentURL) {
     //console.log('loading ' + tab + ' from ' + contentURL);
     var element = document.getElementById(tabId+'-tabbody');
     
-    if (!hasClass(element, 'loaded')) {
+    if (element && !hasClass(element, 'loaded')) {
         ajaxContentIntoContainer({ 
             url: contentURL, // the url to get the page content from 
             container: element, // the container to dump the content into 
@@ -66,7 +66,7 @@ function updateGroupTab(clicked, tabId, contentURL) {
     }
     
     ajaxContentIntoContainer({ 
-        url: contentURL + '&ajax=1&ajaxgroup=1', // the url to get the page content from 
+        url: contentURL + '&ajaxgroup=1', // the url to get the page content from 
         container: element, // the container to dump the content into 
         timeout: 30, // how long to wait for the server before returning an error 
         success: function() {

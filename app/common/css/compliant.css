@@ -1237,60 +1237,60 @@ h2.icon {
 	margin-top: 2px;
 }
 
-.tabstrip ,
-#tabstrip {
+.tabstrip {
 	list-style-type: none;
-	height: 32px;
-	-webkit-border-radius: 10px;	
-	border-radius: 10px;	
+	height: 36px;
+	-webkit-border-radius: 7px;	
+	border-radius: 7px;	
 	margin: 0;
 	padding: 0;
 	left: 0;
 	overflow: hidden;
-	font-size: 88.23%;
+	font-size: 88.24%;
 }
 
-.tabstrip li ,
-#tabstrip li {
+.tabstrip li  {
 	float: left;
 	margin: 0;
 	text-align: center;
-	height: 33px;
+	height: 34px;
 }
 
-.tabstrip a,
-#tabstrip a {
+.tabstrip a, .tabstrip a:visited {
 	display: block;
-	height: 32px;
+	height: 34px;
 	line-height: 32px;
 	text-decoration: none;
-	color: #fff !important;
-	background: url(/common/images/tabstrip.jpg) repeat-x;
-	-webkit-background-origin: padding-box; -webkit-background-clip: content-box; 
-	border-right: 1px solid #999;
-	-webkit-border-radius: 1px;	
-	border-radius: 1px;	
+	background-color: transparent;
+	border: 1px solid #ccc;
+	border-right: none
 }	
 
-.tabstrip li.active a ,
-#tabstrip li.active a {
-	background-image: url(/common/images/tabstrip-active.jpg);
+.tabstrip li:last-child a {
+    border-right: 1px solid #999;;
 }
 
-.tabstrip li:first-child a ,
-#tabstrip li:first-child a {
-	-webkit-border-bottom-left-radius: 10px;	
-	-webkit-border-top-left-radius: 10px;	
-	border-bottom-left-radius: 10px;	
-	border-top-left-radius: 10px;	
+.focal .tabstrip a, .tabbody .tabstrip a {
+	color: #505050;
 }
 
-.tabstrip li:last-child a ,
-#tabstrip li:last-child a {
-	-webkit-border-bottom-right-radius: 10px;	
-	-webkit-border-top-right-radius: 10px;	
-	border-bottom-right-radius: 10px;	
-	border-top-right-radius: 10px;	
+.tabstrip li.active a {
+	background-color: #444;
+	color: #fff;
+}
+
+.tabstrip li:first-child a {
+	-webkit-border-bottom-left-radius: 6px;	
+	-webkit-border-top-left-radius: 6px;	
+	border-bottom-left-radius: 6px;	
+	border-top-left-radius: 6px;	
+}
+
+.tabstrip li:last-child a {
+	-webkit-border-bottom-right-radius: 6px;	
+	-webkit-border-top-right-radius: 6px;	
+	border-bottom-right-radius: 6px;	
+	border-top-right-radius: 6px;	
 }
 
 .twotabs li {

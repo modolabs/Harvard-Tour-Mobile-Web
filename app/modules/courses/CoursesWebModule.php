@@ -1654,6 +1654,8 @@ class CoursesWebModule extends WebModule {
      * Initialize the requested page. Set template variables.
      */
     protected function initializeForPage() {
+        $preloadSelectedTab = $this->pagetype == 'touch' || $this->pagetype == 'basic';
+        
         $this->originalPage = $this->page;
 
         if ($this->pagetype == 'tablet') {
@@ -2027,7 +2029,7 @@ class CoursesWebModule extends WebModule {
                 $this->tab = $this->getArg('tab', key($tabsConfig));
                 foreach ($tabsConfig as $tabID => $tabData) {
                     if ($this->showTab($tabID, $tabData)) {
-                        if ($tabID == $this->tab) {
+                        if ($tabID == $this->tab && $preloadSelectedTab) {
                             $method = "initialize" . $tabID;
                             if (!is_callable(array($this, $method))) {
                                 throw new KurogoDataException("Method $this does not exist on " . get_class($this));
@@ -2085,7 +2087,12 @@ class CoursesWebModule extends WebModule {
                 $options = array('page'=>$this->page);
                 $tabs = array();
                 $javascripts = array();
-                $this->tab = $this->getArg('tab', key($tabsConfig));
+                if ($this->page == 'index' && $this->pagetype == 'tablet') {
+                    // always load courses list on tablet -- everything else is ajaxed in
+                    $this->tab = 'Courses';
+                } else {
+                    $this->tab = $this->getArg('tab', key($tabsConfig));
+                }
                 $args = $this->args;
                 $args['ajax'] = true;
                 $args['page'] = $this->page;
@@ -2109,6 +2116,42 @@ class CoursesWebModule extends WebModule {
                     $this->enableTabs($tabs, null, $javascripts);
                     $this->assign('tabs', $tabs);
                     $this->assign('currentTab', $this->tab);
+                }
+                
+                if ($this->page == 'index' && $this->pagetype == 'tablet') {
+                    $selectedCourseCookie = "module_{$this->configModule}_listselect";
+                    $this->assign('selectedCourseCookie', $selectedCourseCookie);
+                    
+                    $courseIdPrefix = 'course_';
+                    $this->assign('courseIdPrefix', $courseIdPrefix);
+                    
+                    $coursesAllId = $courseIdPrefix.'all';
+                    $this->assign('courseAllId', $coursesAllId);
+                    
+                    if (isset($_COOKIE[$selectedCourseCookie])) {
+                        $cookieCourseId = $_COOKIE[$selectedCourseCookie];
+                        
+                        if ($cookieCourseId == $coursesAllId) {
+                            // selected by default
+                        } else {
+                            $coursesListLinks = $this->getTemplateVars('coursesListLinks');
+                            if (is_array($coursesListLinks)) {
+                                $courseLinkCount = 0;
+                                foreach ($coursesListLinks as $courseList) {
+                                    foreach ($courseList['coursesLinks'] as $courseLink) {
+                                        $courseId = $courseIdPrefix.$courseLinkCount;
+                                        if ($cookieCourseId === $courseId) {
+                                            $this->addOnLoad(
+                                                "updateTabletDetail('{$courseId}', '{$courseLink['url']}', '{$selectedCourseCookie}', '".COOKIE_PATH."');");
+                                            break;
+                                        }
+                                        $courseLinkCount++;
+                                    }
+                                    if ($cookieCourseId === $courseId) { break; }
+                                }
+                            }
+                        }
+                    }
                 }
                 break;
 

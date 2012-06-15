@@ -23,34 +23,40 @@ function loadCourseUpdateIcons(childImage, contentURL) {
     }
 }
 
-function updateTabletDetail(link, contentURL) {
-    var detailId = link.id+"_detail"
-    
+function updateTabletDetail(linkId, contentURL, cookieName, cookiePath) {
+    var link = document.getElementById(linkId);
     var list = document.getElementById('coursesListWrapper');
-    var links = list ? list.getElementsByTagName('a') : [];
-    for (var i = 0; i < links.length; i++) {
-        removeClass(links[i], 'selected');
-    }
-    addClass(link, 'selected');
+    var container = document.getElementById(linkId+"_detail");
+    var parent = container.parentNode;
+    if (!link || !list || !container || !parent) { return; }
     
-    var detailContainer = document.getElementById('courseDetail');
-    var details = detailContainer ? detailContainer.childNodes : [];
-    for (var i = 0; i < details.length; i++) {
-        details[i].style.display = (details[i].id == detailId) ? "block" : "none";
+    setCookie(cookieName, link.id, 0, cookiePath);
+    
+    var links = list.getElementsByTagName('a');
+    for (var i = 0; i < links.length; i++) {
+        if (links[i].id == link.id) {
+            addClass(link, 'selected');
+        } else {
+            removeClass(links[i], 'selected');
+        }
+    }
+    
+    var containers = parent.childNodes;
+    for (var i = 0; i < containers.length; i++) {
+        containers[i].style.display = (containers[i].id == container.id) ? "block" : "none";
     }
     
     if (courseDetailScroller) {
         courseDetailScroller.scrollTo(0, 0, 50);
     }
     
-    var element = document.getElementById(detailId);
-    if (element && !hasClass(element, 'loaded')) {
+    if (!hasClass(container, 'loaded')) {
         ajaxContentIntoContainer({ 
             url: contentURL, // the url to get the page content from 
-            container: element, // the container to dump the content into 
+            container: container, // the container to dump the content into 
             timeout: 30, // how long to wait for the server before returning an error 
             success: function() {
-                addClass(element, 'loaded');
+                addClass(container, 'loaded');
                 onAjaxContentLoad();
             },
             error: function(e) {
@@ -58,10 +64,6 @@ function updateTabletDetail(link, contentURL) {
             }
         });
     }
-}
-
-function showCourse(link, url) {
-    updateTabletDetail(link, url+'&ajax=1');
 }
 
 var courseListScroller = null;
