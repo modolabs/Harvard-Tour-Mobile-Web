@@ -110,7 +110,7 @@ class CoursesWebModule extends WebModule {
         $options['contentID'] = $content->getID();
         $options['type'] = $content->getContentType();
         $options['tab'] = 'browse';
-        $link['url'] = $this->buildAjaxBreadcrumbURL($this->page, $options, false);
+        $link['url'] = $this->buildAjaxBreadcrumbURL('fullbrowse', $options, false);
 
         return $link;
     }
@@ -1655,7 +1655,7 @@ class CoursesWebModule extends WebModule {
      */
     protected function initializeForPage() {
         $preloadSelectedTab = $this->pagetype == 'touch' || $this->pagetype == 'basic';
-        
+
         $this->originalPage = $this->page;
 
         if ($this->pagetype == 'tablet') {
@@ -2117,20 +2117,20 @@ class CoursesWebModule extends WebModule {
                     $this->assign('tabs', $tabs);
                     $this->assign('currentTab', $this->tab);
                 }
-                
+
                 if ($this->page == 'index' && $this->pagetype == 'tablet') {
                     $selectedCourseCookie = "module_{$this->configModule}_listselect";
                     $this->assign('selectedCourseCookie', $selectedCourseCookie);
-                    
+
                     $courseIdPrefix = 'course_';
                     $this->assign('courseIdPrefix', $courseIdPrefix);
-                    
+
                     $coursesAllId = $courseIdPrefix.'all';
                     $this->assign('courseAllId', $coursesAllId);
-                    
+
                     if (isset($_COOKIE[$selectedCourseCookie])) {
                         $cookieCourseId = $_COOKIE[$selectedCourseCookie];
-                        
+
                         if ($cookieCourseId == $coursesAllId) {
                             // selected by default
                         } else {
@@ -2274,6 +2274,56 @@ class CoursesWebModule extends WebModule {
                 } catch (Exception $e) {
                     _404();
                 }
+
+                break;
+            case 'fullbrowse':
+                if (!$course = $this->getCourseFromArgs()) {
+                    $this->redirectTo('index');
+                }
+
+                if (!$contentCourse = $course->getCourse('content')) {
+                    $this->redirectTo('index');
+                }
+
+                $browseOptions = $this->getOptionsForBrowse(array());
+                $browseContent = $contentCourse->getContentByParentId($browseOptions);
+
+                $browseLinks = array();
+                $folderLinks = array();
+                foreach ($browseContent as $content) {
+                    switch ($content->getContentType()) {
+                        case 'folder':
+                            $folderLinks[] = $this->linkForFolder($content, $contentCourse);
+                            break;
+                        case 'task':
+                            $browseLinks[] = $this->linkForTask($content, $contentCourse);
+                            break;
+                        default:
+                            $browseLinks[] = $this->linkForContent($content, $contentCourse);
+                            break;
+                    }
+                }
+                $this->assign('browseLinks', $browseLinks);
+                $this->assign('folderLinks', $folderLinks);
+
+                $browseHeader = array();
+                $folderName = "";
+                if(isset($browseOptions['contentID'])){
+                    $currentContent = $contentCourse->getContentById($browseOptions['contentID']);
+                    $parentID = $currentContent->getParentID();
+                    if($parentID){
+                        $parentContent = $contentCourse->getContentById($parentID);
+                        $browseHeader = $this->linkForFolder($parentContent, $contentCourse,true);
+                    }else{
+                        $options = $this->getCourseOptions();
+                        $browseHeader['url'] = $this->buildBreadcrumbURL($this->page, $options);
+                        $browseHeader['title'] = $this->getLocalizedString('ROOT_LEVEL_TITLE');
+                    }
+                    $folderName = $currentContent->getTitle();
+                    $this->setBreadcrumbTitle($folderName);
+                }
+                $this->assign('folderName', $folderName);
+                $this->assign('browseHeader', $browseHeader);
 
                 break;
         }
