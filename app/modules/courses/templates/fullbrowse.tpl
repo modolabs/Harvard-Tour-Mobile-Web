@@ -5,8 +5,8 @@
 {if $folderName}
 <h2 class="nonfocal">{$folderName}</h2>
 {/if}
-{if !$browseLinks && !folderLinks}
-{"NO_CONTENT"|getLocalizedString}
+{if !$browseLinks && !$folderLinks}
+<div class="focal">{"NO_CONTENT"|getLocalizedString}</div>
 {else}
 {if $folderLinks}
 <h3 class="nonfocal">{"FOLDERS"|getLocalizedString}</h3>

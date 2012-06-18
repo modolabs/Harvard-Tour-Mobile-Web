@@ -110,7 +110,7 @@ class CoursesWebModule extends WebModule {
         $options['contentID'] = $content->getID();
         $options['type'] = $content->getContentType();
         $options['tab'] = 'browse';
-        $link['url'] = $this->buildAjaxBreadcrumbURL('fullbrowse', $options, false);
+        $link['url'] = $this->buildBreadcrumbURL('fullbrowse', $options, true);
 
         return $link;
     }
