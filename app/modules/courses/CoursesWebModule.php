@@ -2289,24 +2289,6 @@ class CoursesWebModule extends WebModule {
                 $browseOptions = $this->getOptionsForBrowse(array());
                 $browseContent = $contentCourse->getContentByParentId($browseOptions);
 
-                $browseLinks = array();
-                $folderLinks = array();
-                foreach ($browseContent as $content) {
-                    switch ($content->getContentType()) {
-                        case 'folder':
-                            $folderLinks[] = $this->linkForFolder($content, $contentCourse);
-                            break;
-                        case 'task':
-                            $browseLinks[] = $this->linkForTask($content, $contentCourse);
-                            break;
-                        default:
-                            $browseLinks[] = $this->linkForContent($content, $contentCourse);
-                            break;
-                    }
-                }
-                $this->assign('browseLinks', $browseLinks);
-                $this->assign('folderLinks', $folderLinks);
-
                 $browseHeader = array();
                 $folderName = "";
                 if(isset($browseOptions['contentID'])){
@@ -2325,6 +2307,24 @@ class CoursesWebModule extends WebModule {
                 }
                 $this->assign('folderName', $folderName);
                 $this->assign('browseHeader', $browseHeader);
+
+                $browseLinks = array();
+                $folderLinks = array();
+                foreach ($browseContent as $content) {
+                    switch ($content->getContentType()) {
+                        case 'folder':
+                            $folderLinks[] = $this->linkForFolder($content, $contentCourse);
+                            break;
+                        case 'task':
+                            $browseLinks[] = $this->linkForTask($content, $contentCourse);
+                            break;
+                        default:
+                            $browseLinks[] = $this->linkForContent($content, $contentCourse);
+                            break;
+                    }
+                }
+                $this->assign('browseLinks', $browseLinks);
+                $this->assign('folderLinks', $folderLinks);
 
                 break;
         }
