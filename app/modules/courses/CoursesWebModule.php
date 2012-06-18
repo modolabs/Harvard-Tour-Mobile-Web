@@ -467,12 +467,13 @@ class CoursesWebModule extends WebModule {
              */
             case 'file':
                 $downloadMode = $content->getDownloadMode();
-                if($downloadMode == $content::MODE_DOWNLOAD) {
-                    $options = $this->getCourseOptions();
-                    $options['contentID'] = $content->getID();
-                    $title = 'Download File';
-                    if($files = $content->getFiles()){
-                        foreach ($files as $file) {
+                if($files = $content->getFiles()){
+                    foreach ($files as $file) {
+                        $fileID = $file->getID();
+                        if($downloadMode == $content::MODE_DOWNLOAD){
+                            $options = $this->getCourseOptions();
+                            $options['contentID'] = $content->getID();
+                            $title = 'Download File';
                             if($fileID = $file->getID()){
                                 $options['fileID'] = $fileID;
                             }
@@ -486,16 +487,15 @@ class CoursesWebModule extends WebModule {
                                 'subtitle'=>$subtitle,
                                 'url'=>$this->buildExternalURL($this->buildURL('download', $options)),
                             );
+                        }elseif($downloadMode == $content::MODE_URL){
+                            $links[] = array(
+                                'title'=>$content->getTitle(),
+                                'subtitle'=>$file->getFilename(),
+                                'url'=>$this->buildExternalURL($content->getFileurl()),
+                                'class'=>'external',
+                            );
                         }
                     }
-                // TODO: Change this to account for multiple files
-                }elseif($downloadMode == $content::MODE_URL) {
-                    $links[] = array(
-                        'title'=>$content->getTitle(),
-                        'subtitle'=>$content->getFilename(),
-                        'url'=>$this->buildExternalURL($content->getFileurl()),
-                        'class'=>'external',
-                    );
                 }
                 break;
             // Create an external link to the content
