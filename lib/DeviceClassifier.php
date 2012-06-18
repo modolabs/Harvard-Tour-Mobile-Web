@@ -61,7 +61,7 @@ class DeviceClassifier {
             }
         }
         
-        return $classification;        
+        return $classification;
     }
     
     protected function stringForClassification($classification, $computerReadable=true) {
@@ -144,8 +144,8 @@ class DeviceClassifier {
             }
         }
         // Do this after caching and setting cookies or the value of TOUCH_ENABLED would be effectively cached
-        if ($this->pagetype == 'touch' && !Kurogo::getOptionalSiteVar('TOUCH_ENABLED', 1)) {
-            $this->pagetype = 'basic';
+        if ($this->classification['pagetype'] == 'touch' && !Kurogo::getOptionalSiteVar('TOUCH_ENABLED', 1)) {
+            $this->classification['pagetype'] = 'basic';
         }
     }
     
