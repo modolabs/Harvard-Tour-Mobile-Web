@@ -1,7 +1,7 @@
 {include file="findInclude:common/templates/header.tpl"}
 
 <div class="nonfocal">
-  <h2>{"COURSES_BOOKMARK_ITEM_TITLE"|getLocalizedString}</h2>
+  <h2>{$bookmarkItemTitle}</h2>
 </div>
 {if $navItems}
   {include file="findInclude:common/templates/navlist.tpl" boldLabels=true navlistItems=$navItems}

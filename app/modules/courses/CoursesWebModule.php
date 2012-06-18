@@ -1989,7 +1989,7 @@ class CoursesWebModule extends WebModule {
             	break;
 
             case 'bookmarks':
-                $bookmarks = array();
+                $bookmarkLinks = array();
                 if($bookmarks = $this->getBookmarksForTerm($this->Term)) {
                     foreach ($bookmarks as $aBookmark) {
                         if ($aBookmark) {
@@ -2003,11 +2003,12 @@ class CoursesWebModule extends WebModule {
                                 $bookmark['label'] = $this->getBookmarkParam($aBookmark, 'courseNumber');
                             }
 
-                            $bookmarks[] = $bookmark;
+                            $bookmarkLinks[] = $bookmark;
                         }
                     }
-                    $this->assign('navItems', $bookmarks);
+                    $this->assign('navItems', $bookmarkLinks);
                 }
+                $this->assign('bookmarkItemTitle', $this->getLocalizedString('COURSES_BOOKMARK_ITEM_TITLE', count($bookmarks)));
                 $this->assign('hasBookmarks', $this->hasBookmarks());
                 break;
 
