@@ -453,8 +453,9 @@ class CoursesWebModule extends WebModule {
                 $links[] = array(
                     'title'=>$content->getTitle(),
                     'subtitle'=>$content->getURL(),
-                    'url'=>$content->getURL(),
+                    'url'=>$this->buildExternalURL($content->getURL()),
                     'class'=>'external',
+                    'linkTarget'=>'_blank'
                 );
                 break;
             /**
@@ -493,6 +494,7 @@ class CoursesWebModule extends WebModule {
                                 'subtitle'=>$file->getFilename(),
                                 'url'=>$this->buildExternalURL($content->getFileurl()),
                                 'class'=>'external',
+                                'linkTarget'=>'_blank'
                             );
                         }
                     }
@@ -507,6 +509,7 @@ class CoursesWebModule extends WebModule {
                         'subtitle'=>$content->getFilename(),
                         'url'=>$content->getFileurl(),
                         'class'=>'external',
+                        'linkTarget'=>'_blank'
                     );
                 }
                 break;
