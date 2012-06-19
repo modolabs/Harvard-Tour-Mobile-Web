@@ -1677,7 +1677,7 @@ class CoursesWebModule extends WebModule {
      * @param  array  $tabData The tab's Data
      * @return boolean
      */
-    protected function showTab($tabID, $tabData) {
+    protected function showTab($tabID, $tabData, $options) {
         if (self::argVal($tabData, 'protected', 0) && !$this->isLoggedIn()) {
             return false;
         }
@@ -2074,7 +2074,7 @@ class CoursesWebModule extends WebModule {
                 $args['page'] = $this->page;
                 $this->tab = $this->getArg('tab', key($tabsConfig));
                 foreach ($tabsConfig as $tabID => $tabData) {
-                    if ($this->showTab($tabID, $tabData)) {
+                    if ($this->showTab($tabID, $tabData, $options)) {
                         if ($tabID == $this->tab && $preloadSelectedTab) {
                             $method = "initialize" . $tabID;
                             if (!is_callable(array($this, $method))) {
@@ -2143,7 +2143,7 @@ class CoursesWebModule extends WebModule {
                 $args['ajax'] = true;
                 $args['page'] = $this->page;
                 foreach($tabsConfig as $tabID => $tabData){
-                    if ($this->showTab($tabID, $tabData)) {
+                    if ($this->showTab($tabID, $tabData, $options)) {
                         if ($tabID == $this->tab) {
                             $method = "initialize" . $tabID;
                             if (!is_callable(array($this, $method))) {
