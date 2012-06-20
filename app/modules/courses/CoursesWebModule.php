@@ -20,7 +20,7 @@ class CoursesWebModule extends WebModule {
      * @param  boolean             $includeCourseName=true Whether to include the Course name in the subtitle
      * @return array
      */
-    public function linkForTask(TaskCourseContent $task, CourseContentCourse $course, $includeCourseName=true) {
+    public function linkForTask(CalendarCourseContent $task, CourseContentCourse $course, $includeCourseName=true) {
     	$link = array(
             'title' =>$includeCourseName ? htmlentities($task->getTitle()) : $course->getTitle(),
     		'date' => $task->getDate() ? $task->getDate() : $task->getDueDate(),
