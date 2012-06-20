@@ -1867,6 +1867,7 @@ class CoursesWebModule extends WebModule {
 
                 $this->assign('catalogHeader', $this->getOptionalModuleVar('catalogHeader','','catalog'));
                 $this->assign('catalogFooter', $this->getOptionalModuleVar('catalogFooter','','catalog'));
+                $this->assign('hiddenArgs', array('term' => strval($this->Term)));
                 $this->assign('placeholder', $this->getLocalizedString("CATALOG_SEARCH"));
 
                 break;
@@ -2208,7 +2209,7 @@ class CoursesWebModule extends WebModule {
                 $searchTerms = $this->getArg('filter', false);
 
                 $options = array(
-                    'term' => $term,
+                    'term' => $this->Term,
                     'types' => array('catalog')
                 );
                 if($area = $this->getArg('area')) {
@@ -2232,7 +2233,7 @@ class CoursesWebModule extends WebModule {
                 if ($coursesList) {
                     $this->assign('resultCount', count($coursesList));
                 }
-                $this->assign('hiddenArgs', array('area' => $area, 'term' => strval($term)));
+                $this->assign('hiddenArgs', array('area' => $area, 'term' => strval($this->Term)));
                 $this->assign('searchTerms', $searchTerms);
                 $this->assign('searchHeader', $this->getOptionalModuleVar('searchHeader','','catalog'));
                 break;
