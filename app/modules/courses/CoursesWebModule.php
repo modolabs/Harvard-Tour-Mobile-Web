@@ -453,8 +453,9 @@ class CoursesWebModule extends WebModule {
                 $links[] = array(
                     'title'=>$content->getTitle(),
                     'subtitle'=>$content->getURL(),
-                    'url'=>$content->getURL(),
+                    'url'=>$this->buildExternalURL($content->getURL()),
                     'class'=>'external',
+                    'linkTarget'=>'_blank'
                 );
                 break;
             /**
@@ -493,6 +494,7 @@ class CoursesWebModule extends WebModule {
                                 'subtitle'=>$file->getFilename(),
                                 'url'=>$this->buildExternalURL($content->getFileurl()),
                                 'class'=>'external',
+                                'linkTarget'=>'_blank'
                             );
                         }
                     }
@@ -507,6 +509,7 @@ class CoursesWebModule extends WebModule {
                         'subtitle'=>$content->getFilename(),
                         'url'=>$content->getFileurl(),
                         'class'=>'external',
+                        'linkTarget'=>'_blank'
                     );
                 }
                 break;
@@ -1426,66 +1429,111 @@ class CoursesWebModule extends WebModule {
         $contentCourse = $course->getCourse('content');
         $resourcesLinks = array();
         $resourcesOptions = $this->getOptionsForResources($options);
-        $groups = $contentCourse->getResources($resourcesOptions);
         $group = $resourcesOptions['group'];
-        if ($group == "date") {
-            $limit = 0;
-            $pageSize = $resourcesOptions['limit'];
-        } else {
-            $limit = $resourcesOptions['limit'];
-        }
-        $key = $resourcesOptions['key'];
-        $seeAllLinks = array();
-
-        foreach ($groups as $groupTitle => $items){
-            //@Todo when particular type,it wil show the data about the type
-            if ($key) {
-                if ($key !== $groupTitle) {
-                    continue;
-                } else {
-                    $limit = 0;
-                }
-            }
-            $hasMoreItems = false;
-            $index = 0;
-            $groupItems = array();
-            foreach ($items as $item) {
-                if ($index >= $limit && $limit != 0) {
-                    break;
-                }
-                $groupItems[] = $this->linkForContent($item, $contentCourse);
-                $index++;
-            }
-            if ($group == 'type') {
-                $title = $this->getLocalizedString('CONTENT_TYPE_TITLE_'.strtoupper($groupTitle));
+        if($group == 'browse'){
+            if (isset($options['course'])) {
+                $course = $options['course'];
             } else {
-                $title = $groupTitle;
+                throw new KurogoConfigurationException("Aggregated resources not currently supported");
             }
-            $resource = array(
-                'title' => $title,
-                'items' => $groupItems,
-                'count' => count($items),
-            );
-            if ($group != "date" && count($items) > $limit && $limit != 0) {
-                $courseOptions = $this->getCourseOptions();
-                $courseOptions['group'] = $group;
-                $courseOptions['key'] = $groupTitle;
-                $courseOptions['tab'] = 'resources';
 
-                // currently a separate page
-                $resource['url'] = $this->buildBreadcrumbURL("resourceSeeAll", $courseOptions);
+            $contentCourse = $course->getCourse('content');
+            $browseOptions = $this->getOptionsForBrowse($options);
+            $browseContent = $contentCourse->getContentByParentId($browseOptions);
+
+            $browseLinks = array();
+            foreach ($browseContent as $content) {
+                switch ($content->getContentType()) {
+                    case 'folder':
+                        $browseLinks[] = $this->linkForFolder($content, $contentCourse);
+                        break;
+                    case 'task':
+                        $browseLinks[] = $this->linkForTask($content, $contentCourse);
+                        break;
+                    default:
+                        $browseLinks[] = $this->linkForContent($content, $contentCourse);
+                        break;
+                }
             }
-            $resourcesLinks[] = $resource;
-        }
-        if ($group == "date" && $pageSize && isset($resourcesLinks[0])) {
-            $resource = $resourcesLinks[0];
-            $limitedItems = $this->paginateArray($resource['items'], $pageSize);
-            $resourcesLinks[0]['items'] = $limitedItems;
-            $resourcesLinks[0]['count'] = count($limitedItems);
-        }
+            $this->assign('resourcesLinks', array(array('items'=>$browseLinks)));
 
-        $this->assign('resourcesLinks', $resourcesLinks);
-        $this->assign('courseResourcesGroup', $group);
+            $browseHeader = array();
+            if(isset($browseOptions['contentID'])){
+                $currentContent = $contentCourse->getContentById($browseOptions['contentID']);
+                $parentID = $currentContent->getParentID();
+                if($parentID){
+                    $parentContent = $contentCourse->getContentById($parentID);
+                    $browseHeader = $this->linkForFolder($parentContent, $contentCourse);
+                }else{
+                    $options = $this->getCourseOptions();
+                    $options['tab'] = 'browse';
+                    $browseHeader['url'] = $this->buildAjaxBreadcrumbURL($this->page, $options, false);
+                    $browseHeader['title'] = $this->getLocalizedString('ROOT_LEVEL_TITLE');
+                }
+                $browseHeader['current'] = $currentContent->getTitle();
+            }
+            $this->assign('browseHeader', $browseHeader);
+        }else{
+            $groups = $contentCourse->getResources($resourcesOptions);
+            if ($group == "date") {
+                $limit = 0;
+                $pageSize = $resourcesOptions['limit'];
+            } else {
+                $limit = $resourcesOptions['limit'];
+            }
+            $key = $resourcesOptions['key'];
+            $seeAllLinks = array();
+
+            foreach ($groups as $groupTitle => $items){
+                //@Todo when particular type,it wil show the data about the type
+                if ($key) {
+                    if ($key !== $groupTitle) {
+                        continue;
+                    } else {
+                        $limit = 0;
+                    }
+                }
+                $hasMoreItems = false;
+                $index = 0;
+                $groupItems = array();
+                foreach ($items as $item) {
+                    if ($index >= $limit && $limit != 0) {
+                        break;
+                    }
+                    $groupItems[] = $this->linkForContent($item, $contentCourse);
+                    $index++;
+                }
+                if ($group == 'type') {
+                    $title = $this->getLocalizedString('CONTENT_TYPE_TITLE_'.strtoupper($groupTitle));
+                } else {
+                    $title = $groupTitle;
+                }
+                $resource = array(
+                    'title' => $title,
+                    'items' => $groupItems,
+                    'count' => count($items),
+                );
+                if ($group != "date" && count($items) > $limit && $limit != 0) {
+                    $courseOptions = $this->getCourseOptions();
+                    $courseOptions['group'] = $group;
+                    $courseOptions['key'] = $groupTitle;
+                    $courseOptions['tab'] = 'resources';
+
+                    // currently a separate page
+                    $resource['url'] = $this->buildBreadcrumbURL("resourceSeeAll", $courseOptions);
+                }
+                $resourcesLinks[] = $resource;
+            }
+            if ($group == "date" && $pageSize && isset($resourcesLinks[0])) {
+                $resource = $resourcesLinks[0];
+                $limitedItems = $this->paginateArray($resource['items'], $pageSize);
+                $resourcesLinks[0]['items'] = $limitedItems;
+                $resourcesLinks[0]['count'] = count($limitedItems);
+            }
+
+            $this->assign('resourcesLinks', $resourcesLinks);
+            $this->assign('courseResourcesGroup', $group);
+        }
     }
 
     /**
@@ -1632,7 +1680,7 @@ class CoursesWebModule extends WebModule {
      * @param  array  $tabData The tab's Data
      * @return boolean
      */
-    protected function showTab($tabID, $tabData) {
+    protected function showTab($tabID, $tabData, $options) {
         if (self::argVal($tabData, 'protected', 0) && !$this->isLoggedIn()) {
             return false;
         }
@@ -2029,7 +2077,7 @@ class CoursesWebModule extends WebModule {
                 $args['page'] = $this->page;
                 $this->tab = $this->getArg('tab', key($tabsConfig));
                 foreach ($tabsConfig as $tabID => $tabData) {
-                    if ($this->showTab($tabID, $tabData)) {
+                    if ($this->showTab($tabID, $tabData, $options)) {
                         if ($tabID == $this->tab && $preloadSelectedTab) {
                             $method = "initialize" . $tabID;
                             if (!is_callable(array($this, $method))) {
@@ -2098,7 +2146,7 @@ class CoursesWebModule extends WebModule {
                 $args['ajax'] = true;
                 $args['page'] = $this->page;
                 foreach($tabsConfig as $tabID => $tabData){
-                    if ($this->showTab($tabID, $tabData)) {
+                    if ($this->showTab($tabID, $tabData, $options)) {
                         if ($tabID == $this->tab) {
                             $method = "initialize" . $tabID;
                             if (!is_callable(array($this, $method))) {
