@@ -683,6 +683,7 @@ class CoursesWebModule extends WebModule {
             4   => 'four',
             5   => 'five',
         );
+        $this->assign('tabCount', $tabCount);
         $this->assign($tabPage.'TabCount', $tabCountMap[$tabCount]);
         $this->assign($tabPage.'GroupLinks', $groupLinks);
         $this->assign('tabstripId', $tabPage.'-'.md5($this->buildURL($this->page, $this->args)));
