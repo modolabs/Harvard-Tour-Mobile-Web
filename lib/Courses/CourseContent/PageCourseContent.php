@@ -6,6 +6,16 @@ class PageCourseContent extends CourseContent {
     protected $fileurl;
     protected $filename;
     protected $timemodified;
+    protected $content;
+    
+    public function getContent() {
+        return $this->content;
+    }
+    
+    public function setContent($content) {
+        $this->content = $content;
+    }
+
     public function getType() {
     	return $this->type;
     }
