@@ -1,3 +1,20 @@
 .coursetitle {
     margin: 0
 }
+
+p.nav, p.results {
+    line-height: 1.33em;
+}
+
+.statusitem span.courseListUpdates {
+    text-decoration: none;
+    position: relative;
+}
+
+.statusitem span.courseListUpdates img {
+    position: relative;
+    float: left;
+    top: 2px;
+    left: 0;
+    padding-right: 4px;
+}
