@@ -1767,8 +1767,7 @@ class CoursesWebModule extends WebModule {
 
                 if ($content->getContentType() == "page") {
                     if($content->getViewMode() == $content::MODE_PAGE) {
-                        $contentDataUrl = $contentCourse->getFileForContent($content->getID());
-                        $contentData = file_get_contents($contentDataUrl);
+                        $contentData = $content->getContent();
                         $this->assign("contentData", $contentData);
                     }
                 }
