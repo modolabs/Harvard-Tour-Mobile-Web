@@ -3,6 +3,7 @@
 abstract class CourseContent implements KurogoObject {
 
     protected $id;
+    protected $parentID;
     protected $courseID;
     protected $contentRetriever;
     protected $contentCourse = null;
@@ -56,6 +57,14 @@ abstract class CourseContent implements KurogoObject {
 
     public function setContentCourse(CourseContentCourse $contentCourse) {
         $this->contentCourse = $contentCourse;
+    }
+
+    public function getParentID(){
+        return $this->parentID;
+    }
+
+    public function setParentID($parentID){
+        $this->parentID = $parentID;
     }
 
     public function getContentCourse() {
