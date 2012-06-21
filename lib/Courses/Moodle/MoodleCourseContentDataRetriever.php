@@ -1,6 +1,5 @@
 <?php
 
-Kurogo::includePackage('Courses','Moodle');
 class MoodleCourseContentDataRetriever extends URLDataRetriever implements CourseContentDataRetriever {
 
     protected $DEFAULT_PARSER_CLASS='MoodleCourseContentDataParser';
@@ -143,7 +142,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
             	switch ($group) {
             		case 'topic':
             			foreach ($content as $courseContentObj){
-            				$section = $courseContentObj->getProperty('section');
+            				$section = $courseContentObj->getAttribute('section');
             				if(isset($section['name'])){
             					$courseContents[$section['name']][] = $courseContentObj;
             				}

@@ -93,115 +93,121 @@ class MoodleCourseContentDataParser extends dataParser {
         $contentTypes = array();
         $CourseId = $this->getOption('courseID');
         foreach ($data as $value) {
-            $properties = array();
+
+            $section = array(
+                'id'=>$value['id'],
+                'name'=>$value['name'],
+            );
+            
             if (isset($value['modules']) && $value['modules'] || isset($value['contents']) && $value['contents']) {
                 $moduleValue = isset($value['modules'])?$value['modules']:$value['contents'];
+
                 foreach ($moduleValue as $module) {
-                    $contentType = null;
-                    if ($module ['visible'] && isset($module['modname']) && $module['modname']) {
+
+                    $content = null;
+
+                    if ($module ['visible']) {
                         switch ($module['modname']) {
-                            case 'resource':
                             case 'folder':
-                                $contentType = new MoodleDownloadCourseContent();
+                                KurogoDebug::debug($module, true);
+                                break;
+
+                            case 'resource':
+                                $content = new DownloadCourseContent();
                                 break;
 
                             case 'url':
-                                $contentType = new MoodleLinkCourseContent();
+                                $content = new LinkCourseContent();
                                 break;
 
                             case 'page':
-                                $contentType = new MoodlePageCourseContent();
+                                $content = new PageCourseContent();
                                 break;
+                                
                             case 'label':
-                                break;
+                                break 2;
+                                
                             case 'forum':
-                                break;
+                                break 2;
 
                             default:
                                 throw new KurogoDataException("Don't know how to handle " . $module['modname']);
                                 break;
                         }
-                        if ($contentType) {
-                            $contentType->setContentRetriever($this->getResponseRetriever());
-                        	$unsetString = isset($value['modules'])? 'modules' : 'contents';
-                        	unset($value[$unsetString]);
-                        	$properties['section'] = $value;
-                            if(isset($module['name'])  && $module['name']){
-                        		$contentType->setTitle($module['name']);
-                        	}
-                            if(isset($module['id'])  && $module['id']){
-                        		$contentType->setID($module['id']);
-                        	}
-                            if(isset($CourseId)  && $CourseId){
+                        
+                        $content->setContentRetriever($this->getResponseRetriever());
+                        
+                        $content->setTitle($module['name']);
+                        $content->setID($module['id']);
 
-                        		$contentType->setCourseID($CourseId);
-                        	}
-
-                            if (isset($module['contents'][0]['timecreated']) && $module['contents'][0]['timecreated']) {
-                                $datetime = new DateTime(date('Y-n-j H:i:s', $module['contents'][0]['timecreated']));
-                                $contentType->setPublishedDate($datetime);
-                            }
-                            if (isset($module['contents'][0]['timemodified']) && $module['contents'][0]['timemodified']) {
-                                $datetime = new DateTime(date('Y-n-j H:i:s', $module['contents'][0]['timemodified']));
-                                $contentType->setPublishedDate($datetime);
-                            }
-                            if($module['modname'] == 'resource' || $module['modname'] == 'folder'){
-	                            if(isset($module['contents'][0]['url']) && $module['contents'][0]['url']){
-	                            	$contentType->setUrl($module['contents'][0]['url']);
-	                            }
-	                            if(isset($module['contents'][0]['filename']) && $module['contents'][0]['filename']){
-	                            	$contentType->setFilename($module['contents'][0]['filename']);
-	                            }
-	                            if(isset($module['contents'][0]['filepath']) && $module['contents'][0]['filepath']){
-	                            	$contentType->setFilepath($module['contents'][0]['filepath']);
-	                            }
-	                            if(isset($module['contents'][0]['filesize']) && $module['contents'][0]['filesize']){
-	                            	$contentType->setFilesize($module['contents'][0]['filesize']);
-	                            }
-	                            if(isset($module['contents'][0]['fileurl']) && $module['contents'][0]['fileurl']){
-	                            	$contentType->setFileurl($module['contents'][0]['fileurl']);
-	                            }
-	                            if(isset($module['contents'][0]['timecreated']) && $module['contents'][0]['timecreated']){
-	                            	$contentType->setTimecreated($module['contents'][0]['timecreated']);
-	                            }
-	                            if(isset($module['contents'][0]['timemodified']) && $module['contents'][0]['timemodified']){
-	                            	$contentType->setTimemodified($module['contents'][0]['timemodified']);
-	                            }
-	                            if(isset($module['contents'][0]['sortorder']) && $module['contents'][0]['sortorder']){
-	                            	$contentType->setSortorder($module['contents'][0]['sortorder']);
-	                            }
-	                            if(isset($module['contents'][0]['userid']) && $module['contents'][0]['userid']){
-	                            	$contentType->setUserid($module['contents'][0]['userid']);
-	                            }
-	                            if(isset($module['contents'][0]['author']) && $module['contents'][0]['author']){
-	                            	$contentType->setAuthor($module['contents'][0]['author']);
-	                            }
-	                            if(isset($module['contents'][0]['license']) && $module['contents'][0]['license']){
-	                            	$contentType->setLicense($module['contents'][0]['license']);
-	                            }
-                            }
-
-                            if($module['modname'] == 'url'){
-                            	if(isset($module['contents'][0]['fileurl']) && $module['contents'][0]['fileurl']){
-                            		$contentType->setURL($module['contents'][0]['fileurl']);
-                            	}
-
-                            }
-
-                            if($module['modname'] == 'page'){
-                                if(isset($module['contents'][0]['filename']) && $module['contents'][0]['filename']){
-                            		$contentType->setFilename($module['contents'][0]['filename']);
-                            	}
-                                if(isset($module['contents'][0]['fileurl']) && $module['contents'][0]['fileurl']){
-                            		$contentType->setFileurl($module['contents'][0]['fileurl']);
-                            	}
-                                if(isset($module['contents'][0]['timemodified']) && $module['contents'][0]['timemodified']){
-                            		$contentType->setTimemodified($module['contents'][0]['timemodified']);
-                            	}
-                            }
-                            $contentType->setProperties($properties);
-                            $contentTypes[] = $contentType;
+                        if(isset($CourseId)  && $CourseId){
+                            $content->setCourseID($CourseId);
                         }
+
+                        if (isset($module['contents'][0]['timecreated']) && $module['contents'][0]['timecreated']) {
+                            $datetime = new DateTime(date('Y-n-j H:i:s', $module['contents'][0]['timecreated']));
+                            $content->setPublishedDate($datetime);
+                        }
+                        
+                        if (isset($module['contents'][0]['timemodified']) && $module['contents'][0]['timemodified']) {
+                            $datetime = new DateTime(date('Y-n-j H:i:s', $module['contents'][0]['timemodified']));
+                            $content->setPublishedDate($datetime);
+                        }
+
+                        if (isset($module['contents'][0]['author']) && $module['contents'][0]['author']) {
+                            $content->setAuthor($module['contents'][0]['author']);
+                        }
+
+                        switch ($module['modname'])
+                        {
+                            case 'resource':                            
+                                if (isset($module['contents'][0]['url']) && $module['contents'][0]['url']){
+                                    $content->setUrl($module['contents'][0]['url']);
+                                }
+                                
+                                if (isset($module['contents'][0]['filename']) && $module['contents'][0]['filename']){
+                                    $content->setFilename($module['contents'][0]['filename']);
+                                }
+                                
+                                if (isset($module['contents'][0]['filepath']) && $module['contents'][0]['filepath']){
+                                    $content->setFilepath($module['contents'][0]['filepath']);
+                                }
+                                
+                                if (isset($module['contents'][0]['filesize']) && $module['contents'][0]['filesize']){
+                                    $content->setFilesize($module['contents'][0]['filesize']);
+                                }
+                                
+                                if (isset($module['contents'][0]['fileurl']) && $module['contents'][0]['fileurl']){
+                                    $content->setFileurl($module['contents'][0]['fileurl']);
+                                }
+                                
+                                if (isset($module['contents'][0]['sortorder']) && $module['contents'][0]['sortorder']){
+                                //   $content->setSortorder($module['contents'][0]['sortorder']);
+                                }
+                                
+                                break;
+                                
+                            case 'url':
+                                $content->setURL($module['contents'][0]['fileurl']);
+                                break;
+                                
+                            case 'page':
+                                if (isset($module['contents'][0]['fileurl']) && $module['contents'][0]['fileurl']){
+                                    $content->setURL($module['contents'][0]['fileurl']);
+                                }
+                                
+                                if (isset($module['contents'][0]['timemodified']) && $module['contents'][0]['timemodified']){
+                                    $content->setTimemodified($module['contents'][0]['timemodified']);
+                                }
+                                
+                                break;
+                                
+                            default:
+                                KurogoDebug::debug($module, true);
+                        }
+                        
+                        $content->setAttribute('section', $section);
+                        $contentTypes[] = $content;
                     }
                 }
             }
