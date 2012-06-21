@@ -109,10 +109,6 @@ class MoodleCourseContentDataParser extends dataParser {
 
                     if ($module ['visible']) {
                         switch ($module['modname']) {
-                            case 'folder':
-                                KurogoDebug::debug($module, true);
-                                break;
-
                             case 'resource':
                                 $content = new FileCourseContent();
                                 break;
@@ -162,11 +158,6 @@ class MoodleCourseContentDataParser extends dataParser {
                         switch ($module['modname'])
                         {
                             case 'resource':
-                                if (isset($module['contents'][0]['url']) && $module['contents'][0]['url']){
-                                    KurogoDebug::debug($module['contents'][0], true);
-                                    $content->setUrl($module['contents'][0]['url']);
-                                }
-                                
                                 $attachment = new CourseContentAttachment();
                                 
                                 if (isset($module['contents'][0]['filename']) && $module['contents'][0]['filename']){
@@ -204,9 +195,6 @@ class MoodleCourseContentDataParser extends dataParser {
                                 }
                                 
                                 break;
-                                
-                            default:
-                                KurogoDebug::debug($module, true);
                         }
                         
                         $content->setAttribute('section', $section);

@@ -169,7 +169,6 @@ abstract class CourseContent implements KurogoObject {
     }
 
     public function sortBy(){
-        KurogoDebug::debug($this, true);
         return $this->getPublishedDate() ? $this->getPublishedDate()->format('U') : 0;
     }
     
