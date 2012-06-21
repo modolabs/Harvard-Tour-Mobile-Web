@@ -73,12 +73,7 @@ class CoursesWebModule extends WebModule {
 	    	}
 	    	$link['subtitle'] = $link['updated'] = $updated;
 	    } else {
-            // If the content has multiple files indicate that. Otherwise get the subtitle from the content.
-            if($content->getSubtitle() == DownloadCourseContent::SUBTITLE_MULTIPLE_FILES){
-                $link['subtitle'] = $this->getLocalizedString('SUBTITLE_MULTIPLE_FILES');
-            }else{
-                $link['subtitle'] = $content->getSubTitle();
-            }
+            $link['subtitle'] = $content->getSubTitle();
 	    }
 
         $options = $this->getCourseOptions();
