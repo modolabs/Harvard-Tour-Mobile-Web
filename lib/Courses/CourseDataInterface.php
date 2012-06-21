@@ -10,9 +10,7 @@ interface CourseDataInterface {
      * @return Course object list
      */
     public function getCourses($options);
-    
-    public function getAvailableTerms();
-    
+        
     public function getCourseById($courseID);
 
     public function getCourseByCommonId($courseID, $options);
