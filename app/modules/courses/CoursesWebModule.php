@@ -254,6 +254,44 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    protected function linkForAttachment(CourseContentAttachment $attachment, CourseContent $content) {
+    
+        $link = array(
+            'title'=>$attachment->getTitle() ? $attachment->getTitle() : 'Download File',
+        );
+        
+        $subtitle = $attachment->getFileName();
+        if ($filesize = $attachment->getFileSize()) {
+            $subtitle .= " (" . $this->formatBytes($filesize) . ")";
+        }
+
+        switch ($attachment->getDownloadMode()) 
+        {
+            case $content::MODE_DOWNLOAD:
+                $options = $this->getCourseOptions();
+                $options['contentID'] = $content->getID();
+
+                if ($fileID = $attachment->getID()){
+                    $options['fileID'] = $fileID;
+                }
+        
+                $link['url'] = $this->buildExternalURL($this->buildURL('download', $options));
+                break;
+            case $content::MODE_URL:
+                $link['url'] = $this->buildExternalURL($attachment->getURL());
+                $link['class'] = 'external';
+                $link['linkTarget'] = '_blank';
+                break;
+            default:
+                break;
+        }
+        
+        $link['subtitle'] = $subtitle;
+        
+        return $link;
+
+    }
+
     /**
      * Return the title of the tab for a particular page.
      * @param  string $page The page the tab is on
@@ -467,36 +505,11 @@ class CoursesWebModule extends WebModule {
              *    Create an external link to the content/files
              */
             case 'file':
-                $downloadMode = $content->getDownloadMode();
-                if($files = $content->getFiles()){
-                    foreach ($files as $file) {
-                        $fileID = $file->getID();
-                        if($downloadMode == $content::MODE_DOWNLOAD){
-                            $options = $this->getCourseOptions();
-                            $options['contentID'] = $content->getID();
-                            $title = 'Download File';
-                            if($fileID = $file->getID()){
-                                $options['fileID'] = $fileID;
-                            }
-                            $subtitle = $file->getFileName();
-                            if ($filesize = $file->getFileSize()) {
-                                $subtitle .= " (" . $this->formatBytes($filesize) . ")";
-                            }
-
-                            $links[] = array(
-                                'title'=>$title,
-                                'subtitle'=>$subtitle,
-                                'url'=>$this->buildExternalURL($this->buildURL('download', $options)),
-                            );
-                        }elseif($downloadMode == $content::MODE_URL){
-                            $links[] = array(
-                                'title'=>$content->getTitle(),
-                                'subtitle'=>$file->getFilename(),
-                                'url'=>$this->buildExternalURL($content->getFileurl()),
-                                'class'=>'external',
-                                'linkTarget'=>'_blank'
-                            );
-                        }
+//                $downloadMode = $content->getDownloadMode();
+                if ($attachments = $content->getAttachments()) {
+                    foreach ($attachments as $attachment) {
+                        
+                        $links[] = $this->linkForAttachment($attachment, $content);
                     }
                 }
                 break;

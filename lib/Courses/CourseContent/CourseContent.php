@@ -8,15 +8,16 @@ abstract class CourseContent implements KurogoObject {
     protected $contentCourse = null;
     protected $contentType;
     protected $title;
+    protected $subtitle;
     protected $description;
+    protected $url;
     protected $authorID;
     protected $author;
     protected $publishedDate;
     protected $endDate;
-    protected $priority;
-    protected $viewMode;
-    protected $downloadMode;
-    protected $attributes=array();
+    protected $viewMode = self::MODE_PAGE;
+    protected $attributes = array();
+    protected $attachments = array();
     const MODE_PAGE = 1;
     const MODE_DOWNLOAD = 2;
     const MODE_URL = 3;
@@ -25,16 +26,8 @@ abstract class CourseContent implements KurogoObject {
         return true;
     }
 
-    public function getGUID() {
-        if ($this->id) {
-            return $this->id;
-        } elseif ($this->getUrl()) {
-            return $this->getUrl();
-        }
-    }
-
     public function getSubTitle() {
-        return '';
+        return $this->subtitle;
     }
 
     public function setID($id) {
@@ -67,7 +60,7 @@ abstract class CourseContent implements KurogoObject {
 
     public function getContentCourse() {
         //Lazy load the contentCourse
-        if(!$this->contentCourse){
+        if (!$this->contentCourse) {
             if($retriver = $this->getContentRetriever()){
                 if($course = $retriver->getCourseById($this->courseID)){
                     $this->contentCourse = $course;
@@ -77,15 +70,11 @@ abstract class CourseContent implements KurogoObject {
         return $this->contentCourse;
     }
 
-    public function setContentType($type) {
-        $this->contentType = $type;
-    }
-
     public function getContentType() {
         return $this->contentType;
     }
 
-    public function getContentClass(){
+    public function getContentClass() {
         return $this->getContentType();
     }
 
@@ -153,48 +142,12 @@ abstract class CourseContent implements KurogoObject {
         return $this->endDate;
     }
 
-    public static function getPriorities() {
-        return array('none', 'high', 'middle', 'low');
-    }
-
-    public function setPriority($priority = '') {
-        if (in_array($priority, self::getPriorities())) {
-            $this->priority = $priority;
-        }
-    }
-
-    public function getPriority() {
-        return $this->priority ? $this->priority : 'none';
-    }
-
-    public function setProperties($properties) {
-        $this->properties = $properties;
-    }
-
-    public function addProperty($key, $value) {
-        $this->properties[$key] = $value;
-    }
-
-    public function getProperty($var) {
-        return isset($this->properties[$var]) ?  $this->properties[$var] : '';
-    }
-
-    public function setAttributes($attribs) {
-        if (is_array($attribs)) {
-            $this->attributes = $attribs;
-        }
-    }
-
-    public function getAttributes() {
-        return $this->attributes;
-    }
-
     public function setAttribute($key, $value) {
         $this->attributes[$key] = $value;
     }
 
-    public function getAttribute($attrib) {
-        return isset($this->attributes[$attrib]) ? $this->attributes[$attrib] : '';
+    public function getAttribute($key) {
+        return isset($this->attributes[$key]) ? $this->attributes[$key] : null;
     }
 
     /**
@@ -203,9 +156,6 @@ abstract class CourseContent implements KurogoObject {
      * @return viewMode.
      */
     public function getViewMode() {
-        if(empty($this->viewMode)) {
-            return self::MODE_PAGE;
-        }
         return $this->viewMode;
     }
 
@@ -218,28 +168,20 @@ abstract class CourseContent implements KurogoObject {
         $this->viewMode = $viewMode;
     }
 
-    /**
-     * Get downloadMode.
-     *
-     * @return downloadMode.
-     */
-    public function getDownloadMode() {
-        if(empty($this->downloadMode)) {
-            return self::MODE_DOWNLOAD;
-        }
-        return $this->downloadMode;
-    }
-
-    /**
-     * Set downloadMode.
-     *
-     * @param downloadMode the value to set.
-     */
-    public function setDownloadMode($downloadMode) {
-        $this->downloadMode = $downloadMode;
-    }
-
     public function sortBy(){
+        KurogoDebug::debug($this, true);
         return $this->getPublishedDate() ? $this->getPublishedDate()->format('U') : 0;
+    }
+    
+    public function addAttachment(CourseContentAttachment $attachment) {
+        $this->attachments[] = $attachment;
+    }
+
+    public function getAttachment($key) {
+        return isset($this->attachments[$key]) ? $this->attachments[$key] : null;
+    }
+
+    public function getAttachments() {
+        return $this->attachments;
     }
 }

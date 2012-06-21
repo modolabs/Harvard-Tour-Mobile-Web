@@ -92,6 +92,7 @@ class MoodleCourseContentDataParser extends dataParser {
     protected function parseCourseContent($data) {
         $contentTypes = array();
         $CourseId = $this->getOption('courseID');
+        $retriever = $this->getResponseRetriever();
         foreach ($data as $value) {
 
             $section = array(
@@ -113,7 +114,7 @@ class MoodleCourseContentDataParser extends dataParser {
                                 break;
 
                             case 'resource':
-                                $content = new DownloadCourseContent();
+                                $content = new FileCourseContent();
                                 break;
 
                             case 'url':
@@ -135,7 +136,7 @@ class MoodleCourseContentDataParser extends dataParser {
                                 break;
                         }
                         
-                        $content->setContentRetriever($this->getResponseRetriever());
+                        $content->setContentRetriever($retriever);
                         
                         $content->setTitle($module['name']);
                         $content->setID($module['id']);
@@ -160,30 +161,32 @@ class MoodleCourseContentDataParser extends dataParser {
 
                         switch ($module['modname'])
                         {
-                            case 'resource':                            
+                            case 'resource':
                                 if (isset($module['contents'][0]['url']) && $module['contents'][0]['url']){
+                                    KurogoDebug::debug($module['contents'][0], true);
                                     $content->setUrl($module['contents'][0]['url']);
                                 }
                                 
-                                if (isset($module['contents'][0]['filename']) && $module['contents'][0]['filename']){
-                                    $content->setFilename($module['contents'][0]['filename']);
-                                }
+                                $attachment = new CourseContentAttachment();
                                 
-                                if (isset($module['contents'][0]['filepath']) && $module['contents'][0]['filepath']){
-                                    $content->setFilepath($module['contents'][0]['filepath']);
+                                if (isset($module['contents'][0]['filename']) && $module['contents'][0]['filename']){
+                                    $attachment->setFilename($module['contents'][0]['filename']);
                                 }
                                 
                                 if (isset($module['contents'][0]['filesize']) && $module['contents'][0]['filesize']){
-                                    $content->setFilesize($module['contents'][0]['filesize']);
+                                    $attachment->setFilesize($module['contents'][0]['filesize']);
                                 }
                                 
                                 if (isset($module['contents'][0]['fileurl']) && $module['contents'][0]['fileurl']){
-                                    $content->setFileurl($module['contents'][0]['fileurl']);
+                                    $url = $module['contents'][0]['fileurl'] . "&token=" . $retriever->getToken();
+                                    $attachment->setURL($url);
                                 }
                                 
                                 if (isset($module['contents'][0]['sortorder']) && $module['contents'][0]['sortorder']){
                                 //   $content->setSortorder($module['contents'][0]['sortorder']);
                                 }
+                                
+                                $content->addAttachment($attachment);
                                 
                                 break;
                                 
