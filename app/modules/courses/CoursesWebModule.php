@@ -1499,6 +1499,7 @@ class CoursesWebModule extends WebModule {
             $seeAllLinks = array();
 
             foreach ($groups as $groupTitle => $items){
+                $items = $this->sortCourseContent($items);
                 //@Todo when particular type,it wil show the data about the type
                 if ($key) {
                     if ($key !== $groupTitle) {
