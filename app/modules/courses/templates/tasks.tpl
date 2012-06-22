@@ -4,7 +4,7 @@
 {block name="tasksList"}
 {if $tasks}
 {block name="groupSelector"}
-{if $tasksGroupLinks}
+{if $tasksGroupLinks && ($tabCount > 1)}
 <ul class="tabstrip {$tasksTabCount}tabs" id="{$tabstripId}-tabstrip">
 {foreach $tasksGroupLinks as $index => $groupLink}
 <li{if $tasksGroup == $index} class="active"{/if}><a href="{$groupLink.url}" onclick="updateGroupTab(this, '{$tabstripId}', '{$groupLink.url}'); return false;">{$groupLink.title}</a></li>

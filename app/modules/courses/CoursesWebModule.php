@@ -20,7 +20,7 @@ class CoursesWebModule extends WebModule {
      * @param  boolean             $includeCourseName=true Whether to include the Course name in the subtitle
      * @return array
      */
-    public function linkForTask(TaskCourseContent $task, CourseContentCourse $course, $includeCourseName=true) {
+    public function linkForTask(CalendarCourseContent $task, CourseContentCourse $course, $includeCourseName=true) {
     	$link = array(
             'title' =>$includeCourseName ? htmlentities($task->getTitle()) : $course->getTitle(),
     		'date' => $task->getDate() ? $task->getDate() : $task->getDueDate(),
@@ -73,12 +73,7 @@ class CoursesWebModule extends WebModule {
 	    	}
 	    	$link['subtitle'] = $link['updated'] = $updated;
 	    } else {
-            // If the content has multiple files indicate that. Otherwise get the subtitle from the content.
-            if($content->getSubtitle() == DownloadCourseContent::SUBTITLE_MULTIPLE_FILES){
-                $link['subtitle'] = $this->getLocalizedString('SUBTITLE_MULTIPLE_FILES');
-            }else{
-                $link['subtitle'] = $content->getSubTitle();
-            }
+            $link['subtitle'] = $content->getSubTitle();
 	    }
 
         $options = $this->getCourseOptions();
@@ -254,6 +249,44 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    protected function linkForAttachment(CourseContentAttachment $attachment, CourseContent $content) {
+
+        $link = array(
+            'title'=>$attachment->getTitle() ? $attachment->getTitle() : 'Download File',
+        );
+
+        $subtitle = $attachment->getFileName();
+        if ($filesize = $attachment->getFileSize()) {
+            $subtitle .= " (" . $this->formatBytes($filesize) . ")";
+        }
+
+        switch ($attachment->getDownloadMode())
+        {
+            case $content::MODE_DOWNLOAD:
+                $options = $this->getCourseOptions();
+                $options['contentID'] = $content->getID();
+
+                if ($fileID = $attachment->getID()){
+                    $options['fileID'] = $fileID;
+                }
+
+                $link['url'] = $this->buildExternalURL($this->buildURL('download', $options));
+                break;
+            case $content::MODE_URL:
+                $link['url'] = $this->buildExternalURL($attachment->getURL());
+                $link['class'] = 'external';
+                $link['linkTarget'] = '_blank';
+                break;
+            default:
+                break;
+        }
+
+        $link['subtitle'] = $subtitle;
+
+        return $link;
+
+    }
+
     /**
      * Return the title of the tab for a particular page.
      * @param  string $page The page the tab is on
@@ -424,9 +457,9 @@ class CoursesWebModule extends WebModule {
 			return $value;
 		}
 
-		//less than 10,000 bytes return bytes
-		if ($value < 10000) {
-			return $value;
+		//less than 1024 bytes return bytes
+		if ($value < 1024) {
+			return sprintf("%d B", $value);
 		//less than 1,000,000 bytes return KB
 		} elseif ($value < 1000000) {
 			return sprintf("%.2f KB", $value/1024);
@@ -453,8 +486,9 @@ class CoursesWebModule extends WebModule {
                 $links[] = array(
                     'title'=>$content->getTitle(),
                     'subtitle'=>$content->getURL(),
-                    'url'=>$content->getURL(),
+                    'url'=>$this->buildExternalURL($content->getURL()),
                     'class'=>'external',
+                    'linkTarget'=>'_blank'
                 );
                 break;
             /**
@@ -466,35 +500,10 @@ class CoursesWebModule extends WebModule {
              *    Create an external link to the content/files
              */
             case 'file':
-                $downloadMode = $content->getDownloadMode();
-                if($files = $content->getFiles()){
-                    foreach ($files as $file) {
-                        $fileID = $file->getID();
-                        if($downloadMode == $content::MODE_DOWNLOAD){
-                            $options = $this->getCourseOptions();
-                            $options['contentID'] = $content->getID();
-                            $title = 'Download File';
-                            if($fileID = $file->getID()){
-                                $options['fileID'] = $fileID;
-                            }
-                            $subtitle = $file->getFileName();
-                            if ($filesize = $file->getFileSize()) {
-                                $subtitle .= " (" . $this->formatBytes($filesize) . ")";
-                            }
-
-                            $links[] = array(
-                                'title'=>$title,
-                                'subtitle'=>$subtitle,
-                                'url'=>$this->buildExternalURL($this->buildURL('download', $options)),
-                            );
-                        }elseif($downloadMode == $content::MODE_URL){
-                            $links[] = array(
-                                'title'=>$content->getTitle(),
-                                'subtitle'=>$file->getFilename(),
-                                'url'=>$this->buildExternalURL($content->getFileurl()),
-                                'class'=>'external',
-                            );
-                        }
+//                $downloadMode = $content->getDownloadMode();
+                if ($attachments = $content->getAttachments()) {
+                    foreach ($attachments as $attachment) {
+                        $links[] = $this->linkForAttachment($attachment, $content);
                     }
                 }
                 break;
@@ -507,6 +516,7 @@ class CoursesWebModule extends WebModule {
                         'subtitle'=>$content->getFilename(),
                         'url'=>$content->getFileurl(),
                         'class'=>'external',
+                        'linkTarget'=>'_blank'
                     );
                 }
                 break;
@@ -680,6 +690,7 @@ class CoursesWebModule extends WebModule {
             4   => 'four',
             5   => 'five',
         );
+        $this->assign('tabCount', $tabCount);
         $this->assign($tabPage.'TabCount', $tabCountMap[$tabCount]);
         $this->assign($tabPage.'GroupLinks', $groupLinks);
         $this->assign('tabstripId', $tabPage.'-'.md5($this->buildURL($this->page, $this->args)));
@@ -868,8 +879,6 @@ class CoursesWebModule extends WebModule {
                         if ($item) {
                             $items[] = $item;
                         }
-                    } else {
-                        throw new KurogoException("Unable to get an object for $field");
                     }
                 }
                 return $items;
@@ -889,8 +898,6 @@ class CoursesWebModule extends WebModule {
                             $items[] = $item;
                         }
                     }
-                } else {
-                    throw new KurogoException("Unable to get an object for list");
                 }
 
                 return $items;
@@ -1426,66 +1433,112 @@ class CoursesWebModule extends WebModule {
         $contentCourse = $course->getCourse('content');
         $resourcesLinks = array();
         $resourcesOptions = $this->getOptionsForResources($options);
-        $groups = $contentCourse->getResources($resourcesOptions);
         $group = $resourcesOptions['group'];
-        if ($group == "date") {
-            $limit = 0;
-            $pageSize = $resourcesOptions['limit'];
-        } else {
-            $limit = $resourcesOptions['limit'];
-        }
-        $key = $resourcesOptions['key'];
-        $seeAllLinks = array();
-
-        foreach ($groups as $groupTitle => $items){
-            //@Todo when particular type,it wil show the data about the type
-            if ($key) {
-                if ($key !== $groupTitle) {
-                    continue;
-                } else {
-                    $limit = 0;
-                }
-            }
-            $hasMoreItems = false;
-            $index = 0;
-            $groupItems = array();
-            foreach ($items as $item) {
-                if ($index >= $limit && $limit != 0) {
-                    break;
-                }
-                $groupItems[] = $this->linkForContent($item, $contentCourse);
-                $index++;
-            }
-            if ($group == 'type') {
-                $title = $this->getLocalizedString('CONTENT_TYPE_TITLE_'.strtoupper($groupTitle));
+        if($group == 'browse'){
+            if (isset($options['course'])) {
+                $course = $options['course'];
             } else {
-                $title = $groupTitle;
+                throw new KurogoConfigurationException("Aggregated resources not currently supported");
             }
-            $resource = array(
-                'title' => $title,
-                'items' => $groupItems,
-                'count' => count($items),
-            );
-            if ($group != "date" && count($items) > $limit && $limit != 0) {
-                $courseOptions = $this->getCourseOptions();
-                $courseOptions['group'] = $group;
-                $courseOptions['key'] = $groupTitle;
-                $courseOptions['tab'] = 'resources';
 
-                // currently a separate page
-                $resource['url'] = $this->buildBreadcrumbURL("resourceSeeAll", $courseOptions);
+            $contentCourse = $course->getCourse('content');
+            $browseOptions = $this->getOptionsForBrowse($options);
+            $browseContent = $contentCourse->getContentByParentId($browseOptions);
+
+            $browseLinks = array();
+            foreach ($browseContent as $content) {
+                switch ($content->getContentType()) {
+                    case 'folder':
+                        $browseLinks[] = $this->linkForFolder($content, $contentCourse);
+                        break;
+                    case 'task':
+                        $browseLinks[] = $this->linkForTask($content, $contentCourse);
+                        break;
+                    default:
+                        $browseLinks[] = $this->linkForContent($content, $contentCourse);
+                        break;
+                }
             }
-            $resourcesLinks[] = $resource;
-        }
-        if ($group == "date" && $pageSize && isset($resourcesLinks[0])) {
-            $resource = $resourcesLinks[0];
-            $limitedItems = $this->paginateArray($resource['items'], $pageSize);
-            $resourcesLinks[0]['items'] = $limitedItems;
-            $resourcesLinks[0]['count'] = count($limitedItems);
-        }
+            $this->assign('resourcesLinks', array(array('items'=>$browseLinks)));
 
-        $this->assign('resourcesLinks', $resourcesLinks);
-        $this->assign('courseResourcesGroup', $group);
+            $browseHeader = array();
+            if(isset($browseOptions['contentID'])){
+                $currentContent = $contentCourse->getContentById($browseOptions['contentID']);
+                $parentID = $currentContent->getParentID();
+                if($parentID){
+                    $parentContent = $contentCourse->getContentById($parentID);
+                    $browseHeader = $this->linkForFolder($parentContent, $contentCourse);
+                }else{
+                    $options = $this->getCourseOptions();
+                    $options['tab'] = 'browse';
+                    $browseHeader['url'] = $this->buildAjaxBreadcrumbURL($this->page, $options, false);
+                    $browseHeader['title'] = $this->getLocalizedString('ROOT_LEVEL_TITLE');
+                }
+                $browseHeader['current'] = $currentContent->getTitle();
+            }
+            $this->assign('browseHeader', $browseHeader);
+        }else{
+            $groups = $contentCourse->getResources($resourcesOptions);
+            if ($group == "date") {
+                $limit = 0;
+                $pageSize = $resourcesOptions['limit'];
+            } else {
+                $limit = $resourcesOptions['limit'];
+            }
+            $key = $resourcesOptions['key'];
+            $seeAllLinks = array();
+
+            foreach ($groups as $groupTitle => $items){
+                $items = $this->sortCourseContent($items);
+                //@Todo when particular type,it wil show the data about the type
+                if ($key) {
+                    if ($key !== $groupTitle) {
+                        continue;
+                    } else {
+                        $limit = 0;
+                    }
+                }
+                $hasMoreItems = false;
+                $index = 0;
+                $groupItems = array();
+                foreach ($items as $item) {
+                    if ($index >= $limit && $limit != 0) {
+                        break;
+                    }
+                    $groupItems[] = $this->linkForContent($item, $contentCourse);
+                    $index++;
+                }
+                if ($group == 'type') {
+                    $title = $this->getLocalizedString('CONTENT_TYPE_TITLE_'.strtoupper($groupTitle));
+                } else {
+                    $title = $groupTitle;
+                }
+                $resource = array(
+                    'title' => $title,
+                    'items' => $groupItems,
+                    'count' => count($items),
+                );
+                if ($group != "date" && count($items) > $limit && $limit != 0) {
+                    $courseOptions = $this->getCourseOptions();
+                    $courseOptions['group'] = $group;
+                    $courseOptions['key'] = $groupTitle;
+                    $courseOptions['tab'] = 'resources';
+
+                    // currently a separate page
+                    $resource['url'] = $this->buildBreadcrumbURL("resourceSeeAll", $courseOptions);
+                }
+                $resourcesLinks[] = $resource;
+            }
+            if ($group == "date" && $pageSize && isset($resourcesLinks[0])) {
+                $resource = $resourcesLinks[0];
+                $limitedItems = $this->paginateArray($resource['items'], $pageSize);
+                $resourcesLinks[0]['items'] = $limitedItems;
+                $resourcesLinks[0]['count'] = count($limitedItems);
+            }
+
+            $this->assign('resourcesLinks', $resourcesLinks);
+            $this->assign('courseResourcesGroup', $group);
+        }
     }
 
     /**
@@ -1632,7 +1685,7 @@ class CoursesWebModule extends WebModule {
      * @param  array  $tabData The tab's Data
      * @return boolean
      */
-    protected function showTab($tabID, $tabData) {
+    protected function showTab($tabID, $tabData, $options) {
         if (self::argVal($tabData, 'protected', 0) && !$this->isLoggedIn()) {
             return false;
         }
@@ -1682,20 +1735,21 @@ class CoursesWebModule extends WebModule {
 
                 if ($this->page=='download') {
                     //we are downloading a file that the server retrieves
-                    if ($content->getContentType()=='file') {
+                    if ($content->getContentType()=='file' || $content->getContentType()=='task') {
                         $fileID = $this->getArg('fileID', null);
-                        if ($file = $content->getContentFile($fileID)) {
-                            if ($mime = $content->getContentMimeType($fileID)) {
+                        if ($attachment = $content->getAttachment($fileID)) {
+                            $fileURL = $attachment->getContentFile();
+                            if ($mime = $attachment->getMimeType()) {
                                 header('Content-type: ' . $mime);
                             }
-                            if ($size = $content->getFilesize($fileID)) {
+                            if ($size = $attachment->getFilesize()) {
                                 header('Content-length: ' . sprintf("%d", $size));
                             }
 
-                            if ($filename = $content->getFilename($fileID)) {
+                            if ($filename = $attachment->getFilename()) {
                                 header('Content-Disposition: inline; filename="'. $filename . '"');
                             }
-                            readfile($file);
+                            readfile($fileURL);
                             die();
                         } else {
                             throw new KurogoException("Unable to download requested file");
@@ -1719,8 +1773,7 @@ class CoursesWebModule extends WebModule {
 
                 if ($content->getContentType() == "page") {
                     if($content->getViewMode() == $content::MODE_PAGE) {
-                        $contentDataUrl = $contentCourse->getFileForContent($content->getID());
-                        $contentData = file_get_contents($contentDataUrl);
+                        $contentData = $content->getContent();
                         $this->assign("contentData", $contentData);
                     }
                 }
@@ -1744,6 +1797,13 @@ class CoursesWebModule extends WebModule {
                     throw new KurogoDataException($this->getLocalizedString('ERROR_CONTENT_NOT_FOUND'));
                 }
 
+                $attachments = $task->getAttachments();
+                $attachmentLinks = array();
+                foreach ($attachments as $attachment) {
+                    $attachmentLinks[] = $this->linkForAttachment($attachment, $task);
+                }
+
+
                 $this->assign('taskTitle', $task->getTitle());
                 $this->assign('taskDescription', $task->getDescription());
                 if ($task->getPublishedDate()) {
@@ -1753,7 +1813,9 @@ class CoursesWebModule extends WebModule {
                     if ($task->getDueDate()) {
                         $this->assign('taskDueDate', DateFormatter::formatDate($task->getDueDate(), DateFormatter::MEDIUM_STYLE, DateFormatter::NO_STYLE));
                     }
-                    $this->assign('links', $task->getLinks());
+                    $links = $task->getLinks();
+                    $links = array_merge($links, $attachmentLinks);
+                    $this->assign('links', $links);
                 }
 
                 break;
@@ -1819,6 +1881,7 @@ class CoursesWebModule extends WebModule {
 
                 $this->assign('catalogHeader', $this->getOptionalModuleVar('catalogHeader','','catalog'));
                 $this->assign('catalogFooter', $this->getOptionalModuleVar('catalogFooter','','catalog'));
+                $this->assign('hiddenArgs', array('term' => strval($this->Term)));
                 $this->assign('placeholder', $this->getLocalizedString("CATALOG_SEARCH"));
 
                 break;
@@ -2029,7 +2092,7 @@ class CoursesWebModule extends WebModule {
                 $args['page'] = $this->page;
                 $this->tab = $this->getArg('tab', key($tabsConfig));
                 foreach ($tabsConfig as $tabID => $tabData) {
-                    if ($this->showTab($tabID, $tabData)) {
+                    if ($this->showTab($tabID, $tabData, $options)) {
                         if ($tabID == $this->tab && $preloadSelectedTab) {
                             $method = "initialize" . $tabID;
                             if (!is_callable(array($this, $method))) {
@@ -2098,7 +2161,7 @@ class CoursesWebModule extends WebModule {
                 $args['ajax'] = true;
                 $args['page'] = $this->page;
                 foreach($tabsConfig as $tabID => $tabData){
-                    if ($this->showTab($tabID, $tabData)) {
+                    if ($this->showTab($tabID, $tabData, $options)) {
                         if ($tabID == $this->tab) {
                             $method = "initialize" . $tabID;
                             if (!is_callable(array($this, $method))) {
@@ -2160,7 +2223,7 @@ class CoursesWebModule extends WebModule {
                 $searchTerms = $this->getArg('filter', false);
 
                 $options = array(
-                    'term' => $term,
+                    'term' => $this->Term,
                     'types' => array('catalog')
                 );
                 if($area = $this->getArg('area')) {
@@ -2184,7 +2247,7 @@ class CoursesWebModule extends WebModule {
                 if ($coursesList) {
                     $this->assign('resultCount', count($coursesList));
                 }
-                $this->assign('hiddenArgs', array('area' => $area, 'term' => strval($term)));
+                $this->assign('hiddenArgs', array('area' => $area, 'term' => strval($this->Term)));
                 $this->assign('searchTerms', $searchTerms);
                 $this->assign('searchHeader', $this->getOptionalModuleVar('searchHeader','','catalog'));
                 break;

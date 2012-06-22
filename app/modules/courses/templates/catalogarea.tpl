@@ -4,16 +4,16 @@
 
 {include file="findInclude:common/templates/search.tpl" extraArgs=$hiddenArgs}
 
-{if $areas}
 {block name="areas"}
+{if $areas}
   {include file="findInclude:common/templates/navlist.tpl" navlistItems=$areas}
-{/block}
 {/if}
+{/block}
 
-{if $courses}
 {block name="courses"}
-  {include file="findInclude:common/templates/navlist.tpl" boldLabels=true navlistItems=$courses}
-{/block}
+{if $courses}
+  {include file="findInclude:common/templates/results.tpl" boldLabels=true results=$courses}
 {/if}
+{/block}
 
 {include file="findInclude:common/templates/footer.tpl"}
