@@ -872,8 +872,6 @@ class CoursesWebModule extends WebModule {
                         if ($item) {
                             $items[] = $item;
                         }
-                    } else {
-                        throw new KurogoException("Unable to get an object for $field");
                     }
                 }
                 return $items;
@@ -893,8 +891,6 @@ class CoursesWebModule extends WebModule {
                             $items[] = $item;
                         }
                     }
-                } else {
-                    throw new KurogoException("Unable to get an object for list");
                 }
 
                 return $items;
