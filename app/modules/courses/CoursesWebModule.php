@@ -523,6 +523,7 @@ class CoursesWebModule extends WebModule {
             // These types of content do not have links
             case 'announcement':
             case 'task':
+            case 'blog':
             case 'unsupported':
                 break;
             default:
