@@ -250,17 +250,17 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function linkForAttachment(CourseContentAttachment $attachment, CourseContent $content) {
-    
+
         $link = array(
             'title'=>$attachment->getTitle() ? $attachment->getTitle() : 'Download File',
         );
-        
+
         $subtitle = $attachment->getFileName();
         if ($filesize = $attachment->getFileSize()) {
             $subtitle .= " (" . $this->formatBytes($filesize) . ")";
         }
 
-        switch ($attachment->getDownloadMode()) 
+        switch ($attachment->getDownloadMode())
         {
             case $content::MODE_DOWNLOAD:
                 $options = $this->getCourseOptions();
@@ -269,7 +269,7 @@ class CoursesWebModule extends WebModule {
                 if ($fileID = $attachment->getID()){
                     $options['fileID'] = $fileID;
                 }
-        
+
                 $link['url'] = $this->buildExternalURL($this->buildURL('download', $options));
                 break;
             case $content::MODE_URL:
@@ -280,9 +280,9 @@ class CoursesWebModule extends WebModule {
             default:
                 break;
         }
-        
+
         $link['subtitle'] = $subtitle;
-        
+
         return $link;
 
     }
@@ -503,7 +503,6 @@ class CoursesWebModule extends WebModule {
 //                $downloadMode = $content->getDownloadMode();
                 if ($attachments = $content->getAttachments()) {
                     foreach ($attachments as $attachment) {
-                        
                         $links[] = $this->linkForAttachment($attachment, $content);
                     }
                 }
@@ -1740,20 +1739,21 @@ class CoursesWebModule extends WebModule {
 
                 if ($this->page=='download') {
                     //we are downloading a file that the server retrieves
-                    if ($content->getContentType()=='file') {
+                    if ($content->getContentType()=='file' || $content->getContentType()=='task') {
                         $fileID = $this->getArg('fileID', null);
-                        if ($file = $content->getContentFile($fileID)) {
-                            if ($mime = $content->getContentMimeType($fileID)) {
+                        if ($attachment = $content->getAttachment($fileID)) {
+                            $fileURL = $attachment->getContentFile();
+                            if ($mime = $attachment->getMimeType()) {
                                 header('Content-type: ' . $mime);
                             }
-                            if ($size = $content->getFilesize($fileID)) {
+                            if ($size = $attachment->getFilesize()) {
                                 header('Content-length: ' . sprintf("%d", $size));
                             }
 
-                            if ($filename = $content->getFilename($fileID)) {
+                            if ($filename = $attachment->getFilename()) {
                                 header('Content-Disposition: inline; filename="'. $filename . '"');
                             }
-                            readfile($file);
+                            readfile($fileURL);
                             die();
                         } else {
                             throw new KurogoException("Unable to download requested file");
@@ -1801,6 +1801,13 @@ class CoursesWebModule extends WebModule {
                     throw new KurogoDataException($this->getLocalizedString('ERROR_CONTENT_NOT_FOUND'));
                 }
 
+                $attachments = $task->getAttachments();
+                $attachmentLinks = array();
+                foreach ($attachments as $attachment) {
+                    $attachmentLinks[] = $this->linkForAttachment($attachment, $task);
+                }
+
+
                 $this->assign('taskTitle', $task->getTitle());
                 $this->assign('taskDescription', $task->getDescription());
                 if ($task->getPublishedDate()) {
@@ -1810,7 +1817,9 @@ class CoursesWebModule extends WebModule {
                     if ($task->getDueDate()) {
                         $this->assign('taskDueDate', DateFormatter::formatDate($task->getDueDate(), DateFormatter::MEDIUM_STYLE, DateFormatter::NO_STYLE));
                     }
-                    $this->assign('links', $task->getLinks());
+                    $links = $task->getLinks();
+                    $links = array_merge($links, $attachmentLinks);
+                    $this->assign('links', $links);
                 }
 
                 break;

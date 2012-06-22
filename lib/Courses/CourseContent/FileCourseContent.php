@@ -5,10 +5,14 @@ class FileCourseContent extends CourseContent
     protected $contentType = 'file';
 
     public function getContentClass() {
-        if ($attachment = current($this->attachments)) {
+        $attachments = $this->getAttachments();
+        if(count($attachments) > 1){
+            return 'file_multi';
+        }elseif(count($attachments) == 1){
+            $attachment = current($attachments);
             return $attachment->getContentClass();
         }
-        
+
         return parent::getContentClass();
     }
 }

@@ -4,12 +4,13 @@ class CourseContentAttachment
 {
     protected $id;
     protected $title;
-    protected $downloadMode=CourseContent::MODE_URL;
+    protected $downloadMode=CourseContent::MODE_DOWNLOAD;
     protected $filename; // original filename of content
     protected $filesize;
-    protected $fileurl;
+    protected $url;
     protected $mimeType;
-    
+    protected $parentContent;
+
     public function getMimeType() {
         if ($this->mimeType) {
             return $this->mimeType;
@@ -23,7 +24,7 @@ class CourseContentAttachment
     public function setMimeType($mimeType) {
         $this->mimeType = $mimeType;
     }
-        
+
     public function getContentClass(){
         $contentClassLookup = array(
                 'text/plain' => 'file_txt',
@@ -93,7 +94,7 @@ class CourseContentAttachment
             return 'file';
         }
     }
-    
+
     public function getID() {
         return $this->id;
     }
@@ -101,7 +102,7 @@ class CourseContentAttachment
     public function setID($id) {
         $this->id = $id;
     }
-    
+
     public function setTitle($title) {
         $this->title = $title;
     }
@@ -109,7 +110,7 @@ class CourseContentAttachment
     public function getTitle() {
         return $this->title;
     }
-    
+
     public function setFileName($filename) {
         $this->filename = $filename;
     }
@@ -133,8 +134,8 @@ class CourseContentAttachment
     public function getURL() {
         return $this->url;
     }
-    
-    
+
+
     /**
      * Get downloadMode.
      *
@@ -154,5 +155,17 @@ class CourseContentAttachment
      */
     public function setDownloadMode($downloadMode) {
         $this->downloadMode = $downloadMode;
+    }
+
+    public function setParentContent(CourseContent $content) {
+        $this->parentContent = $content;
+    }
+
+    public function getParentContent() {
+        return $this->parentContent;
+    }
+
+    public function getContentFile(){
+        return $this->url;
     }
 }
