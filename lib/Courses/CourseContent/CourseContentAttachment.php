@@ -1,130 +1,28 @@
 <?php
 
-class DownloadCourseContent extends CourseContent implements Downloadable{
-    protected $contentType = 'file';
-    protected $type;
+class CourseContentAttachment
+{
+    protected $id;
+    protected $title;
+    protected $downloadMode=CourseContent::MODE_DOWNLOAD;
     protected $filename; // original filename of content
-    protected $filepath;
     protected $filesize;
-    protected $fileurl;
-    protected $timecreated;
-    protected $timemodified;
-    protected $sortorder;
-    protected $userid;
-    protected $author;
-    protected $license;
-    protected $cacheFile;
+    protected $url;
+    protected $mimeType;
+    protected $parentContent;
 
-    const SUBTITLE_MULTIPLE_FILES = 'SUBTITLE_MULTIPLE_FILES';
-
-    public function getContentMimeType() {
-        if ($filename = $this->getContentFile()) {
-            return mime_type($filename);
+    public function getMimeType() {
+        if ($this->mimeType) {
+            return $this->mimeType;
+        } elseif ($this->filename) {
+            return mime_type($this->filename);
+        } else {
+            return null;
         }
-        return null;
     }
 
-	public function getType() {
-		return $this->type;
-	}
-
-	public function setType($type) {
-		$this->type = $type;
-	}
-
-	public function getFilename() {
-		return $this->filename;
-	}
-
-	public function setFilename($filename) {
-		$this->filename = $filename;
-	}
-
-	public function getFilepath() {
-		return $this->filepath;
-	}
-
-	public function setFilepath($filepath) {
-		$this->filepath = $filepath;
-	}
-	public function getFilesize() {
-		return $this->filesize;
-	}
-
-	public function getFile() {
-	    $this->retrieveFile($this->getFileurl());
-	}
-
-	public function setFilesize($filesize) {
-		$this->filesize = $filesize;
-	}
-
-
-
-	public function getFileurl() {
-		return $this->fileurl;
-	}
-
-	public function setFileurl($fileurl) {
-		$this->fileurl = $fileurl;
-	}
-	public function getTimecreated() {
-		return $this->timecreated;
-	}
-
-	public function setTimecreated($timecreated) {
-		$this->timecreated = $timecreated;
-	}
-	public function getTimemodified() {
-		return $this->timemodified;
-	}
-
-	public function setTimemodified($timemodified) {
-		$this->timemodified = $timemodified;
-	}
-	public function getSortorder() {
-		return $this->sortorder;
-	}
-
-	public function setSortorder($sortorder) {
-		$this->sortorder = $sortorder;
-	}
-	public function getUserid() {
-		return $this->userid;
-	}
-
-	public function setUserid($userid) {
-		$this->userid = $userid;
-	}
-	public function getAuthor() {
-		return $this->author;
-	}
-
-	public function setAuthor($author) {
-		$this->author = $author;
-	}
-	public function getLicense() {
-		return $this->license;
-	}
-
-	public function setLicense($license) {
-		$this->license = $license;
-	}
-
-    public function setCacheFile($file) {
-        $this->cacheFile = $file;
-    }
-
-    public function getCacheFile() {
-        return $this->cacheFile;
-    }
-
-    public function getContentFile() {
-        return $this->fileurl;
-    }
-
-    public function getFiles(){
-        return array($this);
+    public function setMimeType($mimeType) {
+        $this->mimeType = $mimeType;
     }
 
     public function getContentClass(){
@@ -189,11 +87,85 @@ class DownloadCourseContent extends CourseContent implements Downloadable{
                 'text/vnd.sun.j2me.app-descriptor' => 'file',
                 'application/vnd.rim.cod' => 'file',
             );
-        $mimeType = $this->getContentMimeType();
+        $mimeType = $this->getMimeType();
         if(array_key_exists($mimeType, $contentClassLookup)){
             return $contentClassLookup[$mimeType];
         }else{
             return 'file';
         }
+    }
+
+    public function getID() {
+        return $this->id;
+    }
+
+    public function setID($id) {
+        $this->id = $id;
+    }
+
+    public function setTitle($title) {
+        $this->title = $title;
+    }
+
+    public function getTitle() {
+        return $this->title;
+    }
+
+    public function setFileName($filename) {
+        $this->filename = $filename;
+    }
+
+    public function getFileName() {
+        return $this->filename;
+    }
+
+    public function setFilesize($filesize)  {
+        $this->filesize = $filesize;
+    }
+
+    public function getFileSize() {
+        return $this->filesize;
+    }
+
+    public function setURL($url) {
+        $this->url = $url;
+    }
+
+    public function getURL() {
+        return $this->url;
+    }
+
+
+    /**
+     * Get downloadMode.
+     *
+     * @return downloadMode.
+     */
+    public function getDownloadMode() {
+        if(empty($this->downloadMode)) {
+            return self::MODE_DOWNLOAD;
+        }
+        return $this->downloadMode;
+    }
+
+    /**
+     * Set downloadMode.
+     *
+     * @param downloadMode the value to set.
+     */
+    public function setDownloadMode($downloadMode) {
+        $this->downloadMode = $downloadMode;
+    }
+
+    public function setParentContent(CourseContent $content) {
+        $this->parentContent = $content;
+    }
+
+    public function getParentContent() {
+        return $this->parentContent;
+    }
+
+    public function getContentFile(){
+        return $this->url;
     }
 }
