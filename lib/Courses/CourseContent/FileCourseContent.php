@@ -7,7 +7,7 @@ class FileCourseContent extends CourseContent
     public function getContentClass() {
         $attachments = $this->getAttachments();
         if(count($attachments) > 1){
-            return 'file_multi';
+            return 'multi';
         }elseif(count($attachments) == 1){
             $attachment = current($attachments);
             return $attachment->getContentClass();
