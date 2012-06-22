@@ -6,6 +6,7 @@ class CourseUser implements KurogoObject {
 	protected $lastName;
 	protected $fullName;
 	protected $email; 
+    protected $attributes=array();
 	
 	public function filterItem($filters) {
 		return $filters;
@@ -68,4 +69,17 @@ class CourseUser implements KurogoObject {
 	public function setEmail($email) {
 		$this->email = $email;
 	}
+
+    public function getAttributes() {
+        return $this->attributes;
+    }
+
+    public function setAttribute($key, $value) {
+        $this->attributes[$key] = $value;
+    }
+
+    public function getAttribute($attrib) {
+        return isset($this->attributes[$attrib]) ? $this->attributes[$attrib] : '';
+    }
+	
 }
