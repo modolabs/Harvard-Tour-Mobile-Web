@@ -73,12 +73,7 @@ class CoursesWebModule extends WebModule {
 	    	}
 	    	$link['subtitle'] = $link['updated'] = $updated;
 	    } else {
-            // If the content has multiple files indicate that. Otherwise get the subtitle from the content.
-            if($content->getSubtitle() == DownloadCourseContent::SUBTITLE_MULTIPLE_FILES){
-                $link['subtitle'] = $this->getLocalizedString('SUBTITLE_MULTIPLE_FILES');
-            }else{
-                $link['subtitle'] = $content->getSubTitle();
-            }
+            $link['subtitle'] = $content->getSubTitle();
 	    }
 
         $options = $this->getCourseOptions();
@@ -254,6 +249,44 @@ class CoursesWebModule extends WebModule {
         return $link;
     }
 
+    protected function linkForAttachment(CourseContentAttachment $attachment, CourseContent $content) {
+
+        $link = array(
+            'title'=>$attachment->getTitle() ? $attachment->getTitle() : 'Download File',
+        );
+
+        $subtitle = $attachment->getFileName();
+        if ($filesize = $attachment->getFileSize()) {
+            $subtitle .= " (" . $this->formatBytes($filesize) . ")";
+        }
+
+        switch ($attachment->getDownloadMode())
+        {
+            case $content::MODE_DOWNLOAD:
+                $options = $this->getCourseOptions();
+                $options['contentID'] = $content->getID();
+
+                if ($fileID = $attachment->getID()){
+                    $options['fileID'] = $fileID;
+                }
+
+                $link['url'] = $this->buildExternalURL($this->buildURL('download', $options));
+                break;
+            case $content::MODE_URL:
+                $link['url'] = $this->buildExternalURL($attachment->getURL());
+                $link['class'] = 'external';
+                $link['linkTarget'] = '_blank';
+                break;
+            default:
+                break;
+        }
+
+        $link['subtitle'] = $subtitle;
+
+        return $link;
+
+    }
+
     /**
      * Return the title of the tab for a particular page.
      * @param  string $page The page the tab is on
@@ -424,9 +457,9 @@ class CoursesWebModule extends WebModule {
 			return $value;
 		}
 
-		//less than 10,000 bytes return bytes
-		if ($value < 10000) {
-			return $value;
+		//less than 1024 bytes return bytes
+		if ($value < 1024) {
+			return sprintf("%d B", $value);
 		//less than 1,000,000 bytes return KB
 		} elseif ($value < 1000000) {
 			return sprintf("%.2f KB", $value/1024);
@@ -467,36 +500,10 @@ class CoursesWebModule extends WebModule {
              *    Create an external link to the content/files
              */
             case 'file':
-                $downloadMode = $content->getDownloadMode();
-                if($files = $content->getFiles()){
-                    foreach ($files as $file) {
-                        $fileID = $file->getID();
-                        if($downloadMode == $content::MODE_DOWNLOAD){
-                            $options = $this->getCourseOptions();
-                            $options['contentID'] = $content->getID();
-                            $title = 'Download File';
-                            if($fileID = $file->getID()){
-                                $options['fileID'] = $fileID;
-                            }
-                            $subtitle = $file->getFileName();
-                            if ($filesize = $file->getFileSize()) {
-                                $subtitle .= " (" . $this->formatBytes($filesize) . ")";
-                            }
-
-                            $links[] = array(
-                                'title'=>$title,
-                                'subtitle'=>$subtitle,
-                                'url'=>$this->buildExternalURL($this->buildURL('download', $options)),
-                            );
-                        }elseif($downloadMode == $content::MODE_URL){
-                            $links[] = array(
-                                'title'=>$content->getTitle(),
-                                'subtitle'=>$file->getFilename(),
-                                'url'=>$this->buildExternalURL($content->getFileurl()),
-                                'class'=>'external',
-                                'linkTarget'=>'_blank'
-                            );
-                        }
+//                $downloadMode = $content->getDownloadMode();
+                if ($attachments = $content->getAttachments()) {
+                    foreach ($attachments as $attachment) {
+                        $links[] = $this->linkForAttachment($attachment, $content);
                     }
                 }
                 break;
@@ -1728,20 +1735,21 @@ class CoursesWebModule extends WebModule {
 
                 if ($this->page=='download') {
                     //we are downloading a file that the server retrieves
-                    if ($content->getContentType()=='file') {
+                    if ($content->getContentType()=='file' || $content->getContentType()=='task') {
                         $fileID = $this->getArg('fileID', null);
-                        if ($file = $content->getContentFile($fileID)) {
-                            if ($mime = $content->getContentMimeType($fileID)) {
+                        if ($attachment = $content->getAttachment($fileID)) {
+                            $fileURL = $attachment->getContentFile();
+                            if ($mime = $attachment->getMimeType()) {
                                 header('Content-type: ' . $mime);
                             }
-                            if ($size = $content->getFilesize($fileID)) {
+                            if ($size = $attachment->getFilesize()) {
                                 header('Content-length: ' . sprintf("%d", $size));
                             }
 
-                            if ($filename = $content->getFilename($fileID)) {
+                            if ($filename = $attachment->getFilename()) {
                                 header('Content-Disposition: inline; filename="'. $filename . '"');
                             }
-                            readfile($file);
+                            readfile($fileURL);
                             die();
                         } else {
                             throw new KurogoException("Unable to download requested file");
@@ -1789,6 +1797,13 @@ class CoursesWebModule extends WebModule {
                     throw new KurogoDataException($this->getLocalizedString('ERROR_CONTENT_NOT_FOUND'));
                 }
 
+                $attachments = $task->getAttachments();
+                $attachmentLinks = array();
+                foreach ($attachments as $attachment) {
+                    $attachmentLinks[] = $this->linkForAttachment($attachment, $task);
+                }
+
+
                 $this->assign('taskTitle', $task->getTitle());
                 $this->assign('taskDescription', $task->getDescription());
                 if ($task->getPublishedDate()) {
@@ -1798,7 +1813,9 @@ class CoursesWebModule extends WebModule {
                     if ($task->getDueDate()) {
                         $this->assign('taskDueDate', DateFormatter::formatDate($task->getDueDate(), DateFormatter::MEDIUM_STYLE, DateFormatter::NO_STYLE));
                     }
-                    $this->assign('links', $task->getLinks());
+                    $links = $task->getLinks();
+                    $links = array_merge($links, $attachmentLinks);
+                    $this->assign('links', $links);
                 }
 
                 break;
