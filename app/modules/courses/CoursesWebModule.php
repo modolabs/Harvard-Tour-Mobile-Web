@@ -457,9 +457,9 @@ class CoursesWebModule extends WebModule {
 			return $value;
 		}
 
-		//less than 10,000 bytes return bytes
-		if ($value < 10000) {
-			return $value;
+		//less than 1024 bytes return bytes
+		if ($value < 1024) {
+			return sprintf("%d B", $value);
 		//less than 1,000,000 bytes return KB
 		} elseif ($value < 1000000) {
 			return sprintf("%.2f KB", $value/1024);
