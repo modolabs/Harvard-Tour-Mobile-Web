@@ -29,8 +29,6 @@ class CourseContentAttachment
         $contentClassLookup = array(
                 'text/plain' => 'file_txt',
                 'text/html' => 'file_txt',
-                'text/html' => 'file_txt',
-                'text/html' => 'file_txt',
                 'text/css' => 'file_txt',
                 'application/javascript' => 'file_txt',
                 'application/json' => 'file_txt',
@@ -41,33 +39,25 @@ class CourseContentAttachment
                 // images
                 'image/png' => 'file_img',
                 'image/jpeg' => 'file_img',
-                'image/jpeg' => 'file_img',
-                'image/jpeg' => 'file_img',
                 'image/gif' => 'file_img',
                 'image/bmp' => 'file_img',
                 'image/vnd.microsoft.icon' => 'file_img',
                 'image/tiff' => 'file_img',
-                'image/tiff' => 'file_img',
-                'image/svg+xml' => 'file_img',
                 'image/svg+xml' => 'file_img',
 
                 // archives
                 'application/zip' => 'file_zip',
                 'application/x-rar-compressed' => 'file_zip',
                 'application/x-msdownload' => 'file_zip',
-                'application/x-msdownload' => 'file_zip',
                 'application/vnd.ms-cab-compressed' => 'file_zip',
 
                 // audio/video
                 'audio/mpeg' => 'file_video',
                 'video/quicktime' => 'file_video',
-                'video/quicktime' => 'file_video',
 
                 // adobe
                 'application/pdf' => 'file_pdf',
                 'image/vnd.adobe.photoshop' => 'file',
-                'application/postscript' => 'file',
-                'application/postscript' => 'file',
                 'application/postscript' => 'file',
 
                 // ms office
