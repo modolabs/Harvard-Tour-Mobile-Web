@@ -10,7 +10,7 @@
   </div>
   <div id="courseDetailWrapper" class="courses-splitview-detailwrapper">
     <div id="courseDetail">
-      <div id="{$courseIdPrefix}{$courseIdAll}_detail" class="loaded">
+      <div id="{$coursesAllId}_detail" class="loaded">
         <div class="nonfocal coursetitle"><h2>{$viewAllCoursesHeading}</h2></div>
         {include file="findInclude:modules/courses/templates/include/indexTabs.tpl"}
       </div>

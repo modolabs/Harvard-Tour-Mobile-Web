@@ -2197,7 +2197,7 @@ class CoursesWebModule extends WebModule {
                     $this->assign('courseIdPrefix', $courseIdPrefix);
 
                     $coursesAllId = $courseIdPrefix.'all';
-                    $this->assign('courseAllId', $coursesAllId);
+                    $this->assign('coursesAllId', $coursesAllId);
 
                     if (isset($_COOKIE[$selectedCourseCookie])) {
                         $cookieCourseId = $_COOKIE[$selectedCourseCookie];
