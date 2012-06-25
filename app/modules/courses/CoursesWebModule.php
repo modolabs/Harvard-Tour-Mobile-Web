@@ -401,12 +401,19 @@ class CoursesWebModule extends WebModule {
         if ($gradeScore = $gradeAssignment->getGrade()) {
             // If the score has been graded display the grade, otherwise display the status
             if($gradeScore->getStatus() == GradeScore::SCORE_STATUS_GRADED){
-                $subtitle = $this->getLocalizedString('GRADE_OUT_OF_POSSIBLE', number_format($gradeAssignment->getGrade()->getScore(), 2), $gradeAssignment->getPossiblePoints());
+                $grade = $gradeScore->getScore();
+                $possiblePoints = $gradeAssignment->getPossiblePoints();
+                if(is_numeric($grade) && ($possiblePoints != 0)){
+                    $percent = ($grade / $possiblePoints)*100;
+                    $subtitle = $this->getLocalizedString('GRADE_SUBTITLE_GRADED', $percent, number_format($gradeAssignment->getGrade()->getScore(), 2), number_format($gradeAssignment->getPossiblePoints(),2));
+                }else{
+                    $subtitle = $this->getLocalizedString('GRADE_SUBTITLE', number_format($gradeAssignment->getGrade()->getScore(), 2));
+                }
             }else{
-                $subtitle = $this->getLocalizedString('GRADE_OUT_OF_POSSIBLE', $this->getLocalizedString($gradeScore->getStatus()), $gradeAssignment->getPossiblePoints());
+                $subtitle = $this->getLocalizedString('GRADE_SUBTITLE', $this->getLocalizedString($gradeScore->getStatus()));
             }
         }else{
-            $subtitle = $this->getLocalizedString('GRADE_OUT_OF_POSSIBLE', $this->getLocalizedString('SCORE_STATUS_NO_GRADE'), $gradeAssignment->getPossiblePoints());
+            $subtitle = $this->getLocalizedString('GRADE_SUBTITLE', $this->getLocalizedString('SCORE_STATUS_NO_GRADE'));
         }
 
         $link['subtitle'] = $subtitle;
@@ -2296,6 +2303,11 @@ class CoursesWebModule extends WebModule {
                 // Strict type checking in case possible points is 0.
                 if($gradeAssignment->getPossiblePoints() !== null){
                     $gradeContent['possiblePoints'] = $gradeAssignment->getPossiblePoints();
+                }
+
+                if(is_numeric($grade) && ($gradeContent['possiblePoints'] != 0)){
+                    $percent = ($gradeContent['grade'] / $gradeContent['possiblePoints'])*100;
+                    $gradeContent['percent'] = $this->getLocalizedString('GRADE_PERCENT', $percent);
                 }
 
                 $this->assign('grade', $gradeContent);

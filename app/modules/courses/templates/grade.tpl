@@ -1,38 +1,41 @@
 {include file="findInclude:common/templates/header.tpl"}
-<div class="nonfocal">
-<h3>Assignment Name</h3>
-<p>{$grade.title}</p>
+
+<h3 class="nonfocal">Assignment Name</h3>
+<p class="focal">{$grade.title}</p>
 
 {if $grade.dueDate}
-<h3>Due Date</h3>
-<p>{$grade.dueDate}</p>
+<h3 class="nonfocal">Due Date</h3>
+<p class="focal">{$grade.dueDate}</p>
 {/if}
 
 {if $grade.dateModified}
-<h3>Last Submitted, Edited or Graded</h3>
-<p>{$grade.dateModified}</p>
+<h3 class="nonfocal">Last Submitted, Edited or Graded</h3>
+<p class="focal">{$grade.dateModified}</p>
 {/if}
 
 {if $grade.status}
-<h3>Status</h3>
-<p>{$grade.status}</p>
+<h3 class="nonfocal">Status</h3>
+<p class="focal">{$grade.status}</p>
 {/if}
 
 {if $grade.grade !== null}
-<h3>Grade</h3>
-<p>{$grade.grade}</p>
+<h3 class="nonfocal">Grade</h3>
+<p class="focal">{$grade.grade}</p>
 {/if}
 
 {if $grade.possiblePoints !== null}
-<h3>Possible Points</h3>
-<p>{$grade.possiblePoints}</p>
+<h3 class="nonfocal">Possible Points</h3>
+<p class="focal">{$grade.possiblePoints}</p>
+{/if}
+
+{if $grade.percent !== null}
+<h3 class="nonfocal">Percentage</h3>
+<p class="focal">{$grade.percent}</p>
 {/if}
 
 {if $grade.studentComment}
-<h3>Feedback to Student</h3>
-<p>{$grade.studentComment}</p>
+<h3 class="nonfocal">Feedback to Student</h3>
+<p class="focal">{$grade.studentComment}</p>
 {/if}
-
-</div>
 
 {include file="findInclude:common/templates/footer.tpl"}
