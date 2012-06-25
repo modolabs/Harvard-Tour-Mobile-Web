@@ -187,11 +187,10 @@ class CoursesWebModule extends WebModule {
     public function linkForUpdate(CourseContent $content, CourseContentCourse $course, $includeCourseName=false) {
 
         $contentID = $content->getID();
-        $options = array(
-            'courseID'  => $course->getCommonID(),
-            'contentID' => $contentID,
-            'type'      => $content->getContentType(),
-        );
+        $options = $this->getCourseOptions();
+        $options['contentID'] = $contentID;
+        $options['type'] = $content->getContentType();
+
         $link = array(
             'title' => $includeCourseName ? $course->getTitle() : htmlentities($content->getTitle()),
             'type' => $content->getContentType(),
