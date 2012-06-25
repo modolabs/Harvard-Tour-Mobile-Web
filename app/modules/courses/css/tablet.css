@@ -69,7 +69,7 @@
 }
 #courseDetail #tabs li {
     width: auto;
-    min-width: 20%;
+    min-width: 16%;
 }
 #courseDetail .tabscount-6 #tabs li {
     min-width: 15%;
