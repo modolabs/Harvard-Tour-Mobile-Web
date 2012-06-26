@@ -28,7 +28,7 @@ class CourseContentAttachment
     public function getContentClass(){
         $contentClassLookup = array(
                 'text/plain' => 'file_txt',
-                'text/html' => 'file_txt',
+                'text/html' => 'page',
                 'text/css' => 'file_txt',
                 'application/javascript' => 'file_txt',
                 'application/json' => 'file_txt',
@@ -68,6 +68,7 @@ class CourseContentAttachment
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'file_xls',
                 'application/vnd.ms-powerpoint' => 'file_ppt',
                 'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'file_ppt',
+                'application/vnd.ms-powerpoint.presentation.macroEnabled.12' => 'file_ppt',
 
                 // open office
                 'application/vnd.oasis.opendocument.text' => 'file_txt',
