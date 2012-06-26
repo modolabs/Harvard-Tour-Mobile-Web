@@ -102,6 +102,9 @@ class CoursesWebModule extends WebModule {
         $options['contentID'] = $content->getID();
         $options['type'] = $content->getContentType();
         $options['tab'] = 'browse';
+
+        $link['subtitle'] = '<div class="folder-subtitle"><img src="/common/images/blank.png" style="position: absolute;visibility:hidden;" onload="loadFolderCount(this, ' . "'" . $this->buildAjaxBreadcrumbURL('folderCount', $options) . "'" .');"/></div>';
+
         $link['url'] = $this->buildBreadcrumbURL('fullbrowse', $options, true);
 
         return $link;
@@ -2328,6 +2331,21 @@ class CoursesWebModule extends WebModule {
                 }
 
                 $this->assign('grade', $gradeContent);
+                break;
+            case 'folderCount':
+                try {
+                    $course = $this->getCourseFromArgs();
+                    $contentCourse = $course->getCourse('content');
+                    if($contentID = $this->getArg('contentID')){
+                        $options['contentID'] = $contentID;
+                        $childContent = $contentCourse->getContentByParentId($options);
+                        $count = count($childContent);
+                        $subtitle = $this->getLocalizedString('FOLDER_SUBTITLE_COUNT', $count);
+                        $this->assign('folderCount', $subtitle);
+                    }
+                } catch (Exception $e) {
+                    _404();
+                }
                 break;
             case 'courseUpdateIcons':
                 try {
