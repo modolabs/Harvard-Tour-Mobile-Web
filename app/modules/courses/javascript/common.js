@@ -1,5 +1,5 @@
 function loadSection(select, page) {
-    window.location = "./" + page + "?term=" + select.value;
+    redirectTo(page, { "term" : select.value });
 }
 
 function onAjaxContentLoad() {
