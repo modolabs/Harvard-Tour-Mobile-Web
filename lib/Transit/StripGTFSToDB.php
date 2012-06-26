@@ -251,7 +251,8 @@ class StripGTFSToDB
         if (!$stmt) {
             throw new Exception("Failed to prepare statement '$sql' ".print_r($db->errorInfo(), true));
         }
-      
+        
+        $addedCount = 0;
         foreach ($rows as $row) {
             $values = array();
             
@@ -269,7 +270,9 @@ class StripGTFSToDB
               
                 $values[] = $value;
             }
-            if (!$stmt->execute($values)) {
+            if ($stmt->execute($values)) {
+                $addedCount++;
+            } else {
                 $info = $stmt->errorInfo();
                 if ($info[0] == '23000') {
                     $this->notice("        -- skipping row '".implode(', ', $values)."': ".$info[2]);
@@ -279,7 +282,7 @@ class StripGTFSToDB
             }
         }
         
-        $this->notice("    -- added ".count($rows)." rows to $tableName");
+        $this->notice("    -- added $addedCount rows to $tableName");
         
         // create indices
         foreach ($tableConfig['indices'] as $indexName => $index) {

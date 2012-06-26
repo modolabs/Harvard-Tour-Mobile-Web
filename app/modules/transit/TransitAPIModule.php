@@ -39,11 +39,16 @@ class TransitAPIModule extends APIModule {
         // Schedule view or stop list view?
         if (isset($routeInfo['directions'])) {
             foreach ($routeInfo['directions'] as $directionID => $directionInfo) {
-                $formatted['directions'][] = array(
+                $formattedDirection = array(
                     'id'    => $directionID,
                     'name'  => $directionInfo['name'],
                     'stops' => $this->formatStopsInfoForRoute($routeId, $directionInfo['stops'], $responseVersion),
                 );
+                if ($formatted['view'] == 'schedule') {
+                    // show segments in schedule view so that we can build the table
+                    $formattedDirection['segments'] = $directionInfo['segments'];
+                }
+                $formatted['directions'][] = $formattedDirection;
             }
             
             if ($responseVersion < 3) {

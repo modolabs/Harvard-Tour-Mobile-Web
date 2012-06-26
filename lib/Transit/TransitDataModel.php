@@ -1390,7 +1390,7 @@ class TransitRoute
         
         TransitDataModel::dlog("Looking at route {$this->id} ({$this->name})", TransitDataModel::DLOG_IS_RUNNING);
         
-        foreach ($this->directions as $direction) {
+        foreach ($this->directions as $directionID => $direction) {
             foreach ($direction['segments'] as $segment) {
                 TransitDataModel::dlog("    Looking at segment {$segment->getName()}", TransitDataModel::DLOG_IS_RUNNING);
                 
@@ -1400,7 +1400,7 @@ class TransitRoute
                     if ($segment->isRunning($time)) {
                         $name = $segment->getName();
                         if (isset($name) && !isset($runningSegmentNames[$name])) {
-                            TransitDataModel::dlog("   Route {$this->name} has named running segment '$name' (direction '$direction')", TransitDataModel::DLOG_IS_RUNNING);
+                            TransitDataModel::dlog("   Route {$this->name} has named running segment '$name' (direction '$directionID')", TransitDataModel::DLOG_IS_RUNNING);
                             
                             $runningSegmentNames[$name] = $name;
                         }
