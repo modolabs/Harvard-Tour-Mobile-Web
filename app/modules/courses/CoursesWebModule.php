@@ -79,10 +79,7 @@ class CoursesWebModule extends WebModule {
         $options = $this->getCourseOptions();
         $options['contentID'] = $content->getID();
         $options['type'] = $content->getContentType();
-
-        if (!$content instanceOf UnsupportedCourseContent) {
-            $link['url'] = $this->buildBreadcrumbURL('content', $options);
-        }
+        $link['url'] = $this->buildBreadcrumbURL('content', $options);
 
         return $link;
     }
@@ -530,6 +527,7 @@ class CoursesWebModule extends WebModule {
             case 'announcement':
             case 'task':
             case 'blog':
+            case 'youtube':
             case 'unsupported':
                 break;
             default:
@@ -772,6 +770,13 @@ class CoursesWebModule extends WebModule {
                     return 0;
                 }
                 return ($updateA_time > $updateB_time) ? -1 : 1;
+            case 'title':
+                $titleA = $contentA['title'] ? $contentA['title'] : '';
+                $titleB = $contentB['title'] ? $contentB['title'] : '';
+                if($titleA == $titleB){
+                    return 0;
+                }
+                return ($titleA > $titleB) ? 1 : -1;
             default:
                 if ($contentA->sortBy() == $contentB->sortBy()) {
                     return 0;
@@ -1494,6 +1499,7 @@ class CoursesWebModule extends WebModule {
             }
             $key = $resourcesOptions['key'];
             $seeAllLinks = array();
+            $otherFiles = array();
 
             foreach ($groups as $groupTitle => $items){
                 $items = $this->sortCourseContent($items);
@@ -1516,7 +1522,7 @@ class CoursesWebModule extends WebModule {
                     $index++;
                 }
                 if ($group == 'type') {
-                    $title = $this->getLocalizedString('CONTENT_TYPE_TITLE_'.strtoupper($groupTitle));
+                    $title = $this->getLocalizedString('CONTENT_CLASS_TITLE_'.strtoupper($groupTitle));
                 } else {
                     $title = $groupTitle;
                 }
@@ -1534,8 +1540,19 @@ class CoursesWebModule extends WebModule {
                     // currently a separate page
                     $resource['url'] = $this->buildBreadcrumbURL("resourceSeeAll", $courseOptions);
                 }
-                $resourcesLinks[] = $resource;
+
+                if($resource['title'] == $this->getLocalizedString('CONTENT_CLASS_TITLE_FILE')){
+                    $otherFiles = $resource;
+                }else{
+                    $resourcesLinks[] = $resource;
+                }
             }
+            // Sort groups alphabetically by group title
+            $resourcesLinks = $this->sortCourseContent($resourcesLinks, 'title');
+            if($otherFiles){
+                $resourcesLinks[] = $otherFiles;
+            }
+
             if ($group == "date" && $pageSize && isset($resourcesLinks[0])) {
                 $resource = $resourcesLinks[0];
                 $limitedItems = $this->paginateArray($resource['items'], $pageSize);
@@ -2043,7 +2060,7 @@ class CoursesWebModule extends WebModule {
                 foreach ($items as $item){
                     $resources[] = $this->linkForContent($item, $contentCourse);
                 }
-                $this->assign('key', ucfirst($key));
+                $this->assign('key', $this->getLocalizedString('CONTENT_CLASS_TITLE_'.strtoupper($key)));
                 $this->assign('resources',$resources);
             	break;
 
