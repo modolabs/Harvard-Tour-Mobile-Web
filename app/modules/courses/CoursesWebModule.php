@@ -1846,6 +1846,14 @@ class CoursesWebModule extends WebModule {
                     $this->assign('links', $links);
                 }
 
+                if($gradeID = $task->getAttribute('gradebookColumnId')){
+                    if ($gradeAssignment = $contentCourse->getGradeById($gradeID, array('user'=>true))) {
+                        $gradeLink = $this->linkForGrade($gradeAssignment);
+                        $this->assign('gradeLink', array($gradeLink));
+                        $this->assign('gradeLinkHeading', $this->getLocalizedString('GRADE_LINK_HEADING'));
+                    }
+                }
+
                 break;
 
         	case 'roster':
