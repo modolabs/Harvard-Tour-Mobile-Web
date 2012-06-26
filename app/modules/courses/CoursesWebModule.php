@@ -252,6 +252,7 @@ class CoursesWebModule extends WebModule {
 
         $link = array(
             'title'=>$attachment->getTitle() ? $attachment->getTitle() : 'Download File',
+            'img'   => "/modules/courses/images/content_" . $attachment->getContentClass() . $this->imageExt,
         );
 
         $subtitle = $attachment->getFileName();
