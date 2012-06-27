@@ -2492,7 +2492,10 @@ class CoursesWebModule extends WebModule {
     public function nativeWebTemplateAssets() {
         return array(
             '/modules/courses/images/content_announcement.png',
+            '/modules/courses/images/content_assessment.png',
             '/modules/courses/images/content_blog.png',
+            '/modules/courses/images/content_bloglink.png',
+            '/modules/courses/images/content_calendar.png',
             '/modules/courses/images/content_file_doc.png',
             '/modules/courses/images/content_file_img.png',
             '/modules/courses/images/content_file_pdf.png',
@@ -2503,9 +2506,15 @@ class CoursesWebModule extends WebModule {
             '/modules/courses/images/content_file_zip.png',
             '/modules/courses/images/content_file.png',
             '/modules/courses/images/content_folder.png',
+            '/modules/courses/images/content_forum.png',
+            '/modules/courses/images/content_journal.png',
+            '/modules/courses/images/content_lesson.png',
+            '/modules/courses/images/content_lessonplan.png',
             '/modules/courses/images/content_link.png',
+            '/modules/courses/images/content_multi.png',
             '/modules/courses/images/content_page.png',
             '/modules/courses/images/content_task.png',
+            '/modules/courses/images/content_toollink.png',
         );
     }
 
