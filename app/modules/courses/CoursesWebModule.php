@@ -2072,6 +2072,8 @@ class CoursesWebModule extends WebModule {
                 foreach ($items as $item){
                     $resources[] = $this->linkForContent($item, $contentCourse);
                 }
+
+                $resources = $this->paginateArray($resources, 10);
                 $this->assign('key', $this->getLocalizedString('CONTENT_CLASS_TITLE_'.strtoupper($key)));
                 $this->assign('resources',$resources);
             	break;
