@@ -2225,17 +2225,19 @@ class CoursesWebModule extends WebModule {
                             $coursesListLinks = $this->getTemplateVars('coursesListLinks');
                             if (is_array($coursesListLinks)) {
                                 $courseLinkCount = 0;
+                                $foundCourseId = false;
                                 foreach ($coursesListLinks as $courseList) {
                                     foreach ($courseList['coursesLinks'] as $courseLink) {
                                         $courseId = $courseIdPrefix.$courseLinkCount;
                                         if ($cookieCourseId === $courseId) {
                                             $this->addOnLoad(
                                                 "updateTabletDetail('{$courseId}', '{$courseLink['url']}', '{$selectedCourseCookie}', '".COOKIE_PATH."');");
+                                            $foundCourseId = true;
                                             break;
                                         }
                                         $courseLinkCount++;
                                     }
-                                    if ($cookieCourseId === $courseId) { break; }
+                                    if ($foundCourseId) { break; }
                                 }
                             }
                         }
