@@ -2381,7 +2381,11 @@ class CoursesWebModule extends WebModule {
                         $options['contentID'] = $contentID;
                         $childContent = $contentCourse->getContentByParentId($options);
                         $count = count($childContent);
-                        $subtitle = $this->getLocalizedString('FOLDER_SUBTITLE_COUNT', $count);
+                        if($count == 1){
+                            $subtitle = $this->getLocalizedString('FOLDER_SUBTITLE_COUNT_SINGULAR', $count);
+                        }else{
+                            $subtitle = $this->getLocalizedString('FOLDER_SUBTITLE_COUNT_PLURAL', $count);
+                        }
                         $this->assign('folderCount', $subtitle);
                     }
                 } catch (Exception $e) {
