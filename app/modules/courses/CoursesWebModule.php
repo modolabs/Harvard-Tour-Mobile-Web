@@ -1746,6 +1746,9 @@ class CoursesWebModule extends WebModule {
         switch($this->page) {
             case 'content':
             case 'download':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
                 $contentID = $this->getArg('contentID');
 
         	    if (!$course = $this->getCourseFromArgs()) {
@@ -1811,6 +1814,9 @@ class CoursesWebModule extends WebModule {
                 break;
 
             case 'task':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
                 $taskID = $this->getArg('taskID');
 
         	    if (!$course = $this->getCourseFromArgs()) {
@@ -1857,6 +1863,9 @@ class CoursesWebModule extends WebModule {
                 break;
 
         	case 'roster':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
         	    if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
         	    }
@@ -1877,6 +1886,9 @@ class CoursesWebModule extends WebModule {
         		break;
 
         	case 'dropclass';
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
         	    if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
         	    }
@@ -2056,6 +2068,9 @@ class CoursesWebModule extends WebModule {
                 break;
 
             case 'resourceSeeAll':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
                 if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
                 }
@@ -2079,6 +2094,9 @@ class CoursesWebModule extends WebModule {
             	break;
 
             case 'page':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
             	$contentID = $this->getArg('contentID', '');
             	$courseID = $this->getArg('courseID', '');
             	$contents = $this->controller->getResource($courseID);
@@ -2114,6 +2132,9 @@ class CoursesWebModule extends WebModule {
                 break;
 
             case 'course':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
                 if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
                 }
@@ -2154,6 +2175,9 @@ class CoursesWebModule extends WebModule {
                 break;
 
             case 'courses':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
                 $this->initializeCourses();
                 break;
 
@@ -2164,6 +2188,9 @@ class CoursesWebModule extends WebModule {
             case 'announcements':
             case 'browse':
             case 'info':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
                 $options = array();
                 $_args = $this->args;
                 unset($this->args['ajax']);
@@ -2290,6 +2317,9 @@ class CoursesWebModule extends WebModule {
                 $this->assign('searchHeader', $this->getOptionalModuleVar('searchHeader','','catalog'));
                 break;
             case 'grade':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
                 $gradeID = $this->getArg('gradeID');
 
                 if (!$course = $this->getCourseFromArgs()) {
@@ -2399,6 +2429,9 @@ class CoursesWebModule extends WebModule {
 
                 break;
             case 'fullbrowse':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
                 if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
                 }
