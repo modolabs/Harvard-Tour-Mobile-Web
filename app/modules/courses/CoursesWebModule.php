@@ -102,6 +102,9 @@ class CoursesWebModule extends WebModule {
         $options['contentID'] = $content->getID();
         $options['type'] = $content->getContentType();
         $options['tab'] = 'browse';
+
+        $link['subtitle'] = '<div class="folder-subtitle"><img src="/common/images/blank.png" style="position: absolute;visibility:hidden;" onload="loadFolderCount(this, ' . "'" . $this->buildAjaxBreadcrumbURL('folderCount', $options) . "'" .');"/></div>';
+
         $link['url'] = $this->buildBreadcrumbURL('fullbrowse', $options, true);
 
         return $link;
@@ -249,6 +252,7 @@ class CoursesWebModule extends WebModule {
 
         $link = array(
             'title'=>$attachment->getTitle() ? $attachment->getTitle() : 'Download File',
+            'img'   => "/modules/courses/images/content_" . $attachment->getContentClass() . $this->imageExt,
         );
 
         $subtitle = $attachment->getFileName();
@@ -1742,6 +1746,9 @@ class CoursesWebModule extends WebModule {
         switch($this->page) {
             case 'content':
             case 'download':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
                 $contentID = $this->getArg('contentID');
 
         	    if (!$course = $this->getCourseFromArgs()) {
@@ -1807,6 +1814,9 @@ class CoursesWebModule extends WebModule {
                 break;
 
             case 'task':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
                 $taskID = $this->getArg('taskID');
 
         	    if (!$course = $this->getCourseFromArgs()) {
@@ -1842,9 +1852,20 @@ class CoursesWebModule extends WebModule {
                     $this->assign('links', $links);
                 }
 
+                if($gradeID = $task->getAttribute('gradebookColumnId')){
+                    if ($gradeAssignment = $contentCourse->getGradeById($gradeID, array('user'=>true))) {
+                        $gradeLink = $this->linkForGrade($gradeAssignment);
+                        $this->assign('gradeLink', array($gradeLink));
+                        $this->assign('gradeLinkHeading', $this->getLocalizedString('GRADE_LINK_HEADING'));
+                    }
+                }
+
                 break;
 
         	case 'roster':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
         	    if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
         	    }
@@ -1865,6 +1886,9 @@ class CoursesWebModule extends WebModule {
         		break;
 
         	case 'dropclass';
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
         	    if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
         	    }
@@ -2044,6 +2068,9 @@ class CoursesWebModule extends WebModule {
                 break;
 
             case 'resourceSeeAll':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
                 if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
                 }
@@ -2060,11 +2087,16 @@ class CoursesWebModule extends WebModule {
                 foreach ($items as $item){
                     $resources[] = $this->linkForContent($item, $contentCourse);
                 }
+
+                $resources = $this->paginateArray($resources, 10);
                 $this->assign('key', $this->getLocalizedString('CONTENT_CLASS_TITLE_'.strtoupper($key)));
                 $this->assign('resources',$resources);
             	break;
 
             case 'page':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
             	$contentID = $this->getArg('contentID', '');
             	$courseID = $this->getArg('courseID', '');
             	$contents = $this->controller->getResource($courseID);
@@ -2100,6 +2132,9 @@ class CoursesWebModule extends WebModule {
                 break;
 
             case 'course':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
                 if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
                 }
@@ -2140,6 +2175,9 @@ class CoursesWebModule extends WebModule {
                 break;
 
             case 'courses':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
                 $this->initializeCourses();
                 break;
 
@@ -2150,6 +2188,9 @@ class CoursesWebModule extends WebModule {
             case 'announcements':
             case 'browse':
             case 'info':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
                 $options = array();
                 $_args = $this->args;
                 unset($this->args['ajax']);
@@ -2278,6 +2319,9 @@ class CoursesWebModule extends WebModule {
                 $this->assign('searchHeader', $this->getOptionalModuleVar('searchHeader','','catalog'));
                 break;
             case 'grade':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
                 $gradeID = $this->getArg('gradeID');
 
                 if (!$course = $this->getCourseFromArgs()) {
@@ -2331,6 +2375,25 @@ class CoursesWebModule extends WebModule {
 
                 $this->assign('grade', $gradeContent);
                 break;
+            case 'folderCount':
+                try {
+                    $course = $this->getCourseFromArgs();
+                    $contentCourse = $course->getCourse('content');
+                    if($contentID = $this->getArg('contentID')){
+                        $options['contentID'] = $contentID;
+                        $childContent = $contentCourse->getContentByParentId($options);
+                        $count = count($childContent);
+                        if($count == 1){
+                            $subtitle = $this->getLocalizedString('FOLDER_SUBTITLE_COUNT_SINGULAR', $count);
+                        }else{
+                            $subtitle = $this->getLocalizedString('FOLDER_SUBTITLE_COUNT_PLURAL', $count);
+                        }
+                        $this->assign('folderCount', $subtitle);
+                    }
+                } catch (Exception $e) {
+                    _404();
+                }
+                break;
             case 'courseUpdateIcons':
                 try {
                     $course = $this->getCourseFromArgs();
@@ -2372,6 +2435,9 @@ class CoursesWebModule extends WebModule {
 
                 break;
             case 'fullbrowse':
+                if(!$this->isLoggedIn()){
+                    $this->redirectTo('index');
+                }
                 if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
                 }

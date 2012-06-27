@@ -16,6 +16,10 @@ class PageCourseContent extends CourseContent {
         $this->content = $content;
     }
 
+    public function getSubtitle(){
+        return 'Document';
+    }
+
     public function getType() {
     	return $this->type;
     }
