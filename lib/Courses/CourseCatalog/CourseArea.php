@@ -16,8 +16,14 @@ class CourseArea
         $this->areas[$area->getCode()] = $area;
     }
     
-    public function getAreas() {
-        return $this->areas;
+    public function getAreas($subareas = false) {
+    	$areas = $this->areas;
+    	if ($subareas) {
+			foreach ($this->areas as $area) {
+				$areas = array_merge($areas, $area->getAreas($subareas));
+			}
+		}
+    	return $areas;
     }
     
     public function getArea($area) {
