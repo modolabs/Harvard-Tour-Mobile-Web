@@ -1295,7 +1295,8 @@ class CoursesWebModule extends WebModule {
             KurogoDebug::debug(func_get_Args(), true);
         }
         /** end debug **/
-
+		$hasCourses = false;
+        
 
         $courseListings = $this->getModuleSections('courses');
         $courses = array();
@@ -1303,7 +1304,13 @@ class CoursesWebModule extends WebModule {
         foreach ($courseListings as $id => $listingOptions) {
             $listingOptions = array_merge($options, $listingOptions);
             if ($this->isLoggedIn()) {
-                $courses[$id] = array('heading'=>$listingOptions['heading'], 'courses'=>$this->controller->getCourses($listingOptions));
+            	if ($listCourses = $this->controller->getCourses($listingOptions)) {
+            		$hasCourses = true;
+            	}
+                $courses[$id] = array(
+                	'heading'=>$listingOptions['heading'], 
+                	'courses'=>$listCourses
+                );
             }
         }
 
@@ -1314,6 +1321,7 @@ class CoursesWebModule extends WebModule {
             }
             $courses = $_courses;
         }
+        $this->assign('hasCourses', $hasCourses);
         $count++; //debug
         return $courses;
     }
