@@ -685,7 +685,11 @@ class CoursesWebModule extends WebModule {
      * @param  array  $defaultGroupOptions An array of options to include in the page link
      */
     protected function assignGroupLinks($tabPage, $groups, $defaultGroupOptions = array()){
+        if ($this->pagetype == 'basic' || $this->pagetype == 'touch') {
+            $defaultGroupOptions = array_merge($defaultGroupOptions, $this->args);
+        }
         $page = $this->originalPage;
+        
         foreach ($groups as $groupIndex => $group) {
             $defaultGroupOptions[$tabPage . 'Group'] = $groupIndex;
             $groupLinks[$groupIndex]['url'] = $this->buildAjaxBreadcrumbURL($page, $defaultGroupOptions, false);
@@ -1735,8 +1739,6 @@ class CoursesWebModule extends WebModule {
      * Initialize the requested page. Set template variables.
      */
     protected function initializeForPage() {
-        $preloadSelectedTab = $this->pagetype == 'touch' || $this->pagetype == 'basic';
-
         $this->originalPage = $this->page;
 
         if ($this->pagetype == 'tablet') {
@@ -2149,15 +2151,17 @@ class CoursesWebModule extends WebModule {
                 $args = $this->args;
                 $args['ajax'] = true;
                 $args['page'] = $this->page;
-                $this->tab = $this->getArg('tab', key($tabsConfig));
+                $this->tab = $this->getCurrentTab(array_keys($tabsConfig));
                 foreach ($tabsConfig as $tabID => $tabData) {
                     if ($this->showTab($tabID, $tabData, $options)) {
-                        if ($tabID == $this->tab && $preloadSelectedTab) {
+                        if ($tabID == $this->tab) {
                             $method = "initialize" . $tabID;
                             if (!is_callable(array($this, $method))) {
                                 throw new KurogoDataException("Method $this does not exist on " . get_class($this));
                             }
-                            $this->originalPage = $tabID;
+                            if ($this->pagetype != 'basic' && $this->pagetype != 'touch') {
+                                $this->originalPage = $tabID;
+                            }
                             $this->$method(array('course' => $course, 'page' => $this->page));
                             $this->originalPage = $this->page;
                         } else {
@@ -2220,7 +2224,7 @@ class CoursesWebModule extends WebModule {
                     // always load courses list on tablet -- everything else is ajaxed in
                     $this->tab = 'Courses';
                 } else {
-                    $this->tab = $this->getArg('tab', key($tabsConfig));
+                    $this->tab = $this->getCurrentTab(array_keys($tabsConfig));;
                 }
                 $args = $this->args;
                 $args['ajax'] = true;
