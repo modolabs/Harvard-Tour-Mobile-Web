@@ -41,15 +41,17 @@ function loadTab(tabId, contentURL) {
     var element = document.getElementById(tabId+'-tabbody');
     
     if (element && !hasClass(element, 'loaded')) {
+        addClass(element, 'loaded');
+        
         ajaxContentIntoContainer({ 
             url: contentURL, // the url to get the page content from 
             container: element, // the container to dump the content into 
             timeout: 30, // how long to wait for the server before returning an error 
             success: function() {
-                addClass(element, 'loaded');
                 onAjaxContentLoad();
             },
             error: function(e) {
+                removeClass(element, 'loaded');
                 onAjaxContentLoad();
             }
         });
