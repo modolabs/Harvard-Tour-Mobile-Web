@@ -506,6 +506,15 @@ class CoursesWebModule extends WebModule {
              *    Create an external link to the content/files
              */
             case 'file':
+                if($url = $content->getURL()){
+                    $links[] = array(
+                        'title'=>$this->getLocalizedString('VIEW_IN_BROWSER'),
+                        'subtitle'=>$content->getURL(),
+                        'url'=>$this->buildExternalURL($content->getURL()),
+                        'class'=>'external',
+                        'linkTarget'=>'_blank'
+                    );
+                }
 //                $downloadMode = $content->getDownloadMode();
                 if ($attachments = $content->getAttachments()) {
                     foreach ($attachments as $attachment) {
@@ -1803,6 +1812,14 @@ class CoursesWebModule extends WebModule {
                     $this->assign('contentPublished', $this->elapsedTime($content->getPublishedDate()->format('U')));
                 }
 
+                if($gradeID = $content->getAttribute('gradebookColumnId')){
+                    if ($gradeAssignment = $contentCourse->getGradeById($gradeID, array('user'=>true))) {
+                        $gradeLink = $this->linkForGrade($gradeAssignment);
+                        $this->assign('gradeLink', array($gradeLink));
+                        $this->assign('gradeLinkHeading', $this->getLocalizedString('GRADE_LINK_HEADING'));
+                    }
+                }
+
                 if ($content->getContentType() == "page") {
                     if($content->getViewMode() == $content::MODE_PAGE) {
                         $contentData = $content->getContent();
@@ -1852,15 +1869,6 @@ class CoursesWebModule extends WebModule {
                     $links = array_merge($links, $attachmentLinks);
                     $this->assign('links', $links);
                 }
-
-                if($gradeID = $task->getAttribute('gradebookColumnId')){
-                    if ($gradeAssignment = $contentCourse->getGradeById($gradeID, array('user'=>true))) {
-                        $gradeLink = $this->linkForGrade($gradeAssignment);
-                        $this->assign('gradeLink', array($gradeLink));
-                        $this->assign('gradeLinkHeading', $this->getLocalizedString('GRADE_LINK_HEADING'));
-                    }
-                }
-
                 break;
 
         	case 'roster':

@@ -25,5 +25,8 @@
 {if $links}
 {include file="findInclude:common/templates/navlist.tpl" navlistItems=$links subTitleNewline=true}
 {/if}
+{if $gradeLink}
+{include file="findInclude:common/templates/navlist.tpl" navListHeading=$gradeLinkHeading navlistItems=$gradeLink subTitleNewline=true}
+{/if}
 
 {include file="findInclude:common/templates/footer.tpl"}
