@@ -119,11 +119,10 @@ class CoursesWebModule extends WebModule {
      */
     public function linkForAnnouncement(AnnouncementCourseContent $announcement, CourseContentCourse $course, $includeCourseName=false){
         $contentID = $announcement->getID();
-        $options = array(
-            'courseID'  => $course->getCommonID(),
-            'contentID' => $contentID,
-            'type'      => $announcement->getContentType(),
-        );
+        $options = $this->getCourseOptions();
+        $options['contentID'] = $contentID;
+        $options['type'] = $announcement->getContentType();
+
         $link = array(
             'title' => $includeCourseName ? $course->getTitle() : htmlentities($announcement->getTitle()),
         );
