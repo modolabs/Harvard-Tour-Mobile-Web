@@ -175,6 +175,10 @@ class TransitAPIModule extends APIModule {
             $vehicle['iconURL'] = $vehicleInfo['iconURL'];
         }
     
+        if (isset($vehicleInfo['directionID'])) {
+            $vehicle['directionId'] = $vehicleInfo['directionID'];
+        }
+    
         return $vehicle;
     }
     

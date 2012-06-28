@@ -29,7 +29,7 @@ class CourseJsonArea extends CourseArea {
         $this->retriever = $retriever;
     
     }
-    public function getAreas() {
+    public function getAreas($subareas=false) {
         if (!$this->areas) {
             $this->areas = $this->retriever->getCatalogAreas(array('parent'=>$this->getID()));
         }

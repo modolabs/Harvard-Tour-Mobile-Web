@@ -113,13 +113,13 @@ class TranslocDataModel extends TransitDataModel
                         'lat'             => self::argVal($coords, 'lat'),
                         'lon'             => self::argVal($coords, 'lng'),
                         'heading'         => self::argVal($vehicleInfo, 'heading', 0),
+                        'speed'           => self::argVal($vehicleInfo, 'speed', 0),
                         'nextStop'        => $nextStop,
                         'agency'          => $agencyID,
                         'routeID'         => $routeID,
+                        'directionID'     => self::LOOP_DIRECTION, // Transloc doesn't have the direction concept
                     );
-                    if (isset($vehicleInfo['speed'])) {
-                        $vehicles[$vehicleInfo['vehicle_id']]['speed'] = $vehicleInfo['speed'];
-                    }
+                    
                     $vehicles[$vehicleInfo['vehicle_id']]['iconURL'] = 
                         $this->getMapIconUrlForRouteVehicle($routeID, $vehicles[$vehicleInfo['vehicle_id']]);
                 }
