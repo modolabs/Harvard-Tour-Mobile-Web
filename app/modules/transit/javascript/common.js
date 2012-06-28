@@ -323,14 +323,16 @@ function fitMapBounds(map, userLocation) {
 function updateHTML() {
     var container = document.getElementById('ajaxcontainer');
     if (container) {
-        var httpRequest = new XMLHttpRequest();
-        httpRequest.open("GET", htmlUpdateURL, true);
-        httpRequest.onreadystatechange = function() {
-            if (httpRequest.readyState == 4 && httpRequest.status == 200 && httpRequest.responseText) {
-                container.innerHTML = httpRequest.responseText;
+        ajaxContentIntoContainer({ 
+            url: htmlUpdateURL, // the url to get the page content from 
+            container: container, // the container to dump the content into 
+            timeout: 20, // how long to wait for the server before returning an error 
+            loadMessage: false, // don't show loading message
+            success: function() {
+            },
+            error: function(e) {
             }
-        }
-        httpRequest.send(null);
+        });
     }
   
     // Update the time on the less frequently updated html      
