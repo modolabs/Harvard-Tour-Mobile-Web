@@ -69,11 +69,23 @@ class NextBusDataModel extends TransitDataModel
                     'lat'      => $attributes->getNamedItem('lat')->nodeValue,
                     'lon'      => $attributes->getNamedItem('lon')->nodeValue,
                     'heading'  => $attributes->getNamedItem('heading')->nodeValue,
+                    'speed'    => $attributes->getNamedItem('speedKmHr')->nodeValue,
                     'agency'   => $route->getAgencyID(),
                     'routeID'  => $routeID,
                 );
+                
                 $vehicles[$vehicleID]['iconURL'] = 
                     $this->getMapIconUrlForRouteVehicle($routeID, $vehicles[$vehicleID]);
+                
+                if ($this->viewRouteAsLoop($routeID)) {
+                    $vehicles[$vehicleID]['directionID'] = self::LOOP_DIRECTION;
+                    
+                } else {
+                    $directionID = $this->getDirectionID($routeID, $attributes->getNamedItem('dirTag')->nodeValue);
+                    if (in_array($directionID, $route->getDirections())) {
+                        $vehicles[$vehicleID]['directionID'] = $directionID;
+                    }
+                }
             }
         }
         
