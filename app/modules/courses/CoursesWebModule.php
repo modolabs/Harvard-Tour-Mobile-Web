@@ -1101,6 +1101,15 @@ class CoursesWebModule extends WebModule {
         return str_replace(array('\n','\t'),array("\n","\t"), $format);
     }
 
+    protected function getGroupOptionsForTasks($options) {
+        $page = isset($options['page']) ? $options['page'] : $this->page;
+        $groupOptions = array('tab'=>'tasks', 'page'=>$page);
+        if (isset($options['course'])) {
+            $groupOptions = array_merge($groupOptions, $this->getCourseOptions());
+        }
+        return $groupOptions;
+    }
+    
     /**
      * Return options relevant to retrieving tasks
      * @param  array  $options
@@ -1110,11 +1119,7 @@ class CoursesWebModule extends WebModule {
         $page = isset($options['page']) ? $options['page'] : $this->page;
         $section = $page == 'index' ? 'alltasks' : 'tasks';
         $taskGroups = $this->getModuleSections($section);
-
-        $groupOptions = array('tab'=>'tasks', 'page'=>$page);
-        if (isset($options['course'])) {
-            $groupOptions = array_merge($groupOptions, $this->getCourseOptions());
-        }
+        $groupOptions = $this->getGroupOptionsForTasks($options);
 
         if (!$this->getArg('ajaxgroup')) {
             $this->assignGroupLinks('tasks', $taskGroups, $groupOptions);
@@ -1174,6 +1179,17 @@ class CoursesWebModule extends WebModule {
         return $options;
     }
 
+    protected function getGroupOptionsForResources($options) {
+        $page = isset($options['page']) ? $options['page'] : $this->page;
+
+        $groupOptions = array('tab'=>'resources','page'=>$page);
+        if (isset($options['course'])) {
+            $groupOptions = array_merge($groupOptions, $this->getCourseOptions());
+        }
+    
+    	return $groupOptions;
+    } 
+
     /**
      * Return options relevant to retrieving resources
      * @param  array $options
@@ -1183,10 +1199,7 @@ class CoursesWebModule extends WebModule {
         $page = isset($options['page']) ? $options['page'] : $this->page;
         $groupsConfig = $this->getModuleSections('resources');
 
-        $groupOptions = array('tab'=>'resources','page'=>$page);
-        if (isset($options['course'])) {
-            $groupOptions = array_merge($groupOptions, $this->getCourseOptions());
-        }
+        $groupOptions = $this->getGroupOptionsForResources($options);
 
         if (!$this->getArg('ajaxgroup')) {
             $this->assignGroupLinks('resources', $groupsConfig, $groupOptions);
