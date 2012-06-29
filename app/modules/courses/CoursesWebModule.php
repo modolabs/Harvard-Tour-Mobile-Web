@@ -78,6 +78,7 @@ class CoursesWebModule extends WebModule {
 
         $options = $this->getCourseOptions();
         $options['contentID'] = $content->getID();
+        $options['courseID'] = $course->getCommonID();
         $options['type'] = $content->getContentType();
         $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
         $link['url'] = $this->buildBreadcrumbURL('content', $options);
@@ -122,6 +123,7 @@ class CoursesWebModule extends WebModule {
         $contentID = $announcement->getID();
         $options = $this->getCourseOptions();
         $options['contentID'] = $contentID;
+        $options['courseID'] = $course->getCommonID();
         $options['type'] = $announcement->getContentType();
 
         $link = array(
@@ -1382,7 +1384,7 @@ class CoursesWebModule extends WebModule {
                     foreach ($items as $item){
                         switch ($item->getContentType()) {
                             case 'announcement':
-                                $updatesLinks[] = $this->linkForUpdate($item, $contentCourse, $showCourseTitle);
+                                $updatesLinks[] = $this->linkForAnnouncement($item, $contentCourse, $showCourseTitle);
                                 break;
                             default:
                                 $updatesLinks[] = $this->linkForContent($item, $contentCourse, $showCourseTitle);
