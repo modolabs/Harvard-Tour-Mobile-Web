@@ -79,6 +79,7 @@ class CoursesWebModule extends WebModule {
         $options = $this->getCourseOptions();
         $options['contentID'] = $content->getID();
         $options['type'] = $content->getContentType();
+        $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
         $link['url'] = $this->buildBreadcrumbURL('content', $options);
 
         return $link;
@@ -188,6 +189,7 @@ class CoursesWebModule extends WebModule {
         $contentID = $content->getID();
         $options = $this->getCourseOptions();
         $options['contentID'] = $contentID;
+        $options['courseID'] = $course->getCommonID();
         $options['type'] = $content->getContentType();
 
         $link = array(
@@ -222,9 +224,7 @@ class CoursesWebModule extends WebModule {
 
         $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
         $link['subtitle'] = implode("<br />", $subtitle);
-        if(!$content instanceOf UnsupportedCourseContent){
-            $link['url'] = $this->buildBreadcrumbURL('content', $options);
-        }
+        $link['url'] = $this->buildBreadcrumbURL('content', $options);
         return $link;
     }
 
@@ -1099,6 +1099,15 @@ class CoursesWebModule extends WebModule {
         return str_replace(array('\n','\t'),array("\n","\t"), $format);
     }
 
+    protected function getGroupOptionsForTasks($options) {
+        $page = isset($options['page']) ? $options['page'] : $this->page;
+        $groupOptions = array('tab'=>'tasks', 'page'=>$page);
+        if (isset($options['course'])) {
+            $groupOptions = array_merge($groupOptions, $this->getCourseOptions());
+        }
+        return $groupOptions;
+    }
+    
     /**
      * Return options relevant to retrieving tasks
      * @param  array  $options
@@ -1108,11 +1117,7 @@ class CoursesWebModule extends WebModule {
         $page = isset($options['page']) ? $options['page'] : $this->page;
         $section = $page == 'index' ? 'alltasks' : 'tasks';
         $taskGroups = $this->getModuleSections($section);
-
-        $groupOptions = array('tab'=>'tasks', 'page'=>$page);
-        if (isset($options['course'])) {
-            $groupOptions = array_merge($groupOptions, $this->getCourseOptions());
-        }
+        $groupOptions = $this->getGroupOptionsForTasks($options);
 
         if (!$this->getArg('ajaxgroup')) {
             $this->assignGroupLinks('tasks', $taskGroups, $groupOptions);
@@ -1172,6 +1177,17 @@ class CoursesWebModule extends WebModule {
         return $options;
     }
 
+    protected function getGroupOptionsForResources($options) {
+        $page = isset($options['page']) ? $options['page'] : $this->page;
+
+        $groupOptions = array('tab'=>'resources','page'=>$page);
+        if (isset($options['course'])) {
+            $groupOptions = array_merge($groupOptions, $this->getCourseOptions());
+        }
+    
+    	return $groupOptions;
+    } 
+
     /**
      * Return options relevant to retrieving resources
      * @param  array $options
@@ -1181,10 +1197,7 @@ class CoursesWebModule extends WebModule {
         $page = isset($options['page']) ? $options['page'] : $this->page;
         $groupsConfig = $this->getModuleSections('resources');
 
-        $groupOptions = array('tab'=>'resources','page'=>$page);
-        if (isset($options['course'])) {
-            $groupOptions = array_merge($groupOptions, $this->getCourseOptions());
-        }
+        $groupOptions = $this->getGroupOptionsForResources($options);
 
         if (!$this->getArg('ajaxgroup')) {
             $this->assignGroupLinks('resources', $groupsConfig, $groupOptions);
@@ -1380,7 +1393,15 @@ class CoursesWebModule extends WebModule {
                 $options['course'] = $contentCourse;
                 if($items = $contentCourse->getUpdates($this->getOptionsForUpdates($options))) {
                     foreach ($items as $item){
-                        $updatesLinks[] = $this->linkForUpdate($item, $contentCourse, $showCourseTitle);
+                        switch ($item->getContentType()) {
+                            case 'announcement':
+                                $updatesLinks[] = $this->linkForUpdate($item, $contentCourse, $showCourseTitle);
+                                break;
+                            default:
+                                $updatesLinks[] = $this->linkForContent($item, $contentCourse, $showCourseTitle);
+                                break;
+                        }
+                        
                     }
                 }
             }
