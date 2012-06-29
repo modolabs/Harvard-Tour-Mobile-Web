@@ -16,4 +16,10 @@
 {/if}
 {/block}
 
+{if !$courses && !$areas}
+{block name="no_content"}
+<div class="focal">{"NO_CATALOG_DATA"|getLocalizedString}</div>
+{/block}
+{/if}
+
 {include file="findInclude:common/templates/footer.tpl"}
