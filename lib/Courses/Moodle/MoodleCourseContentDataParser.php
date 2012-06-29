@@ -125,7 +125,16 @@ class MoodleCourseContentDataParser extends dataParser {
                                 continue 2;
                                 
                             case 'forum':
+                            	//@TODO handle
                                 continue 2;
+                                
+                            case 'folder':
+                            	//@TODO handle
+                            	continue 2;
+
+                            case 'assignment':
+                            	//@TODO handle
+                            	continue 2;
 
                             default:
                                 throw new KurogoDataException("Don't know how to handle " . $module['modname']);
