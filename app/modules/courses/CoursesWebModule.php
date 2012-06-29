@@ -79,6 +79,7 @@ class CoursesWebModule extends WebModule {
         $options = $this->getCourseOptions();
         $options['contentID'] = $content->getID();
         $options['type'] = $content->getContentType();
+        $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
         $link['url'] = $this->buildBreadcrumbURL('content', $options);
 
         return $link;
@@ -188,6 +189,7 @@ class CoursesWebModule extends WebModule {
         $contentID = $content->getID();
         $options = $this->getCourseOptions();
         $options['contentID'] = $contentID;
+        $options['courseID'] = $course->getCommonID();
         $options['type'] = $content->getContentType();
 
         $link = array(
@@ -222,9 +224,7 @@ class CoursesWebModule extends WebModule {
 
         $link['sortDate'] = $content->getPublishedDate() ? $content->getPublishedDate() : 0;
         $link['subtitle'] = implode("<br />", $subtitle);
-        if(!$content instanceOf UnsupportedCourseContent){
-            $link['url'] = $this->buildBreadcrumbURL('content', $options);
-        }
+        $link['url'] = $this->buildBreadcrumbURL('content', $options);
         return $link;
     }
 
@@ -1380,7 +1380,15 @@ class CoursesWebModule extends WebModule {
                 $options['course'] = $contentCourse;
                 if($items = $contentCourse->getUpdates($this->getOptionsForUpdates($options))) {
                     foreach ($items as $item){
-                        $updatesLinks[] = $this->linkForUpdate($item, $contentCourse, $showCourseTitle);
+                        switch ($item->getContentType()) {
+                            case 'announcement':
+                                $updatesLinks[] = $this->linkForUpdate($item, $contentCourse, $showCourseTitle);
+                                break;
+                            default:
+                                $updatesLinks[] = $this->linkForContent($item, $contentCourse, $showCourseTitle);
+                                break;
+                        }
+                        
                     }
                 }
             }
