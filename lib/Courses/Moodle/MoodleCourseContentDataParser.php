@@ -75,11 +75,11 @@ class MoodleCourseContentDataParser extends dataParser {
 
     protected function parseUser($data){
 		$User = new MoodleCourseUser();
-		$User->setId($data['id']);
-		$User->setEmail($data['email']);
-		$User->setRoles($data['roles']);
-		$User->setFullName($data['fullname']);
-		$User->setEnrolledCourses($data['enrolledcourses']);
+		$User->setId(Kurogo::arrayVal($data, 'id'));
+		$User->setEmail(Kurogo::arrayVal($data, 'email'));
+		$User->setRoles(Kurogo::arrayVal($data, 'roles'));
+		$User->setFullName(Kurogo::arrayVal($data, 'fullname'));
+		$User->setEnrolledCourses(Kurogo::arrayVal($data, 'enrolledcourses'));
 		return $User;
     }
 
