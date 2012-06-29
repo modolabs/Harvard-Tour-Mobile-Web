@@ -2182,11 +2182,12 @@ class CoursesWebModule extends WebModule {
                             if (!is_callable(array($this, $method))) {
                                 throw new KurogoDataException("Method $this does not exist on " . get_class($this));
                             }
+                            $parentPage = $this->originalPage;
                             if ($this->pagetype != 'basic' && $this->pagetype != 'touch') {
                                 $this->originalPage = $tabID;
                             }
                             $this->$method(array('course' => $course, 'page' => $this->page));
-                            $this->originalPage = $this->page;
+                            $this->originalPage = $parentPage;
                         } else {
                             $args['tab'] = $tabID;
                             $javascripts[$tabID] = "loadTab(tabId, '".$this->buildAjaxBreadcrumbURL($tabID, $args)."');";
@@ -2259,7 +2260,12 @@ class CoursesWebModule extends WebModule {
                             if (!is_callable(array($this, $method))) {
                                 throw new KurogoDataException("Method $method does not exist on " . get_class($this));
                             }
+                            $parentPage = $this->originalPage;
+                            if ($this->pagetype != 'basic' && $this->pagetype != 'touch') {
+                                $this->originalPage = $tabID;
+                            }
                             $this->$method($options);
+                            $this->originalPage = $parentPage;
                         } else {
                             $javascripts[$tabID] = "loadTab(tabId, '".$this->buildAjaxBreadcrumbURL($tabID, $args)."');";
                         }
@@ -2546,4 +2552,3 @@ class CoursesWebModule extends WebModule {
     }
 
 }
-

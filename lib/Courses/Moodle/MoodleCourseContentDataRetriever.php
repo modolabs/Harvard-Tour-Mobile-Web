@@ -8,12 +8,18 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
     protected $secure = true;
     protected $DEFAULT_CACHE_LIFETIME = 60; // 1 min
     protected $token;
+    protected $user;
     protected $userID;
     protected $sortType;
-    protected $shouldDownloadFile = true;
+    protected $userIDField='userID';
 
     protected function setUserID($userID) {
         $this->userID = $userID;
+    }
+
+    protected function setUser(User $user) {
+        $this->user = $user;
+        $this->userID = $user->getAttribute($this->userIDField);
     }
 
     public function getCache() {
@@ -33,14 +39,6 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
 
     protected function getUserID() {
         return $this->userID;
-    }
-
-    protected function setShouldDownloadFile($shouldDownloadFile){
-        $this->shouldDownloadFile = $shouldDownloadFile;
-    }
-
-    public function shouldDownloadFile(){
-        return $this->shouldDownloadFile;
     }
 
     //CoursesDATAModel function getFileUrl need use token
@@ -303,19 +301,12 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
             $this->secure = (bool) $args['SECURE'];
         }
 
-        if (isset($args['DOWNLOAD_FILE'])) {
-            $this->shouldDownloadFile = (bool) $args['DOWNLOAD_FILE'];
+        if (isset($args['USERID_FIELD'])) {
+        	$this->userIDField = $args['USERID_FIELD'];
         }
 
         if ($user = $this->getCurrentUser()) {
-            if ($user instanceOf MoodleUser) {
-                $this->setUserID($user->getUserID());
-                $this->setToken($user->getToken());
-            } else {
-                // not a moodle user. Should we do something?
-            }
-        } else {
-            // no user at all
+            $this->setUser($user);
         }
 
         if (isset($args['TOKEN'])) {

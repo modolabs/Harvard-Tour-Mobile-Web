@@ -8,7 +8,9 @@ function scrollContentToTop() {
 
 function loadCourseUpdateIcons(childImage, contentURL) {
     var container = childImage.parentNode;
-    if (container) {
+    if (container && !hasClass(container, 'loadstarted')) {
+        addClass(container, 'loadstarted');
+        
         ajaxContentIntoContainer({ 
             url: contentURL, // the url to get the page content from 
             container: container, // the container to dump the content into 
