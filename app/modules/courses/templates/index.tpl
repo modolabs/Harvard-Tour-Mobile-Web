@@ -15,4 +15,6 @@
     {/if}
 {/if}
 
+{block name="showCoursesLoginLink"}{/block}
+
 {include file="findInclude:common/templates/footer.tpl"}
