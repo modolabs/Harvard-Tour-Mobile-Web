@@ -122,10 +122,10 @@ class MoodleCourseContentDataParser extends dataParser {
                                 break;
                                 
                             case 'label':
-                                break 2;
+                                continue 2;
                                 
                             case 'forum':
-                                break 2;
+                                continue 2;
 
                             default:
                                 throw new KurogoDataException("Don't know how to handle " . $module['modname']);
