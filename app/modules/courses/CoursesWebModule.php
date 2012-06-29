@@ -1568,11 +1568,8 @@ class CoursesWebModule extends WebModule {
                     $groupItems[] = $this->linkForContent($item, $contentCourse);
                     $index++;
                 }
-                if ($group == 'type') {
-                    $title = $this->getLocalizedString('CONTENT_CLASS_TITLE_'.strtoupper($groupTitle));
-                } else {
-                    $title = $groupTitle;
-                }
+
+                $title = $this->getOptionalLocalizedString('CONTENT_CLASS_TITLE_'.strtoupper($groupTitle), $groupTitle);
                 $resource = array(
                     'title' => $title,
                     'items' => $groupItems,
@@ -2129,7 +2126,7 @@ class CoursesWebModule extends WebModule {
                 }
 
                 $resources = $this->paginateArray($resources, 10);
-                $this->assign('key', $this->getLocalizedString('CONTENT_CLASS_TITLE_'.strtoupper($key)));
+                $this->assign('key', $this->getOptionalLocalizedString('CONTENT_CLASS_TITLE_'.strtoupper($key), $key));
                 $this->assign('resources',$resources);
             	break;
 
