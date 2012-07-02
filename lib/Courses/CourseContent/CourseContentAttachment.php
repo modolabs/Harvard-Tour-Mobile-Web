@@ -52,7 +52,7 @@ class CourseContentAttachment
                 'application/vnd.ms-cab-compressed' => 'file_zip',
 
                 // audio/video
-                'audio/mpeg' => 'file_video',
+                'audio/mpeg' => 'file_audio',
                 'video/quicktime' => 'file_video',
 
                 // adobe
