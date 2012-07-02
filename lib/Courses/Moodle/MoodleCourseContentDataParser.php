@@ -110,7 +110,7 @@ class MoodleCourseContentDataParser extends dataParser {
                     if ($module ['visible']) {
                         switch ($module['modname']) {
                             case 'resource':
-                                $content = new FileCourseContent();
+                                $content = new MoodleFileCourseContent();
                                 break;
 
                             case 'url':
