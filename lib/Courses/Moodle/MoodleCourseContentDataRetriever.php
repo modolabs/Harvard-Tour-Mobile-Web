@@ -198,7 +198,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
     	return $courses;
     }
 
-    public function getFileForUrl($url, $fileName) {
+    public function getFileForUrl($url, $fileName = null) {
     	$this->clearInternalCache();
         //append the token
         $this->setOption('action','downloadFile');

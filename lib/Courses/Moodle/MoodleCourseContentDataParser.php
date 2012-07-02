@@ -118,7 +118,7 @@ class MoodleCourseContentDataParser extends dataParser {
                                 break;
 
                             case 'page':
-                                $content = new PageCourseContent();
+                                $content = new MoodlePageCourseContent();
                                 break;
                                 
                             case 'label':
@@ -167,7 +167,7 @@ class MoodleCourseContentDataParser extends dataParser {
                         switch ($module['modname'])
                         {
                             case 'resource':
-                                $attachment = new CourseContentAttachment();
+                                $attachment = new MoodleCourseContentAttachment();
                                 
                                 if (isset($module['contents'][0]['filename']) && $module['contents'][0]['filename']){
                                     $attachment->setFilename($module['contents'][0]['filename']);
@@ -185,6 +185,8 @@ class MoodleCourseContentDataParser extends dataParser {
                                 if (isset($module['contents'][0]['sortorder']) && $module['contents'][0]['sortorder']){
                                 //   $content->setSortorder($module['contents'][0]['sortorder']);
                                 }
+
+                                $attachment->setParentContent($content);
                                 
                                 $content->addAttachment($attachment);
                                 
