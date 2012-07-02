@@ -154,7 +154,7 @@ class MoodleCourseContentDataRetriever extends URLDataRetriever implements Cours
 
             		case 'type':
 	            		foreach ($content as $item) {
-	            		    $courseContents[$item->getContentType()][] = $item;
+	            		    $courseContents[$item->getContentClass()][] = $item;
 		            	}
             			break;
             		case 'date':
