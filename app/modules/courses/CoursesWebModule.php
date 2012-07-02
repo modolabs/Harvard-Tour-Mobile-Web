@@ -1519,23 +1519,6 @@ class CoursesWebModule extends WebModule {
                 }
             }
             $this->assign('resourcesLinks', array(array('items'=>$browseLinks)));
-
-            $browseHeader = array();
-            if(isset($browseOptions['contentID'])){
-                $currentContent = $contentCourse->getContentById($browseOptions['contentID']);
-                $parentID = $currentContent->getParentID();
-                if($parentID){
-                    $parentContent = $contentCourse->getContentById($parentID);
-                    $browseHeader = $this->linkForFolder($parentContent, $contentCourse);
-                }else{
-                    $options = $this->getCourseOptions();
-                    $options['tab'] = 'browse';
-                    $browseHeader['url'] = $this->buildAjaxBreadcrumbURL($this->page, $options, false);
-                    $browseHeader['title'] = $this->getLocalizedString('ROOT_LEVEL_TITLE');
-                }
-                $browseHeader['current'] = $currentContent->getTitle();
-            }
-            $this->assign('browseHeader', $browseHeader);
         }else{
             $groups = $contentCourse->getResources($resourcesOptions);
             if ($group == "date") {
@@ -1639,23 +1622,6 @@ class CoursesWebModule extends WebModule {
             }
         }
         $this->assign('browseLinks', $browseLinks);
-
-        $browseHeader = array();
-        if(isset($browseOptions['contentID'])){
-            $currentContent = $contentCourse->getContentById($browseOptions['contentID']);
-            $parentID = $currentContent->getParentID();
-            if($parentID){
-                $parentContent = $contentCourse->getContentById($parentID);
-                $browseHeader = $this->linkForFolder($parentContent, $contentCourse);
-            }else{
-                $options = $this->getCourseOptions();
-                $options['tab'] = 'browse';
-                $browseHeader['url'] = $this->buildAjaxBreadcrumbURL($this->page, $options, false);
-                $browseHeader['title'] = $this->getLocalizedString('ROOT_LEVEL_TITLE');
-            }
-            $browseHeader['current'] = $currentContent->getTitle();
-        }
-        $this->assign('browseHeader', $browseHeader);
     }
 
     /**
