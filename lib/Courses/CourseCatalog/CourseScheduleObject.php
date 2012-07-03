@@ -12,6 +12,15 @@ class CourseScheduleObject
     protected $building;
     protected $room;
     protected $range;
+    protected $attributes = array();
+
+    public function setAttribute($key, $value) {
+        $this->attributes[$key] = $value;
+    }
+    
+    public function getAttribute($attrib) {
+        return isset($this->attributes[$attrib]) ? $this->attributes[$attrib] : '';
+    }
         
     public function __toString() {
         return $this->getSchedule();
