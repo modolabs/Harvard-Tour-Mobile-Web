@@ -178,7 +178,6 @@ class LocationsWebModule extends WebModule {
         }else {
             $url = false;
         }
-        $url = $this->buildBreadcrumbURL('schedule', $options, true);
         if ($event->getRange()->contains(new TimeRange(time()))) {
             $class = 'open';
         } else {
