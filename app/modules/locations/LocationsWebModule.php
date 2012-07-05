@@ -172,6 +172,12 @@ class LocationsWebModule extends WebModule {
         }
         
         $class = '';
+        $showDetail = $this->getOptionalModuleVar('SHOW_DETAIL', 'feeds');
+        if($showDetail) {
+            $url = $this->buildBreadcrumbURL('schedule', $options, true);
+        }else {
+            $url = false;
+        }
         $url = $this->buildBreadcrumbURL('schedule', $options, true);
         if ($event->getRange()->contains(new TimeRange(time()))) {
             $class = 'open';
