@@ -149,37 +149,45 @@ class CoursesDataModel extends DataModel {
     protected function init($args) {
         $this->initArgs = $args;
         if (isset($args['terms'])) {
-            $arg = $args['terms'];
-            $termRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
-            $this->setTermsRetriever($termRetriever);
+            if($enabled = Kurogo::arrayVal($args['terms'], 'ENABLED', true)){
+                $arg = $args['terms'];
+                $termRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
+                $this->setTermsRetriever($termRetriever);
+            }
         }
 
         if (isset($args['catalog'])) {
-        	includePackage('Courses','CourseCatalog');
-            $arg = $args['catalog'];
-            $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
-            $arg['TERMS_RETRIEVER'] = $this->termsRetriever;
-            $catalogRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
-            $this->setCoursesRetriever('catalog', $catalogRetriever);
+            if($enabled = Kurogo::arrayVal($args['catalog'], 'ENABLED', true)){
+            	includePackage('Courses','CourseCatalog');
+                $arg = $args['catalog'];
+                $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
+                $arg['TERMS_RETRIEVER'] = $this->termsRetriever;
+                $catalogRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
+                $this->setCoursesRetriever('catalog', $catalogRetriever);
+            }
         }
 
         
         if (isset($args['registration'])) {
-        	includePackage('Courses','CourseRegistration');
-            $arg = $args['registration'];
-            $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
-            $arg['TERMS_RETRIEVER'] = $this->termsRetriever;
-            $registationRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
-            $this->setCoursesRetriever('registration', $registationRetriever);
+            if($enabled = Kurogo::arrayVal($args['registration'], 'ENABLED', true)){
+            	includePackage('Courses','CourseRegistration');
+                $arg = $args['registration'];
+                $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
+                $arg['TERMS_RETRIEVER'] = $this->termsRetriever;
+                $registationRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
+                $this->setCoursesRetriever('registration', $registationRetriever);
+            }
         }
         
         if (isset($args['content'])) {
-        	includePackage('Courses','CourseContent');
-            $arg = $args['content'];
-            $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
-            $arg['TERMS_RETRIEVER'] = $this->termsRetriever;
-            $contentRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
-            $this->setCoursesRetriever('content', $contentRetriever);
+            if($enabled = Kurogo::arrayVal($args['content'], 'ENABLED', true)){
+            	includePackage('Courses','CourseContent');
+                $arg = $args['content'];
+                $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
+                $arg['TERMS_RETRIEVER'] = $this->termsRetriever;
+                $contentRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
+                $this->setCoursesRetriever('content', $contentRetriever);
+            }
         }
     }
 }
