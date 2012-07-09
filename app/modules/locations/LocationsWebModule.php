@@ -172,8 +172,7 @@ class LocationsWebModule extends WebModule {
         }
         
         $class = '';
-        $showDetail = $this->getOptionalModuleVar('SHOW_DETAIL', 'feeds');
-        if($showDetail) {
+        if($data['showDetail']) {
             $url = $this->buildBreadcrumbURL('schedule', $options, true);
         }else {
             $url = false;
@@ -263,9 +262,12 @@ class LocationsWebModule extends WebModule {
 
                 $events = array();
                 // format events data
+                $feedData = $this->feeds[$id];
+                $showDetail = isset($feedData['SHOW_DETAIL']) ? $feedData['SHOW_DETAIL'] : 0;
                 $options = array(
                     'section' => $id,
-                	'groupID' => $groupID
+                    'groupID' => $groupID,
+                    'showDetail' => $showDetail
                 );
                 foreach($items as $item) {
                     $event = $this->linkForSechedule($item, $options);
