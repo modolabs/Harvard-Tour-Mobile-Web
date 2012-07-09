@@ -10,7 +10,7 @@
   */
 
 if (!function_exists('mb_convert_encoding')) {
-    die('Multibyte String Functions not available (mbstring)');
+    throw new KurogoException('Multibyte String PHP extension is not installed. http://www.php.net/manual/en/book.mbstring.php');
 }
 
 includePackage('News');
@@ -265,7 +265,6 @@ class NewsWebModule extends WebModule {
         $this->assign('author',        $this->htmlEncodeFeedString($story->getAuthor()));
         $this->assign('image',         $this->getImageForStory($story));
         $this->assign('link',          $story->getLink());
-        $this->assign('ajax',          $this->getArg('ajax'));
         $this->assign('showLink',      $this->showLink);
         $this->assign('showBodyThumbnail', $this->showBodyThumbnail);
         break;

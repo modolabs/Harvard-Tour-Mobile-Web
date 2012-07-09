@@ -4,10 +4,6 @@
   * @subpackage RSS
   */
 
-if (!function_exists('xml_parser_create')) {
-    die('XML Parser commands not available.');
-}
-
 /**
   */
 includePackage('RSS');
@@ -43,6 +39,12 @@ class RSSDataParser extends XMLDataParser
     
     public function getTitle() {
         return $this->channel->getTitle();
+    }
+
+    public function clearInternalCache() {
+    	parent::clearInternalCache();
+    	$this->items = array();
+    	$this->guids = array();
     }
 
     public function init($args)

@@ -636,6 +636,8 @@ ul.focal li:first-child {
 	border-width: 1px 0 0 0;
 	-webkit-border-bottom-right-radius: 8px;	
 	-webkit-border-bottom-left-radius: 8px;	
+	border-bottom-right-radius: 8px;
+	border-bottom-left-radius: 8px;
 }
 
 .tabbody .nested {
@@ -790,6 +792,7 @@ ul.focal li:first-child {
 	position: absolute;
 	top: 0;
 	background: transparent url(/common/images/sidenav-arrows.png) no-repeat;
+	background-size: 48px 58px;
 	height: 29px;
 	line-height: 29px;
 	padding: 0 10px;
@@ -1187,7 +1190,7 @@ h2.icon {
 #tabs li a {
 	display: block;
 	text-decoration: none;
-	min-width: 30px;
+	min-width: 25px;
 	padding: 8px 10px 10px 10px;
 }
 

@@ -295,16 +295,24 @@ function toggleClass(ele, cls) {
 
 // Share-related functions
 function showShare() {
-    if (!document.getElementById("sharesheet")) {
+    var sharesheet = document.getElementById("sharesheet");
+    if (!sharesheet) {
         return;
     }
-	document.getElementById("sharesheet").style.display="block";
-	var iframes = document.getElementsByTagName('iframe');
-	for (var i=0; i<iframes.length; i++) {
-	    iframes[i].style.visibility = 'hidden';
-	    iframes[i].style.height = '0';
-	}
-	window.scrollTo(0,0);
+    if (!sharesheet.parentNode || sharesheet.parentNode.nodeName != 'BODY') {
+        var elements = document.getElementsByTagName('body');
+        if (elements.length) {
+            var body = elements[0];
+            body.appendChild(sharesheet);
+        }
+    }
+    sharesheet.style.display="block";
+    var iframes = document.getElementsByTagName('iframe');
+    for (var i=0; i<iframes.length; i++) {
+        iframes[i].style.visibility = 'hidden';
+        iframes[i].style.height = '0';
+    }
+    window.scrollTo(0,0);
 }
 function hideShare() {
     if (!document.getElementById("sharesheet")) {
@@ -466,19 +474,30 @@ function ajaxContentIntoContainer(options) {
         if (httpRequest.status == 200) { // Success
             options.container.innerHTML = "";
             
+            // innerHTML outside of DOM hierarchy to avoid drawing issues
             var div = document.createElement("div");
             div.innerHTML = httpRequest.responseText;
             
-            // Manually appendChild elements so scripts get evaluated
+            // copy elements so we can move them without the list changing
+            var children = [];
             for (var i = 0; i < div.childNodes.length; i++) {
-                var node = div.childNodes[i].cloneNode(true);
-                
-                if (node.nodeName == "SCRIPT") {
-                    document.body.appendChild(node);
-                } else if (node.nodeName == "STYLE") {
-                    document.getElementsByTagName("head")[0].appendChild(node);
+                children.push(div.childNodes[i]);
+            }
+            
+            // Manually appendChild elements so scripts get evaluated
+            for (var i = 0; i < children.length; i++) {
+                if (children[i].nodeName == "SCRIPT") {
+                    // must clone script tags or they won't get executed
+                    document.body.appendChild(children[i].cloneNode(true));
+                    
+                } else if (children[i].nodeName == "STYLE") {
+                    // clone styles in case some browsers treat them like scripts
+                    document.getElementsByTagName("head")[0].appendChild(children[i].cloneNode(true));
+                    
                 } else {
-                    options.container.appendChild(node);
+                    // don't clone anything else because browser may have already started 
+                    // loading assets associated with this element (e.g. img src)
+                    options.container.appendChild(children[i]);
                 }
             }
             
@@ -532,4 +551,25 @@ function getCSSHeight(element) {
         - parseFloat(getCSSValue(element, 'border-bottom-width'))
         - parseFloat(getCSSValue(element, 'padding-top'))
         - parseFloat(getCSSValue(element, 'padding-bottom'));
+}
+
+function _getStringForArgs(args) {
+    var argString = "";
+    if (typeof args == "string" && args.length) {
+        argString = "?" + args;
+    } else if (typeof args == "object") {
+        for (var param in args) {
+            argString += (argString.length ? "&" : "?") + 
+                param + "=" + encodeURIComponent(args[param]);
+        }
+    }
+    return argString;    
+}
+
+function redirectTo(page, args) {
+    window.location = "./" + page + _getStringForArgs(args);
+}
+
+function redirectToModule(module, page, args) {
+    window.location = "../" + module + "/" + page + _getStringForArgs(args);
 }

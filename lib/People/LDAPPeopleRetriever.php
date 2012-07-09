@@ -4,7 +4,7 @@
   */
 
 if (!function_exists('ldap_connect')) {
-    die('LDAP Functions not available');
+    throw new KurogoException('LDAP PHP extension is not installed');
 }
 
 // common ldap error codes
@@ -66,11 +66,11 @@ class LDAPPeopleRetriever extends DataRetriever implements PeopleRetriever
         }
 
         if ($this->filter instanceOf LDAPFilter) {
-            $result = ldap_search($ds, $this->searchBase,
+            $result = @ldap_search($ds, $this->searchBase,
                 strval($this->filter), $this->getAttributes(), 0, 0, 
                 $this->searchTimelimit);
         } else {
-            $result = ldap_read($ds, $this->filter, "(objectclass=*)", $this->getAttributes(), 
+            $result = @ldap_read($ds, $this->filter, "(objectclass=*)", $this->getAttributes(), 
                 0, 0, $this->readTimelimit);
         }
         
@@ -468,7 +468,8 @@ class LDAPPeopleParser extends PeopleDataParser
     }
         
     public function parseResponse(DataResponse $response) {
-
+        $this->setResponse($response);
+        
         $data = $response->getResponse();    
 
         if (!is_resource($data) || get_resource_type($data) != 'ldap result') {
