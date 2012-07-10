@@ -34,13 +34,80 @@ class CoursesAPIModule extends APIModule {
         
         return $item;
     }
+        
+    protected function formatSchedule(CourseScheduleObject $schedule) {
+        $item = array(
+            'days' => $schedule->getDays(),
+            'startTime' => $schedule->getStartTime(),
+            'endTime' => $schedule->getEndTime(),
+            'startDate' => $schedule->getStartDate(),
+            'endDate' => $schedule->getEndDate(),
+            'building' => $schedule->getBuilding(),
+            'room' => $schedule->getRoom()
+        );
+        
+        return $item;
+    }
+        	
+    protected function formatInstructor(CourseUser $instructor) {
+        $item = array(
+            'firstName' => $instructor->getFirstName(),
+            'lastName'  => $instructor->getLastName()
+        );
+        
+        return $item;
+    }
+    
+    protected function formatSection(CourseSectionObject $section) {
+        $item = array(
+            'classNumber' => $section->getClassNumber(),
+            'sectionNumber' => $section->getSectionNumber(),
+            'credits' => $section->getCredits(),
+            'creditLevel' => $section->getCreditLevel(),
+            'enrollment' => $section->getEnrollment(),
+            'enrollmentLimit' => $section->getEnrollmentLimit(),
+        );
+        
+        if ($schedules = $section->getScheduleItems()) {
+            $item['schedules'] = array();
+            foreach ($schedules as $schedule) {
+                $item['schedules'][] = $this->formatSchedule($schedule);
+            }
+        }
+        
+        if (method_exists($section, 'getInstructors')) {
+            if ($instructors = $section->getInstructors()) {
+                $item['instructors'] = array();
+                foreach ($instructors as $instructor) {
+                    $item['instructors'][] = $this->formatInstructor($instructor);
+                }
+            }
+        }
+        
+        return $item;
+    }
     
     protected function formatCourse(CourseInterface $course) {
         $item = array(
             'courseID' => $course->getID(),
             'title'    => $course->getTitle(),
-            'courseNumber' => $course->getField('courseNumber')
+            'courseNumber' => $course->getField('courseNumber'),
+            'description' => $course->getField('description'),
         );
+        
+        if ($catalogCourse = $course->getCourse('catalog')) {
+            $item['area'] = $catalogCourse->getArea();
+            $item['areaCode'] = $catalogCourse->getAreaCode();
+            if ($term = $catalogCourse->getTerm()) {
+                $item['term'] = strval($term);
+            }
+            if ($sections = $catalogCourse->getSections()) {
+                $item['sections'] = array();
+                foreach ($sections as $section) {
+                    $item['sections'][] = $this->formatSection($section);
+                }
+            }
+        }
         
         return $item;
     }
