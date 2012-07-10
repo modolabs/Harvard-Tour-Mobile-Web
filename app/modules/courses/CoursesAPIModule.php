@@ -27,9 +27,10 @@ class CoursesAPIModule extends APIModule {
     
     protected function formatArea(CourseArea $area) {
         $item = array(
-            'area'  => $area->getCode(),
+            'code'  => $area->getCode(),
             'title' => $area->getTitle(),
             'parent'=> $area->getParent(),
+            'description' => $area->getDescription(),
         );
         
         return $item;
