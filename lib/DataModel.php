@@ -24,7 +24,7 @@ class DataModel {
 
     /**
       * Clears the internal cache for a new request. All responses and options are erased and 
-      * clearInteralCache is called on the retriever
+      * clearInternalCache is called on the retriever
       */
     public function clearInternalCache() {
         $this->options = array();
@@ -163,6 +163,10 @@ class DataModel {
         } else {
             throw new KurogoDataException("Call of unknown function '$method'.");
         }
-    }    
+    }
+    
+    public function getInitArg($type='') {
+        return isset($this->initArgs[$type]) ? $this->initArgs[$type] : null;
+    }
 }
 
