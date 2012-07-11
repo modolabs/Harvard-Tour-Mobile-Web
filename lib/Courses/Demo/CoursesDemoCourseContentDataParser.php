@@ -163,7 +163,7 @@ class CoursesDemoCourseContentDataParser extends JSONDataParser {
     	
     	switch ($item['typeName']) {
     		case 'resource':
-    			$contentType = new DownloadCourseContent();
+    			$contentType = new FileCourseContent();
     			break;
     		case 'url':
     			$contentType = new LinkCourseContent();
@@ -191,9 +191,15 @@ class CoursesDemoCourseContentDataParser extends JSONDataParser {
 		$contentType->setAuthor($item['author']);
     	$contentType->setAuthorID($item['user_id']);
 		if ($item['typeName'] == 'resource') {
-			$contentType->setFilename($item['filename']);
-			$contentType->setFilesize($item['filesize']);
-			$contentType->setFileurl(rtrim($this->initArgs['SERVER_BASE_URL'], '/') . $item['fileurl']);
+            $attachment = new CourseContentAttachment();
+            $attachment->setFilename($item['filename']);
+            $attachment->setFilesize($item['filesize']);
+            $attachment->setURL(rtrim($this->initArgs['SERVER_BASE_URL'], '/') . $item['fileurl']);
+            $attachment->setDownloadMode(CourseContent::MODE_URL);
+
+            $attachment->setParentContent($contentType);
+
+            $contentType->addAttachment($attachment);
 		}
     	
     	if ($item['typeName'] == 'page') {
