@@ -14,7 +14,6 @@ class LocationsShellModule extends ShellModule {
             throw new KurogoDataException($this->getLocalizedString('ERROR_NO_LOCATION_FEED', $id));
         }
         //load feeds by group
-        $this->loadFeedData($groupID);
         if (!isset($this->feeds[$id])) {
             throw new KurogoDataException($this->getLocalizedString('ERROR_NO_LOCATION_FEED', $id));
         }
