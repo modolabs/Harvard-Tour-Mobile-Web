@@ -19,12 +19,24 @@ class LocationsWebModule extends WebModule {
     
     //get feed groups
     public function getFeedGroups() {
-        return $this->getModuleSections('feedgroups');
+        if ($feedGroups = $this->getOptionalModuleSections('feedgroups')) {
+            return $feedGroups;
+        } else {
+            return array(
+                'nogroup' => array(
+                    'title' => ''
+                )
+            );
+        }
     }
     
-    public function loadFeedData($groupID) {
-    	$configName = "feeds-$groupID";
-    	$this->feeds = $this->getModuleSections($configName);
+    public function loadFeedData($groupID = NULL) {
+        if ($groupID == 'nogroup') {
+            $this->feeds = parent::loadFeedData();
+        } else {
+            $configName = "feeds-$groupID";
+            $this->feeds = $this->getModuleSections($configName);
+        }
     }
     
     public function getLocationFeed($groupID, $id) {

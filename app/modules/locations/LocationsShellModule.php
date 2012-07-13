@@ -15,9 +15,29 @@ class LocationsShellModule extends ShellModule {
     protected $id = 'locations';
     
     protected $feeds = array();
-    protected $timezone;
     protected $feedGroups = array();
  
+    public function getFeedGroups() {
+        if ($feedGroups = $this->getOptionalModuleSections('feedgroups')) {
+            return $feedGroups;
+        } else {
+            return array(
+                'nogroup' => array(
+                    'title' => ''
+                )
+            );
+        }
+    }
+
+    public function loadFeedData($groupID = NULL) {
+        if ($groupID == 'nogroup') {
+            $this->feeds = parent::loadFeedData();
+        } else {
+            $configName = "feeds-$groupID";
+            $this->feeds = $this->getModuleSections($configName);
+        }
+    }
+
     public function getLocationFeed($groupID, $id) {
         if (!isset($this->feedGroups[$groupID])) {
             throw new KurogoDataException($this->getLocalizedString('ERROR_NO_LOCATION_FEED', $id));
@@ -37,12 +57,10 @@ class LocationsShellModule extends ShellModule {
         $controllers = array();
         
         foreach($this->feedGroups as $groupID => $feedGroup) {
-            $configName = 'feeds-'.$groupID;
-            if ($this->feeds = $this->getModuleSections($configName)) {
-                foreach ($this->feeds as $id => $feedData) {
-                    if ($feed = $this->getLocationFeed($groupID, $id)) {
-                        $controllers[] = $feed;
-                    }
+            $this->loadFeedData($groupID);
+            foreach ($this->feeds as $id => $feedData) {
+                if ($feed = $this->getLocationFeed($groupID, $id)) {
+                    $controllers[] = $feed;
                 }
             }
         }
@@ -50,8 +68,7 @@ class LocationsShellModule extends ShellModule {
     }
 
     protected function initializeForCommand() {
-        $this->feedGroups = $this->getModuleSections('feedgroups');
-        $this->timezone = Kurogo::siteTimezone();
+        $this->feedGroups = $this->getFeedGroups('feedgroups');
 
         switch($this->command) {
             case 'fetchAllData':
