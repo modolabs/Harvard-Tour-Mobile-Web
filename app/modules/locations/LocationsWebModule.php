@@ -37,12 +37,11 @@ class LocationsWebModule extends WebModule {
             $configName = "feeds-$groupID";
             $this->feeds = $this->getModuleSections($configName);
         }
+        
+        return $this->feeds;
     }
     
     public function getLocationFeed($groupID, $id) {
-        if (!isset($this->feedGroups[$groupID])) {
-            throw new KurogoDataException($this->getLocalizedString('ERROR_NO_LOCATION_FEED', $id));
-        }
         //load feeds by group
         $this->loadFeedData($groupID);
     	if (!isset($this->feeds[$id])) {
@@ -213,7 +212,6 @@ class LocationsWebModule extends WebModule {
     }
     
     protected function initialize() {
-//        $this->feeds = $this->loadFeedData();
         $this->feedGroups = $this->getFeedGroups();
         $this->timezone = Kurogo::siteTimezone();
     } 
