@@ -885,8 +885,8 @@ class CoursesWebModule extends WebModule {
     protected function getInfoObject($options) {
         if (isset($options['course'])) {
             $Course = $options['course'];
-            $courseType = isset($options['courseType']) ? $options['courseType'] : 'catalog';
-            if (!$object = $Course->getCourse($courseType)) {
+            $courseType = isset($options['courseType']) ? $options['courseType'] : CoursesDataModel::COURSE_TYPE_CATALOG;
+            if (!$object = $Course->getCoursebyType($courseType)) {
                 return null;
             }
         } elseif (isset($options['section'])) {
