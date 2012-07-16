@@ -317,7 +317,7 @@ class CoursesWebModule extends WebModule {
     protected function linkForCourse(CourseInterface $course, $options=array()) {
 
         $options = array_merge($options, array(
-            'courseID'  => $course->getID()
+                'courseID'  => $course->getID(),
             )
         );
 
@@ -330,7 +330,8 @@ class CoursesWebModule extends WebModule {
             'title' => $title
         );
 
-        $contentCourse = $course->getCourse('content');
+        $contentCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CONTENT);
+
         if ($contentCourse) {
             $page = 'course';
             $subtitle = array();
@@ -606,7 +607,7 @@ class CoursesWebModule extends WebModule {
                 $this->assign('courseID', $course->getID());
 
                 if ($section = $this->getArg('section')) {
-                    if ($catalogCourse = $course->getCourse('catalog')) {
+                    if ($catalogCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CATALOG)) {
                         if ($class = $catalogCourse->getSection($section)) {
                             $this->assign('sectionNumber', $class->getSectionNumber());
                         }
@@ -674,7 +675,7 @@ class CoursesWebModule extends WebModule {
         //load showCourseNumber setting
         $this->showCourseNumber = $this->getOptionalModuleVar('SHOW_COURSENUMBER_IN_LIST', 1);
         $this->Term = $this->assignTerm();
-        $this->assign('hasPersonalizedCourses', $this->controller->canRetrieve('registration') || $this->controller->canRetrieve('content'));
+        $this->assign('hasPersonalizedCourses', $this->controller->hasPersonalizedCourses());
     }
 
     /**
@@ -685,10 +686,12 @@ class CoursesWebModule extends WebModule {
     protected function getCourseOptions() {
         $courseID = $this->getArg('courseID');
         $area = $this->getArg('area');
+        $courseKey = $this->getArg('courseKey');
 
         $options = array(
-            'courseID' => $courseID,
-            'term' => strval($this->Term)
+            'courseID'  => $courseID,
+            'courseKey' => $courseKey,
+            'term'      => strval($this->Term)
         );
 
         if ($area) {
@@ -1255,7 +1258,7 @@ class CoursesWebModule extends WebModule {
             throw new KurogoConfigurationException("Aggregated grades not currently supported");
         }
 
-        $contentCourse = $course->getCourse('content');
+        $contentCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CONTENT);
         $gradesLinks = array();
         if($grades = $contentCourse->getGrades(array('user'=>true))){
             foreach ($grades as $grade) {
@@ -1279,7 +1282,7 @@ class CoursesWebModule extends WebModule {
 
         // @TODO ADD configurable links
         $links = array();
-        if ($registrationCourse = $course->getCourse('registration')) {
+        if ($registrationCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_REGISTRATION)) {
             if ($registrationCourse->canDrop()) {
                 $links[] = array(
                     'title'=> $this->getLocalizedString('DROP_COURSE'),
@@ -1368,7 +1371,7 @@ class CoursesWebModule extends WebModule {
         }
 
         foreach($courses as $course){
-            if ($contentCourse = $course->getCourse('content')) {
+            if ($contentCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CONTENT)) {
                 $options['course'] = $contentCourse;
                 if ($items = $contentCourse->getAnnouncements($this->getOptionsForAnnouncements($options))) {
                     foreach ($items as $item) {
@@ -1401,7 +1404,7 @@ class CoursesWebModule extends WebModule {
         }
 
         foreach($courses as $course){
-            if ($contentCourse = $course->getCourse('content')) {
+            if ($contentCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CONTENT)) {
                 $options['course'] = $contentCourse;
                 if($items = $contentCourse->getUpdates($this->getOptionsForUpdates($options))) {
                     foreach ($items as $item){
@@ -1441,7 +1444,7 @@ class CoursesWebModule extends WebModule {
         $tasks = array();
 
         foreach ($courses as $course) {
-            if ($contentCourse = $course->getCourse('content')) {
+            if ($contentCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CONTENT)) {
                 $tasksOptions = $this->getOptionsForTasks($options);
                 $group = $tasksOptions['group'];
                 $groups = $contentCourse->getTasks($tasksOptions);
@@ -1499,7 +1502,7 @@ class CoursesWebModule extends WebModule {
             throw new KurogoConfigurationException("Aggregated resources not currently supported");
         }
 
-        $contentCourse = $course->getCourse('content');
+        $contentCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CONTENT);;
         $resourcesLinks = array();
         $resourcesOptions = $this->getOptionsForResources($options);
         $group = $resourcesOptions['group'];
@@ -1510,7 +1513,7 @@ class CoursesWebModule extends WebModule {
                 throw new KurogoConfigurationException("Aggregated resources not currently supported");
             }
 
-            $contentCourse = $course->getCourse('content');
+            $contentCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CONTENT);
             $browseOptions = $this->getOptionsForBrowse($options);
             $browseContent = $contentCourse->getContentByParentId($browseOptions);
 
@@ -1613,7 +1616,7 @@ class CoursesWebModule extends WebModule {
             throw new KurogoConfigurationException("Aggregated resources not currently supported");
         }
 
-        $contentCourse = $course->getCourse('content');
+        $contentCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CONTENT);
         $browseOptions = $this->getOptionsForBrowse($options);
         $browseContent = $contentCourse->getContentByParentId($browseOptions);
 
@@ -1769,7 +1772,7 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index');
         	    }
 
-                if (!$contentCourse = $course->getCourse('content')) {
+                if (!$contentCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CONTENT)) {
                     $this->redirectTo('index');
                 }
 
@@ -1845,7 +1848,7 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index');
         	    }
 
-                if (!$contentCourse = $course->getCourse('content')) {
+                if (!$contentCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CONTENT)) {
                     $this->redirectTo('index');
                 }
 
@@ -2046,7 +2049,7 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index');
                 }
 
-                if (!$catalogCourse = $course->getCourse('catalog')) {
+                if (!$catalogCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CATALOG)) {
                     $this->redirectTo('catalogcourse', $this->args);
                 }
 
@@ -2088,7 +2091,7 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index');
                 }
 
-                if (!$contentCourse = $course->getCourse('content')) {
+                if (!$contentCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CONTENT)) {
                     $this->redirectTo('index');
                 }
                 $key = $this->getArg('key');
@@ -2349,7 +2352,7 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index');
                 }
 
-                if (!$contentCourse = $course->getCourse('content')) {
+                if (!$contentCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CONTENT)) {
                     $this->redirectTo('index');
                 }
 
@@ -2399,7 +2402,7 @@ class CoursesWebModule extends WebModule {
             case 'folderCount':
                 try {
                     $course = $this->getCourseFromArgs();
-                    $contentCourse = $course->getCourse('content');
+                    $contentCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CONTENT);
                     if($contentID = $this->getArg('contentID')){
                         $options['contentID'] = $contentID;
                         $childContent = $contentCourse->getContentByParentId($options);
@@ -2418,7 +2421,7 @@ class CoursesWebModule extends WebModule {
             case 'courseUpdateIcons':
                 try {
                     $course = $this->getCourseFromArgs();
-                    $contentCourse = $course->getCourse('content');
+                    $contentCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CONTENT);
 
                     $courseTabs = $this->getModuleSections('coursetabs');
                     $courseUpdateIcons = array();
@@ -2463,7 +2466,7 @@ class CoursesWebModule extends WebModule {
                     $this->redirectTo('index');
                 }
 
-                if (!$contentCourse = $course->getCourse('content')) {
+                if (!$contentCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CONTENT)) {
                     $this->redirectTo('index');
                 }
 

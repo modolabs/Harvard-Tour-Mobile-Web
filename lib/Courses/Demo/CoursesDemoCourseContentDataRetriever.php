@@ -9,6 +9,7 @@
  *
  */
 
+includePackage('Courses', 'CourseContent');
 class CoursesDemoCourseContentDataRetriever extends URLDataRetriever implements CourseContentDataRetriever {
     protected $DEFAULT_PARSER_CLASS = 'CoursesDemoCourseContentDataParser';
     protected $userID;

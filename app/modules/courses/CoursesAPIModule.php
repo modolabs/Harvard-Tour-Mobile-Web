@@ -105,7 +105,7 @@ class CoursesAPIModule extends APIModule {
             'description' => $course->getField('description'),
         );
         
-        if ($catalogCourse = $course->getCourse('catalog')) {
+        if ($catalogCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CATALOG)) {
             $item['area'] = $catalogCourse->getArea();
             $item['areaCode'] = $catalogCourse->getAreaCode();
             if ($term = $catalogCourse->getTerm()) {

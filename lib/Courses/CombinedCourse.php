@@ -81,7 +81,11 @@ class CombinedCourse implements CourseInterface
         return array();
     }
     
-    public function getCourse($type) {
+    public function getCourse($key) {
+        return isset($this->courses[$key]) ? $this->courses[$key] : null;
+    }
+
+    public function getCoursebyType($type){
         return isset($this->courses[$type]) ? $this->courses[$type] : null;
     }
 
@@ -89,7 +93,9 @@ class CombinedCourse implements CourseInterface
         return true;
     }
     
-    public function addCourse($type, Course $course) {
+    public function addCourse(Course $course) {
+        // Get the type. Combined courses may only have one course per type.
+        $type = $course->getType();
         $this->courses[$type] = $course;
         $this->id = $course->getCommonID();
         $this->constructAttributes($type, $course);

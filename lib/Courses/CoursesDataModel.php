@@ -15,6 +15,9 @@ class CoursesDataModel extends DataModel {
 
     const CURRENT_TERM = 1;
     const ALL_TERMS = 2;
+    const COURSE_TYPE_CONTENT      = "CourseContent";
+    const COURSE_TYPE_CATALOG      = "CourseCatalog";
+    const COURSE_TYPE_REGISTRATION = "CourseRegistration";
     protected $retrievers=array();
     protected $termsRetriever;
     protected $currentTerm;
@@ -63,9 +66,9 @@ class CoursesDataModel extends DataModel {
         if (strlen($courseID)==0) {
             return false;
         }
-        foreach ($this->retrievers as $type=>$retriever) {
+        foreach ($this->retrievers as $retriever) {
             if ($course = $retriever->getCourseByCommonID($courseID, $options)) {
-                $combinedCourse->addCourse($type, $course);
+                $combinedCourse->addCourse($course);
                 $ok = true;
             }
         }
@@ -79,6 +82,19 @@ class CoursesDataModel extends DataModel {
         } else {
             return false;
         }
+    }
+
+    public function hasPersonalizedCourses(){
+        $hasPersonalizedCourses = false;
+        $courseContentDataRetriever = CoursesDataModel::COURSE_TYPE_CONTENT.'DataRetriever';
+        $courseRegistrationDataRetriever = CoursesDataModel::COURSE_TYPE_REGISTRATION.'DataRetriever';
+        foreach ($this->retrievers as $key => $retriever) {
+            if(($retriever instanceof $courseContentDataRetriever) || ($retriever instanceof $courseRegistrationDataRetriever)){
+                $hasPersonalizedCourses = true;
+                break;
+            }
+        }
+        return $hasPersonalizedCourses;
     }
 
     public function getRetriever($type=null) {
@@ -134,7 +150,7 @@ class CoursesDataModel extends DataModel {
                     }
                     
                     $combinedCourse = $courses[$course->getCommonID()];
-                    $combinedCourse->addCourse($type, $course);
+                    $combinedCourse->addCourse($course);
                 }
             }
         }
@@ -142,13 +158,8 @@ class CoursesDataModel extends DataModel {
         return $courses;
     }
     
-    public function setCoursesRetriever($type, DataRetriever $retriever) {
-        $interface = 'Course' . ucfirst($type) . 'DataRetriever';
-        if ($retriever instanceOf $interface) {
-            $this->retrievers[$type] = $retriever;
-        } else {
-            throw new KurogoException("Data Retriever " . get_class($retriever) . " must conform to $interface");
-        }
+    public function setCoursesRetriever($key, DataRetriever $retriever) {
+        $this->retrievers[$key] = $retriever;
     }
 
     public function setTermsRetriever(TermsDataRetriever $retriever) {
@@ -157,45 +168,26 @@ class CoursesDataModel extends DataModel {
     
     protected function init($args) {
         $this->initArgs = $args;
+
         if (isset($args['terms'])) {
             if($enabled = Kurogo::arrayVal($args['terms'], 'ENABLED', true)){
-                $arg = $args['terms'];
-                $termRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
+                $termSection = $args['terms'];
+                $termRetriever = DataRetriever::factory($termSection['RETRIEVER_CLASS'], $termSection);
                 $this->setTermsRetriever($termRetriever);
             }
+            unset($args['terms']);
         }
 
-        if (isset($args['catalog'])) {
-            if($enabled = Kurogo::arrayVal($args['catalog'], 'ENABLED', true)){
-            	includePackage('Courses','CourseCatalog');
-                $arg = $args['catalog'];
-                $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
-                $arg['TERMS_RETRIEVER'] = $this->termsRetriever;
-                $catalogRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
-                $this->setCoursesRetriever('catalog', $catalogRetriever);
+        foreach ($args as $key => $section) {
+            if(!is_array($section)){
+                throw new KurogoConfigurationException("Feeds configuration section '$key' must be an array.");
             }
-        }
 
-        
-        if (isset($args['registration'])) {
-            if($enabled = Kurogo::arrayVal($args['registration'], 'ENABLED', true)){
-            	includePackage('Courses','CourseRegistration');
-                $arg = $args['registration'];
-                $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
-                $arg['TERMS_RETRIEVER'] = $this->termsRetriever;
-                $registationRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
-                $this->setCoursesRetriever('registration', $registationRetriever);
-            }
-        }
-        
-        if (isset($args['content'])) {
-            if($enabled = Kurogo::arrayVal($args['content'], 'ENABLED', true)){
-            	includePackage('Courses','CourseContent');
-                $arg = $args['content'];
-                $arg['CACHE_FOLDER'] = isset($arg['CACHE_FOLDER']) ? $arg['CACHE_FOLDER'] : get_class($this);
-                $arg['TERMS_RETRIEVER'] = $this->termsRetriever;
-                $contentRetriever = DataRetriever::factory($arg['RETRIEVER_CLASS'], $arg);
-                $this->setCoursesRetriever('content', $contentRetriever);
+            if(Kurogo::arrayVal($args[$key], 'ENABLED', true)){
+                $section['CACHE_FOLDER'] = isset($section['CACHE_FOLDER']) ? $section['CACHE_FOLDER'] : get_class($this);
+                $section['TERMS_RETRIEVER'] = $this->termsRetriever;
+                $retriever = DataRetriever::factory($section['RETRIEVER_CLASS'], $section);
+                $this->setCoursesRetriever($key, $retriever);
             }
         }
     }

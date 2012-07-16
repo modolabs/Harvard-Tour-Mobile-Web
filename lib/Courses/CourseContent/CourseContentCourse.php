@@ -10,6 +10,9 @@
  */
 
 abstract class CourseContentCourse extends Course {
+
+    protected $type = CoursesDataModel::COURSE_TYPE_CONTENT;
+
     abstract public function getLastUpdate();
     abstract public function getUpdates($options);
     abstract public function getTasks($options);

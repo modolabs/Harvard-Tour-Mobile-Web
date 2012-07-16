@@ -9,6 +9,7 @@
  *
  */
 
+includePackage('Courses', 'CourseCatalog');
 class CoursesDemoCourseCatalogDataRetriever extends URLDataRetriever implements CourseCatalogDataRetriever {
     protected $areasParser;
     protected $areasURL;

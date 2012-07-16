@@ -14,6 +14,7 @@ class CourseCatalogCourse extends Course {
     protected $area;
     protected $areaCode;
     protected $sections=array();
+    protected $type = CoursesDataModel::COURSE_TYPE_CATALOG;
 
     public function setArea($area) {
         $this->area = $area;

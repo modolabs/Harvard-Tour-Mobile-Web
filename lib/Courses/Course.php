@@ -14,6 +14,7 @@ abstract class Course implements CourseInterface {
     protected $id;
     protected $commonID;
     protected $commonID_field;
+    protected $type;
     protected $courseNumber;
     protected $title;
     protected $description;
@@ -65,6 +66,10 @@ abstract class Course implements CourseInterface {
 
     public function setID($id) {
         $this->id = $id;
+    }
+
+    public function getType(){
+        return $this->type;
     }
     
     public function setCourseNumber($courseNumber) {
