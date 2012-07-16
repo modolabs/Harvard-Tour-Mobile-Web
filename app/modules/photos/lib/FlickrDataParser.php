@@ -3,10 +3,9 @@
 class FlickrDataParser extends DataParser {
 
     protected function parseEntry($entry) {
-        $photo = new FlickrPhotoObject();
-        
         switch ($this->response->getContext('retriever')) {
             case 'feed':
+                $photo = new FlickrFeedPhotoObject();
                 $photo->setID($entry['guid']);
                 $photo->setAuthor($entry['author_name']);
                 $photo->setMimeType($entry['photo_mime']);
@@ -19,6 +18,7 @@ class FlickrDataParser extends DataParser {
                 $photo->setDescription($entry['description']);
                 break;
             case 'api':
+                $photo = new FlickrAPIPhotoObject();
                 $photo->setID($entry['id']);
                 $photo->setFarm($entry['farm']);
                 $photo->setServer($entry['server']);
@@ -51,7 +51,7 @@ class FlickrDataParser extends DataParser {
                 case 'api':
                     $type = $this->response->getContext('type');
                     $items = isset($data[$type]['photo']) ? $data[$type]['photo'] : array();
-                    $totalItems = isset($data['total']) ? $data['total'] : count($items);
+                    $totalItems = isset($data[$type]['total']) ? $data[$type]['total'] : count($items);
                     break;
             }
 
@@ -72,6 +72,16 @@ class FlickrDataParser extends DataParser {
 
 class FlickrPhotoObject extends PhotoObject {
     protected $type = 'flickr';
+    
+    //http://www.flickr.com/services/api/misc.urls.html
+    public function getFlickrUrl($type) {
+        return sprintf("http://farm%s.staticflickr.com/%s/%s_%s_%s.jpg", $this->farm, $this->server, $this->id, $this->secret, $type);
+
+    }
+}
+
+class FlickrAPIPhotoObject extends FlickrPhotoObject {
+
     protected $secret;
     protected $farm;
     protected $server;
@@ -87,10 +97,19 @@ class FlickrPhotoObject extends PhotoObject {
     public function setSecret($secret) {
         $this->secret = $secret;
     }
-    
-    //http://www.flickr.com/services/api/misc.urls.html
-    public function getFlickrUrl($type) {
-        return sprintf("http://farm%s.staticflickr.com/%s/%s_%s_%s.jpg", $this->farm, $this->server, $this->id, $this->secret, $type);
 
+    public function getThumbnailUrl($pagetype = 'complaint'){
+        switch ($pagetype) {
+            case 'tablet':
+                return $this->getFlickrUrl('q');
+                break;
+            default:
+                return $this->getFlickrUrl('s');
+                break;
+        }
     }
+}
+
+class FlickrFeedPhotoObject extends FlickrPhotoObject {
+
 }
