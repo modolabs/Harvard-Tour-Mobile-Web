@@ -13,7 +13,7 @@ includePackage('Locations');
 class LocationsAPIModule extends APIModule {
     protected $id = 'locations';
     protected $vmin = 1;
-    protected $vmax = 1;
+    protected $vmax = 2;
     
     protected $feeds = array();
     protected $timezone;
@@ -54,13 +54,19 @@ class LocationsAPIModule extends APIModule {
 
     public function getFeedGroups() {
         if ($feedGroups = $this->getOptionalModuleSections('feedgroups')) {
-            return $feedGroups;
+        	// ensure that feed groups are returned as an array
+        	$return = array();
+        	foreach ($feedGroups as $key=>$data) {
+        		$data['key'] = $key;
+        		$return[] = $data;
+        	}
+        	
+            return $return;
         } else {
-            return array(
-                'nogroup' => array(
-                    'title' => ''
-                )
-            );
+            return array(array(
+            	'key'=>'nogroup',
+				'title' => '',
+            ));
         }
     }
     
