@@ -88,8 +88,8 @@ class LocationsAPIModule extends APIModule {
     }
 
     protected function getFeedsData() {
-        foreach ($this->feedGroups as $groupID => &$feedGroup) {
-            $feeds = $this->loadFeedData($groupID);
+        foreach ($this->feedGroups as $index => &$feedGroup) {
+            $feeds = $this->loadFeedData($feedGroup['key']);
             $feedGroup['locations'] = array();
             foreach ($feeds as $id => $feedData) {
                 $feed = array(
