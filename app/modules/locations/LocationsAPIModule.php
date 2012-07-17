@@ -127,8 +127,8 @@ class LocationsAPIModule extends APIModule {
                 }
             }
         } else {
-            foreach ($this->feedGroups as $groupID => $groupData) {
-                $feeds = $this->loadFeedData($groupID);
+            foreach ($this->feedGroups as $index => $feedGroup) {
+                $feeds = $this->loadFeedData($feedGroup['key']);
                 foreach ($feeds as $id => $feedData) {
                     if ($requestedFeedId == self::locationIdForFeedData($feedData)) {
                         $feed = $feedData;
