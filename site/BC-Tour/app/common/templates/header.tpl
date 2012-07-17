@@ -12,11 +12,11 @@
       Tour of the Heights
     </a>
 		<ul id="helplinks">
-      {if $mapLink}
-			  <li><a href="{$mapLink}">map</a></li>
+      {if $tourMapLink}
+			  <li><a href="{$tourMapLink}">map</a></li>
       {/if}
-      {if $helpLink}
-			  <li><a href="{$helpLink}">help</a></li>
+      {if $tourHelpLink}
+			  <li><a href="{$tourHelpLink}">help</a></li>
 			{/if}
 		</ul>
   </div>

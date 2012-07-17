@@ -414,6 +414,7 @@ class TourWebModule extends WebModule {
             
             case 'tourhelp':
                 $showHelpLink = false;
+                $showMapLink = false;
                 $this->assign('contents', $this->getPageContents('help'));
                 $this->assign('doneURL',  $this->getArg('doneURL', $this->buildTourURL('index')));
                 break;
@@ -536,13 +537,13 @@ class TourWebModule extends WebModule {
         $this->assign('stop', $stopInfo);
         
         if ($showMapLink) {
-            $this->assign('mapLink', $this->buildTourURL('map', array(
+            $this->assign('tourMapLink', $this->buildTourURL('map', array(
                 'view'    => self::MAP_VIEW_OVERVIEW,
                 'doneURL' => $this->buildTourURL($this->page, $this->args),
             )));
         }
         if ($showHelpLink) {
-            $this->assign('helpLink', $this->buildTourURL('tourhelp', array(
+            $this->assign('tourHelpLink', $this->buildTourURL('tourhelp', array(
                 'doneURL' => $this->buildTourURL($this->page, $this->args),
             )));
         }
