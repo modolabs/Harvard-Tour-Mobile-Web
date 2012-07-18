@@ -281,10 +281,10 @@ class CoursesWebModule extends WebModule {
                     $options['fileID'] = $fileID;
                 }
 
-                $link['url'] = $this->buildExternalURL($this->buildURL('download', $options));
+                $link['url'] = $this->buildDownloadURL($this->buildURL('download', $options));
                 break;
             case $content::MODE_URL:
-                $link['url'] = $this->buildExternalURL($attachment->getURL());
+                $link['url'] = $this->buildDownloadURL($attachment->getURL());
                 $link['class'] = 'external';
                 $link['linkTarget'] = '_blank';
                 break;
