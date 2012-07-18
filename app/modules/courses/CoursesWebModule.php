@@ -686,11 +686,9 @@ class CoursesWebModule extends WebModule {
     protected function getCourseOptions() {
         $courseID = $this->getArg('courseID');
         $area = $this->getArg('area');
-        $courseKey = $this->getArg('courseKey');
 
         $options = array(
             'courseID'  => $courseID,
-            'courseKey' => $courseKey,
             'term'      => strval($this->Term)
         );
 
