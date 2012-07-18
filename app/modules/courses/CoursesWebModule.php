@@ -1280,15 +1280,6 @@ class CoursesWebModule extends WebModule {
 
         // @TODO ADD configurable links
         $links = array();
-        if ($registrationCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_REGISTRATION)) {
-            if ($registrationCourse->canDrop()) {
-                $links[] = array(
-                    'title'=> $this->getLocalizedString('DROP_COURSE'),
-                    'url' => $this->buildBreadcrumbURL('dropclass', $options)
-                );
-            }
-        }
-
         $this->assign('links', $links);
         return true;
         break;
@@ -1875,53 +1866,6 @@ class CoursesWebModule extends WebModule {
                     $this->assign('links', $links);
                 }
                 break;
-
-        	case 'roster':
-                if(!$this->isLoggedIn()){
-                    $this->redirectTo('index');
-                }
-        	    if (!$course = $this->getCourseFromArgs()) {
-                    $this->redirectTo('index');
-        	    }
-
-        		$students = $course->getStudents();
-        		$links = array();
-        		foreach ($students as $student) {
-        			$value = $student->getFullName();
-        			$link = Kurogo::moduleLinkForValue('people', $value, $this, $student);
-        			if (!$link) {
-        				$link = array(
-                			'title' => $value,
-                        );
-        			}
-        			$links[] = $link;
-        		}
-        		$this->assign('links',$links);
-        		break;
-
-        	case 'dropclass';
-                if(!$this->isLoggedIn()){
-                    $this->redirectTo('index');
-                }
-        	    if (!$course = $this->getCourseFromArgs()) {
-                    $this->redirectTo('index');
-        	    }
-
-        	    $options = $this->getCourseOptions();
-
-        		$this->assign('dropTitle', $this->getLocalizedString('NOTIFICATION',$course->getTitle()));
-
-        		$links = array();
-        		$links[] = array(
-        			    'title'=>$this->getLocalizedString('DROP_CONFIRM'),
-        			    'url'=>$this->buildBreadcrumbURL('dropclass', $options)
-        		);
-        		$links[] = array(
-        		    'title'=>$this->getLocalizedString('DROP_CANCEL'),
-        		    'url'=>$this->buildBreadcrumbURL('catalogcourse', $options, false)
-        		);
-				$this->assign('links',$links);
-        	    break;
 
             case 'catalog':
                 if ($areas = $this->controller->getCatalogAreas(array('term' => $this->Term))) {
