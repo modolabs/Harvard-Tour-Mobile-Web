@@ -891,8 +891,7 @@ h2.icon {
 	margin: 0 -0.5em;
 }
 
-.tabstrip ,
-#tabstrip {
+.tabstrip {
 	list-style-type: none;
 	height: 32px;
 	margin: 0;
@@ -901,28 +900,29 @@ h2.icon {
 	overflow: hidden;
 }
 
-.tabstrip li ,
-#tabstrip li {
+.tabstrip li {
 	float: left;
 	margin: 0;
 	text-align: center;
 	height: 33px;
 }
 
-.tabstrip a ,
-#tabstrip a {
+.tabstrip a, .tabstrip a:visited {
 	display: block;
 	height: 32px;
 	line-height: 32px;
 	text-decoration: none;
-	color: #fff;
-	background: url(/common/images/tabstrip.jpg) repeat-x;
 	border-right: 1px solid #999;
 }	
 
-.tabstrip li.active a ,
-#tabstrip li.active a {
-	background-image: url(/common/images/tabstrip-active.jpg);
+.focal .tabstrip a, .tabbody .tabstrip a {
+	background-color: #f0f0f0;
+	color: #505050;
+}
+
+.tabstrip li.active a {
+	background-color: #444;
+	color: #fff;
 }
 
 .twotabs li {
