@@ -147,7 +147,9 @@ class CoursesDemoCourseContentDataParser extends JSONDataParser {
 	    	$task->setID($data['content_id']);
 	    	$task->setTitle($data['title']);
 	    	$task->setAuthor($data['author']);
-	    	$task->setAuthorID($data['user_id']);
+	    	if (isset($data['user_id'])) {
+				$task->setAuthorID($data['user_id']);
+			}
 	    	$task->setDescription($data['description']);
 	    	$task->setAttribute('priority', $data['priority']);
 
@@ -198,7 +200,9 @@ class CoursesDemoCourseContentDataParser extends JSONDataParser {
 		}
 		
 		$contentType->setAuthor($item['author']);
-    	$contentType->setAuthorID($item['user_id']);
+		if (isset($item['user_id'])) {
+			$contentType->setAuthorID($item['user_id']);
+		}
 		if ($item['typeName'] == 'resource') {
             $attachment = new CourseContentAttachment();
             $attachment->setFilename($item['filename']);
