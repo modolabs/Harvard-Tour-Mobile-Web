@@ -2268,11 +2268,11 @@ class CoursesWebModule extends WebModule {
 
                 $options['term'] = strval($options['term']);
                 foreach ($courses as $item) {
-                	if(!$item->checkInStandardAttributes('areaCode', 'catalog')) {
+                	if(!$item->checkInStandardAttributes('areaCode')) {
 			        	//try to set attribute in attributes list.
-				        $item->setAttribute('areaCode', 'catalog');
+				        $item->setAttribute('areaCode', CoursesDataModel::COURSE_TYPE_CATALOG);
 			        }
-			        $options['area'] = $item->getField('areaCode', 'catalog');
+			        $options['area'] = $item->getField('areaCode', CoursesDataModel::COURSE_TYPE_CATALOG);
                     $course = $this->linkForCatalogCourse($item, $options);
                     $coursesList[] = $course;
                 }

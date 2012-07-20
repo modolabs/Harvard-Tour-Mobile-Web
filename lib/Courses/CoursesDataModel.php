@@ -123,7 +123,7 @@ class CoursesDataModel extends DataModel {
                 }
 
                 $combinedCourse = $courses[$course->getCommonID()];
-                $combinedCourse->addCourse('catalog', $course);
+                $combinedCourse->addCourse($course);
             }
         }
         return $courses;
