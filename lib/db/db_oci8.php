@@ -58,7 +58,7 @@ class db_oci8 extends db
 
         foreach($parameters as $key => $val) {
             // Important: the 3rd param is a reference, if we use $val, it will cause problem.
-            oci_bind_by_name($stmt, $key, $params[$key]);
+            oci_bind_by_name($stmt, $key, $parameters[$key]);
         }
         
         if (!$result = oci_execute($stmt)) {
