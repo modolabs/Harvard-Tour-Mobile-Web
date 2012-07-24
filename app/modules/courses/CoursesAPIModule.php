@@ -129,11 +129,11 @@ class CoursesAPIModule extends APIModule {
         $this->controller = CoursesDataModel::factory($this->defaultModel, $this->feeds);
         //load showCourseNumber setting
         $this->showCourseNumber = $this->getOptionalModuleVar('SHOW_COURSENUMBER_IN_LIST', 1);
-        $this->term = $this->assignTerm();
+        $this->Term = $this->assignTerm();
 
         switch($this->command) {
             case 'areas':
-                $options = array('term' => strval($this->Term));
+                $options = array('term' => $this->Term);
                 if ($area = $this->getArg('area', '')) {
                     $options['parent'] = $area;
                 }
@@ -158,7 +158,7 @@ class CoursesAPIModule extends APIModule {
             case 'courses':
                 $area = $this->getArg('area', '');
                 $options = array(
-                    'term' => strval($this->term),
+                    'term' => $this->Term,
                     'area' => $area,
                     'type' => 'catalog',
                 );
