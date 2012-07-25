@@ -175,9 +175,10 @@ class LDAPPeopleRetriever extends DataRetriever implements PeopleRetriever
 
     protected function buildSearchFilter($searchString) {
 
-        $this->errorNo = $this->errorMsg = null;
+        $filter = $this->errorNo = $this->errorMsg = null;
 
         $objectClassQuery = new LDAPFilter('objectClass', 'person');
+        $searchString = trim($searchString);
 
         if (empty($searchString)) {
             $this->errorMsg = "Query was blank";
@@ -245,7 +246,6 @@ class LDAPPeopleRetriever extends DataRetriever implements PeopleRetriever
             }
             
         } else {
-            $filter = null;
             $this->errorMsg = "Invalid query";
         }
 
