@@ -3,8 +3,9 @@
 includePackage('readability');
 
 class KurogoReaderDataParser extends DataParser {
-	private $tidyAvailable;
-	private $baseUrl;
+    private $tidyAvailable;
+    private $baseUrl;
+    private $basePath;
     
     public function parseData($html) {
 
@@ -12,13 +13,19 @@ class KurogoReaderDataParser extends DataParser {
         if(function_exists('tidy_parse_string')) {
             $this->tidyAvailable = true;
         }
-        $url = $this->getOption("readerUrl");
-        $urlArray = parse_url($url);
-        $this->baseUrl = $urlArray['scheme'] . "://" . $urlArray['host'];
-    	$headers = $this->response->getHeaders();
+        $headers = $this->response->getHeaders();
     	if(isset($headers['Location'])) {
-    		$this->baseUrl = $headers["Location"];
-    	}
+    		$url = $headers["Location"];
+        }else {
+            $url = $this->getOption("readerUrl");
+        }
+        $urlArray = parse_url($url);
+        if(isset($urlArray['path'])) {
+            $this->basePath = dirname($urlArray['path']);
+        }else {
+            $this->basePath = "";
+        }
+        $this->baseUrl = $urlArray['scheme'] . "://" . $urlArray['host'];
 
     	$html = $this->tidyClean($html);
         $readability = new Readability($html, $url);
@@ -107,9 +114,10 @@ class KurogoReaderDataParser extends DataParser {
             $urlArray = parse_url($imgSrc);
             if(!isset($urlArray['host'])) {
                 if(strpos($imgSrc, '/') !== 0) {
-                    $imgSrc = "/" . $imgSrc;
+                    $imgNodes->item($i)->setAttribute("src", $this->baseUrl . $this->basePath . "/" . $imgSrc);
+                }else {
+                    $imgNodes->item($i)->setAttribute("src", $this->baseUrl . $imgSrc);
                 }
-                $imgNodes->item($i)->setAttribute("src", $this->baseUrl . $imgSrc);
             }
         }
         /**
@@ -119,11 +127,12 @@ class KurogoReaderDataParser extends DataParser {
         for($i = 0;$i < $hrefNodes->length;$i ++) {
             $href = $hrefNodes->item($i)->getAttribute("href");
             $urlArray = parse_url($href);
-            if(!isset($urlArray['host'])) {
+            if(!isset($urlArray['host']) && strpos($href, 'mailto:') !== 0) {
                 if(strpos($href, '/') !== 0) {
-                    $href = "/" . $href;
+                    $hrefNodes->item($i)->setAttribute("href", $this->baseUrl . $this->basePath . "/" . $href);
+                }else {
+                    $hrefNodes->item($i)->setAttribute("href", $this->baseUrl . $href);
                 }
-                $hrefNodes->item($i)->setAttribute("href", $this->baseUrl . $href);
             }
         }
 
