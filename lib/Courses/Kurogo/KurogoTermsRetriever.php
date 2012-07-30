@@ -19,6 +19,20 @@ class KurogoTermsRetriever extends URLDataRetriever implements TermsDataRetrieve
     }
 
     public function getTerm($termCode){
+        if($termCode == CoursesDataModel::CURRENT_TERM){
+            return $this->getCurrentTerm();
+        }else{
+            $terms = $this->getAvailableTerms();
+            foreach ($terms as $term) {
+                if($termCode == $term->getID()){
+                    return $term;
+                }
+            }
+        }
+        return null;
+    }
+
+    public function getCurrentTerm(){
         $this->setBaseURL($this->termsAPI . '/currentTerm');
         $this->setOption('action', 'currentTerm');
         return $this->getData($response);
