@@ -179,6 +179,26 @@ class CoursesAPIModule extends APIModule {
                 $this->setResponseVersion(1);
                 
                 break;
+
+            case 'terms':
+                $terms = $this->controller->getAvailableTerms();
+                $response = array(
+                        'terms' => $terms,
+                    );
+
+                $this->setResponse($response);
+                $this->setResponseVersion(1);
+                break;
+
+            case 'currentTerm':
+                $currentTerm = $this->controller->getCurrentTerm();
+                $response = array(
+                        'currentTerm' => $currentTerm,
+                    );
+
+                $this->setResponse($response);
+                $this->setResponseVersion(1);
+                break;
                 
             default:
                  $this->invalidCommand();
