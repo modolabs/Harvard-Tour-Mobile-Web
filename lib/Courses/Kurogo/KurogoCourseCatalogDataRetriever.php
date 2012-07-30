@@ -9,6 +9,7 @@
  *
  */
 
+includePackage('Courses', 'CourseCatalog');
 class KurogoCourseCatalogDataRetriever extends URLDataRetriever implements CourseCatalogDataRetriever {
     protected $areasParser;
     protected $areasURL;
@@ -79,7 +80,7 @@ class KurogoCourseCatalogDataRetriever extends URLDataRetriever implements Cours
     public function getCatalogAreas($options = array()) {
         $this->setMode('areas');
         if (isset($options['term'])) {
-            $this->setOption('term', strval($options['term']));
+            $this->addFilter('term', strval($options['term']));
         }
         
         if (isset($options['parent'])) {
@@ -88,10 +89,6 @@ class KurogoCourseCatalogDataRetriever extends URLDataRetriever implements Cours
 
         $areas =  $this->getData();
         return $areas;
-    }
-    
-    public function getAvailableTerms() {
-        
     }
     
     public function getCourseByCommonId($courseID, $options) {
