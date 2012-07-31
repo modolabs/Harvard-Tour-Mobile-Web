@@ -24,32 +24,33 @@ class KurogoCourseCatalogDataRetriever extends URLDataRetriever implements Cours
         $this->setBaseURL($this->$urlVar);
     }
 
-    /**
-     * @brief searchCourses 
-     *
-     * TODO: implement search courses method
-     *
-     * @param string $searchTerms
-     * @param array $options
-     *
-     * @return array
-     */
     public function searchCourses($searchTerms, $options = array()) {
-    	$this->setMode('courses');
-    	$baseUrl = $this->coursesURL . '/search';
-    	$this->setBaseURL($baseUrl);
-    	
-    	$this->addFilter('filter', $searchTerms);
-    	if (isset($options['term'])) {
-    		$this->addFilter('term', $options['term']->getID());
-    	}
-    	if (isset($options['area'])) {
-    		$this->addFilter('area', $options['area']);
-    	}
+        $items = array();
 
-    	return $this->getData();
+        if(isset($options['area'])) {
+            if (!$area = $this->getCatalogArea($options['area'], $options)) {
+                return $items;
+            }
+            $areas = array($area);
+        } else {
+            $areas = $this->getCatalogAreas();
+        }
+
+        $courses = array();
+        foreach ($areas as $area) {
+            $options['area'] = $area->getID();
+            $courses = array_merge($courses, $this->getCourses($options));
+        }
+
+        $filters['search'] = trim($searchTerms);
+        foreach($courses as $course) {
+            if($course->filterItem($filters)) {
+                $items[] = $course;
+            }
+        }
+        return $items;
     }
-    
+
     public function getCourses($options = array()) {
         $this->setMode('courses');
         
