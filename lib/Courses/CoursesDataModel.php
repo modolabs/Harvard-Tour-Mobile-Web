@@ -36,7 +36,7 @@ class CoursesDataModel extends DataModel {
         if($this->currentTerm) {
             $term = $this->currentTerm;
         } elseif ($this->termsRetriever) {
-            if (!$this->termsRetriever->getTerm(self::CURRENT_TERM)) {
+            if (!$term = $this->termsRetriever->getTerm(self::CURRENT_TERM)) {
                 throw new KurogoDataException("Unable to retrieve Current Term");
             }
         } else {
