@@ -20,6 +20,7 @@ class CoursesDataModel extends DataModel {
     const COURSE_TYPE_REGISTRATION = "CourseRegistration";
     protected $retrievers=array();
     protected $termsRetriever;
+    protected $catalogRetrieverKey;
     protected $currentTerm;
     
     //returns an array of terms. 
@@ -83,18 +84,18 @@ class CoursesDataModel extends DataModel {
             return false;
         }
     }
-
-    public function hasPersonalizedCourses(){
-        $hasPersonalizedCourses = false;
-        $courseContentDataRetriever = CoursesDataModel::COURSE_TYPE_CONTENT.'DataRetriever';
-        $courseRegistrationDataRetriever = CoursesDataModel::COURSE_TYPE_REGISTRATION.'DataRetriever';
+    
+    public function hasRetrieverType($type) {
+    	$interface = $type . 'DataRetriever';
         foreach ($this->retrievers as $key => $retriever) {
-            if(($retriever instanceof $courseContentDataRetriever) || ($retriever instanceof $courseRegistrationDataRetriever)){
-                $hasPersonalizedCourses = true;
-                break;
+            if ($retriever instanceof $interface) {
+            	return true;
             }
         }
-        return $hasPersonalizedCourses;
+    }
+
+    public function hasPersonalizedCourses(){
+    	return $this->hasRetrieverType(self::COURSE_TYPE_CONTENT) || $this->hasRetrieverType(self::COURSE_TYPE_REGISTRATION);
     }
 
     public function getRetriever($type=null) {
@@ -102,20 +103,40 @@ class CoursesDataModel extends DataModel {
     }
 
     public function getCatalogAreas($options=array()) {
-        if ($retriever = $this->getRetriever('catalog')) {
+        if ($retriever = $this->getCatalogRetriever()) {
             return $retriever->getCatalogAreas($options);
         }
     }
 
     public function getCatalogArea($area, $options=array()) {
-        if ($retriever = $this->getRetriever('catalog')) {
+        if ($retriever = $this->getCatalogRetriever()) {
             return $retriever->getCatalogArea($area, $options);
         }
+    }
+    
+    public function getCatalogRetriever() {
+    	return $this->getRetriever($this->catalogRetrieverKey);
+    }
+
+    public function getCatalogRetrieverKey() {
+    	return $this->catalogRetrieverKey;
+    }
+    
+    protected function getRetrieverType($retriever) {
+    	$types = array(self::COURSE_TYPE_CONTENT, self::COURSE_TYPE_CATALOG, self::COURSE_TYPE_REGISTRATION);
+    	foreach ($types as $type) {
+    		$interface = $type . "DataRetriever";
+    		if ($retriever instanceOf $interface) {
+    			return $type;
+    		}
+    	}
+    	
+    	return null;
     }
 
     public function search($searchTerms, $options) {
         $courses = array();
-        if ($retriever = $this->getRetriever('catalog')) {
+        if ($retriever = $this->getCatalogRetriever()) {
             $retrieverCourses = $retriever->searchCourses($searchTerms, $options);
             foreach ($retrieverCourses as $course) {
                 if (!isset($courses[$course->getCommonID()])) {
@@ -159,7 +180,19 @@ class CoursesDataModel extends DataModel {
     }
     
     public function setCoursesRetriever($key, DataRetriever $retriever) {
-        $this->retrievers[$key] = $retriever;
+    	switch ($this->getRetrieverType($retriever))
+    	{
+    		case self::COURSE_TYPE_CATALOG:
+    			if ($this->catalogRetrieverKey) {
+    				throw new KurogoConfigurationException("Only 1 catalog retriever permitted ($this->catalogRetrieverKey defined, trying to add $key)");
+    			}
+    			$this->catalogRetrieverKey = $key;
+
+    		case self::COURSE_TYPE_CONTENT:
+    		case self::COURSE_TYPE_REGISTRATION:
+		        $this->retrievers[$key] = $retriever;
+		        break;
+    	}
     }
 
     public function setTermsRetriever(TermsDataRetriever $retriever) {

@@ -1691,11 +1691,11 @@ class CoursesWebModule extends WebModule {
             $this->assign('loginText', $this->getLocalizedString('NOT_LOGGED_IN'));
         }
 
-        if ($this->controller->canRetrieve('catalog')) {
+        if ($catalogRetrieverKey = $this->controller->getCatalogRetrieverKey()) {
             $catalogItems = array();
 
             $catalogItems[] = array(
-                'title' => $this->getFeedTitle('catalog'),
+                'title' => $this->getFeedTitle($catalogRetrieverKey),
                 'url'   => $this->buildBreadcrumbURL('catalog', array('term'=>strval($this->Term)))
             );
 
