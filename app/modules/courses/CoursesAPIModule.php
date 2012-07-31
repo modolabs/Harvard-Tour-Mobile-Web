@@ -93,6 +93,15 @@ class CoursesAPIModule extends APIModule {
                 }
             }
         }
+
+        if (method_exists($section, 'getInstructor')) {
+            if ($instructor = $section->getInstructor()) {
+                if(!isset($item['instructors'])){
+                    $item['instructors'] = array();
+                }
+                $item['instructors'][] = $this->formatInstructor($instructor);
+            }
+        }
         
         return $item;
     }
