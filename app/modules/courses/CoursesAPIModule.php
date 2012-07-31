@@ -121,6 +121,18 @@ class CoursesAPIModule extends APIModule {
         
         return $item;
     }
+
+    protected function formatTerm(CourseTerm $term){
+        $item = array(
+            'id'         => $term->getID(),
+            'title'      => $term->getTitle(),
+            'startDate'  => $term->getStartDate(),
+            'endDate'    => $term->getEndDate(),
+            'attributes' => $term->getAttributes(),
+        );
+
+        return $item;
+    }
     
     protected function initializeForCommand() {
         if(!$this->feeds = $this->loadFeedData()){
@@ -178,6 +190,34 @@ class CoursesAPIModule extends APIModule {
                 $this->setResponse($response);
                 $this->setResponseVersion(1);
                 
+                break;
+
+            case 'terms':
+                $terms = array();
+                if($items = $this->controller->getAvailableTerms()){
+                    foreach ($items as $item) {
+                        $terms[] = $this->formatTerm($item);
+                    }
+                }
+
+                $response = array(
+                        'total' => count($terms),
+                        'terms' => $terms,
+                    );
+
+                $this->setResponse($response);
+                $this->setResponseVersion(1);
+                break;
+
+            case 'currentTerm':
+                $item = $this->controller->getCurrentTerm();
+                $currentTerm = $this->formatTerm($item); 
+                $response = array(
+                        'currentTerm' => $currentTerm,
+                    );
+
+                $this->setResponse($response);
+                $this->setResponseVersion(1);
                 break;
                 
             default:
