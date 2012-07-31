@@ -6,7 +6,7 @@
 {/block}
 {/block}
 {block name="termTitle"}
-{if $termTitle}
+{if $termTitle && $showTermTitle}
 <p class="smallprint nonfocal">{$termTitle}</p>
 {/if}
 {/block}

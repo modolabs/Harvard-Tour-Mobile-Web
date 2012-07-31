@@ -21,6 +21,15 @@ abstract class Course implements CourseInterface {
     protected $term;
     protected $attributes = array();
     protected $retriever;
+    protected $showTerm = false;
+    
+    public function showTerm() {
+    	return $this->showTerm;
+    }
+
+    public function setShowTerm($showTerm) {
+    	$this->showTerm = (bool) $showTerm;
+    }
 
     public function setAttribute($key, $value) {
         $this->attributes[$key] = $value;

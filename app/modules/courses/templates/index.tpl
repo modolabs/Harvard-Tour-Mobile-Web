@@ -1,7 +1,9 @@
 {include file="findInclude:common/templates/header.tpl"}
 
 {block name="termselector"}
+{if $showTermSelector}
 {include file="findInclude:modules/courses/templates/include/termselector.tpl"}
+{/if}
 {/block}
 
 {if $tabs && $hasCourses}

@@ -24,6 +24,16 @@ class CombinedCourse implements CourseInterface
             'term',
         );
     }
+    
+    public function showTerm() {
+    	foreach ($this->courses as $course) {
+    		if ($course->showTerm()) {
+    			return true;
+    		}
+    	}
+    	
+    	return false;
+    }
 
     public function checkInStandardAttributes($attribute) {
     	return in_array($attribute, $this->standardAttributes());

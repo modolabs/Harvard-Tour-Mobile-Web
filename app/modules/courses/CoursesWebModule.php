@@ -1984,6 +1984,7 @@ class CoursesWebModule extends WebModule {
                 $this->assign('tabs',$tabs);
                 $this->assign('tabTypes',$tabTypes);
                 $this->assign('tabDetails', $infoDetails);
+                $this->assign('showTermTitle', $course->showTerm());
             	break;
 
             case 'catalogsection':
@@ -2133,6 +2134,7 @@ class CoursesWebModule extends WebModule {
                 $this->enableTabs($tabs, null, $javascripts);
                 $this->assign('tabs', $tabs);
                 $this->assign('currentTab', $this->tab);
+                $this->assign('showTermTitle', $course->showTerm());
                 break;
 
             case 'courses':
@@ -2250,6 +2252,7 @@ class CoursesWebModule extends WebModule {
                         }
                     }
                 }
+                $this->assign('showTermSelector', $this->getOptionalModuleVar('SHOW_TERM_SELECTOR', true));
                 break;
 
             case 'search':

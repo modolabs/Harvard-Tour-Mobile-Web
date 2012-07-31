@@ -13,6 +13,7 @@ abstract class CourseRegistrationCourse extends Course {
 
     protected $enrolled;
     protected $type = CoursesDataModel::COURSE_TYPE_REGISTRATION;
+    protected $showTerm = true;
 
     public function setEnrolled($enrolled) {
         $this->enrolled = $enrolled;
