@@ -154,13 +154,18 @@ class CoursesAPIModule extends APIModule {
 
         switch($this->command) {
             case 'areas':
+            	$feed = $this->getArg('feed', $this->controller->getCatalogRetrieverKey());
+            	if (!$retriever = $this->controller->getCatalogRetriever($feed)) {
+            		throw new KurogoConfigurationException("Unable to get catalog area retriever");
+            	}
+            	
                 $options = array('term' => $this->Term);
                 if ($area = $this->getArg('area', '')) {
                     $options['parent'] = $area;
                 }
                 
                 $areas = array();
-                if ($items = $this->controller->getCatalogAreas($options)) {
+                if ($items = $retriever->getCatalogAreas($options)) {
                     foreach ($items as $area) {
                         $areas[] = $this->formatArea($area);
                     }

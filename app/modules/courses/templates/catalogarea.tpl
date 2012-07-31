@@ -1,12 +1,14 @@
 {include file="findInclude:common/templates/header.tpl"}
 
-<h2 class="nonfocal">{$areaTitle}</h2>
+{if $areaTitle}
+<div class="nonfocal"><h2>{$areaTitle}{if $termTitle}: {$termTitle}{/if}</h2></div>
+{/if}
 
 {include file="findInclude:common/templates/search.tpl" extraArgs=$hiddenArgs}
 
 {block name="areas"}
 {if $areas}
-  {include file="findInclude:common/templates/navlist.tpl" navlistItems=$areas}
+  {include file="findInclude:common/templates/navlist.tpl" boldLabels=true navlistItems=$areas}
 {/if}
 {/block}
 

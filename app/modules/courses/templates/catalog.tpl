@@ -3,21 +3,17 @@
 {block name="catalogHeader"}
 {$catalogHeader}
 {/block}
-{if $sections}
+
+{if !$showTermSelector && $termTitle}
+	<div class="nonfocal"><h2>{$termTitle}</h2></div>
+{/if}
 
 {include file="findInclude:common/templates/search.tpl" extraArgs=$hiddenArgs}
 
-<div id="category-switcher">
-Term: <select id="termID" name="term" onchange="loadSection(this, '{$page}');">
-    {foreach $sections as $section}
-        {if $section['selected']}
-            <option value="{$section['value']}" selected="true">{$section['title']|escape}</option>
-        {else}
-            <option value="{$section['value']}">{$section['title']|escape}</option>
-        {/if}
-    {/foreach}
-</select>
-</div>
+{if $showTermSelector}
+{block name="termselector"}
+{include file="findInclude:modules/courses/templates/include/termselector.tpl"}
+{/block}
 {/if}
 
 {if $bookmarksList}
@@ -28,7 +24,7 @@ Term: <select id="termID" name="term" onchange="loadSection(this, '{$page}');">
 
 
 {block name="areas"}
-  {include file="findInclude:common/templates/navlist.tpl" navlistItems=$areas}
+  {include file="findInclude:common/templates/navlist.tpl" boldLabels=true navlistItems=$areas}
 {/block}
 
 {block name="catalogFooter"}

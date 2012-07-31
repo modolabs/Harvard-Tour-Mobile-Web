@@ -253,6 +253,7 @@ class CoursesWebModule extends WebModule {
             )
         );
         $link = array(
+        	'label'=>$area->getCode(),
             'title'=> $area->getTitle(),
             'url'=>$this->buildBreadcrumbURL('catalogarea', $options)
         );
@@ -586,7 +587,7 @@ class CoursesWebModule extends WebModule {
         }
 
         if (count($terms)>1) {
-            $this->assign('sections', $terms);
+            $this->assign('terms', $terms);
         }
         $this->assign('termTitle', $Term->getTitle());
         return $Term;
@@ -1693,20 +1694,31 @@ class CoursesWebModule extends WebModule {
 
         if ($catalogRetrieverKey = $this->controller->getCatalogRetrieverKey()) {
             $catalogItems = array();
+            
+            if ($this->getOptionalModuleVar('EXPAND_CATALOG_TERMS', false)) {
+	            $courseCatalogText = $this->getLocalizedString('COURSE_CATALOG_TEXT');
+            	$terms = $this->controller->getAvailableTerms();
+            	foreach ($terms as $term) {
+					$catalogItems[] = array(
+						'title' => $term->getTitle(),
+						'url'   => $this->buildBreadcrumbURL('catalog', array('feed'=>$catalogRetrieverKey,'term'=>strval($term)))
+					);
+            	}
+            } else {
+	            $courseCatalogText = str_replace("%t", $this->Term->getTitle(), $this->getLocalizedString('COURSE_CATALOG_TEXT'));
+				$catalogItems[] = array(
+					'title' => $this->getFeedTitle($catalogRetrieverKey),
+					'url'   => $this->buildBreadcrumbURL('catalog', array('feed'=>$catalogRetrieverKey,'term'=>strval($this->Term)))
+				);
+	
+				if ($bookmarks = $this->getBookmarksForTerm($this->Term)) {
+					$catalogItems[] = array(
+						'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . " (" . count($bookmarks) . ")",
+						'url'   => $this->buildBreadcrumbURL('bookmarks', array('term'=>strval($this->Term))),
+					);
+				}
+			}
 
-            $catalogItems[] = array(
-                'title' => $this->getFeedTitle($catalogRetrieverKey),
-                'url'   => $this->buildBreadcrumbURL('catalog', array('term'=>strval($this->Term)))
-            );
-
-            if ($bookmarks = $this->getBookmarksForTerm($this->Term)) {
-                $catalogItems[] = array(
-                    'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . " (" . count($bookmarks) . ")",
-                    'url'   => $this->buildBreadcrumbURL('bookmarks', array('term'=>strval($this->Term))),
-                );
-            }
-
-            $courseCatalogText = str_replace("%t", $this->Term->getTitle(), $this->getLocalizedString('COURSE_CATALOG_TEXT'));
             $this->assign('courseCatalogText', $courseCatalogText);
             $this->assign('catalogItems', $catalogItems);
         }
@@ -1868,7 +1880,12 @@ class CoursesWebModule extends WebModule {
                 break;
 
             case 'catalog':
-                if ($areas = $this->controller->getCatalogAreas(array('term' => $this->Term))) {
+            	$feed = $this->getArg('feed', $this->controller->getCatalogRetrieverKey());
+            	if (!$retriever = $this->controller->getCatalogRetriever($feed)) {
+            		$this->redirectTo('index');
+            	}
+
+                if ($areas = $retriever->getCatalogAreas(array('term' => $this->Term))) {
                     $areasList = array();
                     $areaOptions = array('term' => strval($this->Term));
                     foreach ($areas as $CourseArea) {
@@ -1885,6 +1902,7 @@ class CoursesWebModule extends WebModule {
                     $this->assign('bookmarksList', $bookmarksList);
                 }
 
+                $this->assign('showTermSelector', !$this->getOptionalModuleVar('EXPAND_CATALOG_TERMS', false));
                 $this->assign('catalogHeader', $this->getOptionalModuleVar('catalogHeader','','catalog'));
                 $this->assign('catalogFooter', $this->getOptionalModuleVar('catalogFooter','','catalog'));
                 $this->assign('hiddenArgs', array('term' => strval($this->Term)));
@@ -1893,13 +1911,18 @@ class CoursesWebModule extends WebModule {
                 break;
 
             case 'catalogarea':
+            	$feed = $this->getArg('feed', $this->controller->getCatalogRetrieverKey());
                 $area = $this->getArg('area');
                 $options = array('term' => $this->Term);
                 if ($parent = $this->getArg('parent')) {
                     $options['parent'] = $parent;
                 }
+            	if (!$retriever = $this->controller->getCatalogRetriever($feed)) {
+            		$this->redirectTo('index');
+            	}
 
-                if (!$CourseArea = $this->controller->getCatalogArea($area, $options)) {
+
+                if (!$CourseArea = $retriever->getCatalogArea($area, $options)) {
                     $this->redirectTo('catalog', array());
                 }
                 $this->setBreadcrumbTitle($CourseArea->getCode());
@@ -1919,7 +1942,7 @@ class CoursesWebModule extends WebModule {
                     'area'=>$area
                 );
 
-                $searchOptions['type'] = 'catalog';
+                $searchOptions['type'] = $feed;
 
                 $courses = $this->controller->getCourses($searchOptions);
                 $coursesList = array();
@@ -2252,7 +2275,7 @@ class CoursesWebModule extends WebModule {
                         }
                     }
                 }
-                $this->assign('showTermSelector', $this->getOptionalModuleVar('SHOW_TERM_SELECTOR', true));
+                $this->assign('showTermSelector', $this->isLoggedIn() && $this->getOptionalModuleVar('SHOW_TERM_SELECTOR', true));
                 break;
 
             case 'search':
