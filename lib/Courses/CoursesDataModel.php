@@ -177,22 +177,22 @@ class CoursesDataModel extends DataModel {
 
     public function getGradesbookEntries($options){
         $grades = array();
-
-        if (isset($options['type'])) {
-            $types = array($options['type']);
-        } elseif (isset($options['types'])) {
-            $types = $options['types'];
-        } else {
-            $types = array_keys($this->retrievers);
-        }
-        
-        foreach ($types as $type) {
-            if ($this->canRetrieve($type)) {
-                $retrieverGrades = $this->retrievers[$type]->getGrades($options);
-                $grades = array_merge($grades, $retrieverGrades);
+        if($term = Kurogo::arrayVal($options, 'term')){
+            if (isset($options['type'])) {
+                $types = array($options['type']);
+            } elseif (isset($options['types'])) {
+                $types = $options['types'];
+            } else {
+                $types = array_keys($this->retrievers);
+            }
+            
+            foreach ($types as $type) {
+                if ($this->canRetrieve($type)) {
+                    $retrieverGrades = $this->retrievers[$type]->getGrades($term);
+                    $grades = array_merge($grades, $retrieverGrades);
+                }
             }
         }
-                
         return $grades;
     }
     

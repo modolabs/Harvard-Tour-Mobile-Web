@@ -1322,9 +1322,9 @@ class CoursesWebModule extends WebModule {
             $listingOptions = array_merge($options, $listingOptions);
             if ($this->isLoggedIn()) {
                 if ($listGrades = $this->controller->getGradesbookEntries($listingOptions)) {
-                    $courses[$id] = array(
+                    $grades[$id] = array(
                         'heading'=>$listingOptions['heading'], 
-                        'courses'=>$listGrades
+                        'grades'=>$listGrades
                     );
                 }
             }
