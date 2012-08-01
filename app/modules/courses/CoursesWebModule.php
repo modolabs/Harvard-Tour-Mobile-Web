@@ -1273,7 +1273,8 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function initializeGradebook($options){
-        $grades = $this->getGradesbookEntries(array());
+        $options = $this->getOptionsForGradebook();
+        $grades = $this->getGradesbookEntries($options);
         KurogoDebug::debug($grades,true);
     }
 
@@ -1293,6 +1294,11 @@ class CoursesWebModule extends WebModule {
         $this->assign('links', $links);
         return true;
         break;
+    }
+
+    protected function getOptionsForGradebook(){
+        $options = array('term'=>$this->Term);
+        return $options;
     }
 
     /**
