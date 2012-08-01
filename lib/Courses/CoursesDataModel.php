@@ -174,6 +174,27 @@ class CoursesDataModel extends DataModel {
                 
         return $courses;
     }
+
+    public function getGrades($options){
+        $grades = array();
+
+        if (isset($options['type'])) {
+            $types = array($options['type']);
+        } elseif (isset($options['types'])) {
+            $types = $options['types'];
+        } else {
+            $types = array_keys($this->retrievers);
+        }
+        
+        foreach ($types as $type) {
+            if ($this->canRetrieve($type)) {
+                $retrieverGrades = $this->retrievers[$type]->getGrades($options);
+                $grades = array_merge($grades, $retrieverGrades);
+            }
+        }
+                
+        return $grades;
+    }
     
     public function setCoursesRetriever($key, DataRetriever $retriever) {
     	switch ($this->getRetrieverType($retriever))

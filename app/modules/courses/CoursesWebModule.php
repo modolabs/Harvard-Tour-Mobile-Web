@@ -1272,6 +1272,11 @@ class CoursesWebModule extends WebModule {
         $this->assign('gradesLinks',$gradesLinks);
     }
 
+    protected function initializeGradebook($options){
+        $grades = $this->getGrades(array());
+        KurogoDebug::debug($grades,true);
+    }
+
     /**
      * Initializes the info tab, formats and assigns info details
      * @param  array  $options
@@ -1301,6 +1306,24 @@ class CoursesWebModule extends WebModule {
         );
 
         return $options;
+    }
+
+    protected function getGrades($options){
+        $gradeListings = $this->getModuleSections('grades');
+        $grades = array();
+
+        foreach ($gradeListings as $id => $listingOptions) {
+            $listingOptions = array_merge($options, $listingOptions);
+            if ($this->isLoggedIn()) {
+                if ($listGrades = $this->controller->getGrades($listingOptions)) {
+                    $courses[$id] = array(
+                        'heading'=>$listingOptions['heading'], 
+                        'courses'=>$listGrades
+                    );
+                }
+            }
+        }
+        return $grades;
     }
 
     /**
