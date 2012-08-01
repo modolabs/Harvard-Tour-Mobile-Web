@@ -313,6 +313,26 @@ class CoursesWebModule extends WebModule {
         // TODO: Finish this
     }
 
+    protected function linkForGradebookEntry(RegistrationGradebookEntry $entry, $options = array()){
+        $item = array(
+            'title' => $entry->getTitle(),
+            'subtitle' => $entry->getSubtitle(),
+        );
+
+        $grades = array();
+        foreach ($entry->getGrades() as $gradeObj) {
+            $grade = array(
+                'title' => $gradeObj->getTitle(),
+                'date' => $gradeObj->getDate(),
+                'score' => $gradeObj->getScore(),
+                'type'  => $gradeObj->getType(),
+            );
+            $grades[] = $grade;
+        }
+        $item['grades'] = $grades;
+        return $item;
+    }
+
     /**
      * Create a list item link for Courses
      * @param  CourseInterface $course          The course to link to
@@ -1275,7 +1295,30 @@ class CoursesWebModule extends WebModule {
     protected function initializeGradebook($options){
         $options = $this->getOptionsForGradebook();
         $grades = $this->getGradesbookEntries($options);
-        KurogoDebug::debug($grades,true);
+
+        $gradesListLinks = array();
+        $hasGrades = false;
+        foreach ($grades as $id => $gradesTuple) {
+            $gradesLinks = array();
+            foreach ($gradesTuple['grades'] as $grade) {
+                $hasGrades = true;
+                $gradeLink = $this->linkForGradebookEntry($grade, $options);
+                $gradesLinks[] = $gradeLink;
+            }
+
+            $gradeListHeading = str_replace("%t", $this->Term->getTitle(), $gradesTuple['heading']);
+            $gradeListHeading = str_replace("%n", count($gradesLinks), $gradeListHeading);
+
+            $gradesListLinks[] = array('gradeListHeading' => $gradeListHeading,
+                                        'gradesLinks' => $gradesLinks);
+        }
+
+        if(!$hasGrades){
+            $noGradesText = array(array('title'=>$this->getLocalizedString('NO_GRADES')));
+            $this->assign('noGradesText', $noGradesText);
+        }
+        $this->assign('hasGrades', $hasGrades);
+        $this->assign('gradesListLinks', $gradesListLinks);        
     }
 
     /**
