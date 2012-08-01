@@ -253,10 +253,14 @@ class CoursesWebModule extends WebModule {
             )
         );
         $link = array(
-        	'label'=>$area->getCode(),
             'title'=> $area->getTitle(),
             'url'=>$this->buildBreadcrumbURL('catalogarea', $options)
         );
+
+        if ($this->getOptionalModuleVar('SHOW_AREA_LABELS', true)) {
+        	$link['label'] = $area->getCode();
+        }
+
         return $link;
     }
 
