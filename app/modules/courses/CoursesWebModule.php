@@ -1273,7 +1273,7 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function initializeGradebook($options){
-        $grades = $this->getGrades(array());
+        $grades = $this->getGradesbookEntries(array());
         KurogoDebug::debug($grades,true);
     }
 
@@ -1308,14 +1308,14 @@ class CoursesWebModule extends WebModule {
         return $options;
     }
 
-    protected function getGrades($options){
+    protected function getGradesbookEntries($options){
         $gradeListings = $this->getModuleSections('grades');
         $grades = array();
 
         foreach ($gradeListings as $id => $listingOptions) {
             $listingOptions = array_merge($options, $listingOptions);
             if ($this->isLoggedIn()) {
-                if ($listGrades = $this->controller->getGrades($listingOptions)) {
+                if ($listGrades = $this->controller->getGradesbookEntries($listingOptions)) {
                     $courses[$id] = array(
                         'heading'=>$listingOptions['heading'], 
                         'courses'=>$listGrades

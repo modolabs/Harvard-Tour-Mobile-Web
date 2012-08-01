@@ -175,7 +175,7 @@ class CoursesDataModel extends DataModel {
         return $courses;
     }
 
-    public function getGrades($options){
+    public function getGradesbookEntries($options){
         $grades = array();
 
         if (isset($options['type'])) {
