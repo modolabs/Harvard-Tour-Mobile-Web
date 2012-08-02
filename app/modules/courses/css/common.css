@@ -43,3 +43,11 @@ img.listtype {
 .coursetitle {
     margin: 12px;
 }
+ 
+.gradebookListItem {
+    padding-left: 0px;
+}
+ 
+.gradebookListItem li {
+    padding-left: 0px;
+}

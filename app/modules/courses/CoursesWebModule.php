@@ -1293,6 +1293,7 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function initializeGradebook($options){
+        $this->assign('hasCourses', true);
         $options = $this->getOptionsForGradebook();
         $grades = $this->getGradesbookEntries($options);
 
@@ -1314,11 +1315,11 @@ class CoursesWebModule extends WebModule {
         }
 
         if(!$hasGrades){
-            $noGradesText = array(array('title'=>$this->getLocalizedString('NO_GRADES')));
-            $this->assign('noGradesText', $noGradesText);
+            $this->assign('noGradesText', $this->getLocalizedString('NO_GRADES'));
         }
         $this->assign('hasGrades', $hasGrades);
-        $this->assign('gradesListLinks', $gradesListLinks);        
+        $this->assign('gradesListLinks', $gradesListLinks);
+        return true;
     }
 
     /**
@@ -2248,6 +2249,7 @@ class CoursesWebModule extends WebModule {
             case 'updates':
             case 'tasks':
             case 'announcements':
+            case 'gradeboook':
             case 'browse':
             case 'info':
                 if(!$this->isLoggedIn()){
