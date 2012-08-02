@@ -2249,7 +2249,7 @@ class CoursesWebModule extends WebModule {
             case 'updates':
             case 'tasks':
             case 'announcements':
-            case 'gradeboook':
+            case 'gradebook':
             case 'browse':
             case 'info':
                 if(!$this->isLoggedIn()){
