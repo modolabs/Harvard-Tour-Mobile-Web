@@ -2563,9 +2563,11 @@ class CoursesWebModule extends WebModule {
         return array(
             '/modules/courses/images/content_announcement.png',
             '/modules/courses/images/content_assessment.png',
+            '/modules/courses/images/content_assignment.png',
             '/modules/courses/images/content_blog.png',
             '/modules/courses/images/content_bloglink.png',
             '/modules/courses/images/content_calendar.png',
+            '/modules/courses/images/content_file_audio.png',
             '/modules/courses/images/content_file_doc.png',
             '/modules/courses/images/content_file_img.png',
             '/modules/courses/images/content_file_pdf.png',
