@@ -313,6 +313,26 @@ class CoursesWebModule extends WebModule {
         // TODO: Finish this
     }
 
+    protected function linkForGradebookEntry(RegistrationGradebookEntry $entry, $options = array()){
+        $item = array(
+            'title' => $entry->getTitle(),
+            'subtitle' => $entry->getSubtitle(),
+        );
+
+        $grades = array();
+        foreach ($entry->getGrades() as $gradeObj) {
+            $grade = array(
+                'title' => $gradeObj->getTitle(),
+                'date' => $gradeObj->getDate(),
+                'score' => $gradeObj->getScore(),
+                'type'  => $gradeObj->getType(),
+            );
+            $grades[] = $grade;
+        }
+        $item['grades'] = $grades;
+        return $item;
+    }
+
     /**
      * Create a list item link for Courses
      * @param  CourseInterface $course          The course to link to
@@ -1272,6 +1292,36 @@ class CoursesWebModule extends WebModule {
         $this->assign('gradesLinks',$gradesLinks);
     }
 
+    protected function initializeGradebook($options){
+        $this->assign('hasCourses', true);
+        $options = $this->getOptionsForGradebook();
+        $grades = $this->getGradesbookEntries($options);
+
+        $gradesListLinks = array();
+        $hasGrades = false;
+        foreach ($grades as $id => $gradesTuple) {
+            $gradesLinks = array();
+            foreach ($gradesTuple['grades'] as $grade) {
+                $hasGrades = true;
+                $gradeLink = $this->linkForGradebookEntry($grade, $options);
+                $gradesLinks[] = $gradeLink;
+            }
+
+            $gradeListHeading = str_replace("%t", $this->Term->getTitle(), $gradesTuple['heading']);
+            $gradeListHeading = str_replace("%n", count($gradesLinks), $gradeListHeading);
+
+            $gradesListLinks[] = array('gradeListHeading' => $gradeListHeading,
+                                        'gradesLinks' => $gradesLinks);
+        }
+
+        if(!$hasGrades){
+            $this->assign('noGradesText', $this->getLocalizedString('NO_GRADES'));
+        }
+        $this->assign('hasGrades', $hasGrades);
+        $this->assign('gradesListLinks', $gradesListLinks);
+        return true;
+    }
+
     /**
      * Initializes the info tab, formats and assigns info details
      * @param  array  $options
@@ -1290,6 +1340,11 @@ class CoursesWebModule extends WebModule {
         break;
     }
 
+    protected function getOptionsForGradebook(){
+        $options = array('term'=>$this->Term);
+        return $options;
+    }
+
     /**
      * Return options relevant to retrieving courses.
      * Sets the term option to the term
@@ -1301,6 +1356,24 @@ class CoursesWebModule extends WebModule {
         );
 
         return $options;
+    }
+
+    protected function getGradesbookEntries($options){
+        $gradeListings = $this->getModuleSections('grades');
+        $grades = array();
+
+        foreach ($gradeListings as $id => $listingOptions) {
+            $listingOptions = array_merge($options, $listingOptions);
+            if ($this->isLoggedIn()) {
+                if ($listGrades = $this->controller->getGradesbookEntries($listingOptions)) {
+                    $grades[$id] = array(
+                        'heading'=>$listingOptions['heading'], 
+                        'grades'=>$listGrades
+                    );
+                }
+            }
+        }
+        return $grades;
     }
 
     /**
@@ -2176,6 +2249,7 @@ class CoursesWebModule extends WebModule {
             case 'updates':
             case 'tasks':
             case 'announcements':
+            case 'gradebook':
             case 'browse':
             case 'info':
                 if(!$this->isLoggedIn()){
