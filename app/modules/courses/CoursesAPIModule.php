@@ -12,7 +12,7 @@
 includePackage('Courses');
 includePackage('DateTime');
 
-class CoursesAPIModule extends APIModule {
+abstract class CoursesAPIModule extends APIModule {
 
     protected $id = 'courses';
     protected $controller;
