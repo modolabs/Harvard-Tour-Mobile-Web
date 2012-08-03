@@ -60,10 +60,11 @@ class KurogoCoursesDataParser extends JSONDataParser {
         
         if (isset($item['instructors']) && $item['instructors']) {
         	foreach ($item['instructors'] as $value) {
-        		$instructor = new CourseUser();
-        		$instructor->setFirstName($value['firstName']);
-        		$instructor->setLastName($value['lastName']);
-        		$section->addInstructor($instructor);
+                $instructor = new CourseUser();
+                $instructor->setID($value['id']);
+                $instructor->setFirstName($value['firstName']);
+                $instructor->setLastName($value['lastName']);
+                $section->addInstructor($instructor);
         	}
         }
         
