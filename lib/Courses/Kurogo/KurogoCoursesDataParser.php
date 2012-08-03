@@ -39,7 +39,7 @@ class KurogoCoursesDataParser extends JSONDataParser {
                 $course->addSection($this->parseSection($section));
             }
         }
-        
+        $course->setCommonID($course->getAreaCode().$course->getCourseNumber());
         return $course;
     }
 
