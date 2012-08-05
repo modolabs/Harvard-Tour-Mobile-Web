@@ -19,7 +19,6 @@ class CoursesWebModule extends WebModule {
     protected $showCourseNumber = true;
     protected $defaultModel = 'CoursesDataModel';
     protected $infoDetails = array();
-    protected $Term;
     protected $originalPage;
     protected $tab;
 
@@ -587,22 +586,9 @@ class CoursesWebModule extends WebModule {
         return $links;
     }
 
-    /**
-     * Sets the current term, and assigns the available terms
-     * @return CourseTerm
-     */
-    protected function assignTerm(){
-        $feedTerms = $this->controller->getAvailableTerms();
-
-        $term = $this->getArg('term', CoursesDataModel::CURRENT_TERM);
-        if (!$Term = $this->controller->getTerm($term)) {
-            $Term = $this->controller->getCurrentTerm();
-        }
-
-        $this->controller->setCurrentTerm($Term);
-
-        $terms = array();
-        foreach($feedTerms as $term) {
+    protected function assignTerms($_terms, CourseTerm $Term) {
+    	$terms = array();
+        foreach($_terms as $term) {
             $terms[] = array(
                 'value'     => $term->getID(),
                 'title'     => $term->getTitle(),
@@ -614,6 +600,15 @@ class CoursesWebModule extends WebModule {
             $this->assign('terms', $terms);
         }
         $this->assign('termTitle', $Term->getTitle());
+    }
+    
+    protected function getTerm($type) {
+    	
+        $term = $this->getArg('term', CoursesDataModel::CURRENT_TERM);
+        if (!$Term = $this->controller->getTerm($term, $type)) {
+            $Term = $this->controller->getCurrentTerm($type);
+        }
+        
         return $Term;
     }
 
@@ -699,7 +694,6 @@ class CoursesWebModule extends WebModule {
         $this->controller = CoursesDataModel::factory($this->defaultModel, $this->feeds);
         //load showCourseNumber setting
         $this->showCourseNumber = $this->getOptionalModuleVar('SHOW_COURSENUMBER_IN_LIST', 1);
-        $this->Term = $this->assignTerm();
         $this->assign('hasPersonalizedCourses', $this->controller->hasPersonalizedCourses());
     }
 
@@ -711,10 +705,11 @@ class CoursesWebModule extends WebModule {
     protected function getCourseOptions() {
         $courseID = $this->getArg('courseID');
         $area = $this->getArg('area');
+        $term = $this->getArg('term');
 
         $options = array(
             'courseID'  => $courseID,
-            'term'      => strval($this->Term)
+            'term'      => $term
         );
 
         if ($area) {
@@ -1209,8 +1204,9 @@ class CoursesWebModule extends WebModule {
      * @return array
      */
     protected function getOptionsForCourse(){
+    	$Term = $this->getTerm(CoursesDataModel::TERM_TYPE_USER);
         $options = array(
-            'term' => strval($this->Term)
+            'term' => strval($Term)
         );
         return $options;
     }
@@ -1294,6 +1290,7 @@ class CoursesWebModule extends WebModule {
 
     protected function initializeGradebook($options){
         $this->assign('hasCourses', true);
+    	$Term = $this->getTerm(CoursesDataModel::TERM_TYPE_USER);
         $options = $this->getOptionsForGradebook();
         $grades = $this->getGradesbookEntries($options);
 
@@ -1307,7 +1304,7 @@ class CoursesWebModule extends WebModule {
                 $gradesLinks[] = $gradeLink;
             }
 
-            $gradeListHeading = str_replace("%t", $this->Term->getTitle(), $gradesTuple['heading']);
+            $gradeListHeading = str_replace("%t", $Term->getTitle(), $gradesTuple['heading']);
             $gradeListHeading = str_replace("%n", count($gradesLinks), $gradeListHeading);
 
             $gradesListLinks[] = array('gradeListHeading' => $gradeListHeading,
@@ -1341,7 +1338,8 @@ class CoursesWebModule extends WebModule {
     }
 
     protected function getOptionsForGradebook(){
-        $options = array('term'=>$this->Term);
+    	$Term = $this->getTerm(CoursesDataModel::TERM_TYPE_USER);
+        $options = array('term'=>$Term);
         return $options;
     }
 
@@ -1351,8 +1349,9 @@ class CoursesWebModule extends WebModule {
      * @return array
      */
     protected function getOptionsForCourses() {
+    	$Term = $this->getTerm(CoursesDataModel::TERM_TYPE_USER);
         $options = array(
-            'term'=>$this->Term
+            'term'=>$Term
         );
 
         return $options;
@@ -1384,14 +1383,7 @@ class CoursesWebModule extends WebModule {
      */
     protected function getCourses($options, $grouped=false) {
 
-        /** prevent this from being called more than once **/
-        static $count=0;
-        if ($count) {
-            KurogoDebug::debug(func_get_Args(), true);
-        }
-        /** end debug **/
 		$hasCourses = false;
-        
 
         $courseListings = $this->getModuleSections('courses');
         $courses = array();
@@ -1417,7 +1409,6 @@ class CoursesWebModule extends WebModule {
             $courses = $_courses;
         }
         $this->assign('hasCourses', $hasCourses);
-        $count++; //debug
         return $courses;
     }
 
@@ -1730,6 +1721,9 @@ class CoursesWebModule extends WebModule {
     protected function initializeCourses() {
 
         if ($this->isLoggedIn()) {
+			if (!$Term = $this->getTerm(CoursesDataModel::TERM_TYPE_USER)) {
+				throw KurogoDataException("Unable to get the user term");
+			}
             $courses = $this->getCourses($this->getOptionsForCourses(), true);
             $options = $this->getOptionsForCourse();
 
@@ -1743,7 +1737,7 @@ class CoursesWebModule extends WebModule {
                     $coursesLinks[] = $courseLink;
                 }
 
-                $courseListHeading = str_replace("%t", $this->Term->getTitle(), $coursesTuple['heading']);
+                $courseListHeading = str_replace("%t", $Term->getTitle(), $coursesTuple['heading']);
                 $courseListHeading = str_replace("%n", count($coursesLinks), $courseListHeading);
 
                 $coursesListLinks[] = array('courseListHeading' => $courseListHeading,
@@ -1782,16 +1776,19 @@ class CoursesWebModule extends WebModule {
 					);
             	}
             } else {
-	            $courseCatalogText = str_replace("%t", $this->Term->getTitle(), $this->getLocalizedString('COURSE_CATALOG_TEXT'));
+		    	if (!$Term = $this->getTerm(CoursesDataModel::TERM_TYPE_CATALOG)) {
+		    		throw KurogoDataException("Unable to get the catalog term");
+		    	}
+	            $courseCatalogText = str_replace("%t", $Term->getTitle(), $this->getLocalizedString('COURSE_CATALOG_TEXT'));
 				$catalogItems[] = array(
 					'title' => $this->getFeedTitle($catalogRetrieverKey),
-					'url'   => $this->buildBreadcrumbURL('catalog', array('feed'=>$catalogRetrieverKey,'term'=>strval($this->Term)))
+					'url'   => $this->buildBreadcrumbURL('catalog', array('feed'=>$catalogRetrieverKey,'term'=>strval($Term)))
 				);
 	
-				if ($bookmarks = $this->getBookmarksForTerm($this->Term)) {
+				if ($bookmarks = $this->getBookmarksForTerm($Term)) {
 					$catalogItems[] = array(
 						'title' => $this->getLocalizedString('BOOKMARKED_COURSES') . " (" . count($bookmarks) . ")",
-						'url'   => $this->buildBreadcrumbURL('bookmarks', array('term'=>strval($this->Term))),
+						'url'   => $this->buildBreadcrumbURL('bookmarks', array('term'=>strval($Term))),
 					);
 				}
 			}
@@ -1958,23 +1955,24 @@ class CoursesWebModule extends WebModule {
 
             case 'catalog':
             	$feed = $this->getArg('feed', $this->controller->getCatalogRetrieverKey());
+            	$Term = $this->getTerm(CoursesDataModel::TERM_TYPE_CATALOG);
             	if (!$retriever = $this->controller->getCatalogRetriever($feed)) {
             		$this->redirectTo('index');
             	}
 
-                if ($areas = $retriever->getCatalogAreas(array('term' => $this->Term))) {
+                if ($areas = $retriever->getCatalogAreas(array('term' => $Term))) {
                     $areasList = array();
-                    $areaOptions = array('term' => strval($this->Term));
+                    $areaOptions = array('term' => strval($Term));
                     foreach ($areas as $CourseArea) {
                         $areasList[] = $this->linkForCatalogArea($CourseArea, $areaOptions);
                     }
                     $this->assign('areas', $areasList);
                 }
 
-                if ($bookmarks = $this->getBookmarksForTerm($this->Term)) {
+                if ($bookmarks = $this->getBookmarksForTerm($Term)) {
                     $bookmarksList[] = array(
                         'title' => $this->getLocalizedString('COURSES_BOOKMARK_ITEM_TITLE', count($bookmarks)),
-                        'url'   => $this->buildBreadcrumbURL('bookmarks', array('term' => strval($this->Term))),
+                        'url'   => $this->buildBreadcrumbURL('bookmarks', array('term' => strval($Term))),
                     );
                     $this->assign('bookmarksList', $bookmarksList);
                 }
@@ -1982,22 +1980,23 @@ class CoursesWebModule extends WebModule {
                 $this->assign('showTermSelector', !$this->getOptionalModuleVar('EXPAND_CATALOG_TERMS', false));
                 $this->assign('catalogHeader', $this->getOptionalModuleVar('catalogHeader','','catalog'));
                 $this->assign('catalogFooter', $this->getOptionalModuleVar('catalogFooter','','catalog'));
-                $this->assign('hiddenArgs', array('term' => strval($this->Term)));
+                $this->assign('hiddenArgs', array('term' => strval($Term)));
                 $this->assign('placeholder', $this->getLocalizedString("CATALOG_SEARCH"));
-
+                $terms = $this->controller->getAvailableTerms(CoursesDataModel::TERM_TYPE_CATALOG);
+                $this->assignTerms($terms, $Term);
                 break;
 
             case 'catalogarea':
             	$feed = $this->getArg('feed', $this->controller->getCatalogRetrieverKey());
                 $area = $this->getArg('area');
-                $options = array('term' => $this->Term);
+            	$Term = $this->getTerm(CoursesDataModel::TERM_TYPE_CATALOG);
+                $options = array('term' => $Term);
                 if ($parent = $this->getArg('parent')) {
                     $options['parent'] = $parent;
                 }
             	if (!$retriever = $this->controller->getCatalogRetriever($feed)) {
             		$this->redirectTo('index');
             	}
-
 
                 if (!$CourseArea = $retriever->getCatalogArea($area, $options)) {
                     $this->redirectTo('catalog', array());
@@ -2008,14 +2007,14 @@ class CoursesWebModule extends WebModule {
                 $areas = $CourseArea->getAreas();
 
                 $areasList = array();
-                $areaOptions = array('term' => strval($this->Term));
+                $areaOptions = array('term' => strval($Term));
                 foreach ($areas as $areaObj) {
                     $areasList[] = $this->linkForCatalogArea($areaObj, $areaOptions);
                 }
 
                 $courses = array();
                 $searchOptions = $options = array(
-                    'term'=>strval($this->Term),
+                    'term'=>strval($Term),
                     'area'=>$area
                 );
 
@@ -2033,7 +2032,7 @@ class CoursesWebModule extends WebModule {
                 $this->assign('description', $CourseArea->getDescription());
                 $this->assign('areas', $areasList);
                 $this->assign('courses', $coursesList);
-                $this->assign('hiddenArgs', array('area' => $area, 'term' => strval($this->Term)));
+                $this->assign('hiddenArgs', array('area' => $area, 'term' => strval($Term)));
                 $this->assign('placeholder', $this->getLocalizedString("SEARCH_MODULE", $CourseArea->getTitle()));
 
                 break;
@@ -2044,6 +2043,8 @@ class CoursesWebModule extends WebModule {
                 if (!$course = $this->getCourseFromArgs()) {
                     $this->redirectTo('index');
                 }
+                $Term = $this->getTerm(CoursesDataModel::TERM_TYPE_CATALOG);
+
                 $this->setBreadcrumbTitle($course->getField('courseNumber'));
                 $this->setBreadcrumbLongTitle($course->getTitle());
 
@@ -2052,7 +2053,7 @@ class CoursesWebModule extends WebModule {
                     $cookieParams = array(
                     	'title' => $course->getTitle(),
                         'id' => $course->getID(),
-                        'term'  => rawurlencode($this->Term->getID()),
+                        'term'  => rawurlencode(strval($Term)),
                         'area'    => rawurlencode($area),
                         'courseNumber' => rawurlencode($course->getField('courseNumber'))
                     );
@@ -2089,7 +2090,7 @@ class CoursesWebModule extends WebModule {
 
             case 'catalogsection':
                 if (!$course = $this->getCourseFromArgs()) {
-                    $this->redirectTo('index');
+                    $this->redirectTo('catalogcourse', $this->args);
                 }
 
                 if (!$catalogCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CATALOG)) {
@@ -2167,8 +2168,9 @@ class CoursesWebModule extends WebModule {
             	break;
 
             case 'bookmarks':
+            	$Term = $this->getTerm(CoursesDataModel::TERM_TYPE_CATALOG);
                 $bookmarkLinks = array();
-                if($bookmarks = $this->getBookmarksForTerm($this->Term)) {
+                if($bookmarks = $this->getBookmarksForTerm($Term)) {
                     foreach ($bookmarks as $aBookmark) {
                         if ($aBookmark) {
                             // prevent counting empty string
@@ -2353,14 +2355,18 @@ class CoursesWebModule extends WebModule {
                         }
                     }
                 }
+                $terms = $this->controller->getAvailableTerms(CoursesDataModel::TERM_TYPE_USER);
+                $Term = $this->getTerm(CoursesDataModel::TERM_TYPE_USER);
+                $this->assignTerms($terms, $Term);
                 $this->assign('showTermSelector', $this->isLoggedIn() && $this->getOptionalModuleVar('SHOW_TERM_SELECTOR', true));
                 break;
 
             case 'search':
                 $searchTerms = $this->getArg('filter', false);
+                $Term = $this->getTerm(CoursesDataModel::TERM_TYPE_CATALOG);
 
                 $options = array(
-                    'term' => $this->Term,
+                    'term' => $Term,
                     'types' => array('catalog')
                 );
                 if($area = $this->getArg('area')) {
@@ -2384,7 +2390,7 @@ class CoursesWebModule extends WebModule {
                 if ($coursesList) {
                     $this->assign('resultCount', count($coursesList));
                 }
-                $this->assign('hiddenArgs', array('area' => $area, 'term' => strval($this->Term)));
+                $this->assign('hiddenArgs', array('area' => $area, 'term' => strval($Term)));
                 $this->assign('searchTerms', $searchTerms);
                 $this->assign('searchHeader', $this->getOptionalModuleVar('searchHeader','','catalog'));
                 break;
