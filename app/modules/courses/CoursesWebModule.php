@@ -1768,7 +1768,7 @@ class CoursesWebModule extends WebModule {
             
             if ($this->getOptionalModuleVar('EXPAND_CATALOG_TERMS', false)) {
 	            $courseCatalogText = $this->getLocalizedString('COURSE_CATALOG_TEXT');
-            	$terms = $this->controller->getAvailableTerms();
+            	$terms = $this->controller->getAvailableTerms(CoursesDataModel::TERM_TYPE_CATALOG);
             	foreach ($terms as $term) {
 					$catalogItems[] = array(
 						'title' => $term->getTitle(),
