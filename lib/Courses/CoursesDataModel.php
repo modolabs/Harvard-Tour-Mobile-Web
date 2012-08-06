@@ -41,7 +41,8 @@ class CoursesDataModel extends DataModel {
     		}
     	} else {
             $term = new CourseTermCurrent();
-		}    	
+		}
+        return $term;
     }
 
     public function getTerm($termCode, $type) {
