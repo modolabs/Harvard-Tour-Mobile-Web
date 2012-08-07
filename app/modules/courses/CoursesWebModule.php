@@ -1861,7 +1861,9 @@ class CoursesWebModule extends WebModule {
                     if ($content->getContentType()=='file' || $content->getContentType()=='task') {
                         $fileID = $this->getArg('fileID', null);
                         if ($attachment = $content->getAttachment($fileID)) {
-                            $fileURL = $attachment->getContentFile();
+                            if(!$fileURL = $attachment->getContentFile()){
+                                throw new KurogoException("Unable to download requested file");
+                            }
                             if ($mime = $attachment->getMimeType()) {
                                 header('Content-type: ' . $mime);
                             }
