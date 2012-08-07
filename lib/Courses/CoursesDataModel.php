@@ -236,8 +236,8 @@ class CoursesDataModel extends DataModel {
                 $retriever = DataRetriever::factory($section['RETRIEVER_CLASS'], $section);
                 
                 if ($retriever instanceOf TermsDataRetriever) {
-                	if (isset($args['TERM_TYPE'])) {
-	                	$this->setTermsRetriever($args['TERM_TYPE'], $retriever);
+                	if (isset($section['TERM_TYPE'])) {
+	                	$this->setTermsRetriever($section['TERM_TYPE'], $retriever);
                 	} else {
 	                	$this->setTermsRetriever(self::TERM_TYPE_BOTH, $retriever);
                 	}
