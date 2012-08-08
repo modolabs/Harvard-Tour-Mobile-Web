@@ -2357,9 +2357,10 @@ class CoursesWebModule extends WebModule {
                         }
                     }
                 }
-                $terms = $this->controller->getAvailableTerms(CoursesDataModel::TERM_TYPE_USER);
-                $Term = $this->getTerm(CoursesDataModel::TERM_TYPE_USER);
-                $this->assignTerms($terms, $Term);
+                if ($terms = $this->controller->getAvailableTerms(CoursesDataModel::TERM_TYPE_USER)) {
+					$Term = $this->getTerm(CoursesDataModel::TERM_TYPE_USER);
+					$this->assignTerms($terms, $Term);
+				}
                 $this->assign('showTermSelector', $this->isLoggedIn() && $this->getOptionalModuleVar('SHOW_TERM_SELECTOR', true));
                 break;
 
