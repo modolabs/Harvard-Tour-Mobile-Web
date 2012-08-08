@@ -1721,9 +1721,8 @@ class CoursesWebModule extends WebModule {
     protected function initializeCourses() {
 
         if ($this->isLoggedIn()) {
-			if (!$Term = $this->getTerm(CoursesDataModel::TERM_TYPE_USER)) {
-				throw KurogoDataException("Unable to get the user term");
-			}
+			$Term = $this->getTerm(CoursesDataModel::TERM_TYPE_USER);
+			$TermTitle = $Term ? $Term->getTitle() : '';
             $courses = $this->getCourses($this->getOptionsForCourses(), true);
             $options = $this->getOptionsForCourse();
 
@@ -1737,7 +1736,7 @@ class CoursesWebModule extends WebModule {
                     $coursesLinks[] = $courseLink;
                 }
 
-                $courseListHeading = str_replace("%t", $Term->getTitle(), $coursesTuple['heading']);
+                $courseListHeading = str_replace("%t", $TermTitle, $coursesTuple['heading']);
                 $courseListHeading = str_replace("%n", count($coursesLinks), $courseListHeading);
 
                 $coursesListLinks[] = array('courseListHeading' => $courseListHeading,

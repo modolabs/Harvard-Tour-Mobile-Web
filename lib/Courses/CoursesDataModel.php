@@ -36,8 +36,11 @@ class CoursesDataModel extends DataModel {
     
     public function getCurrentTerm($type) {    	
     	if ($retriever = $this->getTermsRetriever($type)) {
-    		if (!$term = $retriever->getCurrentTerm()) {
-    			throw new KurogoDataException("Unable to determine current term");
+    		$term = $retriever->getCurrentTerm();
+    		if ($term instanceOf CourseTerm) {
+    			return $term;
+    		} else {
+    			return null;
     		}
     	} else {
             $term = new CourseTermCurrent();
