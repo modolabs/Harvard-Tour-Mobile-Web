@@ -33,7 +33,7 @@ class KurogoCourseCatalogDataRetriever extends URLDataRetriever implements Cours
             }
             $areas = array($area);
         } else {
-            $areas = $this->getCatalogAreas();
+            $areas = $this->getCatalogAreas($options);
         }
 
         $courses = array();
@@ -59,7 +59,7 @@ class KurogoCourseCatalogDataRetriever extends URLDataRetriever implements Cours
         }
 
         if (isset($options['term'])) {
-            $this->addFilter('term', $options['term']);
+            $this->addFilter('term', strval($options['term']));
         }
 
         $courses = $this->getData();
