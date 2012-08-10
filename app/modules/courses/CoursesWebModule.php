@@ -2569,6 +2569,7 @@ class CoursesWebModule extends WebModule {
     }
     public function nativeWebTemplateAssets() {
         return array(
+        	'/common/images/blank.png',
             '/modules/courses/images/content_announcement.png',
             '/modules/courses/images/content_assessment.png',
             '/modules/courses/images/content_assignment.png',
