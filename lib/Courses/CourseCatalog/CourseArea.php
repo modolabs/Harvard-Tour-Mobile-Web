@@ -15,6 +15,7 @@ class CourseArea
     protected $description;
     protected $code;
     protected $parent;
+    protected $showCode = true;
     protected $areas=array();
     
     public function getID() {
@@ -69,5 +70,13 @@ class CourseArea
     
     public function getParent() {
         return $this->parent;
+    }
+
+    public function setShowCode($showCode) {
+        $this->showCode = $showCode;
+    }
+    
+    public function showCode() {
+        return $this->showCode;
     }
 }
