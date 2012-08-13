@@ -237,6 +237,7 @@ class CoursesDataModel extends DataModel {
             if(Kurogo::arrayVal($args[$key], 'ENABLED', true)){
                 $section['CACHE_FOLDER'] = isset($section['CACHE_FOLDER']) ? $section['CACHE_FOLDER'] : get_class($this);
                 $retriever = DataRetriever::factory($section['RETRIEVER_CLASS'], $section);
+                $retriever->setDataModel($this);
                 
                 if ($retriever instanceOf TermsDataRetriever) {
                 	if (isset($section['TERM_TYPE'])) {
