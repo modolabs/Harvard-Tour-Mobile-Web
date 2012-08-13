@@ -282,7 +282,7 @@ class LocationsWebModule extends WebModule {
                 $events = array();
                 // format events data
                 $feedData = $this->feeds[$id];
-                $showDetail = isset($feedData['SHOW_DETAIL']) ? $feedData['SHOW_DETAIL'] : 0;
+                $showDetail = isset($feedData['SHOW_DETAIL']) ? $feedData['SHOW_DETAIL'] : true;
                 $options = array(
                     'section' => $id,
                     'groupID' => $groupID,
