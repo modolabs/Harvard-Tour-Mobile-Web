@@ -75,11 +75,19 @@ class LocationsAPIModule extends APIModule {
             return parent::loadFeedData();
         } else {
             $configName = "feeds-$groupID";
-            return $this->getModuleSections($configName);
+            $feeds = $this->getModuleSections($configName);
+            foreach ($feeds as $id=>&$feedData) {
+                $feedData['INDEX'] = $id;
+            }
+            return $feeds;
         }
     }
 
-    public static function locationIdForFeedData(Array $feedData) {
+    public function locationIdForFeedData(Array $feedData) {
+        if ($this->requestedVersion==1) {
+            return $feedData['INDEX'];
+        }
+
         $identifier = Kurogo::arrayVal($feedData, 'TITLE', '');
         if (isset($feedData['BASE_URL'])) {
             $identifier .= $feedData['BASE_URL'];
@@ -93,7 +101,7 @@ class LocationsAPIModule extends APIModule {
             $feedGroup['locations'] = array();
             foreach ($feeds as $id => $feedData) {
                 $feed = array(
-                    'id'=>self::locationIdForFeedData($feedData),
+                    'id'=>$this->locationIdForFeedData($feedData),
                     'title'=>$feedData['TITLE'],
                     'subtitle'=>isset($feedData['SUBTITLE']) ? $feedData['SUBTITLE'] : "",
                     'maplocation'=>$feedData['MAP_LOCATION'],
@@ -121,7 +129,7 @@ class LocationsAPIModule extends APIModule {
         if ($this->feedGroup !== NULL) {
             $feeds = $this->loadFeedData($this->feedGroup);
             foreach ($feeds as $id => $feedData) {
-                if ($requestedFeedId == self::locationIdForFeedData($feedData)) {
+                if ($requestedFeedId == $this->locationIdForFeedData($feedData)) {
                     $feed = $feedData;
                     break;
                 }
@@ -130,7 +138,7 @@ class LocationsAPIModule extends APIModule {
             foreach ($this->feedGroups as $index => $feedGroup) {
                 $feeds = $this->loadFeedData($feedGroup['key']);
                 foreach ($feeds as $id => $feedData) {
-                    if ($requestedFeedId == self::locationIdForFeedData($feedData)) {
+                    if ($requestedFeedId == $this->locationIdForFeedData($feedData)) {
                         $feed = $feedData;
                         break;
                     }
