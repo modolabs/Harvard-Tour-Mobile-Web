@@ -61,6 +61,7 @@ abstract class Course implements CourseInterface {
             switch ($filter) {
                 case 'search':
                     return (stripos($this->getTitle(), $value)!==FALSE) ||
+                        (stripos($this->getCourseNumber(), $value)!==FALSE) ||
                         (stripos($this->getDescription(), $value)!==FALSE);
                     break;
             }
