@@ -373,7 +373,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             $directionName = '';
             $predictions = array();
             
-            if (!$this->lookupStopOrder($route->getAgencyID(), $routeID, $directionID, &$directionName)) {
+            if (!$this->lookupStopOrder($route->getAgencyID(), $routeID, $directionID, $directionName)) {
                 $directionName = '';
             }
             
@@ -592,7 +592,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             
             // Check the config file to see if we can get headsign or stop order information
             $directionName = '';
-            $stopOrder = $this->lookupStopOrder($routeInfo['agency'], $routeID, $direction, &$directionName);
+            $stopOrder = $this->lookupStopOrder($routeInfo['agency'], $routeID, $direction, $directionName);
             
             $segments = $route->getSegmentsForDirection($direction);
             
