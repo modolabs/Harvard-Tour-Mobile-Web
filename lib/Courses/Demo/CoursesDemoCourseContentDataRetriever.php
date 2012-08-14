@@ -217,13 +217,11 @@ class CoursesDemoCourseContentDataRetriever extends URLDataRetriever implements 
     protected function init($args) {
         parent::init($args);
         if ($user = $this->getCurrentUser()) {
-            if ($user instanceOf CoursesDemoUser) {
-                $this->setOption("userID", $user->getID());
-                $this->userID = $user->getID();
-                if(isset($args['BASE_URL'])) {
-                    $baseUrl = sprintf($args['BASE_URL'], $this->userID);
-                    $this->setBaseURL($baseUrl);
-                }
+            $this->setOption("userID", $user->getUserID());
+            $this->userID = $user->getUserID();
+            if(isset($args['BASE_URL'])) {
+                $baseUrl = sprintf($args['BASE_URL'], $this->userID);
+                $this->setBaseURL($baseUrl);
             }
         }
         if (isset($args['CONTENT_BASE_URL'])) {
