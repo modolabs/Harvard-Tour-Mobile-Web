@@ -37,31 +37,35 @@ class StatsWebModule extends WebModule {
         return $interval_types;
     }
     
-    public function setRefresh($content) {
-    
-        $this->assign('refreshPage', $content);
-    }
-        
 	protected function initializeForPage() {
-        if($this->page == 'updateStats'){
-            KurogoStats::exportStatsData();
-            $this->redirectTo('index');
-        }
-
 	    if (!Kurogo::getOptionalSiteVar('STATS_ENABLED', true)) {
 	        throw new KurogoException($this->getLocalizedString('STATS_DISABLED'));
 	    }
+
+        if ($this->page == 'updateStats'){
+            KurogoStats::exportStatsData();
+            $this->redirectTo('index', array());
+        }
+        
+        if ($this->getOptionalModuleVar('AUTO_UPDATE_STATS')) {
+            KurogoStats::exportStatsData();
+        }
+
 	
 	    $serviceTypes = $this->getServiceTypes();
 	    $service = $this->getArg('service', 'web');
 	    if (!array_key_exists($service, $serviceTypes)) {
-	        $service = 'web';
+	        $args = $this->args;
+	        $args['service'] = 'web';
+	        $this->redirectTo($this->page, $args);
 	    }
 
         $interval_types = $this->getIntervalTypes();
         $interval = $this->getArg('interval', 'day');
         if (!array_key_exists($interval, $interval_types)) {
-	        $interval = 'day';
+	        $args = $this->args;
+	        $args['interval'] = 'day';
+	        $this->redirectTo($this->page, $args);
 	    }
 
         if ($interval == 'custom') {
@@ -118,16 +122,15 @@ class StatsWebModule extends WebModule {
             'start'=>$startTime,
             'end'=>$endTime
         );
-        
+
+		if ($date = KurogoStats::getLastDateFromSummary()){
+			includePackage('DateTime');
+			$date = new DateTime($date);
+			$this->assign('lastUpdated', DateFormatter::formatDate($date, DateFormatter::LONG_STYLE, DateFormatter::NO_STYLE));
+		}
+		        
 		switch ($this->page) {
 			case 'index':
-                // Get last updated time
-                $summaryTable = Kurogo::getOptionalSiteVar('KUROGO_STATS_SUMMARY_TABLE');
-                $this->assign('updateStatsLink', $this->buildURL('updateStats'));
-                if($summaryTable && $date = KurogoStats::getLastTimestampFromSummary()){
-                    $lastUpdated = date("l, F jS Y", strtotime($date));
-                    $this->assign('lastUpdated', $lastUpdated);
-                }
 
 			    //get config
 			    $chartsConfig = $this->getModuleSections('stats-index');
@@ -146,15 +149,31 @@ class StatsWebModule extends WebModule {
                 
             case 'detail':
                 if (!$group = $this->getArg('group')) {
-                    $this->redirectTo('index');
+                    $this->redirectTo('index', array());
                 }
                 
+                if (!in_array($group, array('moduleID','platform','pagetype'))) {
+                    $this->redirectTo('index', array());
+                }
+                
+                
                 if (!$$group = $this->getArg($group)) {
-                    $this->redirectTo('index');
+                    $this->redirectTo('index', array());
+                }
+                
+                switch ($group)
+                {
+                    case 'moduleID':
+                        
+                        break;
+                    case 'platform':
+                        break;
+                    case 'pagetype':
+                        break;
                 }
                 
                 if (!$chartsConfig = $this->getChartsConfig($group, $$group)) {
-                    $this->redirectTo('index');
+                    $this->redirectTo('index', array());
                 }
 
 			    $charts = array();
@@ -378,7 +397,7 @@ class StatsWebModule extends WebModule {
                     $module = Webmodule::factory($groupValue);
                     $moduleChartsConfig = $module->getModuleSections('stats-detail');
                     
-                } catch (ModuleNotFound $e) {
+                } catch (KurogoModuleNotFound $e) {
                     return false;
                 } catch (Exception $e) {
                     $moduleChartsConfig = array();
@@ -386,9 +405,18 @@ class StatsWebModule extends WebModule {
                 $chartsConfig = array_merge($chartsConfig, $moduleChartsConfig);
                 break;
             case 'platform':
+                $platforms = KurogoStats::$platforms;
+                if (!array_key_exists($groupValue, $platforms)) {
+                    return false;
+                }
                 $chartsConfig = $this->getModuleSections("stats-platform-detail");
+                
                 break;
             case 'pagetype':
+                $pagetypes = KurogoStats::$pagetypes;
+                if (!array_key_exists($groupValue, $pagetypes)) {
+                    return false;
+                }
                 $chartsConfig = $this->getModuleSections("stats-pagetype-detail");
                 break;
             default:

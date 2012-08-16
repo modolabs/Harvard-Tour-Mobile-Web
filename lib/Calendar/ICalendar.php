@@ -269,8 +269,8 @@ class ICalEvent extends ICalObject implements KurogoObject, CalendarEvent {
             if ($dayOnly) {
                 $timestamp = $start;
             } else {
-                //end time must be greater. 
-                throw new KurogoDataException("End time $timestamp must be greater than start time $start");
+            	//ignore end time if it's later
+            	return false;
             }
         }
             
@@ -507,7 +507,7 @@ class ICalEvent extends ICalObject implements KurogoObject, CalendarEvent {
                 // set the event timezone if it's present in the start time
                 if (array_key_exists('TZID', $params)) {
                     $this->timezone = self::getTimezoneForID($params['TZID']);
-                    $this->tzid = $params['TZID'];
+                    $this->tzid = $this->timezone->getName();
                 }
             case 'DTEND':
                 $dayOnly = false;
@@ -589,7 +589,7 @@ class ICalEvent extends ICalObject implements KurogoObject, CalendarEvent {
             case 'TZID': // this only gets called by ICalendar::__construct
                 $timezone = self::getTimezoneForID($value);
                 $this->timezone = $timezone;
-                $this->tzid = $value;
+                $this->tzid = $timezone->getName();
                 break;
             default:
                 $this->properties[$attr] = iCalendar::ical_unescape_text($value);
@@ -1096,7 +1096,7 @@ class ICalendar extends ICalObject implements CalendarInterface {
     }
 
     public static function ical_unescape_text($text) {
-        $text = str_replace(array("DQUOTE","\\\\", "\,","\;","\\n"), array("\"","\\",",",";","\n"), $text);
+        $text = str_replace(array("DQUOTE","\\\\", "\,","\;","\\n","\\r"), array("\"","\\",",",";","\n",""), $text);
         return $text;
     }
 
