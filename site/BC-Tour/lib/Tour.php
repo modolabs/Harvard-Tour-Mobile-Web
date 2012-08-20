@@ -438,13 +438,14 @@ class TourDataParser {
     }
     
     protected function getNodeLinks($node, $fieldName) {
-        $tourLinks = array(
-            'type' => 'links',
-            'links' => array(),
-        );
+        $tourLinks = array();
         
         $links = $this->getNodeField($node, $fieldName, array());
         if (count($links)) {
+            $tourLinks = array(
+                'type' => 'links',
+                'links' => array(),
+            );
             foreach ($links as $link) {
                 $tourLinks['links'][] = array(
                     'title'    => $this->argValUTF8($link, 'title'),

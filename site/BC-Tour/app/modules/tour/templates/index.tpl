@@ -20,13 +20,15 @@
   </div>
   <div id="hero">
     <img src="/modules/tour/images/hero-hdpi.jpg" alt="Photo of BC" width="100%" border="0" />
-    {if $pagetype == 'compliant' && $platform == 'iphone'}
-      <div id="download">
-        <a href="http://itunes.apple.com/us/app/harvard-yard-tour/id449660709">
-          Download the free iPhone app
-          <img src="/modules/tour/images/iphone4@2x.png" alt="iPhone" width="25" height="47" border="0" />
-        </a>
-      </div>
+    {if $showDownloadLink}
+      {if $pagetype == 'compliant' && $platform == 'iphone'}
+        <div id="download">
+          <a href="http://itunes.apple.com/us/app/harvard-yard-tour/id449660709">
+            Download the free iPhone app
+            <img src="/modules/tour/images/iphone4@2x.png" alt="iPhone" width="25" height="47" border="0" />
+          </a>
+        </div>
+      {/if}
     {/if}
   </div>
 {/capture}
