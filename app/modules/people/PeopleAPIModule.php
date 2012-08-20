@@ -18,8 +18,8 @@ class PeopleAPIModule extends APIModule
     protected $vmax = 2;
     protected static $defaultModel = 'PeopleDataModel';
     protected static $defaultController = 'LDAPPeopleController'; //legacy
-    private $fieldConfig;
-    private $detailAttributes = array();
+    protected $fieldConfig;
+    protected $detailAttributes = array();
     protected $contactGroups = array();
     protected $legacyController;
     
