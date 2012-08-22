@@ -384,7 +384,8 @@ class PeopleWebModule extends WebModule {
             case 'search':
                 if ($filter = $this->getArg(array('filter', 'q'))) {
                     $searchTerms = trim($filter);
-          
+                    
+                    $this->assign('feeds', $this->getSearchFeeds());
                     $this->assign('searchTerms', $searchTerms);
           
                     $startIndex = $this->getArg('start', 0);
@@ -437,7 +438,6 @@ class PeopleWebModule extends WebModule {
                                         array_unshift($results, $prev);
                                     }
                                 }
-                                $this->assign('feeds', $this->getSearchFeeds());
                                 $this->assign('resultCount', $this->getFeed($this->feed)->getTotalItems());
                                 $this->assign('results', $results);
                                 break;
