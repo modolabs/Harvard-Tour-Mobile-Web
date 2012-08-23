@@ -98,12 +98,16 @@ function submitMapSearch(form) {
                 }
             }
         });
+        
         var addFilterToHref = function(link) {
             var reg = new RegExp('&?filter=.+(&|$)');
             if (link.href.match(reg)) {
                 link.href = link.href.replace(reg, '&filter='+form.filter.value);
             } else {
                 link.href = link.href + '&filter='+form.filter.value;
+            }
+            if (form.group.value) {
+                link.href = link.href + '&group=' + form.group.value;
             }
         }
         var mapButton = document.getElementById("mapLink");

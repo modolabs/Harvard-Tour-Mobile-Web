@@ -147,21 +147,23 @@ abstract class Module
         // 1. Site Folder SiteMODULEIDXXXModule
         // 2. Site Folder MODULEIDXXXModule
         // 3. Project folder MODULEIDXXXModule
+        
+        // Note: The PHP class name MUST be the basename of the file path.
         $modulePaths = array(
-            SITE_MODULES_DIR."/$id/Site%s.php"=>"Site%s",
-            SITE_MODULES_DIR."/$id/%s.php"=>"%s",
-            SHARED_MODULES_DIR."/$id/Site%s.php"=>"Site%s",
-            SHARED_MODULES_DIR."/$id/%s.php"=>"%s",
-            MODULES_DIR."/$id/%s.php"=>"%s",
+            SITE_MODULES_DIR."/$id/Site%s.php",
+            SITE_MODULES_DIR."/$id/%s.php",
+            SHARED_MODULES_DIR."/$id/Site%s.php",
+            SHARED_MODULES_DIR."/$id/%s.php",
+            MODULES_DIR."/$id/%s.php",
         );
         
         if ($type == 'api' && KurogoWebBridge::moduleHasMediaAssets($configModule)) {
-            $modulePaths[KurogoWebBridge::STUB_API_CLASS_FILE] = KurogoWebBridge::STUB_API_CLASS;
+            $modulePaths[] = LIB_DIR . '/' . KurogoWebBridge::STUB_API_CLASS . ".php";
         }
         
         //cycle module paths 
-        foreach($modulePaths as $path=>$className){ 
-            
+        foreach($modulePaths as $path) {
+            $className = basename($path, '.php');
             //cycle class names to find a valid module
             foreach ($classNames as $class) {
                 $className = sprintf($className, $class);
