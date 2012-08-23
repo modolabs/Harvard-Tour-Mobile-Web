@@ -38,6 +38,8 @@ class NewsWebModule extends WebModule {
   protected $showPubDate = false;
   protected $showAuthor = false;
   protected $showLink = false;
+  protected $showBodyPubDate = true;
+  protected $showBodyAuthor = true;
   protected $showBodyThumbnail = true;
   protected $legacyController = false;
   
@@ -213,6 +215,8 @@ class NewsWebModule extends WebModule {
         $this->showPubDate = isset($feedData['SHOW_PUBDATE']) ? $feedData['SHOW_PUBDATE'] : false;
         $this->showAuthor = isset($feedData['SHOW_AUTHOR']) ? $feedData['SHOW_AUTHOR'] : false;
         $this->showLink = isset($feedData['SHOW_LINK']) ? $feedData['SHOW_LINK'] : false;
+        $this->showBodyPubDate = isset($feedData['SHOW_BODY_PUBDATE']) ? $feedData['SHOW_BODY_PUBDATE'] : true;
+        $this->showBodyAuthor = isset($feedData['SHOW_BODY_AUTHOR']) ? $feedData['SHOW_BODY_AUTHOR'] : true;
         $this->showBodyThumbnail = isset($feedData['SHOW_BODY_THUMBNAIL']) ? $feedData['SHOW_BODY_THUMBNAIL'] : true;
     }    
     
@@ -277,6 +281,8 @@ class NewsWebModule extends WebModule {
         $this->assign('link',          $story->getLink());
         $this->assign('showLink',      $this->showLink);
         $this->assign('showBodyThumbnail', $this->showBodyThumbnail);
+        $this->assign('showBodyPubDate', $this->showBodyPubDate);
+        $this->assign('showBodyAuthor', $this->showBodyAuthor);
         break;
         
       case 'search':
