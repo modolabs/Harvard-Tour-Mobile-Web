@@ -36,7 +36,7 @@ abstract class APIModule extends Module
         return KurogoWebBridge::getHelloMessageForModule($this->configModule);
     }
 
-    protected function warningHandler($errno, $str, $file, $line) {
+    public function warningHandler($errno, $str, $file, $line) {
         if (!(error_reporting() & $errno)) {
             // This error code is not included in error_reporting
             return;
