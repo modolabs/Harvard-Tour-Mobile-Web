@@ -95,8 +95,10 @@ class PhotosWebModule extends WebModule {
         	case 'album':
         		$album = $this->getArg('id', $this->getDefaultSection());
         		$controller = $this->getFeed($album);
-        		$this->setPageTitles($controller->getTitle());
-
+                if (count($this->feeds) > 1) {
+                    $this->setPageTitles($controller->getTitle());
+                }
+                
                 $maxPerPage = $controller->getLimit();
                 $start = $this->getArg('start', 0);
 
