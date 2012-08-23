@@ -95,9 +95,7 @@ class PhotosWebModule extends WebModule {
         	case 'album':
         		$album = $this->getArg('id', $this->getDefaultSection());
         		$controller = $this->getFeed($album);
-                if (count($this->feeds) == 1) {
-                    $this->setPageTitles($this->getModuleName());
-                } else {
+                if (count($this->feeds) > 1) {
                     $this->setPageTitles($controller->getTitle());
                 }
                 
