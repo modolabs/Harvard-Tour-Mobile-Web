@@ -1,7 +1,8 @@
 #tabs {
   display: none;
 }
-.focal .tabwrapper {
+.focal .tabwrapper,
+.nonfocal .tabwrapper {
   margin: 0 -12px;
 }
 
@@ -16,11 +17,11 @@
   display: table-cell !important;
   vertical-align: top;
 }
-#stopsTab {
+.stops-tabbody {
   border-left: 1px solid #bbb;
   padding-bottom: 0;
 }
-#stopsTab .results {
+.stops-tabbody .results {
   border-radius: 0;
   -webkit-border-radius: 0;
   border-top-width: 1px;
@@ -28,19 +29,19 @@
   background-color: transparent;
   margin-bottom: -1px;
 }
-#mapTab {
+.map-tabbody {
   min-height: 352px;
 }
-#stopsTab {
+.stops-tabbody {
   width: 350px;
 }
-.portrait #mapTab #map_dynamic {
+.portrait .map-tabbody #map_dynamic {
   height: 600px;
 }
 .portrait .tabbody {
   min-height: 612px;
 }
-.landscape #mapTab #map_dynamic {
+.landscape .map-tabbody #map_dynamic {
   height: 400px;
 }
 .landscape .tabbody {

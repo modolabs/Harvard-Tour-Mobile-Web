@@ -2,7 +2,7 @@ h1.slugline a {
     text-decoration: none;
 }
 
-#topnewsTab {
+.topnews-tabbody {
 	padding: 0;
 }
 

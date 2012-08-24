@@ -8,7 +8,7 @@
   vertical-align: top;
 }
 #mapcontainer #map_dynamic {
-  margin-right: 0;
+  margin-left: 12px;
 }
 #stopinfo #ajaxcontainer {
   width: 300px;

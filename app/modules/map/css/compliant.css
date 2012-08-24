@@ -23,10 +23,10 @@ body.fullscreen #navbar {
 	padding-bottom: 2em;
 }
 
-#photoTab {
+.photo-tabbody {
 	text-align: center;
 }
-#mapTab {
+.map-tabbody {
 	padding-bottom: 0;
 	height: 100%;
 }
