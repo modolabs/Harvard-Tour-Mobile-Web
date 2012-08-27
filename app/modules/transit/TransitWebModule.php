@@ -16,13 +16,13 @@ class TransitWebModule extends WebModule {
     protected $id = 'transit';
     protected $defaultNewsModel = 'TransitNewsDataModel';
     protected $newsFeeds = array();
-    protected $simpleView = false;
+    protected $collapseRouteTabs = false;
     const RELOAD_TIME = 60;
     
     protected function initialize() {
         $config = $this->getModuleSection('module');
-        if(isset($config['simple_view'])){
-            $this->simpleView = $config['simple_view'];
+        if(isset($config['collapse_route_tabs'])){
+            $this->collapseRouteTabs = $config['collapse_route_tabs'];
         }
     }   
   
@@ -223,7 +223,7 @@ class TransitWebModule extends WebModule {
                 $runningRoutes = array_filter($runningRoutes);
                 $offlineRoutes = array_filter($offlineRoutes);
         
-                if($this->simpleView){
+                if($this->collapseRouteTabs){
                     // Display running and offline routes in the same tab
                     $agencies = array();
                     if ($runningRoutes){
