@@ -16,10 +16,15 @@ class TransitWebModule extends WebModule {
     protected $id = 'transit';
     protected $defaultNewsModel = 'TransitNewsDataModel';
     protected $newsFeeds = array();
+    protected $simpleView = false;
     const RELOAD_TIME = 60;
     
     protected function initialize() {
-    }
+        $config = $this->getModuleSection('module');
+        if(isset($config['simple_view'])){
+            $this->simpleView = $config['simple_view'];
+        }
+    }   
   
     protected function getNewsForRoutes() {
         $news = array();
@@ -218,18 +223,61 @@ class TransitWebModule extends WebModule {
                 $runningRoutes = array_filter($runningRoutes);
                 $offlineRoutes = array_filter($offlineRoutes);
         
-                // Sort routes
-                foreach ($runningRoutes as $agencyID => $section) {
-                    uasort($runningRoutes[$agencyID]['items'], array(get_class($this), 'routeSort'));
-                }
-                foreach ($offlineRoutes as $agencyID => $section) {
-                    uasort($offlineRoutes[$agencyID]['items'], array(get_class($this), 'routeSort'));
-                }
-                if ($runningRoutes) {
-                    $tabs[] = 'running';
-                }
-                if ($offlineRoutes) {
-                    $tabs[] = 'offline';
+                if($this->simpleView){
+                    // Display running and offline routes in the same tab
+                    $agencies = array();
+                    if ($runningRoutes){
+                        $agencies = array_merge($agencies, array_keys($runningRoutes));
+                    }
+                    if ($offlineRoutes){
+                        $agencies = array_merge($agencies, array_keys($offlineRoutes));
+                    }
+
+                    $allRoutes = array();
+                    foreach ($agencies as $agency) {
+                        $allRoutes[$agency] = array();
+                        $allRoutes[$agency]['heading'] = ucfirst($agency);
+                        $allRoutes[$agency]['items'] = array();
+                        if($runningRoutes && isset($runningRoutes[$agency])){
+                            $allRoutes[$agency]['heading'] = $runningRoutes[$agency]['heading'];
+                            $allRoutes[$agency]['items'] = array_merge($allRoutes[$agency]['items'], $runningRoutes[$agency]['items']);
+                        }
+                        if ($offlineRoutes && $offlineRoutes[$agency]){
+                            $offlineItems = $offlineRoutes[$agency]['items'];
+                            foreach ($offlineItems as $routeID => $item) {
+                                $offlineItems[$routeID]['class'] = 'offline';
+                            }
+
+                            $allRoutes[$agency]['heading'] = $offlineRoutes[$agency]['heading'];
+                            $allRoutes[$agency]['items'] = array_merge($allRoutes[$agency]['items'], $offlineItems);
+                        }
+                    }
+                    // Sort routes
+                    foreach ($allRoutes as $agencyID => $section) {
+                        uasort($allRoutes[$agencyID]['items'], array($this, 'routeSort'));
+                    }
+
+                    if($runningRoutes || $offlineRoutes){
+                        $tabs[] = 'running';
+                    }
+                    $this->assign('runningRoutes', $allRoutes);
+                }else{
+                    // Display running and offline routes in seperate tabs
+                    // Sort routes
+                    foreach ($runningRoutes as $agencyID => $section) {
+                        uasort($runningRoutes[$agencyID]['items'], array(get_class($this), 'routeSort'));
+                    }
+                    foreach ($offlineRoutes as $agencyID => $section) {
+                        uasort($offlineRoutes[$agencyID]['items'], array(get_class($this), 'routeSort'));
+                    }
+                    if ($runningRoutes) {
+                        $tabs[] = 'running';
+                    }
+                    if ($offlineRoutes) {
+                        $tabs[] = 'offline';
+                    }
+                    $this->assign('runningRoutes', $runningRoutes);
+                    $this->assign('offlineRoutes', $offlineRoutes);
                 }
         
                 //
