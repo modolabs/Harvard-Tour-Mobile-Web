@@ -121,10 +121,11 @@ class EmergencyWebModule extends WebModule implements HomeAlertInterface
 
 
     protected static function contactNavListItem($contact) {
+        $subtitle = $contact->getSubtitle() ? $contact->getSubtitle() : '('.$contact->getPhoneDelimitedByPeriods().')';
         return array(
             'title' => $contact->getTitle(),
-            'subtitle' => $contact->getSubtitle() . ' (' . $contact->getPhoneDelimitedByPeriods() . ')',
-            'url' => 'tel:' . $contact->getPhoneDialable(),
+            'subtitle' => $subtitle,
+            'url' => $contact->getPhoneDialable(),
             'class' => 'phone',
         );
     }
