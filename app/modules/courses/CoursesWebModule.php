@@ -1827,6 +1827,7 @@ class CoursesWebModule extends WebModule {
      */
     protected function initializeForPage() {
         $this->originalPage = $this->page;
+		$this->setAutoPhoneNumberDetection(false);
 
         if ($this->pagetype == 'tablet') {
             $this->addOnOrientationChange('moduleHandleWindowResize();');
