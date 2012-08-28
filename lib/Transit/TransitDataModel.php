@@ -178,6 +178,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             // Walk the stops to figure out which is upcoming
             $stopIndexes = array_keys($directionInfo['stops']);
             $firstStopIndex = reset($stopIndexes);
+            $lastStopIndex = end($stopIndexes);
             
             $firstStopPrevIndex  = null;
             if (count($directions) == 1 && count($stopIndexes)) {
@@ -186,6 +187,11 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 if (self::isSameStop($directionInfo['stops'][$firstStopIndex]['id'], 
                                      $directionInfo['stops'][$firstStopPrevIndex]['id'])) {
                     $firstStopPrevIndex = prev($stopIndexes);
+                }
+                $lastStopNextIndex = reset($stopIndexes);
+                if (self::isSameStop($directionInfo['stops'][$lastStopIndex]['id'], 
+                                     $directionInfo['stops'][$lastStopNextIndex]['id'])) {
+                    $lastStopNextIndex = next($stopIndexes);
                 }
             }
             
@@ -201,11 +207,20 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 } else {
                     $prevArrives = $directionInfo['stops'][$stopIndexes[$i-1]]['arrives'];
                 }
+                $nextArrives = PHP_INT_MAX; // Non-loop case
+                if ($stopIndex == $lastStopIndex) {
+                    if ($lastStopNextIndex) {
+                        // Loop case
+                        $nextArrives = $directionInfo['stops'][$lastStopNextIndex]['arrives'];
+                    }
+                } else {
+                    $nextArrives = $directionInfo['stops'][$stopIndexes[$i+1]]['arrives'];
+                }
                 
                 // Suppress any soonest stops which are more than 2 hours from now
                 $directions[$directionID]['stops'][$stopIndex]['upcoming'] = 
                     (abs($arrives - $now) < Kurogo::getSiteVar('TRANSIT_MAX_ARRIVAL_DELAY')) && 
-                    $arrives <= $prevArrives;
+                    ($arrives <= $prevArrives && $arrives < $nextArrives);
             }
         }
     }
