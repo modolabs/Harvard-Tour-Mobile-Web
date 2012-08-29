@@ -403,7 +403,7 @@ class StripGTFSToDB
                 'constraint'  => 'UNIQUE (trip_id, stop_sequence)',
                 'addToFilter' => array('stop_id'),
                 'indices'     => array(
-                    'stop_times_trip'      => '(trip_id, departure_time)',
+                    'stop_times_trip'      => '(trip_id,departure_time)',
                     'stop_times_stop_trip' => '(stop_id,trip_id)',
                 ),
             ),

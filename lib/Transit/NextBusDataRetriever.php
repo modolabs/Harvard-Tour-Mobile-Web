@@ -17,10 +17,18 @@
 class NextBusDataRetriever extends URLDataRetriever
 {
     protected $daemonMode = false;
+    protected $nextBusRouteCacheTimeout = 86400;
+    protected $nextBusPredictionCacheTimeout = 20;
+    protected $nextBusVehicleCacheTimeout = 10;
+    protected $nextBusRequestTimeout = 10;
     
     const DEFAULT_BASE_URL = 'http://webservices.nextbus.com/service/publicXMLFeed';
     
     public function init($args) {
+        if (isset($args['DAEMON_MODE'])) {
+            $this->daemonMode = $args['DAEMON_MODE'];
+        }
+        
         if (!isset($args['CACHE_CLASS'])) {
             $args['CACHE_CLASS'] = 'NextBusDataCache';
         }
@@ -29,14 +37,22 @@ class NextBusDataRetriever extends URLDataRetriever
             $args['BASE_URL'] = self::DEFAULT_BASE_URL;
         }
         
-        if (isset($args['DAEMON_MODE'])) {
-            $this->daemonMode = $args['DAEMON_MODE'];
+        if (isset($args['NEXTBUS_ROUTE_CACHE_TIMEOUT'])) {
+            $this->nextBusRouteCacheTimeout = $args['NEXTBUS_ROUTE_CACHE_TIMEOUT'];
         }
         
+        if (isset($args['NEXTBUS_PREDICTION_CACHE_TIMEOUT'])) {
+            $this->nextBusPredictionCacheTimeout = $args['NEXTBUS_PREDICTION_CACHE_TIMEOUT'];
+        }
+        
+        if (isset($args['NEXTBUS_VEHICLE_CACHE_TIMEOUT'])) {
+            $this->nextBusVehicleCacheTimeout = $args['NEXTBUS_VEHICLE_CACHE_TIMEOUT'];
+        }
+
         parent::init($args);
         
         $this->setCacheGroup('NextBus');
-        $this->setTimeout(10);
+        $this->setTimeout($this->nextBusRequestTimeout);
     }
     
     protected function url() {
@@ -86,16 +102,16 @@ class NextBusDataRetriever extends URLDataRetriever
         switch ($command) {
             case 'routeList':
             case 'routeConfig':
-                $cacheLifetime = Kurogo::getOptionalSiteVar('NEXTBUS_ROUTE_CACHE_TIMEOUT', 86400);
+                $cacheLifetime = $this->nextBusRouteCacheTimeout;
                 break;
                 
             case 'predictions':
             case 'predictionsForMultiStops':
-                $cacheLifetime = Kurogo::getOptionalSiteVar('NEXTBUS_PREDICTION_CACHE_TIMEOUT', 20);
+                $cacheLifetime = $this->nextBusPredictionCacheTimeout;
                 break;
                 
             case 'vehicleLocations':
-                $cacheLifetime = Kurogo::getOptionalSiteVar('NEXTBUS_VEHICLE_CACHE_TIMEOUT', 10);
+                $cacheLifetime = $this->nextBusVehicleCacheTimeout;
                 break;
         }
         if ($this->daemonMode) {

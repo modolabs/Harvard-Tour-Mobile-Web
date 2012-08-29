@@ -19,6 +19,12 @@ class DoubleMapDataRetriever extends URLDataRetriever
     protected $daemonMode = false;
     protected $urlHost = '';
     protected $command = '';
+    protected $doubleMapRouteRequestTimeout = 5;
+    protected $doubleMapRouteCacheTimeout = 300;
+    protected $doubleMapETARequestTimeout = 5;
+    protected $doubleMapETACacheTimeout = 60;
+    protected $doubleMapVehicleRequestTimeout = 3;
+    protected $doubleMapVehicleCacheTimeout = 4;
     
     public function init($args) {
         if (isset($args['DAEMON_MODE'])) {
@@ -27,6 +33,27 @@ class DoubleMapDataRetriever extends URLDataRetriever
         
         if (isset($args['URL_HOST'])) {
             $this->urlHost = $args['URL_HOST'];
+        }
+        
+        if (isset($args['DOUBLEMAP_ROUTE_REQUEST_TIMEOUT'])) {
+            $this->doubleMapRouteRequestTimeout = $args['DOUBLEMAP_ROUTE_REQUEST_TIMEOUT'];
+        }
+        if (isset($args['DOUBLEMAP_ROUTE_CACHE_TIMEOUT'])) {
+            $this->doubleMapRouteCacheTimeout = $args['DOUBLEMAP_ROUTE_CACHE_TIMEOUT'];
+        }
+        
+        if (isset($args['DOUBLEMAP_ETA_REQUEST_TIMEOUT'])) {
+            $this->doubleMapETARequestTimeout = $args['DOUBLEMAP_ETA_REQUEST_TIMEOUT'];
+        }
+        if (isset($args['DOUBLEMAP_ETA_CACHE_TIMEOUT'])) {
+            $this->doubleMapETACacheTimeout = $args['DOUBLEMAP_ETA_CACHE_TIMEOUT'];
+        }
+        
+        if (isset($args['DOUBLEMAP_VEHICLE_REQUEST_TIMEOUT'])) {
+            $this->doubleMapVehicleRequestTimeout = $args['DOUBLEMAP_VEHICLE_REQUEST_TIMEOUT'];
+        }
+        if (isset($args['DOUBLEMAP_VEHICLE_REQUEST_TIMEOUT'])) {
+            $this->doubleMapVehicleCacheTimeout = $args['DOUBLEMAP_VEHICLE_REQUEST_TIMEOUT'];
         }
         
         parent::init($args);
@@ -44,18 +71,18 @@ class DoubleMapDataRetriever extends URLDataRetriever
             case 'routes':
             case 'stops':
             case 'announcements':
-                $timeout = Kurogo::getOptionalSiteVar('DOUBLEMAP_ROUTE_REQUEST_TIMEOUT', 5);
-                $cacheLifetime = Kurogo::getOptionalSiteVar('DOUBLEMAP_ROUTE_CACHE_TIMEOUT', 300);
+                $timeout = $this->doubleMapRouteRequestTimeout;
+                $cacheLifetime = $this->doubleMapRouteCacheTimeout;
                 break;
       
             case 'eta':
-                $timeout = Kurogo::getOptionalSiteVar('DOUBLEMAP_ETA_REQUEST_TIMEOUT', 5);
-                $cacheLifetime = Kurogo::getOptionalSiteVar('DOUBLEMAP_ETA_CACHE_TIMEOUT', 60);
+                $timeout = $this->doubleMapETARequestTimeout;
+                $cacheLifetime = $this->doubleMapETACacheTimeout;
                 break;
 
             case 'buses':
-                $timeout = Kurogo::getOptionalSiteVar('DOUBLEMAP_VEHICLE_REQUEST_TIMEOUT', 3);
-                $cacheLifetime = Kurogo::getOptionalSiteVar('DOUBLEMAP_VEHICLE_CACHE_TIMEOUT', 4);
+                $timeout = $this->doubleMapVehicleRequestTimeout;
+                $cacheLifetime = $this->doubleMapVehicleCacheTimeout;
                 break;
         }
         

@@ -365,7 +365,6 @@ class GTFSTransitRoute extends TransitRoute
     protected $model = null;
 
     private $hasFrequenciesTable;
-    private $runningPadding = 600;
     private $segmentStatesById = array();
 
     function __construct($id, $agencyID, $name, $description, $model) {
@@ -401,7 +400,7 @@ class GTFSTransitRoute extends TransitRoute
         return $isRunning;
     }
     
-    public function getServiceFrequency($time) {
+    public function getServiceFrequency($time, $transitMaxArrivalDelay) {
         // Time between shuttles at the same stop
         $frequency = 0;
         

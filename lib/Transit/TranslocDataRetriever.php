@@ -18,12 +18,32 @@ class TranslocDataRetriever extends URLDataRetriever
 {
     protected $daemonMode = false;
     protected $command = '';
+    protected $translocRouteRequestTimeout = 5;
+    protected $translocRouteCacheTimeout = 300;
+    protected $translocUpdateRequestTimeout = 2;
+    protected $translocUpdateCacheTimeout = 3;
     
     const BASE_URL = 'http://api.transloc.com/1.2/';
     
     public function init($args) {
         if (isset($args['DAEMON_MODE'])) {
             $this->daemonMode = $args['DAEMON_MODE'];
+        }
+        
+        if (isset($args['TRANSLOC_ROUTE_REQUEST_TIMEOUT'])) {
+            $this->translocRouteRequestTimeout = $args['TRANSLOC_ROUTE_REQUEST_TIMEOUT'];
+        }
+        
+        if (isset($args['TRANSLOC_ROUTE_CACHE_TIMEOUT'])) {
+            $this->translocRouteCacheTimeout = $args['TRANSLOC_ROUTE_CACHE_TIMEOUT'];
+        }
+        
+        if (isset($args['TRANSLOC_UPDATE_REQUEST_TIMEOUT'])) {
+            $this->translocUpdateRequestTimeout = $args['TRANSLOC_UPDATE_REQUEST_TIMEOUT'];
+        }
+        
+        if (isset($args['TRANSLOC_UPDATE_CACHE_TIMEOUT'])) {
+            $this->translocUpdateCacheTimeout = $args['TRANSLOC_UPDATE_CACHE_TIMEOUT'];
         }
         
         parent::init($args);
@@ -42,14 +62,14 @@ class TranslocDataRetriever extends URLDataRetriever
             case 'routes':
             case 'segments':
             case 'stops':
-                $timeout = Kurogo::getOptionalSiteVar('TRANSLOC_ROUTE_REQUEST_TIMEOUT', 5);
-                $cacheLifetime = Kurogo::getOptionalSiteVar('TRANSLOC_ROUTE_CACHE_TIMEOUT', 300);
+                $timeout = $this->translocRouteRequestTimeout;
+                $cacheLifetime = $this->translocRouteCacheTimeout;
                 break;
       
             case 'arrival-estimates':
             case 'vehicles':
-                $timeout = Kurogo::getOptionalSiteVar('TRANSLOC_UPDATE_REQUEST_TIMEOUT', 2);
-                $cacheLifetime = Kurogo::getOptionalSiteVar('TRANSLOC_UPDATE_CACHE_TIMEOUT', 3);
+                $timeout = $this->translocUpdateRequestTimeout;
+                $cacheLifetime = $this->translocUpdateCacheTimeout;
                 break;
         }
         

@@ -21,17 +21,62 @@ class DoubleMapDataModel extends TransitDataModel
     
     protected $agencyID = "";
     protected $routeColors = array();
+    protected $doubleMapMarkersURL = '';
+    protected $doubleMapServiceURL = 'http://www.doublemap.com/';
+    protected $predictionDataLoaded = array();
     
     const DEFAULT_EXTERNAL_SERVICE_URL = "http://www.doublemap.com/";
+    // http://iub.doublemap.com/map/img/colorize?img=bus_icon&color=FF350D&annotate=A
     
     static private function argVal($array, $key, $default='') {
         return is_array($array) && isset($array[$key]) ? $array[$key] : $default;
     }
     
+    protected function init($args) {
+        if (isset($args['DOUBLEMAP_MARKERS_URL'])) {
+            $this->doubleMapMarkersURL = $args['DOUBLEMAP_MARKERS_URL'];
+        } else if (isset($args['URL_HOST'])) {
+            $this->doubleMapMarkersURL = "http://{$args['URL_HOST']}.doublemap.com/map/img/";
+        }
+        
+        if (isset($args['EXTERNAL_SERVICE_URL'])) {
+            $this->doubleMapServiceURL = $args['EXTERNAL_SERVICE_URL'];
+        }
+        
+        parent::init($args);
+    }
+
     protected function isLive() {
         return true;
     }
     
+    protected function getMapIconUrlForRouteVehicle($routeID, $vehicle=null) {
+        if ($this->doubleMapMarkersURL) {
+            $args = array(
+                'img'      => 'bus_icon',
+                'color'    => $this->getRouteColor($routeID),
+                'annotate' => $this->getRoute($routeID)->getShortName(),
+            );
+            return rtrim($this->doubleMapMarkersURL, '/')."/colorize?".http_build_query($args);
+        } else {
+            return parent::getMapIconUrlForRouteVehicle($routeID, $vehicle);
+        }
+    }
+    
+    protected function getMapMarkersForVehicles($vehicles) {
+        $query = '';
+        
+        foreach ($vehicles as $vehicle) {
+            if ($vehicle['lat'] && $vehicle['lon']) {
+                $query .= '&'.http_build_query(array(
+                    'markers' => "icon:{$vehicle['iconURL']}|{$vehicle['lat']},{$vehicle['lon']}",
+                ));
+            }
+        }
+        
+        return $query;
+    }
+
     protected function getRouteColor($routeId) {
         if (isset($this->routeColors[$routeId])) {
             return $this->routeColors[$routeId];
@@ -45,7 +90,7 @@ class DoubleMapDataModel extends TransitDataModel
     }
     
     protected function getServiceId() {
-        return 'doublemap';
+        return $this->doubleMapServiceURL;
     }
     
     protected function getServiceLink() {
@@ -99,7 +144,7 @@ class DoubleMapDataModel extends TransitDataModel
                       $stopETAsInfo['etas'][$stopId], 
                       $stopETAsInfo['etas'][$stopId]['etas'])) {
                 foreach ($stopETAsInfo['etas'][$stopId]['etas'] as $etaInfo) {
-                    if (self::argVal($etaInfo, 'route', null) === $routeId && isset($etaInfo['avg'])) {
+                    if (self::argVal($etaInfo, 'route', '') == $routeId && isset($etaInfo['avg'])) {
                         $predictions[] = $now + ($etaInfo['avg'] * 60);
                     }
                 }
@@ -109,6 +154,21 @@ class DoubleMapDataModel extends TransitDataModel
         }
         
         return $result;
+    }
+    
+    protected function updatePredictionData($routeId) {
+        if (isset($this->predictionDataLoaded[$routeId])) {
+            return; // already loaded
+        }
+        
+        $route = $this->getRoute($routeId);
+        if (!$route) { return; }
+        
+        $stopsPredictions = $this->getStopPredictionsForRoute($routeId);
+        foreach ($stopsPredictions as $stopId => $stopPredictions) {
+            $route->setStopPredictions(self::LOOP_DIRECTION, $stopId, $stopPredictions);
+        }
+        $this->predictionDataLoaded[$routeId] = true;
     }
     
     protected function loadData() {
@@ -134,9 +194,10 @@ class DoubleMapDataModel extends TransitDataModel
             $routeId = self::argVal($routeInfo, 'id');
             
             // TODO: do something with short_name field
-            $this->addRoute(new TransitRoute(
+            $this->addRoute(new DoubleMapTransitRoute(
                 $routeId, 
                 $this->agencyID, 
+                self::argVal($routeInfo, 'short_name'), 
                 self::argVal($routeInfo, 'name'), 
                 self::argVal($routeInfo, 'description')
             ));  
@@ -161,10 +222,6 @@ class DoubleMapDataModel extends TransitDataModel
             foreach ($doubleMapStops as $stopIndex => $stopId) {
                 $routeSegment->addStop($stopId, $stopIndex);
             }
-            $stopsPredictions = $this->getStopPredictionsForRoute($routeId);
-            foreach ($stopsPredictions as $stopId => $stopPredictions) {
-                $routeSegment->setStopPredictions($stopId, $stopPredictions);
-            }
             
             // DoubleMap returns the path as a flattened array:
             // array(lat0, lon0, lat1, lon1, lat2, lon2, ...)
@@ -173,6 +230,13 @@ class DoubleMapDataModel extends TransitDataModel
             for ($i = 0; $i < count($doubleMapPath)-2; $i += 2) {
                 $path[] = array($doubleMapPath[$i], $doubleMapPath[$i+1]);
             }
+            
+            // Repeat first stop at end to close loop
+            // Note: Once DoubleMap gets their first customer who has a 
+            // non-loop route they will probably rev the API such that this 
+            // code will need to be removed!
+            $path[] = reset($path);
+            
             $this->getRoute($routeId)->addPath(new TransitPath("path_{$routeId}", $path));
         }
     }
@@ -227,12 +291,26 @@ class DoubleMapDataModel extends TransitDataModel
         }
         
         // no vehicles, check etas
-        $stopsPredictions = $this->getStopPredictionsForRoute($routeId);
-        if (count($stopsPredictions)) {
-            return true;
-        }
+        //$stopsPredictions = $this->getStopPredictionsForRoute($routeId);
+        //if (count($stopsPredictions)) {
+        //    return true;
+        //}
         
         return false;
+    }
+}
+
+class DoubleMapTransitRoute extends TransitRoute
+{
+    protected $shortName = '';
+    
+    function __construct($id, $agencyID, $shortName, $name, $description) {
+        parent::__construct($id, $agencyID, $name, $description);
+        $this->shortName = $shortName;
+    }
+
+    public function getShortName() {
+        return $this->shortName;
     }
 }
 
