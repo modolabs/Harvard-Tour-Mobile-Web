@@ -27,6 +27,8 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     protected $splitByHeadsignRoutes = array();
     protected $daemonMode = false;
     
+    protected static $routeRunningPadding = null;
+    
     protected $routes    = array();
     protected $stops     = array();
     protected $overrides = array();
@@ -707,7 +709,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             $time = TransitTime::getCurrentTime();
         }
         
-        $timeRange = array($time, $time + Kurogo::getOptionalSiteVar('TRANSIT_SCHEDULE_ROUTE_RUNNING_PADDING', 900));
+        $timeRange = array($time, $time + self::getRouteRunningPadding());
         
         $routes = array();
         foreach ($this->routes as $routeID => $route) {
@@ -967,9 +969,9 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         }
         
         $segments = array();
-        
-        $timeRange = array($time, $time + Kurogo::getOptionalSiteVar('TRANSIT_SCHEDULE_ROUTE_RUNNING_PADDING', 900));
+        $timeRange = array($time, $time + self::getRouteRunningPadding());
         $runningTime = $this->viewRouteInScheduleView($routeID) ? $timeRange : $time;
+        
         foreach ($directionSegments as $segment) {
             if (!$segment->isRunning($runningTime)) {
                 self::dlog("segment {$segment->getID()} ({$segment->getName()}) is not running", self::DLOG_STOP_GRAPH_SORT);
@@ -1102,6 +1104,17 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         }
         
         return $stopOrder;
+    }
+
+    public static function getRouteRunningPadding() {
+        if (self::$routeRunningPadding === null) {
+            $config = ConfigFile::factory('transit', 'site');
+            $transitConfig = $config->getSection('transit');
+            if (isset($transitConfig['TRANSIT_SCHEDULE_ROUTE_RUNNING_PADDING'])) {
+                self::$routeRunningPadding = $transitConfig['TRANSIT_SCHEDULE_ROUTE_RUNNING_PADDING'];
+            }
+        }
+        return self::$routeRunningPadding;
     }
 }
 

@@ -22,8 +22,6 @@ class GTFSDataModel extends TransitDataModel
     protected $DEFAULT_PARSER_CLASS = 'PassthroughDataParser';
     protected $DEFAULT_RETRIEVER_CLASS = 'DatabaseDataRetriever';
 
-    protected static $routeRunningPadding = null;
-    
     protected function init($args) {
         if (!isset($args['DB_FILE'])) {
             throw new KurogoConfigurationException("No database file found for gtfs parser in feeds.ini");
@@ -34,17 +32,6 @@ class GTFSDataModel extends TransitDataModel
         }
         
         parent::init($args);
-    }
-
-    public static function getRouteRunningPadding() {
-        if (self::$routeRunningPadding === null) {
-            $config = ConfigFile::factory('transit', 'site');
-            $transitConfig = $config->getSection('transit');
-            if (isset($transitConfig['TRANSIT_SCHEDULE_ROUTE_RUNNING_PADDING'])) {
-                self::$routeRunningPadding = $transitConfig['TRANSIT_SCHEDULE_ROUTE_RUNNING_PADDING'];
-            }
-        }
-        return self::$routeRunningPadding;
     }
 
     public function query($sql, $params=array()) {
@@ -106,13 +93,15 @@ class GTFSDataModel extends TransitDataModel
             while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
                 $routeID = $row['route_id'];
                 $route = $this->getRoute($routeID);
-                $this->updatePredictionData($routeID);
-                
-                $routePredictions[$routeID]['directions'] = $this->getRouteDirectionPredictionsForStop($routeID, $stopID, $now);
-                $routePredictions[$routeID]['running'] = $route->isRunning($now, $inService) && $inService;
-                $routePredictions[$routeID]['name'] = $route->getName();
-                $routePredictions[$routeID]['agency'] = $route->getAgencyID();
-                $routePredictions[$routeID]['live'] = $this->isLive();
+                if ($route) {
+                    $this->updatePredictionData($routeID);
+                    
+                    $routePredictions[$routeID]['directions'] = $this->getRouteDirectionPredictionsForStop($routeID, $stopID, $now);
+                    $routePredictions[$routeID]['running'] = $route->isRunning($now, $inService) && $inService;
+                    $routePredictions[$routeID]['name'] = $route->getName();
+                    $routePredictions[$routeID]['agency'] = $route->getAgencyID();
+                    $routePredictions[$routeID]['live'] = $this->isLive();
+                }
             }
             
             $stop = $this->getStop($stopID);
@@ -316,12 +305,10 @@ class GTFSTransitSegment extends TransitSegment
     }
 
     public function isRunning($time) {
-        if (!$time || !is_int($time)) {
+        if (!$time || (!is_int($time) && !is_array($time))) {
             $time = TransitTime::getCurrentTime();
         }
-        $nearFuture = $time + GTFSDataModel::getRouteRunningPadding();
-        return TransitTime::isTimeInRange($time, $this->startTT, $this->endTT)
-            || TransitTime::isTimeInRange($nearFuture, $this->startTT, $this->endTT);
+        return TransitTime::isTimeInRange($time, $this->startTT, $this->endTT);
     }
     
     public function getStops() {
