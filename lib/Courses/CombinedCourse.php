@@ -15,6 +15,39 @@ class CombinedCourse implements CourseInterface
     protected $courses = array();
     protected $attributes = array();
     
+    public function getCourseOptions() {
+        $options = array(
+            'courseID'=>$this->getID()
+        );
+        if ($Term = $this->getTerm()) {
+            $options['term'] = strval($Term);
+        }
+        return $options;
+    }
+    
+    public function getTerm($type = null) {
+        if ($type) {
+            if ($course = $this->getCourse($type)) {
+                return $course->getTerm();
+            }
+            return null;
+
+        } else {
+            $Term = null;
+            reset($this->courses);
+            foreach ($this->courses as $course) {
+                if ($_Term = $course->getTerm()) {
+                    if ($Term && strval($_Term) != strval($Term)) {
+                        throw new KurogoDebugException("Different terms found for $this->id");
+                    }
+                    $Term = $_Term;
+                }
+            }
+            return $Term;
+        }
+        
+    }
+    
     public function standardAttributes() {
         return array(
             'ID', 
@@ -26,6 +59,7 @@ class CombinedCourse implements CourseInterface
     }
     
     public function showTerm() {
+        reset($this->courses);
     	foreach ($this->courses as $course) {
     		if ($course->showTerm()) {
     			return true;
@@ -44,6 +78,7 @@ class CombinedCourse implements CourseInterface
         if($type) {
 	        $value = @call_user_func(array($this->courses[$type], $method));
         }else{
+            reset($this->courses);
         	foreach($this->courses as $courseType=>$course) {
         		$value = @call_user_func(array($course, $method));
         		if($value) {
@@ -73,6 +108,7 @@ class CombinedCourse implements CourseInterface
     
     public function getTitle($type=null) {
         if ($type==null) {
+            reset($this->courses);
             $type = key($this->courses);
         }
 
@@ -80,15 +116,49 @@ class CombinedCourse implements CourseInterface
             return $course->getTitle();
         }        
     }
-    
-    public function getInstructors($type = null) {
-        $type = $type ? $type : 'content';
-        
+
+    public function getDescription($type=null) {
+        if ($type==null) {
+            reset($this->courses);
+            $type = key($this->courses);
+        }
+
+        if ($course = $this->getCourse($type)) {
+            return $course->getDescription();
+        }        
+    }
+
+    public function getInstructors($type=null) {
+        if ($type==null) {
+            reset($this->courses);
+            $type = key($this->courses);
+        }
+
         if ($course = $this->getCourse($type)) {
             return $course->getInstructors();
+        }        
+    }
+
+    public function getTimes($type=null) {
+        if ($type==null) {
+            reset($this->courses);
+            $type = key($this->courses);
         }
-        
-        return array();
+
+        if ($course = $this->getCourse($type)) {
+            return $course->getTimes();
+        }        
+    }
+
+    public function getTas($type=null) {
+        if ($type==null) {
+            reset($this->courses);
+            $type = key($this->courses);
+        }
+
+        if ($course = $this->getCourse($type)) {
+            return $course->getTas();
+        }        
     }
     
     public function getCourse($key) {
@@ -137,6 +207,7 @@ class CombinedCourse implements CourseInterface
     
     public function getArea($type=null) {
         if ($type==null) {
+            reset($this->courses);
             $type = key($this->courses);
         }
 

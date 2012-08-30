@@ -37,14 +37,13 @@ class CoursesDataModel extends DataModel {
     public function getCurrentTerm($type) {    	
     	if ($retriever = $this->getTermsRetriever($type)) {
     		$term = $retriever->getCurrentTerm();
-    		if ($term instanceOf CourseTerm) {
-    			return $term;
-    		} else {
+    		if (!$term instanceOf CourseTerm) {
     			return null;
     		}
     	} else {
-            $term = new CourseTermCurrent();
+            $term = null;
 		}
+
         return $term;
     }
 
@@ -99,7 +98,7 @@ class CoursesDataModel extends DataModel {
     public function getCatalogRetriever($key=null) {
     	if ($key) {
     		if ($retriever = $this->getRetriever($key)) {
-    			if ($this->getRetrieverType($retriever)==self::COURSE_TYPE_CATALOG) {
+    			if ($this->getCourseRetrieverType($retriever)==self::COURSE_TYPE_CATALOG) {
     				return $retriever;
     			}
     		}
@@ -109,14 +108,25 @@ class CoursesDataModel extends DataModel {
     }
     
     public function getTermsRetriever($type) {
-        return isset($this->termsRetrievers[$type]) ? $this->termsRetrievers[$type] : null;
+        if (isset($this->termsRetrievers[$type])) {
+            if ($this->termsRetrievers[$type] instanceOf TermsDataRetriever) {
+                return $this->termsRetrievers[$type];
+            } elseif ($this->termsRetrievers[$type]) {
+                return $this->getTermsRetriever($this->termsRetrievers[$type]);
+            } else {
+                return null;
+            }
+            
+        }
+        
+        throw new KurogoException("Unable to find terms retriever $type");
     }
 
     public function getCatalogRetrieverKey() {
     	return $this->catalogRetrieverKey;
     }
     
-    protected function getRetrieverType($retriever) {
+    protected function getCourseRetrieverType(CourseDataInterface $retriever) {
     	$types = array(self::COURSE_TYPE_CONTENT, self::COURSE_TYPE_CATALOG, self::COURSE_TYPE_REGISTRATION);
     	foreach ($types as $type) {
     		$interface = $type . "DataRetriever";
@@ -158,7 +168,15 @@ class CoursesDataModel extends DataModel {
         
         foreach ($types as $type) {
             if ($this->canRetrieve($type)) {
-                $retrieverCourses = $this->retrievers[$type]->getCourses($options);
+                $_options = $options;
+                if (isset($_options['term']) && $_options['term'] == self::CURRENT_TERM) {
+                    if ($Term = $this->getCurrentTerm($type)) {
+                        $_options['term'] = strval($Term);
+                    } else {
+                        unset($_options['term']);
+                    }
+                }
+                $retrieverCourses = $this->retrievers[$type]->getCourses($_options);
                 foreach ($retrieverCourses as $course) {
                     if (!isset($courses[$course->getCommonID()])) {
                         $courses[$course->getCommonID()] = new CombinedCourse();
@@ -194,8 +212,9 @@ class CoursesDataModel extends DataModel {
         return $grades;
     }
     
-    public function setCoursesRetriever($key, DataRetriever $retriever) {
-    	switch ($this->getRetrieverType($retriever))
+    public function setCoursesRetriever($key, CourseDataInterface $retriever) {
+        $type = $this->getCourseRetrieverType($retriever);
+    	switch ($type)
     	{
     		case self::COURSE_TYPE_CATALOG:
     			if ($this->catalogRetrieverKey) {
@@ -207,47 +226,38 @@ class CoursesDataModel extends DataModel {
     		case self::COURSE_TYPE_REGISTRATION:
 		        $this->retrievers[$key] = $retriever;
 		        break;
+		    default:
+		        throw new KurogoConfigurationException("Invalid retriever type '$type' for $key");
     	}
     }
 
-    public function setTermsRetriever($type, TermsDataRetriever $retriever) {
-    	switch ($type)
-    	{
-    		case self::TERM_TYPE_CATALOG:
-    		case self::TERM_TYPE_USER:
-		        $this->termsRetrievers[$type] = $retriever;
-		        break;
-    		case self::TERM_TYPE_BOTH:
-    			$this->setTermsRetriever(self::TERM_TYPE_CATALOG, $retriever);
-    			$this->setTermsRetriever(self::TERM_TYPE_USER, $retriever);
-    			break;
-    		default:
-    			throw new KurogoConfigurationException("Invalid term type $type");
-		}
-    }
-    
     protected function init($args) {
         $this->initArgs = $args;
+        $termsRetrieversToSet = array();
 
         foreach ($args as $key => $section) {
-            if(!is_array($section)){
-                throw new KurogoConfigurationException("Feeds configuration section '$key' must be an array.");
-            }
-
-            if(Kurogo::arrayVal($args[$key], 'ENABLED', true)){
+            if (Kurogo::arrayVal($args[$key], 'ENABLED', true)){
                 $section['CACHE_FOLDER'] = isset($section['CACHE_FOLDER']) ? $section['CACHE_FOLDER'] : get_class($this);
                 $retriever = DataRetriever::factory($section['RETRIEVER_CLASS'], $section);
                 $retriever->setDataModel($this);
                 
-                if ($retriever instanceOf TermsDataRetriever) {
-                	if (isset($section['TERM_TYPE'])) {
-	                	$this->setTermsRetriever($section['TERM_TYPE'], $retriever);
-                	} else {
-	                	$this->setTermsRetriever(self::TERM_TYPE_BOTH, $retriever);
-                	}
+                if (isset($section['TERMS_RETRIEVER'])) {
+                    $termsRetrieverKey = $section['TERMS_RETRIEVER'];
+                    if (!isset($args[$termsRetrieverKey])) {
+                        throw new KurogoConfigurationException("Terms retriever '$termsRetrieverKey' not defined for section '$key'");
+                    }
+                    $this->termsRetrievers[$key] = $termsRetrieverKey;
                 } else {
-					$this->setCoursesRetriever($key, $retriever);
-				}
+                    $this->termsRetrievers[$key] = false;
+                }
+                
+                if ($retriever instanceOf TermsDataRetriever) {
+                    $this->termsRetrievers[$key] = $retriever;
+                } elseif ($retriever instanceOf CourseDataInterface) {
+                    $this->setCoursesRetriever($key, $retriever);
+                } else {
+                    throw new KurogoConfigurationException("Section $key is of an unrecognized class retriever " . $section['TEMRS_RETRIEVER'] . " not defined for section $key");
+                }
             }
         }
     }
