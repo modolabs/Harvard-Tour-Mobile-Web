@@ -28,8 +28,9 @@ class HomeWebModule extends WebModule {
         return $this->getOptionalModuleVar('SHOW_LOGIN', true);
     }
     
-    private function getTabletModulePanes($tabletConfig) {
+    protected function getTabletModulePanes() {
         $modulePanes = array();
+        $tabletConfig = $this->getTabletModulePaneConfig();
         
         foreach ($tabletConfig as $blockName => $moduleID) {
             $title = ucfirst($moduleID);
@@ -103,6 +104,11 @@ class HomeWebModule extends WebModule {
         return $modules;
     }
     
+    protected function getTabletModulePaneConfig() {
+        $panes = $this->getModuleSection('tablet_panes');
+        return $panes;
+    }
+    
     protected function initializeForPage() {
         switch ($this->page) {
             case 'help':
@@ -110,7 +116,7 @@ class HomeWebModule extends WebModule {
                   
             case 'index':
                 if ($this->pagetype == 'tablet') {
-                    $modulePanes = $this->getTabletModulePanes($this->getModuleSection('tablet_panes'));
+                    $modulePanes = $this->getTabletModulePanes();
                     
                     $this->assign('modulePanes', $modulePanes);
                     $this->addOnLoad('loadModulePages('.json_encode($modulePanes).');');
