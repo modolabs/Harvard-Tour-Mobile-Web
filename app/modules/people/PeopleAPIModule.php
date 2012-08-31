@@ -214,11 +214,12 @@ class PeopleAPIModule extends APIModule
                     if(!$people)
                     	$people = array();
                     	
-                    $errorCode = $peopleController->getResponseCode();
-                    if ($errorCode) {
+                    $hasError = $peopleController->getResponseError();
+                    if ($hasError) {
                         // TODO decide on error title
                         $errorTitle = 'Warning';
                         $errorMsg = $peopleController->getResponseError();
+                        $errorCode = $peopleController->getResponseCode();
                         $error = new KurogoError($errorCode, $errorTitle, $errorMsg);
                         $this->setResponseError($error);
                     }
@@ -261,11 +262,12 @@ class PeopleAPIModule extends APIModule
                         $this->setResponse($response);
                         $this->setResponseVersion(1);
                     }else{
-                        $errorCode = $peopleController->getResponseCode();
-                        if ($errorCode) {
+                        $hasError = $peopleController->getResponseError();
+                        if ($hasError) {
                             // TODO decide on error title
                             $errorTitle = 'Warning';
                             $errorMsg = $peopleController->getResponseError();
+                            $errorCode = $peopleController->getResponseCode();
                             $error = new KurogoError($errorCode, $errorTitle, $errorMsg);
                             $this->setResponseError($error);
                         }
