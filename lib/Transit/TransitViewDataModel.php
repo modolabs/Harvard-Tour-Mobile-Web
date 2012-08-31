@@ -20,7 +20,10 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
     protected $models = array();
     protected $daemonMode = false;
     protected $cache = null;
-    protected $globalIDSeparator = null;
+    protected $globalIDSeparator = '__';
+    protected $cacheClass = 'DataCache';
+    protected $cacheFolder = 'Transit'; 
+    protected $cacheLifetime = 20;
     
     const DEFAULT_TRANSIT_CACHE_GROUP = 'View';
     
@@ -35,7 +38,16 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
         $this->initArgs = $this->config->getGlobalArgs();
 
         $this->setDebugMode(Kurogo::getOptionalSiteVar('DEBUG_MODE', false));
-        $this->globalIDSeparator = Kurogo::getOptionalSiteVar('TRANSIT_GLOBAL_ID_SEPARATOR', '__');
+        
+        if (isset($this->initArgs['TRANSIT_GLOBAL_ID_SEPARATOR'])) {
+            $this->globalIDSeparator = $this->initArgs['TRANSIT_GLOBAL_ID_SEPARATOR'];
+        }
+        
+        if ($this->daemonMode) {
+            // daemons should load cached files aggressively to beat user page loads
+            $this->cacheLifetime -= 900;
+            if ($this->cacheLifetime < 1) { $this->cacheLifetime = 1; }
+        }
         
         foreach ($this->config->getModelIDs() as $modelID) {
             $model = array(
@@ -65,20 +77,18 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
             $this->models[$modelID] = $model;
         }
         
-        $cacheClass = Kurogo::getOptionalSiteVar('TRANSIT_VIEW_CACHE_CLASS', 'DataCache');
-        $cacheFolder = isset($this->initArgs['CACHE_FOLDER']) ? $this->initArgs['CACHE_FOLDER'] :
-            Kurogo::getOptionalSiteVar('TRANSIT_CACHE_DIR', 'Transit');
-        $this->cache = DataCache::factory($cacheClass, array('CACHE_FOLDER' => $cacheFolder,));
-        
-        $this->cache->setCacheGroup('View');
-        
-        $cacheLifetime = Kurogo::getOptionalSiteVar('TRANSIT_VIEW_CACHE_TIMEOUT', 20);
-        if ($this->daemonMode) {
-            // daemons should load cached files aggressively to beat user page loads
-            $cacheLifetime -= 900;
-            if ($cacheLifetime < 1) { $cacheLifetime = 1; }
+        if (isset($this->initArgs['TRANSIT_VIEW_CACHE_CLASS'])) {
+            $this->cacheClass = $this->initArgs['TRANSIT_VIEW_CACHE_CLASS'];
         }
-        $this->cache->setCacheLifetime($cacheLifetime);
+        if (isset($this->initArgs['CACHE_FOLDER'])) {
+            $this->cacheFolder = $this->initArgs['CACHE_FOLDER'];
+        }
+        if (isset($this->initArgs['TRANSIT_VIEW_CACHE_TIMEOUT'])) {
+            $this->cacheLifetime = $this->initArgs['TRANSIT_VIEW_CACHE_TIMEOUT'];
+        }
+        $this->cache = DataCache::factory($this->cacheClass, array('CACHE_FOLDER' => $this->cacheFolder));        
+        $this->cache->setCacheGroup('View');
+        $this->cache->setCacheLifetime($this->cacheLifetime);
     }
     
     protected function getCachedViewForKey($cacheKey) {

@@ -26,6 +26,11 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     protected $scheduleViewRoutes = array();
     protected $splitByHeadsignRoutes = array();
     protected $daemonMode = false;
+    protected $transitMaxArrivalDelay = 7200; // 2 hours
+    protected $transitDefaultRouteColor = "b12727"; // shade of redirect
+    protected $transitScheduleRouteRunningPadding = 14400; // 4 hours
+    
+    protected static $routeRunningPadding = null;
     
     protected $routes    = array();
     protected $stops     = array();
@@ -84,9 +89,6 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     }
     
     protected function init($args) {
-        $args['CACHE_FOLDER'] = isset($args['CACHE_FOLDER']) ? 
-            $args['CACHE_FOLDER'] : Kurogo::getOptionalSiteVar('TRANSIT_CACHE_DIR', 'Transit');
-        
         parent::init($args);
         
         if (isset($args['FIELD_OVERRIDES'])) {
@@ -132,6 +134,18 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             }
         }
         
+        if (isset($args['TRANSIT_MAX_ARRIVAL_DELAY'])) {
+            $this->transitMaxArrivalDelay = $args['TRANSIT_MAX_ARRIVAL_DELAY'];
+        }
+        
+        if (isset($args['TRANSIT_DEFAULT_ROUTE_COLOR'])) {
+            $this->transitDefaultRouteColor = $args['TRANSIT_DEFAULT_ROUTE_COLOR'];
+        }
+        
+        if (isset($args['TRANSIT_SCHEDULE_ROUTE_RUNNING_PADDING'])) {
+            $this->transitScheduleRouteRunningPadding = $args['TRANSIT_SCHEDULE_ROUTE_RUNNING_PADDING'];
+        }
+    
         if (isset($args['DAEMON_MODE'])) {
             $this->daemonMode = $args['DAEMON_MODE'];
         }
@@ -178,14 +192,21 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             // Walk the stops to figure out which is upcoming
             $stopIndexes = array_keys($directionInfo['stops']);
             $firstStopIndex = reset($stopIndexes);
+            $lastStopIndex = end($stopIndexes);
             
             $firstStopPrevIndex  = null;
+            $lastStopNextIndex  = null;
             if (count($directions) == 1 && count($stopIndexes)) {
                 // Loop case
                 $firstStopPrevIndex = end($stopIndexes);
                 if (self::isSameStop($directionInfo['stops'][$firstStopIndex]['id'], 
                                      $directionInfo['stops'][$firstStopPrevIndex]['id'])) {
                     $firstStopPrevIndex = prev($stopIndexes);
+                }
+                $lastStopNextIndex = reset($stopIndexes);
+                if (self::isSameStop($directionInfo['stops'][$lastStopIndex]['id'], 
+                                     $directionInfo['stops'][$lastStopNextIndex]['id'])) {
+                    $lastStopNextIndex = next($stopIndexes);
                 }
             }
             
@@ -201,11 +222,20 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 } else {
                     $prevArrives = $directionInfo['stops'][$stopIndexes[$i-1]]['arrives'];
                 }
+                $nextArrives = PHP_INT_MAX; // Non-loop case
+                if ($stopIndex == $lastStopIndex) {
+                    if ($lastStopNextIndex) {
+                        // Loop case
+                        $nextArrives = $directionInfo['stops'][$lastStopNextIndex]['arrives'];
+                    }
+                } else {
+                    $nextArrives = $directionInfo['stops'][$stopIndexes[$i+1]]['arrives'];
+                }
                 
                 // Suppress any soonest stops which are more than 2 hours from now
                 $directions[$directionID]['stops'][$stopIndex]['upcoming'] = 
-                    (abs($arrives - $now) < Kurogo::getSiteVar('TRANSIT_MAX_ARRIVAL_DELAY')) && 
-                    $arrives <= $prevArrives;
+                    (abs($arrives - $now) < $this->transitMaxArrivalDelay) && 
+                    ($arrives <= $prevArrives && $arrives < $nextArrives);
             }
         }
     }
@@ -307,10 +337,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         if ($_SERVER['SERVER_NAME'] != 'localhost') {
             return FULL_URL_PREFIX.'modules/transit/images/shuttle_stop_pin.png';
         } else {
-            $routeColor = Kurogo::getSiteVar('TRANSIT_DEFAULT_ROUTE_COLOR');
-            if ($routeID) {
-                $routeColor = $this->getRouteColor($routeID);
-            }
+            $routeColor = $routeID ? $this->getRouteColor($routeID) : $this->transitDefaultRouteColor;
             
             return self::GOOGLE_CHART_API_URL.http_build_query(array(
                 'chst' => 'd_map_pin_icon',
@@ -357,7 +384,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     }
     
     protected function getRouteColor($routeID) {
-        return Kurogo::getSiteVar('TRANSIT_DEFAULT_ROUTE_COLOR');
+        return $this->transitDefaultRouteColor;
     }
     
     protected function getRouteDirectionPredictionsForStop($routeID, $stopID, $time) {
@@ -575,7 +602,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             'description'     => $route->getDescription(),
             'color'           => $this->getRouteColor($routeID),
             'live'            => $isRunning ? $this->isLive() : false,
-            'frequency'       => round($route->getServiceFrequency($time) / 60, 0),
+            'frequency'       => round($route->getServiceFrequency($time, $this->transitMaxArrivalDelay) / 60, 0),
             'running'         => $isRunning,
             'inService'       => $inService,
             'stopIconURL'     => $this->getMapIconUrlForRouteStop($routeID),
@@ -692,7 +719,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             $time = TransitTime::getCurrentTime();
         }
         
-        $timeRange = array($time, $time + Kurogo::getOptionalSiteVar('TRANSIT_SCHEDULE_ROUTE_RUNNING_PADDING', 900));
+        $timeRange = array($time, $time + $this->transitScheduleRouteRunningPadding);
         
         $routes = array();
         foreach ($this->routes as $routeID => $route) {
@@ -706,7 +733,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 'name'         => $route->getName(),
                 'description'  => $route->getDescription(),
                 'color'        => $this->getRouteColor($routeID),
-                'frequency'    => round($route->getServiceFrequency($time) / 60),
+                'frequency'    => round($route->getServiceFrequency($time, $this->transitMaxArrivalDelay) / 60),
                 'agency'       => $route->getAgencyID(),
                 'live'         => $isRunning ? $this->isLive() : false,
                 'inService'    => $inService,
@@ -952,9 +979,9 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         }
         
         $segments = array();
-        
-        $timeRange = array($time, $time + Kurogo::getOptionalSiteVar('TRANSIT_SCHEDULE_ROUTE_RUNNING_PADDING', 900));
+        $timeRange = array($time, $time + $this->transitScheduleRouteRunningPadding);
         $runningTime = $this->viewRouteInScheduleView($routeID) ? $timeRange : $time;
+        
         foreach ($directionSegments as $segment) {
             if (!$segment->isRunning($runningTime)) {
                 self::dlog("segment {$segment->getID()} ({$segment->getName()}) is not running", self::DLOG_STOP_GRAPH_SORT);
@@ -1443,7 +1470,7 @@ class TransitRoute
         return array(false, false);
     }
     
-    public function getServiceFrequency($time) {
+    public function getServiceFrequency($time, $transitMaxArrivalDelay) {
         // Time between shuttles at the same stop
         $frequency = 0;
         
@@ -1482,7 +1509,7 @@ class TransitRoute
                             $frequency = $arrivalTimes[$i] - $arrivalTimes[$i-1];
                         }
                     }
-                    if ($frequency > 0 && $frequency < Kurogo::getSiteVar('TRANSIT_MAX_ARRIVAL_DELAY')) { break; }
+                    if ($frequency > 0 && $frequency < $transitMaxArrivalDelay) { break; }
                 }
             }
             if ($frequency == 0) { $frequency = 60*60; } // default to 1 hour

@@ -20,22 +20,31 @@ class TranslocDataModel extends TransitDataModel
     protected $DEFAULT_RETRIEVER_CLASS = 'TranslocDataRetriever';
     
     protected $routeColors = array();
-    
-    const DEFAULT_EXTERNAL_SERVICE_URL = 'http://www.transloc.com/';
-    const DEFAULT_TRANSLOC_MARKERS_URL = "http://feeds.transloc.com/markers/";
+    protected $translocMarkersURL = 'http://feeds.transloc.com/markers/';
+    protected $translocServiceURL = 'http://www.transloc.com/';
     
     static private function argVal($array, $key, $default='') {
         return is_array($array) && isset($array[$key]) ? $array[$key] : $default;
     }
     
+    protected function init($args) {
+        if (isset($args['TRANSLOC_MARKERS_URL'])) {
+            $this->translocMarkersURL = $args['TRANSLOC_MARKERS_URL'];
+        }
+        if (isset($args['EXTERNAL_SERVICE_URL'])) {
+            $this->translocServiceURL = $args['EXTERNAL_SERVICE_URL'];
+        }
+        
+        parent::init($args);
+    }
+
     protected function isLive() {
         return true;
     }
     
     protected function getMapIconUrlForRouteStop($routeID) {
-        $iconURL = Kurogo::getOptionalSiteVar('TRANSLOC_MARKERS_URL', self::DEFAULT_TRANSLOC_MARKERS_URL);
-        if ($iconURL) {
-            return rtrim($iconURL, '/')."/stop.png?".http_build_query(array(
+        if ($this->translocMarkersURL) {
+            return rtrim($this->translocMarkersURL, '/')."/stop.png?".http_build_query(array(
                 's' => 5,  // radius of 5 px
                 'c' => $this->getRouteColor($routeID),
             ));
@@ -45,15 +54,14 @@ class TranslocDataModel extends TransitDataModel
     }
     
     protected function getMapIconUrlForRouteVehicle($routeID, $vehicle=null) {
-        $iconURL = Kurogo::getOptionalSiteVar('TRANSLOC_MARKERS_URL', self::DEFAULT_TRANSLOC_MARKERS_URL);
-        if ($iconURL) {
+        if ($this->translocMarkersURL) {
             $args = array(
                 'c' => $this->getRouteColor($routeID),
             );
             if ($vehicle && ($heading = self::argVal($vehicle, 'heading'))) {
                 $args['h'] = $heading;
             }
-            return rtrim($iconURL, '/')."/vehicle.png?".http_build_query($args);
+            return rtrim($this->translocMarkersURL, '/')."/vehicle.png?".http_build_query($args);
         } else {
             return parent::getMapIconUrlForRouteVehicle($routeID, $vehicle);
         }
@@ -90,8 +98,7 @@ class TranslocDataModel extends TransitDataModel
     }
     
     protected function getServiceLink() {
-      return isset($this->initArgs['EXTERNAL_SERVICE_URL']) ? 
-          $this->initArgs['EXTERNAL_SERVICE_URL'] : self::DEFAULT_EXTERNAL_SERVICE_URL;
+      return $this->translocServiceURL;
     }
     
     public function getRouteVehicles($routeID) {
