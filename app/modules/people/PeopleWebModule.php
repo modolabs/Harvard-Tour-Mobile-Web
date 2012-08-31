@@ -397,7 +397,7 @@ class PeopleWebModule extends WebModule {
                     $people = $this->searchItems($searchTerms);
                     $this->assign('searchError', $PeopleController->getResponseError());
 
-                    if (count($people) > 0) {
+                    if ($people != false && count($people) > 0) {
                         $resultCount = count($people);
                         $totalItems = $PeopleController->getTotalItems();
 
