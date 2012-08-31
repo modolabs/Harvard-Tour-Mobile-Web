@@ -1790,7 +1790,7 @@ class CoursesWebModule extends WebModule {
 					);
             	}
             } else {
-	            $courseCatalogText = str_replace("%t", $this->getTermTitle(), $this->getLocalizedString('COURSE_CATALOG_TEXT'));
+	            $courseCatalogText = $this->getLocalizedString('COURSE_CATALOG_TEXT');
 				$catalogItems[] = array(
 					'title' => $this->getFeedTitle($catalogRetrieverKey),
 					'url'   => $this->buildBreadcrumbURL('catalog', array('feed'=>$catalogRetrieverKey,'term'=>$term))
