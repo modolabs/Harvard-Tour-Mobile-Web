@@ -15,6 +15,7 @@ class CourseTerm {
     protected $title;
     protected $startDate;
     protected $endDate;
+    protected $sort;
     protected $attributes=array();
         
     public function __toString() {
@@ -57,6 +58,14 @@ class CourseTerm {
         if (is_array($attribs)) {
             $this->attributes = $attribs;
         }
+    }
+    
+    public function getSort() {
+        return isset($this->sort) ? $this->sort : $this->id;
+    }
+
+    public function setSort($sort) {
+        $this->sort = $sort;
     }
     
     public function getAttributes() {

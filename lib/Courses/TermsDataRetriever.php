@@ -12,5 +12,6 @@
 interface TermsDataRetriever
 {
     public function getAvailableTerms();
+    public function getCurrentTerm();
     public function getTerm($termCode);
 }
