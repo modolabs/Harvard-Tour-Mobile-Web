@@ -587,6 +587,12 @@ class CoursesWebModule extends WebModule {
 
     protected function assignTerms($_terms, $selectedTerm) {
     	$terms = array();
+    	if ($selectedTerm == CoursesDataModel::CURRENT_TERM) {
+    	    if ($Term = $this->controller->getCurrentTerm()) {
+    	        $selectedTerm = $Term->getID();
+    	    }
+    	}
+    	
         foreach($_terms as $term) {
             $terms[] = array(
                 'value'     => $term->getID(),
@@ -1373,11 +1379,15 @@ class CoursesWebModule extends WebModule {
         foreach ($courseListings as $listingData) {
             $types = isset($listingData['types']) ? $listingData['types'] : array();
             foreach ($types as $type) {
-                $terms = array_merge($terms, $this->controller->getAvailableTerms($type));
+                $_terms = $this->controller->getAvailableTerms($type);
+                foreach ($_terms as $term) {
+                    $terms[$term->getSort()] = $term;
+                }
             }
         }
-        
-        return $terms;
+
+        ksort($terms);        
+        return array_values($terms);
         
     }
     

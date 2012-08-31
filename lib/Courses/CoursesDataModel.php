@@ -34,14 +34,25 @@ class CoursesDataModel extends DataModel {
 		return array();
     }
     
-    public function getCurrentTerm($type) {    	
+    public function getCurrentTerm($type=null) {
     	if ($retriever = $this->getTermsRetriever($type)) {
     		$term = $retriever->getCurrentTerm();
     		if (!$term instanceOf CourseTerm) {
     			return null;
     		}
-    	} else {
+    	} elseif ($type) {
             $term = null;
+		} else {
+		    $term = null;
+		    //find a valid term in the termsretrievers
+		    foreach ($this->termsRetrievers as $retriever) {
+		        if ($retriever instanceOf TermsDataRetriever) {
+                    $Term = $retriever->getCurrentTerm();
+                    if ($Term instanceOf CourseTerm) {
+                        $term = $Term;
+                    }
+                }
+		    }
 		}
 
         return $term;
@@ -108,6 +119,10 @@ class CoursesDataModel extends DataModel {
     }
     
     public function getTermsRetriever($type) {
+        if (!$type) {
+            return null;
+        }
+        
         if (isset($this->termsRetrievers[$type])) {
             if ($this->termsRetrievers[$type] instanceOf TermsDataRetriever) {
                 return $this->termsRetrievers[$type];
@@ -253,10 +268,10 @@ class CoursesDataModel extends DataModel {
                 
                 if ($retriever instanceOf TermsDataRetriever) {
                     $this->termsRetrievers[$key] = $retriever;
-                } elseif ($retriever instanceOf CourseDataInterface) {
+                }
+                
+                if ($retriever instanceOf CourseDataInterface) {
                     $this->setCoursesRetriever($key, $retriever);
-                } else {
-                    throw new KurogoConfigurationException("Section $key is of an unrecognized class retriever " . $section['TEMRS_RETRIEVER'] . " not defined for section $key");
                 }
             }
         }
