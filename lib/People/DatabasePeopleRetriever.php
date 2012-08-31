@@ -268,7 +268,7 @@ class DatabasePerson extends Person
 
     public function setAttributes($data) {
         foreach ($data as $field=>$value) {
-            $this->attributes[strtolower($field)] = $value;
+            $this->setField(strtolower($field), $value);
         }
     }    
 

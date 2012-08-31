@@ -48,10 +48,6 @@ class EmergencyContactsListItem
     }
 
     public function getPhoneDialable() {
-        if(strlen($this->phone) == 10) {  // 10 digits in a north american number
-            return '1' . $this->phone;
-        } else {
-            return $this->phone;
-        }
+        return PhoneFormatter::getPhoneURL($this->phone);
     }
 }

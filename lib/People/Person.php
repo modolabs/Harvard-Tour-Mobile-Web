@@ -37,4 +37,15 @@ abstract class Person implements KurogoObject
         }
         return NULL;
     }
+
+    public function setField($field, $data){
+        $this->attributes[$field] = $data;
+    }
+
+    public function setFieldArray($field, $data){
+        if(!isset($this->attributes[$field])){
+            $this->attributes[$field] = array();
+        }
+        $this->attributes[$field][] = $data;
+    }
 }

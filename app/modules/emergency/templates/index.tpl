@@ -37,7 +37,7 @@
     {include file="findInclude:common/templates/navlist.tpl"
        navlistItems=$contactNavListItems
        accessKey=false
-       subtitleNewLine=false}
+       subTitleNewline=$subTitleNewline}
   {/block}
 {/if}
 

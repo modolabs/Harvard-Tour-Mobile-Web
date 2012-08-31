@@ -940,9 +940,9 @@ class CalendarWebModule extends WebModule {
           );
         }
 
-        $current =  $year   .'&nbsp;-&nbsp;'.($year+1);
-        $next    = ($year+1).'&nbsp;-&nbsp;'.($year+2);
-        $prev    = ($year-1).'&nbsp;-&nbsp;'. $year;
+        $current =  $year   .' - '.($year+1);
+        $next    = ($year+1).' - '.($year+2);
+        $prev    = ($year-1).' - '. $year;
 
         // How many years into the future and past to page:
         $maxNextYears = $this->getOptionalModuleVar(strtoupper($calendar).'_CALENDAR_MAX_NEXT_YEARS', 1);
