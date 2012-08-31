@@ -221,7 +221,6 @@ class PeopleAPIModule extends APIModule
                         $errorMsg = $peopleController->getResponseError();
                         $errorCode = $peopleController->getResponseCode();
                         $error = new KurogoError($errorCode, $errorTitle, $errorMsg);
-                        $this->setResponseError($error);
                     }
                     
                     $response[] = null;
@@ -237,6 +236,7 @@ class PeopleAPIModule extends APIModule
                             'feed'         => $feed,
                             'displayField' => 'name',
                             'results'      => $results,
+                            'error'        => isset($error) ? $error : null
                             );
                     }
                     
