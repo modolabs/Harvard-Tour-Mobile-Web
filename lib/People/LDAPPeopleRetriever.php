@@ -568,13 +568,13 @@ class LDAPPerson extends Person {
             
             if ($attrib == $this->fieldMap['photodata']) {
                 if ($data = @ldap_get_values_len($ldap, $entry, $attribute)) {
-                    $this->attributes[$attrib] = $data; // Get binary photo data
+                    $this->setField($attrib, $data); // Get binary photo data
                 }
             } else {
-                $this->attributes[$attrib] = array();
+                $this->setField($attrib, array());
                 for ($j = 0; $j < $count; $j++) {
                     if (!in_array($ldapEntry[$attribute][$j], $this->attributes[$attrib])) {
-                        $this->attributes[$attrib][] = str_replace('$', "\n", $ldapEntry[$attribute][$j]);
+                        $this->setFieldArray($attrib,str_replace('$', "\n", $ldapEntry[$attribute][$j]));
                     }
                 }
             }
