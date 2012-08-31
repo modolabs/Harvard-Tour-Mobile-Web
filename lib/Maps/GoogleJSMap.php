@@ -23,6 +23,8 @@ class GoogleJSMap extends JavascriptMapImageController {
     protected $polygons = array();
 
     protected $placemarkCount = 0; // number of placemarks we've already processed
+    
+    protected $cache;
 
     public function setImageWidth($width) {
         if (strpos($width, '%') === FALSE) {
@@ -93,6 +95,14 @@ class GoogleJSMap extends JavascriptMapImageController {
                 if (($icon = $style->getStyleForTypeAndParam(MapStyle::POINT, MapStyle::ICON)) != null) {
                     $width = $style->getStyleForTypeAndParam(MapStyle::POINT, MapStyle::WIDTH);
                     $height = $style->getStyleForTypeAndParam(MapStyle::POINT, MapStyle::HEIGHT);
+                    $scale = $style->getStyleForTypeAndParam(MapStyle::POINT, MapStyle::SCALE);
+                    // scale set, need width and height
+                    if($scale && (empty($width) || empty($height))) {
+                        $this->getImageSize($icon, $scale, $width, $height);
+                    }else {
+                        $width = $width * $scale;
+                        $height = $height * $scale;
+                    }
                     if ($width && $height) {
                         $displaySize = "new google.maps.Size($width, $height)";
                         $options .= "icon: new google.maps.MarkerImage('$icon', null, null, null, $displaySize),\n";
@@ -117,6 +127,31 @@ class GoogleJSMap extends JavascriptMapImageController {
         }
 
         return $template->getScript();
+    }
+    
+    private function initCacheIfNeeded() {
+        if($this->cache) {
+            return $this->cache;
+        }
+        // init a DiskCache to save all user form data
+        $this->cache = DataCache::factory("DataCache", array());
+        // cache life time set to 1 hour
+        $this->cache->setCacheLifetime(3600);
+        $this->cache->setCacheGroup("GoogleJSMapImageSize");
+    }
+
+    private function getImageSize($url, $scale, & $width, & $height) {
+        $key = md5($url);
+        $this->initCacheIfNeeded();
+        if($attribs = $this->cache->get($key)) {
+            $width = $attribs[0] * $scale;
+            $height = $attribs[1] * $scale;
+        }else {
+            $attribs = getimagesize($url);
+            $width = $attribs[0] * $scale;
+            $height = $attribs[1] * $scale;
+            $this->cache->set($key, array($attribs[0], $attribs[1]));
+        }
     }
     
     private function getPolygonJS()
