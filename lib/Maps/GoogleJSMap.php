@@ -23,6 +23,8 @@ class GoogleJSMap extends JavascriptMapImageController {
     protected $polygons = array();
 
     protected $placemarkCount = 0; // number of placemarks we've already processed
+    
+    protected $cache;
 
     public function setImageWidth($width) {
         if (strpos($width, '%') === FALSE) {
