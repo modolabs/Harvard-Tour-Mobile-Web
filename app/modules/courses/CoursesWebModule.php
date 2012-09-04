@@ -1758,8 +1758,7 @@ class CoursesWebModule extends WebModule {
                                             'coursesLinks' => $coursesLinks);
             }
             if(!$hasCourses){
-                $noCoursesText = array(array('title'=>$this->getLocalizedString('NO_COURSES')));
-                $this->assign('noCoursesText', $noCoursesText);
+                $this->assign('noCoursesText', $this->getLocalizedString('NO_COURSES'));
             }
             $this->assign('hasCourses', $hasCourses);
             $this->assign('coursesListLinks', $coursesListLinks);
