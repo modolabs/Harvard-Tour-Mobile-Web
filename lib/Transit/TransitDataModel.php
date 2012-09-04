@@ -1891,10 +1891,12 @@ class TransitPath
       
       $pathPoints = array();
       foreach ($points as &$point) {
-          $pathPoints[] = array(
-              'lat' => floatVal(reset($point)),
-              'lon' => floatVal(end($point)),
-          );
+          if (is_array($point) && count($point) == 2) {
+              $pathPoints[] = array(
+                  'lat' => floatVal(reset($point)),
+                  'lon' => floatVal(end($point)),
+              );
+          }
       }
       $this->points = $pathPoints;
     }
