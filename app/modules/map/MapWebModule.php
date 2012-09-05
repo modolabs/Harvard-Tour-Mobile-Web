@@ -1100,6 +1100,9 @@ class MapWebModule extends WebModule {
         if (($category = $this->getArg('category'))) {
             $toggleArgs['category'] = $category;
         }
+        if($filter = $this->getArg(array('q', 'filter'))) {
+            $toggleArgs['filter'] = $filter;
+        }
         $this->assign('browseURL', $this->buildBreadcrumbURL($this->page, $toggleArgs, false));
     }
 
