@@ -462,7 +462,7 @@ class TourDataParser {
             $files = $this->getNodeFilesData($node['nid']);
             foreach ($files as $file) {
                 if (isset($file['uri_full']) && $file['fid'] == $nodeFile['fid']) {
-                    return $file['uri_full'];
+                    return ImageLoader::cacheImage($file['uri_full'], array());
                 }
             }
         }
