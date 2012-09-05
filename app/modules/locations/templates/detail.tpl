@@ -44,7 +44,9 @@
     <p>{$description}</p>
   {/block}
 </div>
+{if $location}
   {include file="findInclude:common/templates/navlist.tpl" navlistItems=$location}
+{/if}
 
 {$sideNav}
 {block name="events"}
