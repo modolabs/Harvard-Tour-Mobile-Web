@@ -12,6 +12,7 @@
  class YouTubeRetriever extends URLDataRetriever implements SearchDataRetriever, ItemDataRetriever
  {
     protected $DEFAULT_PARSER_CLASS='YouTubeDataParser';
+    protected $orderBy = 'published;
     
  	private function setStandardFilters() {
  		if ($playlist = $this->getOption('playlist')) {
@@ -23,7 +24,7 @@
         $this->addFilter('alt', 'jsonc'); //set the output format to json
         $this->addFilter('format', 6); //only return mobile videos
         $this->addFilter('v', 2); // version 2
-        $this->addFilter('orderby', 'published');
+        $this->addFilter('orderby', $this->orderBy);
     }
     
     public function search($searchTerms, &$response=null) {
@@ -36,6 +37,9 @@
         parent::init($args);
         if (isset($args['PLAYLIST']) && strlen($args['PLAYLIST'])) {
             $this->setOption('playlist', $args['PLAYLIST']);
+        }
+        if(isset($args['ORDER_BY']) && strlen($args['ORDER_BY'])){
+            $this->orderBy = $args['ORDER_BY'];
         }
         $this->setStandardFilters();
     }
