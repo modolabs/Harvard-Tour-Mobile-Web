@@ -1789,6 +1789,7 @@ class CoursesWebModule extends WebModule {
 					);
             	}
             } else {
+                $term = $this->controller->getCurrentTerm($catalogRetrieverKey);
 	            $courseCatalogText = $this->getLocalizedString('COURSE_CATALOG_TEXT');
 				$catalogItems[] = array(
 					'title' => $this->getFeedTitle($catalogRetrieverKey),
