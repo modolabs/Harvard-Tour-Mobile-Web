@@ -254,6 +254,19 @@ class TransitAPIModule extends APIModule {
                     );
                 }
             }
+
+            $tabs = array();
+            $pageData = $this->getModuleSections('pages');
+            $indexTabs = $pageData['index'];
+            foreach ($indexTabs as $tabID => $tabName) {
+                $tabs[] = array(
+                    # Remove 'tab_'
+                    'id' => substr($tabID, 4),
+                    'title' => $tabName,
+                );
+            }
+            $results['tabs'] = $tabs;
+
             $this->setResponse($results);
             $this->setResponseVersion($responseVersion);
             break;
