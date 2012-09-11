@@ -9,6 +9,8 @@
  *
  */
 
+includePackage('Video');
+
 class VideoWebModule extends WebModule
 {
     protected static $defaultModel = 'VideoDataModel';
