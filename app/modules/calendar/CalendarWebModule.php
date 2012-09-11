@@ -910,7 +910,13 @@ class CalendarWebModule extends WebModule {
         $defaultStartDay   = $this->getOptionalModuleVar(strtoupper($calendar).'_CALENDAR_START_DAY', 1);
 
         $month = intval($this->getArg('month', $defaultStartMonth));
+        if (!Validator::isValidMonth($month)) {
+            $month = $defaultStartMonth;
+        }
         $day   = intval($this->getArg('day', $defaultStartDay));
+        if (!Validator::isValidDay($day, $month)) {
+            $day = $defaultStartDay;
+        }
 
         // Figure out which year we are currently in based on year start month and day:
         $currentYear = intval(date('Y'));
