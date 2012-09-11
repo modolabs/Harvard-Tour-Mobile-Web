@@ -12,13 +12,19 @@
  class YouTubeRetriever extends URLDataRetriever implements SearchDataRetriever, ItemDataRetriever
  {
     protected $DEFAULT_PARSER_CLASS='YouTubeDataParser';
-    protected $orderBy = 'published;
+    protected $orderBy;
     
  	private function setStandardFilters() {
  		if ($playlist = $this->getOption('playlist')) {
 			$this->setBaseUrl('http://gdata.youtube.com/feeds/api/playlists/' . $playlist);
+            if(!$this->orderBy){
+                $this->orderBy = 'position';
+            }
  		} else {
 			$this->setBaseUrl('http://gdata.youtube.com/feeds/mobile/videos');
+            if(!$this->orderBy){
+                $this->orderBy = 'published';
+            }
 		}
 		
         $this->addFilter('alt', 'jsonc'); //set the output format to json
