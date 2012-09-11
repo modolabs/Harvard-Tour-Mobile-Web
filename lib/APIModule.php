@@ -68,8 +68,18 @@ abstract class APIModule extends Module
      * The module must be run securely (https)
      */
     protected function secureModule() {
-        $error = new KurogoError(3, 'Secure access required', 'This module must be used using https');
-        $this->throwError($error);
+        $secure_host = Kurogo::getOptionalSiteVar('SECURE_HOST', $_SERVER['SERVER_NAME']);
+        if (empty($secure_host)) {
+            $secure_host = $_SERVER['SERVER_NAME'];
+        }
+        $secure_port = Kurogo::getOptionalSiteVar('SECURE_PORT', 443);
+        if (empty($secure_port)) {
+            $secure_port = 443;
+        }
+
+        $redirect= sprintf("https://%s%s%s", $secure_host, $secure_port == 443 ? '': ":$secure_port", $_SERVER['REQUEST_URI']);
+        Kurogo::log(LOG_DEBUG, "Redirecting to secure url $redirect",'module');
+        Kurogo::redirectToURL($redirect, Kurogo::REDIRECT_PERMANENT);
     }
   
    /**
