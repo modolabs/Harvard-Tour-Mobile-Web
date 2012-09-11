@@ -242,7 +242,7 @@ class TransitWebModule extends WebModule {
                             $allRoutes[$agency]['heading'] = $runningRoutes[$agency]['heading'];
                             $allRoutes[$agency]['items'] = array_merge($allRoutes[$agency]['items'], $runningRoutes[$agency]['items']);
                         }
-                        if ($offlineRoutes && $offlineRoutes[$agency]){
+                        if ($offlineRoutes && isset($offlineRoutes[$agency])){
                             $offlineItems = $offlineRoutes[$agency]['items'];
                             foreach ($offlineItems as $routeID => $item) {
                                 $offlineItems[$routeID]['class'] = 'offline';

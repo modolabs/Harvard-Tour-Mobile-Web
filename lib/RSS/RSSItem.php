@@ -192,6 +192,13 @@ class RSSItem extends XMLElement implements NewsItem
                 }
                 
                 break;
+            case 'AUTHOR':
+                if($name = $element->getProperty('name')){
+                    $this->author = $name;
+                }else{
+                    parent::addElement($element);
+                }
+                break;
             default:
                 parent::addElement($element);
                 break;
