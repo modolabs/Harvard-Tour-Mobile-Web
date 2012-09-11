@@ -9,6 +9,8 @@
  *
  */
 
+includePackage('Video');
+
 class VideoShellModule extends ShellModule {
 
     protected static $defaultModel = 'VideoDataModel';
