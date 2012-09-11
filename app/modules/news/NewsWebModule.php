@@ -160,7 +160,7 @@ class NewsWebModule extends WebModule {
 
         $image = $this->showImages ? $story->getImage() : false;
         
-        if (isset($data['federatedSearch']) && $data['federatedSearch']) {
+        if (isset($data['federatedSearch']) && $data['federatedSearch'] && !$this->getOptionalModuleVar('SHOW_DESCRIPTION_IN_FEDERATED_SEARCH', 1)) {
             $subtitle = '';
         } else {
             $subtitle = $this->htmlEncodeFeedString($story->getDescription());
