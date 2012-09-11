@@ -45,6 +45,8 @@ includes the following options:
 * *GENDER* - The gender of the sport. Should be *men* or *women*. 
 * *BASE_URL* - Optional - The URL of the news feed. By default it will assume RSS. If 
   this is in a different format you can use the same news feed options found in the :doc:`News Module <modulenews>`
+* *ICON* - Optional - The name of the icon to be used for this sport. It should be put in *modules/athletics/images/*. Compliant pagetypes will use a PNG
+  image, basic will use a GIF image. If this key is not present then it will use the same name as the *TITLE*.
 
 For the schedule information, you will need to create a section in *config/athletics/schedule.ini* with 
 the same name as you created in *feeds.ini*. This section will contain the schedule and results
