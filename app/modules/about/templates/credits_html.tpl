@@ -12,7 +12,9 @@ Cambridge, MA 02140<br />
     <li>Pete Akins (Lead Developer, Mobile Web)</li>
     <li>Muhammad Amjad</li>
     <li>Dario Baldoni</li>
+    <li>Dylan Conger</li>
     <li>Alexis Ellwood</li>
+    <li>Austin Emmons</li>
     <li>Ian Gavalakis</li>
     <li>Wesley Hirsch</li>
     <li>Sonya Huang (Lead Developer, iOS)</li>
@@ -92,5 +94,3 @@ Cambridge, MA 02140<br />
     <li>Copyright: Stig Brautaset</li>
     <li><a href="http://stig.github.com/json-framework">http://stig.github.com/json-framework</a>
 </ul>    
-   
-<h2>Third Party Libraries (Android)</h2>
