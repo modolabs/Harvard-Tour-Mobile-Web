@@ -30,10 +30,12 @@ class KMLPlacemark extends XMLElement implements Placemark
         foreach ($filters as $filter=>$value) {
             switch ($filter) {
                 case 'search':
-                    if (stripos($this->getTitle(), $value) === FALSE && stripos($this->getSubTitle(), $value) === FALSE && stripos($this->getDescription(), $value) === FALSE) {
-                        return false;
-                    }
-                    break;
+                    $contents = array(
+                        'title' => $this->getTitle(),
+                        'subtitle' => $this->getSubTitle(),
+                        'description' => $this->getDescription(),
+                    );
+                    return stringFilter($value, $contents);
                 case 'min':
                     if (!isset($center)) {
                         $center = $this->getGeometry()->getCenterCoordinate();
