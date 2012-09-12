@@ -40,6 +40,16 @@ class MapWebModule extends WebModule {
         if ($this->feedGroup !== NULL) {
             $configName = "feeds-{$this->feedGroup}";
             foreach ($this->getModuleSections($configName) as $id => $feedData) {
+                // get aliases if any
+                $aliasesConfigName = "aliases-{$this->feedGroup}";
+                try {
+                    $aliases = $this->getOptionalModuleSection($id, $aliasesConfigName);
+                }catch(KurogoConfigurationException $e) {
+                    // ignore exception if config file not exists
+                }
+                if($aliases) {
+                    $feedData['ALIASES'] = $aliases;
+                }
                 $feedId = mapIdForFeedData($feedData);
                 $feedData['group'] = $this->feedGroup;
                 $data[$feedId] = $feedData;
@@ -55,6 +65,16 @@ class MapWebModule extends WebModule {
                 $configName = "feeds-$groupID";
                 $groupData = array();
                 foreach ($this->getModuleSections($configName) as $id => $feedData) {
+                    // get aliases if any
+                    $aliasesConfigName = "aliases-{$groupID}";
+                    try {
+                        $aliases = $this->getOptionalModuleSection($id, $aliasesConfigName);
+                    }catch(KurogoConfigurationException $e) {
+                        // ignore exception if config file not exists
+                    }
+                    if($aliases) {
+                        $feedData['ALIASES'] = $aliases;
+                    }
                     $feedId = mapIdForFeedData($feedData);
                     $feedData['group'] = $groupID;
                     $groupData[$feedId] = $feedData;

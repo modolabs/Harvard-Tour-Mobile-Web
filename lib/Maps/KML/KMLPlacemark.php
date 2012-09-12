@@ -23,8 +23,14 @@ class KMLPlacemark extends XMLElement implements Placemark
     protected $geometry;
     protected $urlParams = array();
     protected $categories = array();
+    // aliases map for placemark searching
+    protected $aliases = array();
 
     private $fields = array();
+
+    public function setAliases($aliases) {
+        $this->aliases = $aliases;
+    }
 
     public function filterItem($filters) {
         foreach ($filters as $filter=>$value) {
@@ -35,7 +41,7 @@ class KMLPlacemark extends XMLElement implements Placemark
                         'subtitle' => $this->getSubTitle(),
                         'description' => $this->getDescription(),
                     );
-                    return stringFilter($value, $contents);
+                    return stringFilter($value, $contents, $this->aliases);
                 case 'min':
                     if (!isset($center)) {
                         $center = $this->getGeometry()->getCenterCoordinate();
