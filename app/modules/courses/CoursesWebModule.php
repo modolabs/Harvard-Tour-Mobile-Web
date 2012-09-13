@@ -1818,6 +1818,32 @@ class CoursesWebModule extends WebModule {
      * @return boolean
      */
     protected function showTab($tabID, $tabData, $options) {
+        
+        $showTabDefaults = array(
+            'course' => array(
+                'updates' => array(
+                    'CourseContent',
+                ),
+                'announcements' => array(
+                    'CourseContent',
+                ),
+                'resources' => array(
+                    'CourseContent',
+                ),
+                'tasks' => array(
+                    'CourseContent',
+                ),
+                'info' => array(
+                    'CourseContent',
+                    'CourseRegistration',
+                    'CourseCatalog',
+                ),
+                'grades' => array(
+                    'CourseContent',
+                ),
+            ),
+        );
+
         if (self::argVal($tabData, 'protected', 0) && !$this->isLoggedIn()) {
             return false;
         }
@@ -1832,17 +1858,37 @@ class CoursesWebModule extends WebModule {
                 break;
         }
 
-        if(isset($tabData['showIfCourseExists']) && isset($options['course'])){
-            $hasCourseType = false;
+        # If we have the combined course object
+        if(isset($options['course'])){
             $course = $options['course'];
-            foreach ($tabData['showIfCourseExists'] as $courseType) {
-                if($course->getCoursebyType($courseType)){
-                    $hasCourseType = true;
+            # Check if tab has overridden display conditions
+            if(isset($tabData['showIfCourseExists'])){
+                # An override was provided
+                foreach ($tabData['showIfCourseExists'] as $courseType) {
+                    if($course->getCoursebyType($courseType)){
+                        # Combined course has CourseType, show it
+                        return true;
+                    }
                 }
+                # Combined course did not have CourseType, don't show it
+                return false;
+            }else{
+                # Use defaults
+                # Assume we should show the tab
+                $hasCourseType = true;
+                if(isset($showTabDefaults[$this->page]) && isset($showTabDefaults[$this->page][$tabID])){
+                    foreach ($showTabDefaults[$this->page][$tabID] as $courseType) {
+                        # Some limit exists, assume we should not show the tab unless
+                        # the combined course has the CourseType
+                        $hasCourseType = false;
+                        if($course->getCoursebyType($courseType)){
+                            return true;
+                        }
+                    }
+                }
+                return $hasCourseType;
             }
-            return $hasCourseType;
         }
-
         return true;
     }
 
