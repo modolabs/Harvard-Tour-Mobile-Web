@@ -355,8 +355,8 @@ class CoursesWebModule extends WebModule {
 
         $contentCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CONTENT);
 
+        $page = 'course';
         if ($contentCourse) {
-            $page = 'course';
             $subtitle = array();
             $options['course'] = $contentCourse;
 
@@ -380,13 +380,11 @@ class CoursesWebModule extends WebModule {
                 $link['subtitle'] = implode("<br />", $subtitle);
             }
 
-        } else {
-            $page = 'catalogcourse';
         }
         unset($options['course']);
 
         // Set variables for use with AJAX
-        if ($this->pagetype == 'tablet' && $page == 'course') {
+        if ($this->pagetype == 'tablet') {
             $link['url'] = $this->buildAjaxBreadcrumbURL($page, $options);
             $link['updateIconsURL'] = $this->buildAjaxBreadcrumbURL('courseUpdateIcons', $options);
 
@@ -471,6 +469,7 @@ class CoursesWebModule extends WebModule {
         $args = $this->args;
         switch ($page)
         {
+            case 'coursesection':
             case 'catalogsection':
                 $args['sectionNumber'] = $value;
                 break;
@@ -1833,6 +1832,17 @@ class CoursesWebModule extends WebModule {
                 break;
         }
 
+        if(isset($tabData['showIfCourseExists']) && isset($options['course'])){
+            $hasCourseType = false;
+            $course = $options['course'];
+            foreach ($tabData['showIfCourseExists'] as $courseType) {
+                if($course->getCoursebyType($courseType)){
+                    $hasCourseType = true;
+                }
+            }
+            return $hasCourseType;
+        }
+
         return true;
     }
 
@@ -2140,6 +2150,45 @@ class CoursesWebModule extends WebModule {
                     $tabTypes[$tab] = $tabData['type'];
                 }
 
+                $this->enableTabs($tabs);
+                $this->assign('tabs',$tabs);
+                $this->assign('tabTypes',$tabTypes);
+                $this->assign('tabDetails', $infoDetails);
+                break;
+
+            case 'coursesection':
+                if (!$course = $this->getCourseFromArgs()) {
+                    $this->redirectTo('course', $this->args);
+                }
+ 
+                if (!$registrationCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_REGISTRATION)) {
+                    $this->redirectTo('course', $this->args);
+                }
+ 
+                $sectionNumber = $this->getArg('sectionNumber');
+ 
+                if (!$section = $registrationCourse->getSection($sectionNumber)) {
+                    $this->redirectTo('course', $this->args);
+                }
+ 
+                $options = array(
+                    'section'=> $section
+                );
+ 
+                $tabsConfig = $this->getModuleSections('coursesectiontabs');
+                $tabs = array();
+                $tabTypes = array();
+                foreach ($tabsConfig as $tab => $tabData) {
+                    $tabs[] = $tab;
+                    if (!isset($tabData['type'])) {
+                        $tabData['type'] = 'details';
+                    }
+ 
+                    $configName = $this->page . '-' . $tab;
+                    $infoDetails[$tab] = $this->formatCourseDetails($options, $configName);
+                    $tabTypes[$tab] = $tabData['type'];
+                }
+ 
                 $this->enableTabs($tabs);
                 $this->assign('tabs',$tabs);
                 $this->assign('tabTypes',$tabTypes);
