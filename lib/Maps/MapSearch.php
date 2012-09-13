@@ -175,6 +175,8 @@ class MapSearch extends DataRetriever {
 
     protected function doSearchByText($query) {
         $allResults = array();
+        echo "<pre>";
+        var_dump($query);
     	foreach ($this->feeds as $id => $feedData) {
     	    if ($this->feedGroup) {
                 $feedData['group'] = $this->feedGroup;
@@ -184,6 +186,13 @@ class MapSearch extends DataRetriever {
             if ($controller->canSearch()) {
                 try {
                     $results = $controller->search($query);
+                    echo "found: ";
+                    var_dump(count($results));
+                    echo "in {$feedData['TITLE']} \n";
+                    foreach($results as $item) {
+                        var_dump($item->getTitle());
+                    }
+                    exit;
                     $allResults = array_merge($allResults, $results);
                 } catch (KurogoDataServerException $e) {
                     Kurogo::log(LOG_WARNING,'encountered KurogoDataServerException for feed config: ' . print_r($feedData, true) .  $e->getMessage(), 'maps');

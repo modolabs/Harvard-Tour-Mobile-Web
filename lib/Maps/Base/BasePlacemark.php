@@ -21,6 +21,8 @@ class BasePlacemark implements Placemark
     protected $fields = array();
     protected $categories = array();
     protected $urlParams = array();
+    // aliases map for placemark searching
+    protected $aliases = array();
     
     public function __construct(MapGeometry $geometry) {
         $this->geometry = $geometry;
@@ -39,6 +41,10 @@ class BasePlacemark implements Placemark
         $this->address = $address;
     }
 
+    public function setAliases($aliases) {
+        $this->aliases = $aliases;
+    }
+
     public function filterItem($filters) {
         foreach ($filters as $filter=>$value) {
             switch ($filter) {
@@ -47,7 +53,7 @@ class BasePlacemark implements Placemark
                         'title' => $this->getTitle(),
                         'subtitle' => $this->getSubTitle(),
                     );
-                    return stringFilter($value, $contents);
+                    return stringFilter($value, $contents, $this->aliases);
                 case 'min':
                     if (!isset($center)) {
                         $center = $this->getGeometry()->getCenterCoordinate();
