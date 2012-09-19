@@ -167,6 +167,7 @@ class GoogleStaticMap extends StaticMapImageController {
         }
         $polyline = Polyline::encodeFromArray($pointArr);
 
+        $styleArgs = array();
         $style = $placemark->getStyle();
         if ($style) {
             $color = $style->getStyleForTypeAndParam(MapStyle::LINE, MapStyle::COLOR);
