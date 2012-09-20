@@ -27,6 +27,9 @@ class DateFormatter
         
         $string = '';
         if ($dateStyleConstant) {
+            if (($dateStyleConstant=='SHORT_DATE_FORMAT') && date('Y') != date('Y', $date)) {
+                $dateStyleConstant .="_YEAR";
+            }
             $format = Kurogo::getLocalizedString($dateStyleConstant);
 
             // Work around lack of %e support in windows

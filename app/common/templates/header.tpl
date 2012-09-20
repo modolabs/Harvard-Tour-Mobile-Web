@@ -127,7 +127,7 @@
   <meta name="HandheldFriendly" content="true" />
   {block name="viewportHeadTag"}
     <meta name="viewport" id="viewport" 
-      content="width=device-width, {if $scalable|default:true}user-scalable=yes{else}user-scalable=no, initial-scale=1.0, maximum-scale=1.0{/if}" />
+      content="width=device-width, {if $scalable|default:true}user-scalable=yes{else}user-scalable=no{/if}, initial-scale=1.0, maximum-scale=1.5" />
   {/block}
   {block name="homeScreenIcon"}
   <link rel="apple-touch-icon" href="{$smarty.const.FULL_URL_BASE|nosecure}common/images/icon.png" />

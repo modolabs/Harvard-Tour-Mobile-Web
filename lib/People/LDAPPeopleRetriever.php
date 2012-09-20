@@ -175,9 +175,10 @@ class LDAPPeopleRetriever extends DataRetriever implements PeopleRetriever
 
     protected function buildSearchFilter($searchString) {
 
-        $this->errorNo = $this->errorMsg = null;
+        $filter = $this->errorNo = $this->errorMsg = null;
 
         $objectClassQuery = new LDAPFilter('objectClass', 'person');
+        $searchString = trim($searchString);
 
         if (empty($searchString)) {
             $this->errorMsg = "Query was blank";
@@ -245,7 +246,6 @@ class LDAPPeopleRetriever extends DataRetriever implements PeopleRetriever
             }
             
         } else {
-            $filter = null;
             $this->errorMsg = "Invalid query";
         }
 
@@ -386,6 +386,7 @@ class LDAPCompoundFilter extends LDAPFilter
 {
     const JOIN_TYPE_AND = '&';
     const JOIN_TYPE_OR = '|';
+    const JOIN_TYPE_NOT = '!';
     protected $joinType;
     protected $filters=array();
     
@@ -396,6 +397,15 @@ class LDAPCompoundFilter extends LDAPFilter
             case self::JOIN_TYPE_AND:
             case self::JOIN_TYPE_OR:
                 $this->joinType = $joinType;
+                break;
+            case self::JOIN_TYPE_NOT:
+                # Special case for not. Set data and return.
+                if(!($filter1 instanceOf LDAPFilter)){
+                    throw new KurogoConfigurationException("Arguement 2 must be an LDAPFilter when using join type NOT.");
+                }
+                $this->joinType = $joinType;
+                $this->filters = array($filter1);
+                return;
                 break;
             default:
                 throw new KurogoConfigurationException("Invalid join type $joinType");                

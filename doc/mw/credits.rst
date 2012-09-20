@@ -23,12 +23,14 @@ Modo Labs Team
 * Pete Akins (Lead Developer, Mobile Web)
 * Muhammad Amjad
 * Dario Baldoni
+* Dylan Conger
 * Alexis Ellwood
+* Austin Emmons
 * Ian Gavalakis
 * Wesley Hirsch
 * Sonya Huang (Lead Developer, iOS)
 * Jim Kang
-* Edward Liu
+* KeFei Liu
 * Newstar Liu
 * Ebrahim Kobeissi
 * David Ormsbee
@@ -95,10 +97,6 @@ JSON
   | License: BSD
   | Copyright: Stig Brautaset
   | Link: http://stig.github.com/json-framework
-
-===============================
-Third Party Libraries (Android)
-===============================
 
 .. _license:
 

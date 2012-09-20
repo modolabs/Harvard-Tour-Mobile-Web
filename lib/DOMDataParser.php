@@ -39,7 +39,9 @@ class DOMDataParser extends DataParser
 
         if (isset($args['BASE_URL']) && $args['BASE_URL']) {
             $urlArray = parse_url($args['BASE_URL']);
-            $this->baseUrl = $urlArray['scheme'] . "://" . $urlArray['host'];
+            if (isset($urlArray['scheme'])) {
+				$this->baseUrl = $urlArray['scheme'] . "://" . $urlArray['host'];
+			}
             $this->relativeUrl = dirname($args['BASE_URL']);
         }
     }

@@ -1,5 +1,6 @@
 <?php
 
+Kurogo::includePackage('db');
 class OCI8Statement implements KurogoDatabaseResponse {
 
     protected $statement;
@@ -10,5 +11,9 @@ class OCI8Statement implements KurogoDatabaseResponse {
 
     public function fetch(){
         return oci_fetch_assoc($this->statement);
+    }
+
+    public function closeCursor(){
+        return oci_free_statement($this->statement);
     }
 }

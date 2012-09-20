@@ -18,4 +18,5 @@ section each module specifies all versions of its REST API.
    modulecontent
    moduleabout
    modulelogin
+   moduletransit
    

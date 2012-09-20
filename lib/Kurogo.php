@@ -10,7 +10,7 @@
  */
 
 define('ROOT_DIR', realpath(dirname(__FILE__).'/..'));
-define('KUROGO_VERSION', '1.5');
+define('KUROGO_VERSION', '1.5.2');
 
 //
 // And a double quote define for ini files (php 5.1 can't escape them)
@@ -1152,7 +1152,7 @@ class Kurogo
 
     public function localizedStrings() {
         $strings = array();
-    
+
         $languages = $this->getLanguages();
         foreach ($languages as $language) {
             $langStrings = $this->getStringsForLanguage($language);
@@ -1162,14 +1162,14 @@ class Kurogo
                 }
             }
         }
-        
+
         return $strings;
     }
-    
+
     public static function getLocalizedStrings() {
         return Kurogo::sharedInstance()->localizedStrings();
     }
-    
+
     public function checkCurrentVersion() {
         $url = "http://kurogo.org/checkversion.php?" . http_build_query(array(
             'version'=>KUROGO_VERSION,

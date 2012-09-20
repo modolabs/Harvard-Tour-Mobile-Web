@@ -1,0 +1,67 @@
+<?xml version='1.0' ?>
+<colleges>
+<college>
+    <title>College of Arts and Sciences</title>
+    <code>AS</code>
+        <department>
+            <title>Psychology</title>
+            <code>PSYC</code>
+        </department>
+        <department>
+            <title>Sociology</title>
+            <code>SOCI</code>
+        </department>
+        <department>
+            <title>English</title>
+            <code>ENGL</code>
+        </department>
+        <department>
+            <title>Political Science</title>
+            <code>POLS</code>
+        </department>
+</college>
+<college>
+    <title>College of Design</title>
+    <code>DE</code>
+        <department>
+            <title>Graphic Design</title>
+            <code>GRPH</code>
+        </department>
+        <department>
+            <title>Industrial Design</title>
+            <code>INDU</code>
+        </department>
+        <department>
+            <title>Fashion Design</title>
+            <code>FASH</code>
+        </department>
+        <department>
+            <title>Interior Design</title>
+            <code>INTD</code>
+        </department>
+</college>
+<college>
+    <title>College of Engineering</title>
+    <code>EN</code>
+        <department>
+            <title>Computer Science</title>
+            <code>COMP</code>
+        </department>
+        <department>
+            <title>Civil Engineering</title>
+            <code>CIVE</code>
+        </department>
+        <department>
+            <title>Mechanical Engineering</title>
+            <code>MECH</code>
+        </department>
+        <department>
+            <title>Computer Engineering</title>
+            <code>CMPE</code>
+        </department>
+        <department>
+            <title>Chemical Engineering</title>
+            <code>CHME</code>
+        </department>
+</college>
+</colleges>
