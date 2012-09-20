@@ -46,6 +46,7 @@ class MapWebModule extends WebModule {
                     $aliases = $this->getOptionalModuleSection($id, $aliasesConfigName);
                 }catch(KurogoConfigurationException $e) {
                     // ignore exception if config file not exists
+                    $aliases = null;
                 }
                 if($aliases) {
                     $feedData['ALIASES'] = $aliases;
