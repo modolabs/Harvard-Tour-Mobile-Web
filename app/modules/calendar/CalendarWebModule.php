@@ -321,8 +321,15 @@ class CalendarWebModule extends WebModule {
         foreach (array('user','resource','static') as $type) {
             $typeFeeds = $this->getFeeds($type);
             foreach ($typeFeeds as $feed=>$feedData) {
-                $totalFeeds++;
-                $feeds[$type][$type . '|' . $feed] = $feedData['TITLE'];
+                if(isset($feedData['ENABLE_SEARCH'])) {
+                    $enableSearch = (boolean)$feedData['ENABLE_SEARCH'];
+                }else {
+                    $enableSearch = true;
+                }
+                if($enableSearch) {
+                    $totalFeeds++;
+                    $feeds[$type][$type . '|' . $feed] = $feedData['TITLE'];
+                }
             }
         }
         return $feeds;
