@@ -160,6 +160,11 @@ class MapWebModule extends WebModule {
     protected function pageForPlacemark(Placemark $placemark) {
         $page = 'detail';
         $params = $placemark->getURLParams();
+        // only if the placemark is searched, and there are 2 feed groups
+        // the feedGroup is mandartory
+        if(empty($this->feedGroup) && isset($params['group'])) {
+            $this->feedGroup = $params['group'];
+        }
         if (isset($params['feed']) && $this->isMapDrivenUI($params['feed'])) {
             //$fullscreen = ($this->numGroups > 1) ? 'campus' : 'index';
             //if ($this->page != $fullscreen) { // use detail page if we're already on a fullscreen map
