@@ -165,7 +165,7 @@ class NewsWebModule extends WebModule {
         } else {
 			$subtitle = $this->htmlEncodeFeedString($story->getDescription());
         	if ($this->getOptionalModuleVar('STRIP_TAGS_IN_DESCRIPTION', 1)) {
-        		$subtitle = Sanitizer::sanitizeHTML($subtitle);
+        		$subtitle = Sanitizer::sanitizeHTML($subtitle, array());
         	}
         }
         
