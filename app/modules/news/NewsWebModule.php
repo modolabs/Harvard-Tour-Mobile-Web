@@ -163,7 +163,10 @@ class NewsWebModule extends WebModule {
         if (isset($data['federatedSearch']) && $data['federatedSearch'] && !$this->getOptionalModuleVar('SHOW_DESCRIPTION_IN_FEDERATED_SEARCH', 1)) {
             $subtitle = '';
         } else {
-            $subtitle = $this->htmlEncodeFeedString($story->getDescription());
+			$subtitle = $this->htmlEncodeFeedString($story->getDescription());
+        	if ($this->getOptionalModuleVar('STRIP_TAGS_IN_DESCRIPTION', 1)) {
+        		$subtitle = Sanitizer::sanitizeHTML($subtitle);
+        	}
         }
         
         $link = array(
