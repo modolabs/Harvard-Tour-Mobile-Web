@@ -274,6 +274,13 @@ class LoginWebModule extends WebModule {
                 }
                 $this->assign('LOGIN_DIRECT_MESSAGE', $loginMessage);
                 $this->assign('urlArray', $urlArray);
+                $cookieSaveUName = $authorityIndex . "_username";
+                if (isset($_COOKIE[$cookieSaveUName]) && strlen($_COOKIE[$cookieSaveUName])) {
+                    $loginUser = $_COOKIE[$cookieSaveUName];
+                }else {
+                    $loginUser = "";
+                }
+                $this->assign('loginUser', $loginUser);
                 break;
             } elseif ($authority = AuthenticationAuthority::getAuthenticationAuthority($authorityIndex)) {
                 //indirect logins handling the login process themselves. Send a return url so the indirect authority can come back here
