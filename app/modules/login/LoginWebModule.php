@@ -78,6 +78,13 @@ class LoginWebModule extends WebModule {
     
     //return URL
     $urlArray = $this->extractModuleArray($this->args);
+
+    $allowSaveUsername = Kurogo::getOptionalSiteVar('AUTHENTICATION_SAVE_USERNAME');
+    if ($allowSaveUsername) {
+        $saveUsername = $this->getArg('saveUsername', 0);
+    } else {
+        $saveUsername = 0;
+    }
     
     //see if remain logged in is enabled by the administrator, then if the value has been passed (i.e. the user checked the "remember me" box)
     $allowRemainLoggedIn = Kurogo::getOptionalSiteVar('AUTHENTICATION_REMAIN_LOGGED_IN_TIME');
@@ -147,6 +154,7 @@ class LoginWebModule extends WebModule {
     //assign template variables
     $this->assign('authenticationAuthorities', $authenticationAuthorities);
     $this->assign('allowRemainLoggedIn', $allowRemainLoggedIn);
+    $this->assign('allowSaveUsername', $allowSaveUsername);
     if ($forgetPasswordURL = $this->getOptionalModuleVar('FORGET_PASSWORD_URL')) {
         $this->assign('FORGET_PASSWORD_URL', $this->buildBreadcrumbURL('forgotpassword', array()));
         $this->assign('FORGET_PASSWORD_TEXT', $this->getOptionalModuleVar('FORGET_PASSWORD_TEXT', $this->getLocalizedString('FORGET_PASSWORD_TEXT')));
@@ -239,8 +247,10 @@ class LoginWebModule extends WebModule {
             
             $session  = $this->getSession();
             $session->setRemainLoggedIn($remainLoggedIn);
+            $session->setSaveUsername($saveUsername);
 
             $authorityIndex = $this->getArg('authority', '');
+            $session->setAuthorityIndex($authorityIndex);
             if (!$authorityData = AuthenticationAuthority::getAuthenticationAuthorityData($authorityIndex)) {
                 //invalid authority
                 $this->redirectTo('index', $options);
@@ -253,6 +263,7 @@ class LoginWebModule extends WebModule {
 
             $this->assign('authority', $authorityIndex);
             $this->assign('remainLoggedIn', $remainLoggedIn);
+            $this->assign('saveUsername', $saveUsername);
             $this->assign('authorityTitle', $authorityData['TITLE']);
 
             //if they haven't submitted the form and it's a direct login show the form

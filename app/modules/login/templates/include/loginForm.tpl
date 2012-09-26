@@ -13,6 +13,7 @@
     <p><label for="loginUser">{$moduleStrings.LOGIN_LABEL|default:'login'}:</label> <input type="text" name="loginUser" id="loginUser" class="loginFormInput" /></p>
     <p><label for="loginPassword">{$moduleStrings.PASSWORD_LABEL|default:'password'}:</label> <input type="password" name="loginPassword" id="loginPassword" class="loginFormInput" /> </p>
     {if $allowRemainLoggedIn}<p class="checkitem"><input type="checkbox" id="remember" name="remainLoggedIn"{if $remainLoggedIn} checked{/if} /> <label for="remember">{"REMEMBER_ME"|getLocalizedString}</label></p>{/if}
+    {if $allowSaveUsername}<p class="checkitem"><input type="checkbox" id="saveUsername" name="saveUsername"{if $saveUsername} checked{/if} /> <label for="saveUsername">{"SAVE_USERNAME"|getLocalizedString}</label></p>{/if}
 
     <div class="formbuttons">
       {include file="findInclude:common/templates/formButtonSubmit.tpl" buttonTitle="SIGN_IN"|getLocalizedString}
