@@ -331,9 +331,11 @@ abstract class Session
             }else {
                 $saveUsernameExpires = time() - 1;
             }
-            $user = $this->getUser();
-            $userID = $user->getUserID();
-            setCookie($this->authorityIndex . "_username", $userID, $saveUsernameExpires, $this->loginCookiePath);
+            if ($this->authorityIndex) {
+                $user = $this->getUser();
+                $userID = $user->getUserID();
+                setCookie($this->authorityIndex . "_username", $userID, $saveUsernameExpires, $this->loginCookiePath);
+            }
             
             $data = $this->getSessionData();
             
