@@ -46,7 +46,12 @@ class FileLoader {
                 // e.g. image width/height
                 
                 if (isset($loaderInfo, $loaderInfo['url'])) {
-                    $data = file_get_contents($loaderInfo['url']);
+                    $args = array(
+                        'BASE_URL' => $loaderInfo['url'],
+                        'CACHE_LIFETIME' => 0,
+                    );
+                    $retriever = DataRetriever::factory("URLDataRetriever", $args);
+                    $data = $retriever->getData();
                     if ($data) {
                         //use a temp file to prevent race conditions
                         $tempFile = $filePath . '.' . uniqid();
