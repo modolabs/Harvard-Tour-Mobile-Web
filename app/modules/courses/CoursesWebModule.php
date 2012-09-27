@@ -355,8 +355,8 @@ class CoursesWebModule extends WebModule {
 
         $contentCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_CONTENT);
 
+        $page = 'course';
         if ($contentCourse) {
-            $page = 'course';
             $subtitle = array();
             $options['course'] = $contentCourse;
 
@@ -380,13 +380,11 @@ class CoursesWebModule extends WebModule {
                 $link['subtitle'] = implode("<br />", $subtitle);
             }
 
-        } else {
-            $page = 'catalogcourse';
         }
         unset($options['course']);
 
         // Set variables for use with AJAX
-        if ($this->pagetype == 'tablet' && $page == 'course') {
+        if ($this->pagetype == 'tablet') {
             $link['url'] = $this->buildAjaxBreadcrumbURL($page, $options);
             $link['updateIconsURL'] = $this->buildAjaxBreadcrumbURL('courseUpdateIcons', $options);
 
@@ -471,6 +469,7 @@ class CoursesWebModule extends WebModule {
         $args = $this->args;
         switch ($page)
         {
+            case 'coursesection':
             case 'catalogsection':
                 $args['sectionNumber'] = $value;
                 break;
@@ -1819,6 +1818,32 @@ class CoursesWebModule extends WebModule {
      * @return boolean
      */
     protected function showTab($tabID, $tabData, $options) {
+        
+        $showTabDefaults = array(
+            'course' => array(
+                'updates' => array(
+                    'CourseContent',
+                ),
+                'announcements' => array(
+                    'CourseContent',
+                ),
+                'resources' => array(
+                    'CourseContent',
+                ),
+                'tasks' => array(
+                    'CourseContent',
+                ),
+                'info' => array(
+                    'CourseContent',
+                    'CourseRegistration',
+                    'CourseCatalog',
+                ),
+                'grades' => array(
+                    'CourseContent',
+                ),
+            ),
+        );
+
         if (self::argVal($tabData, 'protected', 0) && !$this->isLoggedIn()) {
             return false;
         }
@@ -1833,6 +1858,37 @@ class CoursesWebModule extends WebModule {
                 break;
         }
 
+        # If we have the combined course object
+        if(isset($options['course'])){
+            $course = $options['course'];
+            # Check if tab has overridden display conditions
+            if(isset($tabData['showIfCourseExists'])){
+                # An override was provided
+                foreach ($tabData['showIfCourseExists'] as $courseType) {
+                    if($course->getCoursebyType($courseType)){
+                        # Combined course has CourseType, show it
+                        return true;
+                    }
+                }
+                # Combined course did not have CourseType, don't show it
+                return false;
+            }else{
+                # Use defaults
+                # Assume we should show the tab
+                $hasCourseType = true;
+                if(isset($showTabDefaults[$this->page]) && isset($showTabDefaults[$this->page][$tabID])){
+                    foreach ($showTabDefaults[$this->page][$tabID] as $courseType) {
+                        # Some limit exists, assume we should not show the tab unless
+                        # the combined course has the CourseType
+                        $hasCourseType = false;
+                        if($course->getCoursebyType($courseType)){
+                            return true;
+                        }
+                    }
+                }
+                return $hasCourseType;
+            }
+        }
         return true;
     }
 
@@ -2140,6 +2196,45 @@ class CoursesWebModule extends WebModule {
                     $tabTypes[$tab] = $tabData['type'];
                 }
 
+                $this->enableTabs($tabs);
+                $this->assign('tabs',$tabs);
+                $this->assign('tabTypes',$tabTypes);
+                $this->assign('tabDetails', $infoDetails);
+                break;
+
+            case 'coursesection':
+                if (!$course = $this->getCourseFromArgs()) {
+                    $this->redirectTo('course', $this->args);
+                }
+ 
+                if (!$registrationCourse = $course->getCoursebyType(CoursesDataModel::COURSE_TYPE_REGISTRATION)) {
+                    $this->redirectTo('course', $this->args);
+                }
+ 
+                $sectionNumber = $this->getArg('sectionNumber');
+ 
+                if (!$section = $registrationCourse->getSection($sectionNumber)) {
+                    $this->redirectTo('course', $this->args);
+                }
+ 
+                $options = array(
+                    'section'=> $section
+                );
+ 
+                $tabsConfig = $this->getModuleSections('coursesectiontabs');
+                $tabs = array();
+                $tabTypes = array();
+                foreach ($tabsConfig as $tab => $tabData) {
+                    $tabs[] = $tab;
+                    if (!isset($tabData['type'])) {
+                        $tabData['type'] = 'details';
+                    }
+ 
+                    $configName = $this->page . '-' . $tab;
+                    $infoDetails[$tab] = $this->formatCourseDetails($options, $configName);
+                    $tabTypes[$tab] = $tabData['type'];
+                }
+ 
                 $this->enableTabs($tabs);
                 $this->assign('tabs',$tabs);
                 $this->assign('tabTypes',$tabTypes);

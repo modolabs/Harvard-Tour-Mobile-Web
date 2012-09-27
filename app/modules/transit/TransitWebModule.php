@@ -507,7 +507,7 @@ class TransitWebModule extends WebModule {
                 $markers = array($stopID => array(
                     'lat' => $stopInfo['coordinates']['lat'],
                     'lon' => $stopInfo['coordinates']['lon'],
-                    'imageURL' => $stopInfo['stopIconURL'],
+                    'iconURL' => $stopInfo['stopIconURL'],
                     'title' => '',
                 ));
                 $this->initMap($staticImage, $markers);
@@ -634,7 +634,7 @@ class TransitWebModule extends WebModule {
         $markers = array($stopID => array(
             'lat' => $stopInfo['coordinates']['lat'],
             'lon' => $stopInfo['coordinates']['lon'],
-            'imageURL' => $stopInfo['stopIconURL'],
+            'iconURL' => $stopInfo['stopIconURL'],
             'title' => '',
         ));
         $this->initMap($staticImage, $markers);
