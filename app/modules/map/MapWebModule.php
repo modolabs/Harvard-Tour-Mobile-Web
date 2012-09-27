@@ -40,6 +40,17 @@ class MapWebModule extends WebModule {
         if ($this->feedGroup !== NULL) {
             $configName = "feeds-{$this->feedGroup}";
             foreach ($this->getModuleSections($configName) as $id => $feedData) {
+                // get aliases if any
+                $aliasesConfigName = "aliases-{$this->feedGroup}";
+                try {
+                    $aliases = $this->getOptionalModuleSection($id, $aliasesConfigName);
+                }catch(KurogoConfigurationException $e) {
+                    // ignore exception if config file not exists
+                    $aliases = null;
+                }
+                if($aliases) {
+                    $feedData['ALIASES'] = $aliases;
+                }
                 $feedId = mapIdForFeedData($feedData);
                 $feedData['group'] = $this->feedGroup;
                 $data[$feedId] = $feedData;
@@ -55,6 +66,16 @@ class MapWebModule extends WebModule {
                 $configName = "feeds-$groupID";
                 $groupData = array();
                 foreach ($this->getModuleSections($configName) as $id => $feedData) {
+                    // get aliases if any
+                    $aliasesConfigName = "aliases-{$groupID}";
+                    try {
+                        $aliases = $this->getOptionalModuleSection($id, $aliasesConfigName);
+                    }catch(KurogoConfigurationException $e) {
+                        // ignore exception if config file not exists
+                    }
+                    if($aliases) {
+                        $feedData['ALIASES'] = $aliases;
+                    }
                     $feedId = mapIdForFeedData($feedData);
                     $feedData['group'] = $groupID;
                     $groupData[$feedId] = $feedData;
@@ -139,6 +160,11 @@ class MapWebModule extends WebModule {
     protected function pageForPlacemark(Placemark $placemark) {
         $page = 'detail';
         $params = $placemark->getURLParams();
+        // only if the placemark is searched, and there are 2 feed groups
+        // the feedGroup is mandartory
+        if(empty($this->feedGroup) && isset($params['group'])) {
+            $this->feedGroup = $params['group'];
+        }
         if (isset($params['feed']) && $this->isMapDrivenUI($params['feed'])) {
             //$fullscreen = ($this->numGroups > 1) ? 'campus' : 'index';
             //if ($this->page != $fullscreen) { // use detail page if we're already on a fullscreen map

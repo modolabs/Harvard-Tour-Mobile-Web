@@ -24,6 +24,8 @@ class KMLDataParser extends XMLDataParser implements MapDataParser
     protected $folders = array();
     protected $placemarks = array();
     protected $title;
+    // aliases for placemark searching
+    protected $aliases;
 
     protected $parseMode=self::PARSE_MODE_STRING;
     
@@ -41,6 +43,9 @@ class KMLDataParser extends XMLDataParser implements MapDataParser
     public function init($args) {
         parent::init($args);
         $this->feedId = mapIdForFeedData($args);
+        if(isset($args['ALIASES'])) {
+            $this->aliases = $args['ALIASES'];
+        }
     }
 
     /////// MapDataParser
@@ -129,6 +134,7 @@ class KMLDataParser extends XMLDataParser implements MapDataParser
                 break;
             case 'PLACEMARK':
                 $placemark = new KMLPlacemark($name, $attribs);
+                $placemark->setAliases($this->aliases);
                 $parent = end($this->elementStack);
                 $this->elementStack[] = $placemark;
 
