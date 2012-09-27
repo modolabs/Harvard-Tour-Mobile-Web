@@ -9,6 +9,7 @@
  *
  */
 
+Kurogo::includePackage('Courses','CourseContent');
 class MoodleCourseContentDataRetriever extends URLDataRetriever implements CourseContentDataRetriever {
 
     protected $DEFAULT_PARSER_CLASS='MoodleCourseContentDataParser';
