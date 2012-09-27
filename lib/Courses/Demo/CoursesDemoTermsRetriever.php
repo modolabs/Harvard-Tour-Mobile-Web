@@ -22,23 +22,27 @@ class CoursesDemoTermsRetriever extends URLDataRetriever implements TermsDataRet
     }
     
     public function getTerm($termCode) {
-        $terms = $this->getAvailableTerms();
         if ($termCode == CoursesDataModel::CURRENT_TERM) {
-            foreach ($terms as $term) {
-                if ($term->getStatus() == CoursesDataModel::CURRENT_TERM) {
-                    return $term;
-                }
-            }
-            return null;
+            return $this->getCurrentTerm();
         }
         
+        $terms = $this->getAvailableTerms();
         foreach ($terms as $term) {
             if ($term->getID() == $termCode) {
                 return $term;
             }
         }
-        
-        KurogoDebug::debug($termCode, true);
+
+        return null;
+    }
+
+    public function getCurrentTerm(){
+        $terms = $this->getAvailableTerms();
+        foreach ($terms as $term) {
+            if ($term->getStatus() == CoursesDataModel::CURRENT_TERM) {
+                return $term;
+            }
+        }
         return null;
     }
 }

@@ -201,6 +201,47 @@ function decodeBase64URLSafe($value) {
     return base64_decode(str_replace(array('-', '_'), array('+', '/'), $value));
 }
 
+function filterContent($search, $content) {
+    if(stripos($content, $search) === false) {
+        return false;
+    }else {
+        return true;
+    }
+}
+
+function stringFilter($search, $contents, $aliasMap = array()) {
+    $search = trim($search);
+    foreach($contents as $key => $content) {
+        switch($key) {
+            case "title":
+            case "subtitle":
+                // find search for alias
+                if($aliasMap && isset($aliasMap[$content])) {
+                    $aliasContent = $aliasMap[$content];
+                    if(filterContent($search, $aliasContent)) {
+                        return true;
+                    }
+                    // find content in search
+                    if(strlen($aliasContent) >= 3 && filterContent($aliasContent, $search)) {
+                        return true;
+                    }
+                }
+                // find content in search
+                // some cases, subtitle only contains 1 character
+                if(strlen($content) >= 3 && filterContent($content, $search)) {
+                    return true;
+                }
+            default:
+                // find current search
+                if(filterContent($search, $content)) {
+                    return true;
+                }
+        }
+    }
+
+    return false;
+}
+
 class MapsAdmin
 {
     public static function getMapControllerClasses() {

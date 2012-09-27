@@ -382,7 +382,7 @@ class PeopleWebModule extends WebModule {
                 break;
         
             case 'search':
-                if ($filter = $this->getArg(array('filter', 'q'))) {
+                if ($filter = trim($this->getArg(array('filter', 'q')))) {
                     $searchTerms = trim($filter);
                     
                     $this->assign('feeds', $this->getSearchFeeds());

@@ -99,7 +99,7 @@ class NewsAPIModule extends APIModule {
             'GUID'        => $story->getGUID(),
             'link'        => $story->getLink(),
             'title'       => strip_tags($story->getTitle()),
-            'description' => $story->getDescription(),
+            'description' => strip_tags($story->getDescription()),
             'pubDate'     => $story->getPubTimestamp()
        );
 

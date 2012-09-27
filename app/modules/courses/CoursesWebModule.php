@@ -31,7 +31,7 @@ class CoursesWebModule extends WebModule {
      */
     public function linkForTask(CalendarCourseContent $task, CourseContentCourse $course, $includeCourseName=true) {
     	$link = array(
-            'title' =>$includeCourseName ? htmlentities($task->getTitle()) : $course->getTitle(),
+            'title' =>$includeCourseName ? Sanitizer::sanitizeHTML($task->getTitle()) : $course->getTitle(),
     		'date' => $task->getDate() ? $task->getDate() : $task->getDueDate(),
             'img'   => "/modules/courses/images/content_" . $task->getContentClass() . $this->imageExt
         );
@@ -66,7 +66,7 @@ class CoursesWebModule extends WebModule {
      */
     public function linkForContent(CourseContent $content, CourseContentCourse $course) {
     	$link = array(
-            'title' => htmlentities($content->getTitle()),
+            'title' => Sanitizer::sanitizeHTML($content->getTitle()),
             'subtitle' => $content->getSubTitle(),
             'type'  => $content->getContentType(),
             'class' => "content content_" . $content->getContentType(),
@@ -103,7 +103,7 @@ class CoursesWebModule extends WebModule {
      */
     public function linkForFolder(FolderCourseContent $content, CourseContentCourse $course) {
         $link = array(
-            'title' => htmlentities($content->getTitle()),
+            'title' => Sanitizer::sanitizeHTML($content->getTitle()),
             'type'  => $content->getContentType(),
             'class' => "content content_" . $content->getContentType(),
             'img'   => "/modules/courses/images/content_" . $content->getContentClass() . $this->imageExt
@@ -136,7 +136,7 @@ class CoursesWebModule extends WebModule {
         $options['type'] = $announcement->getContentType();
 
         $link = array(
-            'title' => $includeCourseName ? $course->getTitle() : htmlentities($announcement->getTitle()),
+            'title' => $includeCourseName ? $course->getTitle() : Sanitizer::sanitizeHTML($announcement->getTitle()),
         );
         foreach (array('courseID') as $field) {
             if (isset($data[$field])) {
@@ -204,7 +204,7 @@ class CoursesWebModule extends WebModule {
         $options['type'] = $content->getContentType();
 
         $link = array(
-            'title' => $includeCourseName ? $course->getTitle() : htmlentities($content->getTitle()),
+            'title' => $includeCourseName ? $course->getTitle() : Sanitizer::sanitizeHTML($content->getTitle()),
             'type' => $content->getContentType(),
             'class' => "update update_" . $content->getContentType(),
             'img'   => "/modules/courses/images/content_" . $content->getContentClass() . $this->imageExt
@@ -1757,8 +1757,7 @@ class CoursesWebModule extends WebModule {
                                             'coursesLinks' => $coursesLinks);
             }
             if(!$hasCourses){
-                $noCoursesText = array(array('title'=>$this->getLocalizedString('NO_COURSES')));
-                $this->assign('noCoursesText', $noCoursesText);
+                $this->assign('noCoursesText', $this->getLocalizedString('NO_COURSES'));
             }
             $this->assign('hasCourses', $hasCourses);
             $this->assign('coursesListLinks', $coursesListLinks);
@@ -1789,6 +1788,7 @@ class CoursesWebModule extends WebModule {
 					);
             	}
             } else {
+                $term = $this->controller->getCurrentTerm($catalogRetrieverKey);
 	            $courseCatalogText = $this->getLocalizedString('COURSE_CATALOG_TEXT');
 				$catalogItems[] = array(
 					'title' => $this->getFeedTitle($catalogRetrieverKey),

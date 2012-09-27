@@ -17,7 +17,7 @@ class CalendarAPIModule extends APIModule
 
     protected $id = 'calendar';
     protected $vmin = 1;
-    protected $vmax = 2;
+    protected $vmax = 3;
 
     protected $timezone;
     protected $fieldConfig;
@@ -316,10 +316,23 @@ class CalendarAPIModule extends APIModule
 
                 // default to the full day that includes current time
                 $current = $this->getArg('time', time());
-                $start   = $this->getStartArg($current);
                 $feed    = $this->getFeed($calendar, $type);
-                $feed->setStartDate($start);
-                
+
+				// in v3 the start parameter is used to paginate (along with limit)
+				if ($this->requestedVersion >= 3) {
+					$start = new DateTime(date('Y-m-d H:i:s', $current), $this->timezone);
+					$start->setTime(0,0,0);
+					$startEvent = $this->getArg('start', 0);
+				} else {
+					$start = $this->getStartArg($current);
+					$startEvent = 0;
+				}
+
+				$feed->setStartDate($start);
+				if (!$this->legacyController) {
+					$feed->setStart($startEvent);
+				}
+
                 if ($limit = $this->getArg('limit')) {
                     if (!$this->legacyController) {
                         $feed->setLimit($limit);
@@ -333,7 +346,7 @@ class CalendarAPIModule extends APIModule
                     if ($catid) {
                         $feed->addFilter('category', $catid);
                     }
-                    $iCalEvents = $feed->items(0, $limit);
+                    $iCalEvents = $feed->items($startEvent, $limit);
                 } else if ($catid) {
                     $iCalEvents = $feed->getEventsByCategory($catid);
                 } else {

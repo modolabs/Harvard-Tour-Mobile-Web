@@ -234,6 +234,7 @@ class RSSDataParser extends XMLDataParser
             case 'CONTENT:ENCODED':
             case 'CONTENT':
             case 'BODY':
+            case 'DESCRIPTION':
                 $strip_tags = false;
                 break;
         }
