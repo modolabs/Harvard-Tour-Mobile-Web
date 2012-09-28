@@ -14,6 +14,7 @@ class DatabaseDataRetriever extends DataRetriever
     protected $connection;
     protected $sql;
     protected $parameters=array();
+    protected $errorMsg;
     
     protected function init($args) {
         parent::init($args);
@@ -61,6 +62,7 @@ class DatabaseDataRetriever extends DataRetriever
 
         $this->initRequestIfNeeded();
         $response = $this->initResponse();
+        $response->setResponseError($this->errorMsg);
         $response->setStartTime(microtime(true));
 
         if ($sql = $this->sql()) {
