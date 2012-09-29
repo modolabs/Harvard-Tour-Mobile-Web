@@ -441,13 +441,26 @@ class GTFSTransitRoute extends TransitRoute
             $additionClause = '';
 
             $params = array($this->getID());
+            // the same service id will get returned multiple times
+            // so build up arrays of them and then unique before
+            // creating the query
+            $additionalServices = array();
+            $exceptionServices = array();
             while ($row = $result->fetch()) {
-                $params[] = $row['service_id'];
                 if ($row['exception_type'] == 1) {
-                    $additionClause .= 't.service_id = ? OR ';
+                    $additionalServices[] = $row['service_id'];
                 } else {
-                    $exceptions[] = 't.service_id <> ?';
+                    $exceptionServices[] = $row['service_id'];
                 }
+            }
+
+            foreach (array_unique($additionalServices) as $serviceID) {
+                $params[] = $serviceID;
+                $additionClause .= 't.service_id = ? OR ';
+            }
+            foreach (array_unique($exceptionServices) as $serviceID) {
+                $params[] = $serviceID;
+                $exceptions[] = 't.service_id <> ?';
             }
             $exceptionClause = count($exceptions) ? ' AND ('.implode(' OR ', $exceptions).')' : '';
             $params[] = $date; // start_date
