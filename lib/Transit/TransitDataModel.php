@@ -966,10 +966,13 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 );
             }
         }
+        
+        $timeRange = array($time, $time + $this->transitScheduleRouteRunningPadding);
+        $runningTime = $this->viewRouteInScheduleView($routeID) ? $timeRange : $time;
         foreach ($routeDirections as $directionID => $directionInfo) {
             $routeDirections[$directionID]['running'] = false;
             foreach ($directionInfo['segments'] as $segment) {
-                if ($segment->isRunning($time)) {
+                if ($segment->isRunning($runningTime)) {
                     $routeDirections[$directionID]['running'] = true;
                     break;
                 }
@@ -1115,7 +1118,6 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         return array(
             'name'     => $directionName,
             'segments' => $segments,
-            'running'  => count($segments) > 0,
             'stops'    => $fullStopList,
         );
     }
