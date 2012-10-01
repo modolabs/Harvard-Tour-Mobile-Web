@@ -9,9 +9,6 @@
  *
  */
 
-$config = ConfigFile::factory('transit', 'site');
-Kurogo::siteConfig()->addConfig($config);
-
 interface TransitDataModelInterface {
     public function getStopInfo($stopID);
     
