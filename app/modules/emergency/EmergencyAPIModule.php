@@ -90,7 +90,7 @@ class EmergencyAPIModule extends APIModule {
                 'title' => $contact->getTitle(),
                 'subtitle' => $subtitle,
                 'type' => 'phone',
-                'url' => 'tel:'.$contact->getPhoneDialable(),
+                'url' => $contact->getPhoneDialable(),
              );
         }
         return $formattedContacts;
