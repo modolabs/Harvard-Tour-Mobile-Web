@@ -75,7 +75,7 @@ class TransitWebModule extends WebModule {
         return $news;
     }
 
-    protected function timesURL($routeID, $directionID=null, $addBreadcrumb=true, $noBreadcrumb=false, $paneLink=false) {
+    protected function routeURL($routeID, $directionID=null, $addBreadcrumb=true, $noBreadcrumb=false, $paneLink=false) {
         $args = array(
             'id' => $routeID,
         );
@@ -103,7 +103,15 @@ class TransitWebModule extends WebModule {
     }
   
     protected static function routeSort($a, $b) {
-        return strnatcmp($a['title'], $b['title']);
+        if ($a['class'] == $b['class']) {
+            return strnatcmp($a['title'], $b['title']); // both offline or both running
+            
+        } else if ($a['class'] == 'running') {
+            return -1; // only $a running
+            
+        } else {
+            return 1; // only $b running
+        }
     }
   
     protected static function directionSort($a, $b) {
@@ -167,7 +175,7 @@ class TransitWebModule extends WebModule {
                         $routes[] = array(
                             'title' => $routeConfig['name'],
                             'subtitle' => $routeConfig['description'],
-                            'url'   => $this->timesURL($routeID, null, false, true, true),
+                            'url'   => $this->routeURL($routeID, null, false, true, true),
                         );
                     }
                 }
@@ -191,10 +199,11 @@ class TransitWebModule extends WebModule {
                     $agencyID = $routeConfig['agency'];
                     $entry = array(
                         'title' => $routeConfig['name'],
-                        'url'   => $this->timesURL($routeID),
+                        'url'   => $this->routeURL($routeID),
+                        'class' => $routeConfig['running'] ? 'running' : 'offline',
                     );
                     
-                    if ($routeConfig['running']) {
+                    if ($routeConfig['running'] || $this->collapseRouteTabs) {
                         if (!isset($runningRoutes[$agencyID]) || !$runningRoutes[$agencyID]) {
                             $heading = isset($indexConfig['agencies'][$agencyID]) ? 
                                 $indexConfig['agencies'][$agencyID] : $agencyID;
@@ -205,6 +214,9 @@ class TransitWebModule extends WebModule {
                             );
                         }
                         $runningRoutes[$agencyID]['items'][$routeID] = $entry;
+                        if ($this->collapseRouteTabs && !$routeConfig['running']) {
+                            $runningRoutes[$agencyID]['items'][$routeID]['class'] = 'offline';
+                        }
                     } else {
                         if (!isset($offlineRoutes[$agencyID]) || !$offlineRoutes[$agencyID]) {
                             $heading = isset($indexConfig['agencies'][$agencyID]) ? 
@@ -223,62 +235,22 @@ class TransitWebModule extends WebModule {
                 $runningRoutes = array_filter($runningRoutes);
                 $offlineRoutes = array_filter($offlineRoutes);
         
-                if($this->collapseRouteTabs){
-                    // Display running and offline routes in the same tab
-                    $agencies = array();
-                    if ($runningRoutes){
-                        $agencies = array_merge($agencies, array_keys($runningRoutes));
-                    }
-                    if ($offlineRoutes){
-                        $agencies = array_merge($agencies, array_keys($offlineRoutes));
-                    }
-
-                    $allRoutes = array();
-                    foreach ($agencies as $agency) {
-                        $allRoutes[$agency] = array();
-                        $allRoutes[$agency]['heading'] = ucfirst($agency);
-                        $allRoutes[$agency]['items'] = array();
-                        if($runningRoutes && isset($runningRoutes[$agency])){
-                            $allRoutes[$agency]['heading'] = $runningRoutes[$agency]['heading'];
-                            $allRoutes[$agency]['items'] = array_merge($allRoutes[$agency]['items'], $runningRoutes[$agency]['items']);
-                        }
-                        if ($offlineRoutes && isset($offlineRoutes[$agency])){
-                            $offlineItems = $offlineRoutes[$agency]['items'];
-                            foreach ($offlineItems as $routeID => $item) {
-                                $offlineItems[$routeID]['class'] = 'offline';
-                            }
-
-                            $allRoutes[$agency]['heading'] = $offlineRoutes[$agency]['heading'];
-                            $allRoutes[$agency]['items'] = array_merge($allRoutes[$agency]['items'], $offlineItems);
-                        }
-                    }
-                    // Sort routes
-                    foreach ($allRoutes as $agencyID => $section) {
-                        uasort($allRoutes[$agencyID]['items'], array($this, 'routeSort'));
-                    }
-
-                    if($runningRoutes || $offlineRoutes){
-                        $tabs[] = 'running';
-                    }
-                    $this->assign('runningRoutes', $allRoutes);
-                }else{
-                    // Display running and offline routes in seperate tabs
-                    // Sort routes
-                    foreach ($runningRoutes as $agencyID => $section) {
-                        uasort($runningRoutes[$agencyID]['items'], array(get_class($this), 'routeSort'));
-                    }
-                    foreach ($offlineRoutes as $agencyID => $section) {
-                        uasort($offlineRoutes[$agencyID]['items'], array(get_class($this), 'routeSort'));
-                    }
-                    if ($runningRoutes) {
-                        $tabs[] = 'running';
-                    }
-                    if ($offlineRoutes) {
-                        $tabs[] = 'offline';
-                    }
-                    $this->assign('runningRoutes', $runningRoutes);
-                    $this->assign('offlineRoutes', $offlineRoutes);
+                // Display running and offline routes in seperate tabs
+                // Sort routes
+                foreach ($runningRoutes as $agencyID => $section) {
+                    uasort($runningRoutes[$agencyID]['items'], array(get_class($this), 'routeSort'));
                 }
+                foreach ($offlineRoutes as $agencyID => $section) {
+                    uasort($offlineRoutes[$agencyID]['items'], array(get_class($this), 'routeSort'));
+                }
+                if ($runningRoutes) {
+                    $tabs[] = 'running';
+                }
+                if ($offlineRoutes) {
+                    $tabs[] = 'offline';
+                }
+                $this->assign('runningRoutes', $runningRoutes);
+                $this->assign('offlineRoutes', $offlineRoutes);
         
                 //
                 // News Pane
@@ -452,7 +424,7 @@ class TransitWebModule extends WebModule {
                     foreach ($routeInfo['directions'] as $directionID => $directionInfo) {
                         $entry = array(
                             'title' => $routeInfo['name'],
-                            'url'   => $this->timesURL($routeID, $directionID, false, true), // no breadcrumbs
+                            'url'   => $this->routeURL($routeID, $directionID, false, true), // no breadcrumbs
                         );
                         if (isset($directionInfo['predictions'])) {
                             $entry['predictions'] = $directionInfo['predictions'];
