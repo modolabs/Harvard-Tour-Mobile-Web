@@ -69,7 +69,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     const DLOG_ARRIVAL_TIMES = false;
     const DLOG_TRANSIT_TIME = false;
     const DLOG_STOP_GRAPH_SORT = false;
-    const DLOG_MISC = true;
+    const DLOG_MISC = false;
     
     const DLOG_ENABLE_ERROR_LOG = false;
     
@@ -618,9 +618,6 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             $directionID = is_numeric($direction) ? "direction_{$direction}" : $direction;
             
             // Check the config file to see if we can get headsign or stop order information
-            $directionName = '';
-            $stopOrder = $this->lookupStopOrder($routeInfo['agency'], $routeID, $direction, $directionName);
-            
             $segments = $route->getSegmentsForDirection($direction);
             
             if ($routeInfo['splitByHeadsign']) {
@@ -636,8 +633,11 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                     }
                     
                     if (!isset($routeDirections[$headsign])) {
+                        $directionName = $headsign;
+                        $stopOrder = $this->lookupStopOrder($routeInfo['agency'], $routeID, $headsign, $headsignName);
+                        
                         $routeDirections[$headsign] = array(
-                            'name'      => $headsign,
+                            'name'      => $directionName,
                             'segments'  => array(),
                             'stopOrder' => $stopOrder,
                         );
@@ -657,6 +657,9 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 if (!$directionName) {
                     $directionName = "Direction {$direction}";
                 }
+                
+                $directionName = '';
+                $stopOrder = $this->lookupStopOrder($routeInfo['agency'], $routeID, $direction, $directionName);
                 
                 $routeDirections[$directionID] = array(
                     'name'      => $directionName,
@@ -943,7 +946,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             }
             self::dlog(print_r($segmentStopOrders, true), self::DLOG_STOP_GRAPH_SORT);
             
-            $directionStops = $this->topologicalSortStops($segmentStopOrders);
+            $directionStops = $this->topologicalSortStops($routeID, $segmentStopOrders);
             self::dlog('directionStops: '.print_r($directionStops, true), self::DLOG_STOP_GRAPH_SORT);
             
         }
@@ -1063,35 +1066,52 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         );
     }
     
-    protected function topologicalSortStops($segmentStopOrders) {
-        $stopOrder = array();
-        
-        // Build up 2D arrays of stop-before-stop and stop-after-stop relationships
-        // This gives is a directed graph which we can then sort
+    protected function stopBeforeAndAfter($segmentStopOrders) {
         $before = array();
         $after = array();
         
+        // Build up 2D arrays of stop-before-stop and stop-after-stop relationships
+        // This gives is a directed graph which we can then sort
         foreach ($segmentStopOrders as $segmentStopOrder) {
-            $segmentStopOrder = array_values($segmentStopOrder);
-            
-            for ($i = 1; $i < count($segmentStopOrder); $i++) {
-                $before[$segmentStopOrder[$i]][$segmentStopOrder[$i-1]] = true;
-                $after[$segmentStopOrder[$i-1]][$segmentStopOrder[$i]] = true;
+            for ($i = 0; $i < count($segmentStopOrder); $i++) {
+                // Make sure every stop exists in these arrays so we consume all stops
+                if (!isset($before[$segmentStopOrder[$i]])) {
+                    $before[$segmentStopOrder[$i]] = array();
+                }
+                if (!isset($after[$segmentStopOrder[$i]])) {
+                    $after[$segmentStopOrder[$i]] = array();
+                }
+
+                if ($i > 0) {
+                    $before[$segmentStopOrder[$i]][$segmentStopOrder[$i-1]] = true;
+                }
+                if ($i < (count($segmentStopOrder) - 1)) {
+                    $after[$segmentStopOrder[$i]][$segmentStopOrder[$i+1]] = true;
+                }
+                
             }
         }
+        
+        return array($before, $after);
+    }
+    
+    protected function topologicalSortStops($routeID, $segmentStopOrders) {
+        $stopOrder = array();
         
         // Sort the directed graph, accounting for cycles
         // Cycles occur when a stop is visited more than once in a direction
         // or in difference places in the stop order at different times of day
+        
+        list($before, $after) = $this->stopBeforeAndAfter($segmentStopOrders);
         while ($after) {
             $best = null;
-            $count = null;
+            $count = PHP_INT_MAX;
             
-            // Find the stop with fewest stops before it
+            // Find the best stop: the stop with fewest stops before it
             $afterStops = array_keys($after);
             foreach ($after as $stop => $afterStop) {
                 $beforeStops = isset($before[$stop]) ? array_keys($before[$stop]) : array();
-                if (!isset($count) || count($beforeStops) < $count  ) {
+                if (!isset($count) || count($beforeStops) < $count) {
                     $best = $stop;
                     $count = count($beforeStops);
                     if ($count === 0) {
@@ -1099,18 +1119,47 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                     }
                 }
             }
+            if (!isset($best)) {
+                // Fatal error
+                $warning = "Failed to find best stop for route $routeID.  Aborting.";
+                self::dlog($warning, self::DLOG_STOP_ORDER);
+                Kurogo::log(LOG_WARNING, $warning, 'transit');
+                break;
+            }            
+
+            if ($count > 0) {
+                // Normal case for routes with cycles, just log debug message
+                self::dlog("Stop order repeats stop $best", self::DLOG_STOP_ORDER);
+            }
+            
+            // Place the stop
             $stopOrder[] = $best;
             
-            if ($count > 0) {
-                Kurogo::log(LOG_WARNING, "Stop order contains a cycle, breaking at $best", 'transit');
+            // Remove the newly placed stop from the stop order
+            $removedBest = false;
+            foreach ($segmentStopOrders as $i => $segmentStopOrder) {
+                if (reset($segmentStopOrder) == $best) {
+                    array_shift($segmentStopOrders[$i]);
+                    $removedBest = true;
+                }
             }
-            
-            // Unset $best so we don't find it again
-            $afterBestStops = array_keys($after[$best]);
-            foreach ($afterBestStops as $afterBest) {
-                unset($before[$afterBest][$best]);
+            if (!$removedBest) {
+                // This happens when the stop we picked isn't actually the first stop on any of the segments.
+                // It usually means that the order cannot be determined from the segment stop orders.
+                // Try to show something but warn that a configuration is needed to show the correct thing.
+                $warning = "Stop $best not in order in any segment in route $routeID.  Please add stop order to transit-stoporders.ini";
+                self::dlog($warning, self::DLOG_STOP_ORDER);
+                Kurogo::log(LOG_WARNING, $warning, 'transit');
+                
+                foreach ($segmentStopOrders as $i => $segmentStopOrder) {
+                    $firstLoc = array_search($placedStop, $segmentStopOrder);
+                    if ($firstLoc !== false) {
+                        array_slice($segmentStopOrders[$i], $firstLoc, 1);
+                    }
+                }
             }
-            unset($after[$best]);
+
+            list($before, $after) = $this->stopBeforeAndAfter($segmentStopOrders);
         }
         
         return $stopOrder;
