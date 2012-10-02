@@ -639,10 +639,22 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                         $routeDirections[$headsign] = array(
                             'name'      => $directionName,
                             'segments'  => array(),
+                            'running'   => false,
                             'stopOrder' => $stopOrder,
                         );
                     }
                     $routeDirections[$headsign]['segments'][] = $segment;
+                    if ($segment->isRunning($time)) {
+                        $routeDirections[$headsign]['running'] = true;
+                    }
+                }
+                
+                // remove headsigns which are not running
+                // frequently different headsigns run at different times of day
+                foreach (array_keys($routeDirections) as $headsign) {
+                    if (!$routeDirections[$headsign]['running']) {
+                        unset($routeDirections[$headsign]);
+                    }
                 }
                 
             } else {
@@ -948,7 +960,6 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             
             $directionStops = $this->topologicalSortStops($routeID, $segmentStopOrders);
             self::dlog('directionStops: '.print_r($directionStops, true), self::DLOG_STOP_GRAPH_SORT);
-            
         }
         
         $stopOrder = array();
