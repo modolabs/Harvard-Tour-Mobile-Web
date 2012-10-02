@@ -381,6 +381,7 @@ class NewsWebModule extends WebModule {
                     '#'.urlencode(FULL_URL_PREFIX.ltrim($story['url'], '/'));
             }
             
+            $this->assign('showImages', $this->showImages);
             $this->assign('stories', $stories);
         }
         $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');

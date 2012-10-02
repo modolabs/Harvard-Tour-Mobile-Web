@@ -753,6 +753,7 @@ class AthleticsWebModule extends WebModule {
                     foreach ($items as $item) {
                         $stories[] = $this->linkForNewsItem($item, array('section' => $section, 'addBreadcrumb'=>false));
                     }
+                    $this->assign('showImages', $this->showImages);
                     $this->assign('stories', $stories);
                 }
                 $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
