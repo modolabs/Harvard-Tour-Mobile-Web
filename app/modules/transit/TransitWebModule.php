@@ -361,12 +361,11 @@ class TransitWebModule extends WebModule {
                     $directionsList = array();
                     foreach ($routeInfo['directions'] as $direction => $directionInfo) {
                         $directionArgs['direction'] = $direction;
-                        $directionRunning = count($directionInfo['segments']) > 0;
                         
                         $directionList[] = array(
                             'title' => $directionInfo['name'],
                             'url'   => $this->buildBreadcrumbURL($this->page, $directionArgs),
-                            'class' => $directionRunning ? 'running' : 'offline',
+                            'class' => $directionInfo['running'] ? 'running' : 'offline',
                         );
                     }
                     
