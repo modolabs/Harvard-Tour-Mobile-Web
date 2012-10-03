@@ -1,3 +1,4 @@
-.nav li a.offline {
+.nav li a.offline,
+.results li a.offline {
   color: #666;
 }

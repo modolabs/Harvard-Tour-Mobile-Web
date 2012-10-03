@@ -101,22 +101,6 @@ class TransitWebModule extends WebModule {
             'id' => $stopID,      
         ), $addBreadcrumb);
     }
-  
-    protected static function routeSort($a, $b) {
-        if ($a['class'] == $b['class']) {
-            return strnatcmp($a['title'], $b['title']); // both offline or both running
-            
-        } else if ($a['class'] == 'running') {
-            return -1; // only $a running
-            
-        } else {
-            return 1; // only $b running
-        }
-    }
-  
-    protected static function directionSort($a, $b) {
-        return strnatcmp($a['title'], $b['title']);
-    }
     
     protected function gtfs2db() {
         if ($_SERVER['REMOTE_ADDR'] != '127.0.0.1' && $_SERVER['REMOTE_ADDR'] != '::1') {
@@ -179,7 +163,6 @@ class TransitWebModule extends WebModule {
                         );
                     }
                 }
-                uasort($routes, array(get_class($this), 'routeSort'));
                 
                 $this->assign('routes', $routes);
                 break;
@@ -235,14 +218,7 @@ class TransitWebModule extends WebModule {
                 $runningRoutes = array_filter($runningRoutes);
                 $offlineRoutes = array_filter($offlineRoutes);
         
-                // Display running and offline routes in seperate tabs
-                // Sort routes
-                foreach ($runningRoutes as $agencyID => $section) {
-                    uasort($runningRoutes[$agencyID]['items'], array(get_class($this), 'routeSort'));
-                }
-                foreach ($offlineRoutes as $agencyID => $section) {
-                    uasort($offlineRoutes[$agencyID]['items'], array(get_class($this), 'routeSort'));
-                }
+                // Display running and offline routes in separate tabs if we have both
                 if ($runningRoutes) {
                     $tabs[] = 'running';
                 }
@@ -385,14 +361,14 @@ class TransitWebModule extends WebModule {
                     $directionsList = array();
                     foreach ($routeInfo['directions'] as $direction => $directionInfo) {
                         $directionArgs['direction'] = $direction;
-                      
+                        $directionRunning = count($directionInfo['segments']) > 0;
+                        
                         $directionList[] = array(
                             'title' => $directionInfo['name'],
                             'url'   => $this->buildBreadcrumbURL($this->page, $directionArgs),
+                            'class' => $directionRunning ? 'running' : 'offline',
                         );
                     }
-                    
-                    usort($directionList, array(get_class(), 'directionSort'));
                     
                     $this->assign('directionList', $directionList);
                 }
@@ -418,7 +394,9 @@ class TransitWebModule extends WebModule {
         
                 $stopInfo = $view->getStopInfo($stopID);
                 
+                $runningRouteIDs = array();
                 $runningRoutes = array();
+                $offlineRouteIDs = array();
                 $offlineRoutes = array();
                 foreach ($stopInfo['routes'] as $routeID => $routeInfo) {
                     foreach ($routeInfo['directions'] as $directionID => $directionInfo) {
@@ -433,15 +411,15 @@ class TransitWebModule extends WebModule {
                             $entry['title'] .= '<br/>'.$directionInfo['name'];
                         }
           
-                        if ($routeInfo['running']) {
-                            $runningRoutes[$routeID] = $entry;
+                        if ($directionInfo['running']) {
+                            $runningRoutes[] = $entry;
+                            $runningRouteIDs[] = $routeID;
                         } else {
-                            $offlineRoutes[$routeID] = $entry;
+                            $offlineRoutes[] = $entry;
+                            $offlineRouteIDs[] = $routeID;
                         }
                     }
                 }
-                uasort($runningRoutes, array(get_class($this), 'routeSort'));
-                uasort($offlineRoutes, array(get_class($this), 'routeSort'));
                 
                 $this->assign('runningRoutes', $runningRoutes);
                 $this->assign('offlineRoutes', $offlineRoutes);
@@ -454,10 +432,8 @@ class TransitWebModule extends WebModule {
                 
                 $serviceInfo = false;
                 if (count($runningRoutes)) {
-                    $runningRouteIDs = array_keys($runningRoutes);
                     $serviceInfo = $view->getServiceInfoForRoute(reset($runningRouteIDs));
                 } else if (count($offlineRoutes)) {
-                    $offlineRouteIDs = array_keys($offlineRoutes);
                     $serviceInfo = $view->getServiceInfoForRoute(reset($offlineRouteIDs));
                 }
                 

@@ -49,9 +49,10 @@ class TransitAPIModule extends APIModule {
         if (isset($routeInfo['directions'])) {
             foreach ($routeInfo['directions'] as $directionID => $directionInfo) {
                 $formattedDirection = array(
-                    'id'    => $directionID,
-                    'name'  => $directionInfo['name'],
-                    'stops' => $this->formatStopsInfoForRoute($routeId, $directionInfo['stops'], $responseVersion),
+                    'id'      => $directionID,
+                    'name'    => $directionInfo['name'],
+                    'running' => self::argVal($directionInfo, 'running', false),
+                    'stops'   => $this->formatStopsInfoForRoute($routeId, $directionInfo['stops'], $responseVersion),
                 );
                 if ($formatted['view'] == 'schedule') {
                     // show segments in schedule view so that we can build the table
@@ -121,6 +122,7 @@ class TransitAPIModule extends APIModule {
                     'id'      => $directionID,
                     'title'   => self::argVal($directionInfo, 'name', ''),
                     'arrives' => self::argVal($directionInfo, 'predictions', array()),
+                    'running' => self::argVal($directionInfo, 'running', false),
                 );
             }
             

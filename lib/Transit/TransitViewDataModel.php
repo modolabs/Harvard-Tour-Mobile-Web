@@ -192,6 +192,8 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
                     }
                 }
             }
+            uasort($stopInfo['routes'], array('TransitDataModel', 'sortRoutes'));
+            
             $this->remapStopInfo($system, $stopInfo);
             
             $this->cacheViewForKey($cacheKey, $stopInfo);
@@ -326,6 +328,10 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
                     }
                 }
             }
+            if ($routeInfo['splitByHeadsign']) {
+                // Headsigns are named so sort them
+                uasort($routeInfo['directions'], array('TransitDataModel', 'sortDirections'));
+            }
             
             $routeInfo['lastupdate'] = time();
             
@@ -429,6 +435,8 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
                 }
                 $allRoutes += $routes;
             }
+            uasort($routes, array('TransitDataModel', 'sortRoutes'));
+            
             if ($time == null) {
                 $this->cacheViewForKey($cacheKey, $allRoutes);
             }

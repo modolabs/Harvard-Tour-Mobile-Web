@@ -393,18 +393,14 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             Kurogo::log(LOG_WARNING, __FUNCTION__."(): No such route '$routeID'", 'transit');
             return false;
         }
-
+        
+        $routeDirections = $this->getRouteDirections($route, $time);
+        
         $directionPredictions = array();
-        foreach ($route->getDirections() as $directionID) {
+        foreach ($routeDirections as $directionID => $directionInfo) {
             $directionHasStop = false;
-            $directionName = '';
             $predictions = array();
-            
-            if (!$this->lookupStopOrder($route->getAgencyID(), $routeID, $directionID, $directionName)) {
-                $directionName = '';
-            }
-            
-            foreach ($route->getSegmentsForDirection($directionID) as $segment) {
+            foreach ($directionInfo['segments'] as $segment) {
                 $segmentHasStop = false;
                 
                 foreach ($segment->getStops() as $stopInfo) {
@@ -418,10 +414,6 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 if ($segmentHasStop) {
                     $predictions = array_merge($predictions, $segment->getArrivalTimesForStop($stopID, $time));
                 }
-                
-                if (!$directionName && $segment->getService()->isRunning($time)) {
-                    $directionName = strval($segment->getName());
-                }
             }
             
             if ($directionHasStop) {
@@ -431,25 +423,39 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 }
     
                 $directionPredictions[$directionID] = array(
-                    'name'        => $directionName,
+                    'name'        => $directionInfo['name'],
+                    'running'     => $directionInfo['running'],
                     'predictions' => $predictions,
                 );
             }
         }
-
-        if ($this->viewRouteAsLoop($routeID)) {
+        
+        if ($this->viewRouteSplitByHeadsign($routeID)) {
+            // Headsigns are named so sort them
+            uasort($directionPredictions, array(get_class(), 'sortDirections'));
+            
+        } else if ($this->viewRouteAsLoop($routeID)) {
             $names = array();
             $predictions = array();
+            $running = false;
             
-            foreach ($directionPredictions as $directionID => $directionInfo) {
+            foreach ($directionPredictions as $directionInfo) {
                 $names[] = $directionInfo['name'];
                 $predictions = array_merge($predictions, $directionInfo['predictions']);
+                if ($directionInfo['running']) {
+                    $running = true;
+                }
+            }
+            if (count($predictions)) {
+                sort($predictions);
+                $predictions = array_values(array_unique($predictions, SORT_NUMERIC));
             }
             
             $directionPredictions = array(
                 self::LOOP_DIRECTION => array(
                     'name'        => implode(' / ', array_filter($names)),
                     'predictions' => $predictions,
+                    'running'     => $running,
                 ),
             );
         }
@@ -485,6 +491,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 'live'       => $this->isLive(),
             );
         }
+        uasort($routePredictions, array(get_class(), 'sortRoutes'));
         
         $stopInfo = array(
             'name'        => $this->stops[$stopID]->getName(),
@@ -612,83 +619,16 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             'directions'      => array(),
         );
         
-        $routeDirections = array();
-        
-        foreach ($route->getDirections() as $direction) {
-            $directionID = is_numeric($direction) ? "direction_{$direction}" : $direction;
-            
-            // Check the config file to see if we can get headsign or stop order information
-            $segments = $route->getSegmentsForDirection($direction);
-            
-            if ($routeInfo['splitByHeadsign']) {
-                // use the headsign as the direction id
-                // note that we may end up with more than 2 directions
-                foreach ($segments as $segment) {
-                    $headsign = trim($segment->getName());
-                    if (!$headsign) {
-                        $headsign = $directionName;
-                    }
-                    if (!$headsign) {
-                        $headsign = "Direction {$direction}";
-                    }
-                    
-                    if (!isset($routeDirections[$headsign])) {
-                        $directionName = $headsign;
-                        $stopOrder = $this->lookupStopOrder($routeInfo['agency'], $routeID, $headsign, $headsignName);
-                        
-                        $routeDirections[$headsign] = array(
-                            'name'      => $directionName,
-                            'segments'  => array(),
-                            'running'   => false,
-                            'stopOrder' => $stopOrder,
-                        );
-                    }
-                    $routeDirections[$headsign]['segments'][] = $segment;
-                    if ($segment->isRunning($time)) {
-                        $routeDirections[$headsign]['running'] = true;
-                    }
-                }
-                
-                // remove headsigns which are not running
-                // frequently different headsigns run at different times of day
-                foreach (array_keys($routeDirections) as $headsign) {
-                    if (!$routeDirections[$headsign]['running']) {
-                        unset($routeDirections[$headsign]);
-                    }
-                }
-                
-            } else {
-                if (!$directionName) {
-                    foreach ($segments as $segment) {
-                        $directionName = trim($segment->getName());
-                        if ($directionName) {
-                            break;
-                        }
-                    }
-                }
-                if (!$directionName) {
-                    $directionName = "Direction {$direction}";
-                }
-                
-                $directionName = '';
-                $stopOrder = $this->lookupStopOrder($routeInfo['agency'], $routeID, $direction, $directionName);
-                
-                $routeDirections[$directionID] = array(
-                    'name'      => $directionName,
-                    'segments'  => $segments,
-                    'stopOrder' => $stopOrder,
-                );
-            }
-        }
-        
+        $routeDirections = $this->getRouteDirections($route, $time);
         self::dlog('routeDirectionIDs: '.implode(', ', array_keys($routeDirections)));
         
-        foreach ($routeDirections as $directionID => $direction) {
-            self::dlog("HEADSIGN: {$direction['name']}", self::DLOG_STOP_GRAPH_SORT);
+        foreach ($routeDirections as $directionID => $directionInfo) {
+            self::dlog("HEADSIGN: {$directionInfo['name']}", self::DLOG_STOP_GRAPH_SORT);
             
             // Get formatted direction information
             $routeInfo['directions'][$directionID] = $this->getDirectionInfo(
-                $routeID, $direction['name'], $direction['segments'], $direction['stopOrder'], $time);
+                $routeID, $directionInfo['name'], $directionInfo['segments'], $directionInfo['stopOrder'], $time);
+            $routeInfo['directions'][$directionID]['running'] = $directionInfo['running'];
             
             // sort stops 
             usort($routeInfo['directions'][$directionID]['segments'], array(get_class(), 'sortDirectionSegments'));
@@ -698,6 +638,11 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         $this->setUpcomingRouteStops($routeID, $routeInfo['directions']);
         
         $this->applyRouteInfoOverrides($routeID, $routeInfo);
+        
+        if ($routeInfo['splitByHeadsign']) {
+            // Headsigns are named so sort them
+            uasort($routeInfo['directions'], array(get_class(), 'sortDirections'));
+        }
         
         // Do this last because it will confuse everything else!
         if ($this->viewRouteAsLoop($routeID)) {
@@ -758,7 +703,9 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             
             $this->applyRouteInfoOverrides($routeID, $routes[$routeID]);
         }
-    
+        
+        uasort($routes, array(get_class(), 'sortRoutes'));
+        
         return $routes;
     }
     
@@ -792,7 +739,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         if (isset($stopInfo['routes'], $this->overrides['route'])) {
             foreach ($stopInfo['routes'] as $routeID => $routeInfo) {
                 foreach ($this->overrides['route'] as $field => $overrides) {
-                    if (isset($overrides[$routeID], $routeInfo[$field])) {
+                    if (isset($overrides[$routeID], $stopInfo[$field])) {
                         $stopInfo['routes'][$routeID][$field] = $overrides[$routeID];
                     }
                 }
@@ -892,6 +839,30 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         return array();
     }
     
+    public static function sortRoutes($a, $b) {
+        if ($a['running'] == $b['running']) {
+            return strnatcmp($a['name'], $b['name']); // both offline or both running
+            
+        } else if ($a['running']) {
+            return -1; // only $a running
+            
+        } else {
+            return 1; // only $b running
+        }
+    }
+    
+    public static function sortDirections($a, $b) {
+        if ($a['running'] == $b['running']) {
+            return strnatcmp($a['name'], $b['name']); // both offline or both running
+            
+        } else if ($a['running']) {
+            return -1; // only $a running
+            
+        } else {
+            return 1; // only $b running
+        }
+    }
+    
     protected static function sortDirectionSegments($a, $b) {
         for ($i = 0; $i < count($a['stops']); $i++) {
             if (isset($a['stops'][$i], $a['stops'][$i]['arrives'],
@@ -934,6 +905,77 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         }
         
         return 0;
+    }
+    
+    protected function getRouteDirections($route, $time) {
+        $routeDirections = array();
+        
+        $routeID = $route->getID();
+        
+        foreach ($route->getDirections() as $direction) {
+            $directionID = is_numeric($direction) ? "direction_{$direction}" : $direction;
+            
+            // Check the config file to see if we can get headsign or stop order information
+            $segments = $route->getSegmentsForDirection($direction);
+            
+            if ($this->viewRouteSplitByHeadsign($routeID)) {
+                // use the headsign as the direction id
+                // note that we may end up with more than 2 directions
+                foreach ($segments as $segment) {
+                    $headsign = trim($segment->getName());
+                    if (!$headsign) {
+                        $headsign = $directionName;
+                    }
+                    if (!$headsign) {
+                        $headsign = "Direction {$direction}";
+                    }
+                    
+                    if (!isset($routeDirections[$headsign])) {
+                        $directionName = $headsign;
+                        $stopOrder = $this->lookupStopOrder($route->getAgencyID(), $routeID, $headsign, $headsignName);
+                        
+                        $routeDirections[$headsign] = array(
+                            'name'      => $directionName,
+                            'segments'  => array(),
+                            'stopOrder' => $stopOrder,
+                        );
+                    }
+                    $routeDirections[$headsign]['segments'][] = $segment;
+                }
+                
+            } else {
+                $directionName = '';
+                $stopOrder = $this->lookupStopOrder($route->getAgencyID(), $routeID, $direction, $directionName);
+                
+                if (!$directionName) {
+                    foreach ($segments as $segment) {
+                        $directionName = trim($segment->getName());
+                        if ($directionName) {
+                            break;
+                        }
+                    }
+                }
+                if (!$directionName) {
+                    $directionName = "Direction {$direction}";
+                }
+                
+                $routeDirections[$directionID] = array(
+                    'name'      => $directionName,
+                    'segments'  => $segments,
+                    'stopOrder' => $stopOrder,
+                );
+            }
+        }
+        foreach ($routeDirections as $directionID => $directionInfo) {
+            $routeDirections[$directionID]['running'] = false;
+            foreach ($directionInfo['segments'] as $segment) {
+                if ($segment->isRunning($time)) {
+                    $routeDirections[$directionID]['running'] = true;
+                    break;
+                }
+            }
+        }
+        return $routeDirections;
     }
     
     protected function getDirectionInfo($routeID, $directionName, $directionSegments, $directionStops, $time) {
@@ -1073,6 +1115,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         return array(
             'name'     => $directionName,
             'segments' => $segments,
+            'running'  => count($segments) > 0,
             'stops'    => $fullStopList,
         );
     }
@@ -1163,7 +1206,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 Kurogo::log(LOG_WARNING, $warning, 'transit');
                 
                 foreach ($segmentStopOrders as $i => $segmentStopOrder) {
-                    $firstLoc = array_search($placedStop, $segmentStopOrder);
+                    $firstLoc = array_search($best, $segmentStopOrder);
                     if ($firstLoc !== false) {
                         array_slice($segmentStopOrders[$i], $firstLoc, 1);
                     }
