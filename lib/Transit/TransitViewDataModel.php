@@ -19,11 +19,18 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
     protected $config = array();
     protected $models = array();
     protected $daemonMode = false;
-    protected $cache = null;
     protected $globalIDSeparator = '__';
+    
     protected $cacheClass = 'DataCache';
-    protected $cacheFolder = 'Transit'; 
-    protected $cacheLifetime = 20;
+    protected $cacheFolder = 'Transit';
+    
+    protected $routesCache = null;
+    protected $routeCache  = null;
+    protected $stopCache   = null;
+    
+    protected $routesCacheLifetime = 300;
+    protected $routeCacheLifetime  = 20;
+    protected $stopCacheLifetime   = 20;
     
     const DEFAULT_TRANSIT_CACHE_GROUP = 'View';
     
@@ -77,27 +84,73 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
             $this->models[$modelID] = $model;
         }
         
-        if (isset($this->initArgs['TRANSIT_VIEW_CACHE_CLASS'])) {
-            $this->cacheClass = $this->initArgs['TRANSIT_VIEW_CACHE_CLASS'];
+        if (isset($this->initArgs['CACHE_CLASS'])) {
+            $this->cacheClass = $this->initArgs['CACHE_CLASS'];
         }
         if (isset($this->initArgs['CACHE_FOLDER'])) {
             $this->cacheFolder = $this->initArgs['CACHE_FOLDER'];
         }
-        if (isset($this->initArgs['TRANSIT_VIEW_CACHE_TIMEOUT'])) {
-            $this->cacheLifetime = $this->initArgs['TRANSIT_VIEW_CACHE_TIMEOUT'];
+        
+        if (isset($this->initArgs['CACHE_LIFETIME'])) {
+            // default single value cache lifetime configuration
+            $this->routesCacheLifetime = $this->initArgs['CACHE_LIFETIME'];
+            $this->routeCacheLifetime = $this->initArgs['CACHE_LIFETIME'];
+            $this->stopCacheLifetime = $this->initArgs['CACHE_LIFETIME'];
         }
-        $this->cache = DataCache::factory($this->cacheClass, array('CACHE_FOLDER' => $this->cacheFolder));        
-        $this->cache->setCacheGroup('View');
-        $this->cache->setCacheLifetime($this->cacheLifetime);
+        if (isset($this->initArgs['TRANSIT_VIEW_CACHE_TIMEOUT'])) {
+            // legacy single value cache lifetime configuration
+            $this->routesCacheLifetime = $this->initArgs['TRANSIT_VIEW_CACHE_TIMEOUT'];
+            $this->routeCacheLifetime = $this->initArgs['TRANSIT_VIEW_CACHE_TIMEOUT'];
+            $this->stopCacheLifetime = $this->initArgs['TRANSIT_VIEW_CACHE_TIMEOUT'];
+        }
+        if (isset($this->initArgs['CACHE_LIFETIME_ROUTES'])) {
+            $this->routesCacheLifetime = $this->initArgs['CACHE_LIFETIME_ROUTES'];
+        }
+        if (isset($this->initArgs['CACHE_LIFETIME_ROUTE'])) {
+            $this->routeCacheLifetime = $this->initArgs['CACHE_LIFETIME_ROUTE'];
+        }
+        if (isset($this->initArgs['CACHE_LIFETIME_STOP'])) {
+            $this->stopCacheLifetime = $this->initArgs['CACHE_LIFETIME_STOP'];
+        }
+        
+        $this->routesCache = DataCache::factory($this->cacheClass, array('CACHE_FOLDER' => $this->cacheFolder));
+        $this->routesCache->setCacheGroup('View');
+        $this->routesCache->setCacheLifetime($this->routesCacheLifetime);
+
+        $this->routeCache = DataCache::factory($this->cacheClass, array('CACHE_FOLDER' => $this->cacheFolder));
+        $this->routeCache->setCacheGroup('View');
+        $this->routeCache->setCacheLifetime($this->routeCacheLifetime);
+
+        $this->stopCache = DataCache::factory($this->cacheClass, array('CACHE_FOLDER' => $this->cacheFolder));
+        $this->stopCache->setCacheGroup('View');
+        $this->stopCache->setCacheLifetime($this->stopCacheLifetime);
     }
     
-    protected function getCachedViewForKey($cacheKey) {
-        $view = $this->cache->get($cacheKey);
+    // Cache for getRoutes()
+    protected function getCachedRoutesView() {
+        $view = $this->routesCache->get('routes');
         return $view ? $view : array();
     }
+    protected function cacheRoutesView($view) {
+        $this->routesCache->set('routes', $view);
+    }
     
-    protected function cacheViewForKey($cacheKey, $view) {
-        $this->cache->set($cacheKey, $view);
+    // Cache for getRouteInfo()
+    protected function getCachedRouteView($globalID) {
+        $view = $this->routeCache->get("route.$globalID");
+        return $view ? $view : array();
+    }
+    protected function cacheRouteView($globalID, $view) {
+        $this->routeCache->set("route.$globalID", $view);
+    }
+    
+    // Cache for getStopInfo()
+    protected function getCachedStopView($globalStopID) {
+        $view = $this->stopCache->get("stop.$globalStopID");
+        return $view ? $view : array();
+    }
+    protected function cacheStopView($globalStopID, $view) {
+        $this->stopCache->set("stop.$globalStopID", $view);
     }
     
     public function refreshLiveServices() {
@@ -117,9 +170,8 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
     
     public function getStopInfo($globalStopID) {
         $stopInfo = array();
-        $cacheKey = "stopInfo.$globalStopID";
         
-        if (!$stopInfo = $this->getCachedViewForKey($cacheKey)) {
+        if (!$stopInfo = $this->getCachedStopView($globalStopID)) {
             list($system, $stopID) = $this->getRealID($globalStopID);
           
             foreach ($this->modelsForStop($system, $stopID) as $model) {
@@ -196,7 +248,7 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
             
             $this->remapStopInfo($system, $stopInfo);
             
-            $this->cacheViewForKey($cacheKey, $stopInfo);
+            $this->cacheStopView($globalStopID, $stopInfo);
         }
         return $stopInfo;
     }
@@ -246,9 +298,8 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
     
     public function getRouteInfo($globalRouteID, $time=null) {
         $routeInfo = array();
-        $cacheKey = "routeInfo.$globalRouteID";
         
-        if ($time != null || !$routeInfo = $this->getCachedViewForKey($cacheKey)) {
+        if ($time != null || !$routeInfo = $this->getCachedRouteView($globalRouteID)) {
             list($system, $routeID) = $this->getRealID($globalRouteID);
             $model = $this->modelForRoute($system, $routeID);
             
@@ -338,7 +389,7 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
             $this->remapRouteInfo($model['system'], $routeInfo);
       
             if ($time == null) {
-                $this->cacheViewForKey($cacheKey, $routeInfo);
+                $this->cacheRouteView($globalRouteID, $routeInfo);
             }
         }
         
@@ -397,7 +448,7 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
         $allRoutes = array();
         $cacheKey = 'allRoutes';
         
-        if ($time != null || !$allRoutes = $this->getCachedViewForKey($cacheKey)) {
+        if ($time != null || !$allRoutes = $this->getCachedRoutesView()) {
             foreach ($this->models as $model) {
                 $routes = array();
                 
@@ -438,7 +489,7 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
             uasort($routes, array('TransitDataModel', 'sortRoutes'));
             
             if ($time == null) {
-                $this->cacheViewForKey($cacheKey, $allRoutes);
+                $this->cacheRoutesView($allRoutes);
             }
         }
         
