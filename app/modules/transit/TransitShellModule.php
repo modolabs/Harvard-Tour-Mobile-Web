@@ -1,7 +1,5 @@
 <?php
 
-includePackage('Transit');
-
 class TransitShellModule extends ShellModule
 {
     protected $id = 'transit';

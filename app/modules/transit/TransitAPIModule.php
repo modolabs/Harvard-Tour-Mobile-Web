@@ -9,8 +9,6 @@
  *
  */
 
-includePackage('Transit');
-
 class TransitAPIModule extends APIModule {
     protected $id = 'transit';
     protected $vmin = 1;

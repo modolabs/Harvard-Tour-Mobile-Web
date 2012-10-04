@@ -9,7 +9,6 @@
  *
  */
 
-Kurogo::includePackage('Transit');
 Kurogo::includePackage('Maps');
 
 class TransitWebModule extends WebModule {
