@@ -16,19 +16,14 @@
 
 class NextBusDataRetriever extends URLDataRetriever
 {
-    protected $daemonMode = false;
-    protected $nextBusRouteCacheTimeout = 86400;
-    protected $nextBusPredictionCacheTimeout = 20;
-    protected $nextBusVehicleCacheTimeout = 10;
+    protected $nextBusRouteCacheLifetime = 86400;
+    protected $nextBusPredictionCacheLifetime = 20;
+    protected $nextBusVehicleCacheLifetime = 10;
     protected $nextBusRequestTimeout = 10;
     
     const DEFAULT_BASE_URL = 'http://webservices.nextbus.com/service/publicXMLFeed';
     
     public function init($args) {
-        if (isset($args['DAEMON_MODE'])) {
-            $this->daemonMode = $args['DAEMON_MODE'];
-        }
-        
         if (!isset($args['CACHE_CLASS'])) {
             $args['CACHE_CLASS'] = 'NextBusDataCache';
         }
@@ -37,18 +32,22 @@ class NextBusDataRetriever extends URLDataRetriever
             $args['BASE_URL'] = self::DEFAULT_BASE_URL;
         }
         
-        if (isset($args['NEXTBUS_ROUTE_CACHE_TIMEOUT'])) {
-            $this->nextBusRouteCacheTimeout = $args['NEXTBUS_ROUTE_CACHE_TIMEOUT'];
+        if (isset($args['NEXTBUS_ROUTE_CACHE_LIFETIME'])) {
+            $this->nextBusRouteCacheLifetime = $args['NEXTBUS_ROUTE_CACHE_LIFETIME'];
         }
         
-        if (isset($args['NEXTBUS_PREDICTION_CACHE_TIMEOUT'])) {
-            $this->nextBusPredictionCacheTimeout = $args['NEXTBUS_PREDICTION_CACHE_TIMEOUT'];
+        if (isset($args['NEXTBUS_PREDICTION_CACHE_LIFETIME'])) {
+            $this->nextBusPredictionCacheLifetime = $args['NEXTBUS_PREDICTION_CACHE_LIFETIME'];
         }
         
-        if (isset($args['NEXTBUS_VEHICLE_CACHE_TIMEOUT'])) {
-            $this->nextBusVehicleCacheTimeout = $args['NEXTBUS_VEHICLE_CACHE_TIMEOUT'];
+        if (isset($args['NEXTBUS_VEHICLE_CACHE_LIFETIME'])) {
+            $this->nextBusVehicleCacheLifetime = $args['NEXTBUS_VEHICLE_CACHE_LIFETIME'];
         }
-
+        
+        if (isset($args['NEXTBUS_VEHICLE_REQUEST_TIMEOUT'])) {
+            $this->nextBusRequestTimeout = $args['NEXTBUS_VEHICLE_REQUEST_TIMEOUT'];
+        }
+        
         parent::init($args);
         
         $this->setCacheGroup('NextBus');
@@ -99,26 +98,28 @@ class NextBusDataRetriever extends URLDataRetriever
 
     protected function updateForCommand($command) {
         $cacheLifetime = $this->cacheLifetime();
+        $requestTimeout = $this->nextBusRequestTimeout;
         switch ($command) {
             case 'routeList':
             case 'routeConfig':
-                $cacheLifetime = $this->nextBusRouteCacheTimeout;
+                $cacheLifetime = $this->nextBusRouteCacheLifetime;
                 break;
                 
             case 'predictions':
             case 'predictionsForMultiStops':
-                $cacheLifetime = $this->nextBusPredictionCacheTimeout;
+                $cacheLifetime = $this->nextBusPredictionCacheLifetime;
                 break;
                 
             case 'vehicleLocations':
-                $cacheLifetime = $this->nextBusVehicleCacheTimeout;
+                $cacheLifetime = $this->nextBusVehicleCacheLifetime;
                 break;
         }
-        if ($this->daemonMode) {
-            $cacheLifetime -= 900;
-            if ($cacheLifetime < 1) { $cacheLifetime = 1; }
+        // daemons should load cached files aggressively to beat user page loads
+        if (defined('KUROGO_SHELL')) {
+            TransitDataModel::updateCacheLifetimeForShell($cacheLifetime);
         }
         $this->setCacheLifeTime($cacheLifetime);
+        $this->setTimeout($requestTimeout);
     }
     
     protected function cacheKey() {

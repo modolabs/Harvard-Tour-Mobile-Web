@@ -21,21 +21,21 @@ class NextBusDataModel extends TransitDataModel
 
     protected $pathCache = null;
     protected $predictionDataLoaded = array();
-    protected $nextBusPathCacheTimeout = 86400;
+    protected $nextBusPathCacheLifetime = 86400;
     
     protected function init($args) {
-        if (isset($args['NEXTBUS_ROUTE_CACHE_TIMEOUT'])) {
-            $this->nextBusPathCacheTimeout = $args['NEXTBUS_ROUTE_CACHE_TIMEOUT'];
+        if (isset($args['NEXTBUS_ROUTE_CACHE_LIFETIME'])) {
+            $this->nextBusPathCacheLifetime = $args['NEXTBUS_ROUTE_CACHE_LIFETIME'];
         }
-        if (isset($args['DAEMON_MODE']) && $args['DAEMON_MODE']) {
-            // daemons should load cached files aggressively to beat user page loads
-            $this->nextBusPathCacheTimeout -= 900;
-            if ($this->nextBusPathCacheTimeout < 1) { $this->nextBusPathCacheTimeout = 1; }
+        
+        // daemons should load cached files aggressively to beat user page loads
+        if (defined('KUROGO_SHELL')) {
+            TransitDataModel::updateCacheLifetimeForShell($this->nextBusPathCacheLifetime);
         }
         
         $this->pathCache = DataCache::factory('DataCache', $args);
         $this->pathCache->setCacheGroup('NextBus');
-        $this->pathCache->setCacheLifetime($this->nextBusPathCacheTimeout);
+        $this->pathCache->setCacheLifetime($this->nextBusPathCacheLifetime);
         
         parent::init($args);
     }

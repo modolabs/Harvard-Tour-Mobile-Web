@@ -25,7 +25,6 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     protected $viewAsLoopRoutes = array();
     protected $scheduleViewRoutes = array();
     protected $splitByHeadsignRoutes = array();
-    protected $daemonMode = false;
     protected $transitMaxArrivalDelay = 7200; // 2 hours
     protected $transitDefaultRouteColor = "b12727"; // shade of redirect
     protected $transitScheduleRouteRunningPadding = 14400; // 4 hours
@@ -85,6 +84,12 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         }
     }
     
+    public static function updateCacheLifetimeForShell(&$cacheLifetime) {
+        // daemons should load cached files aggressively to beat user page loads
+        $cacheLifetime -= 3600;
+        if ($cacheLifetime < 1) { $cacheLifetime = 1; }
+    }
+    
     protected function init($args) {
         parent::init($args);
         
@@ -141,10 +146,6 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         
         if (isset($args['TRANSIT_SCHEDULE_ROUTE_RUNNING_PADDING'])) {
             $this->transitScheduleRouteRunningPadding = $args['TRANSIT_SCHEDULE_ROUTE_RUNNING_PADDING'];
-        }
-    
-        if (isset($args['DAEMON_MODE'])) {
-            $this->daemonMode = $args['DAEMON_MODE'];
         }
         
         $this->loadData();

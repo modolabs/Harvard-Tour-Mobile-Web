@@ -16,21 +16,19 @@
 
 class DoubleMapDataRetriever extends URLDataRetriever
 {
-    protected $daemonMode = false;
     protected $urlHost = '';
     protected $command = '';
+    
     protected $doubleMapRouteRequestTimeout = 5;
-    protected $doubleMapRouteCacheTimeout = 300;
+    protected $doubleMapRouteCacheLifetime = 300;
+    
     protected $doubleMapETARequestTimeout = 5;
-    protected $doubleMapETACacheTimeout = 60;
+    protected $doubleMapETACacheLifetime = 60;
+    
     protected $doubleMapVehicleRequestTimeout = 3;
-    protected $doubleMapVehicleCacheTimeout = 4;
+    protected $doubleMapVehicleCacheLifetime = 4;
     
     public function init($args) {
-        if (isset($args['DAEMON_MODE'])) {
-            $this->daemonMode = $args['DAEMON_MODE'];
-        }
-        
         if (isset($args['URL_HOST'])) {
             $this->urlHost = $args['URL_HOST'];
         }
@@ -38,22 +36,22 @@ class DoubleMapDataRetriever extends URLDataRetriever
         if (isset($args['DOUBLEMAP_ROUTE_REQUEST_TIMEOUT'])) {
             $this->doubleMapRouteRequestTimeout = $args['DOUBLEMAP_ROUTE_REQUEST_TIMEOUT'];
         }
-        if (isset($args['DOUBLEMAP_ROUTE_CACHE_TIMEOUT'])) {
-            $this->doubleMapRouteCacheTimeout = $args['DOUBLEMAP_ROUTE_CACHE_TIMEOUT'];
+        if (isset($args['DOUBLEMAP_ROUTE_CACHE_LIFETIME'])) {
+            $this->doubleMapRouteCacheLifetime = $args['DOUBLEMAP_ROUTE_CACHE_LIFETIME'];
         }
         
         if (isset($args['DOUBLEMAP_ETA_REQUEST_TIMEOUT'])) {
             $this->doubleMapETARequestTimeout = $args['DOUBLEMAP_ETA_REQUEST_TIMEOUT'];
         }
-        if (isset($args['DOUBLEMAP_ETA_CACHE_TIMEOUT'])) {
-            $this->doubleMapETACacheTimeout = $args['DOUBLEMAP_ETA_CACHE_TIMEOUT'];
+        if (isset($args['DOUBLEMAP_ETA_CACHE_LIFETIME'])) {
+            $this->doubleMapETACacheLifetime = $args['DOUBLEMAP_ETA_CACHE_LIFETIME'];
         }
         
         if (isset($args['DOUBLEMAP_VEHICLE_REQUEST_TIMEOUT'])) {
             $this->doubleMapVehicleRequestTimeout = $args['DOUBLEMAP_VEHICLE_REQUEST_TIMEOUT'];
         }
-        if (isset($args['DOUBLEMAP_VEHICLE_REQUEST_TIMEOUT'])) {
-            $this->doubleMapVehicleCacheTimeout = $args['DOUBLEMAP_VEHICLE_REQUEST_TIMEOUT'];
+        if (isset($args['DOUBLEMAP_VEHICLE_CACHE_LIFETIME'])) {
+            $this->doubleMapVehicleCacheLifetime = $args['DOUBLEMAP_VEHICLE_CACHE_LIFETIME'];
         }
         
         parent::init($args);
@@ -64,35 +62,34 @@ class DoubleMapDataRetriever extends URLDataRetriever
     public function setCommand($command, $parameters=array()) {
         $this->command = $command;
         
-        $timeout = 10;
+        $requestTimeout = 10;
         $cacheLifetime = 300;
         
         switch ($command) {
             case 'routes':
             case 'stops':
             case 'announcements':
-                $timeout = $this->doubleMapRouteRequestTimeout;
-                $cacheLifetime = $this->doubleMapRouteCacheTimeout;
+                $requestTimeout = $this->doubleMapRouteRequestTimeout;
+                $cacheLifetime = $this->doubleMapRouteCacheLifetime;
                 break;
       
             case 'eta':
-                $timeout = $this->doubleMapETARequestTimeout;
-                $cacheLifetime = $this->doubleMapETACacheTimeout;
+                $requestTimeout = $this->doubleMapETARequestTimeout;
+                $cacheLifetime = $this->doubleMapETACacheLifetime;
                 break;
 
             case 'buses':
-                $timeout = $this->doubleMapVehicleRequestTimeout;
-                $cacheLifetime = $this->doubleMapVehicleCacheTimeout;
+                $requestTimeout = $this->doubleMapVehicleRequestTimeout;
+                $cacheLifetime = $this->doubleMapVehicleCacheLifetime;
                 break;
         }
         
         // daemons should load cached files aggressively to beat user page loads
-        if ($this->daemonMode) {
-            $cacheLifetime -= 900;
-            if ($cacheLifetime < 1) { $cacheLifetime = 1; }
+        if (defined('KUROGO_SHELL')) {
+            TransitDataModel::updateCacheLifetimeForShell($cacheLifetime);
         }
         $this->setCacheLifeTime($cacheLifetime);
-        $this->setTimeout($timeout);
+        $this->setTimeout($requestTimeout);
         
         $this->setBaseURL("http://{$this->urlHost}.doublemap.com/map/v2/{$this->command}", false);
     }

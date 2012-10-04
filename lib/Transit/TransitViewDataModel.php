@@ -18,7 +18,6 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
 {
     protected $config = array();
     protected $models = array();
-    protected $daemonMode = false;
     protected $globalIDSeparator = '__';
     
     protected $cacheClass = 'DataCache';
@@ -36,11 +35,6 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
     
     // Do not call parent!!!
     protected function init($config) {
-        if (isset($config['DAEMON_MODE'])) {
-            $this->daemonMode = $config['DAEMON_MODE'];
-            unset($config['DAEMON_MODE']); // Make sure this doesn't confuse TransitConfig class
-        }
-        
         $this->config = new TransitConfig($config);
         $this->initArgs = $this->config->getGlobalArgs();
 
@@ -48,12 +42,6 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
         
         if (isset($this->initArgs['TRANSIT_GLOBAL_ID_SEPARATOR'])) {
             $this->globalIDSeparator = $this->initArgs['TRANSIT_GLOBAL_ID_SEPARATOR'];
-        }
-        
-        if ($this->daemonMode) {
-            // daemons should load cached files aggressively to beat user page loads
-            $this->cacheLifetime -= 900;
-            if ($this->cacheLifetime < 1) { $this->cacheLifetime = 1; }
         }
         
         foreach ($this->config->getModelIDs() as $modelID) {
@@ -67,7 +55,6 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
                 $class                   = $this->config->getLiveModelClass($modelID);
                 $args                    = $this->config->getLiveModelArgs($modelID);
                 $args['FIELD_OVERRIDES'] = $this->config->getLiveModelOverrides($modelID);
-                $args['DAEMON_MODE']     = $this->daemonMode;
                 
                 $model['live'] = DataModel::factory($class, $args);
             }
@@ -76,7 +63,6 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
                 $class                   = $this->config->getStaticModelClass($modelID);
                 $args                    = $this->config->getStaticModelArgs($modelID);
                 $args['FIELD_OVERRIDES'] = $this->config->getStaticModelOverrides($modelID);
-                $args['DAEMON_MODE']     = $this->daemonMode;
                 
                 $model['static'] = DataModel::factory($class, $args);
             }
@@ -111,6 +97,12 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
         }
         if (isset($this->initArgs['CACHE_LIFETIME_STOP'])) {
             $this->stopCacheLifetime = $this->initArgs['CACHE_LIFETIME_STOP'];
+        }
+        
+        if (defined('KUROGO_SHELL')) {
+            TransitDataModel::updateCacheLifetimeForShell($this->routesCache);
+            TransitDataModel::updateCacheLifetimeForShell($this->routeCache);
+            TransitDataModel::updateCacheLifetimeForShell($this->stopCache);
         }
         
         $this->routesCache = DataCache::factory($this->cacheClass, array('CACHE_FOLDER' => $this->cacheFolder));
@@ -161,7 +153,6 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
                 $class                   = $this->config->getLiveModelClass($modelID);
                 $args                    = $this->config->getLiveModelArgs($modelID);
                 $args['FIELD_OVERRIDES'] = $this->config->getLiveModelOverrides($modelID);
-                $args['DAEMON_MODE']     = $this->daemonMode;
                 
                 $this->models[$modelID]['live'] = TransitDataModel::factory($class, $args);
             }

@@ -4,16 +4,15 @@ includePackage('Transit');
 
 class TransitShellModule extends ShellModule
 {
-    protected $id = 'calendar';
+    protected $id = 'transit';
+    
     protected function initializeForCommand() {
-        switch($this->command) {
+        switch ($this->command) {
             case 'fetchAllData':
-                $view = DataModel::factory("TransitViewDataModel", $this->loadFeedData());
+                $view = DataModel::factory('TransitViewDataModel', $this->loadFeedData());
                 $routesInfo = $view->getRoutes();
-                
                 return 0;
                 
-                break;
             default:
                 $this->invalidCommand();
                 break;

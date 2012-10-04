@@ -16,7 +16,6 @@
 
 class TranslocDataRetriever extends URLDataRetriever
 {
-    protected $daemonMode = false;
     protected $command = '';
     protected $translocRouteRequestTimeout = 5;
     protected $translocRouteCacheTimeout = 300;
@@ -26,10 +25,6 @@ class TranslocDataRetriever extends URLDataRetriever
     const BASE_URL = 'http://api.transloc.com/1.2/';
     
     public function init($args) {
-        if (isset($args['DAEMON_MODE'])) {
-            $this->daemonMode = $args['DAEMON_MODE'];
-        }
-        
         if (isset($args['TRANSLOC_ROUTE_REQUEST_TIMEOUT'])) {
             $this->translocRouteRequestTimeout = $args['TRANSLOC_ROUTE_REQUEST_TIMEOUT'];
         }
@@ -54,7 +49,7 @@ class TranslocDataRetriever extends URLDataRetriever
     public function setCommand($command, $parameters=array()) {
         $this->command = $command;
         
-        $timeout = 10;
+        $requestTimeout = 10;
         $cacheLifetime = 300;
         
         switch ($command) {
@@ -62,24 +57,23 @@ class TranslocDataRetriever extends URLDataRetriever
             case 'routes':
             case 'segments':
             case 'stops':
-                $timeout = $this->translocRouteRequestTimeout;
+                $requestTimeout = $this->translocRouteRequestTimeout;
                 $cacheLifetime = $this->translocRouteCacheTimeout;
                 break;
       
             case 'arrival-estimates':
             case 'vehicles':
-                $timeout = $this->translocUpdateRequestTimeout;
+                $requestTimeout = $this->translocUpdateRequestTimeout;
                 $cacheLifetime = $this->translocUpdateCacheTimeout;
                 break;
         }
         
         // daemons should load cached files aggressively to beat user page loads
-        if ($this->daemonMode) {
-            $cacheLifetime -= 900;
-            if ($cacheLifetime < 1) { $cacheLifetime = 1; }
+        if (defined('KUROGO_SHELL')) {
+            TransitDataModel::updateCacheLifetimeForShell($cacheLifetime);
         }
         $this->setCacheLifeTime($cacheLifetime);
-        $this->setTimeout($timeout);
+        $this->setTimeout($requestTimeout);
         
         $this->setBaseURL(rtrim(self::BASE_URL, '/')."/{$this->command}.json", false);
     }
