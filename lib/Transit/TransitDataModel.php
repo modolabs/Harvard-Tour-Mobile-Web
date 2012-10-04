@@ -38,9 +38,6 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
 
     // For routes where not all vehicles stop at all stops
     protected $stopOrders = array();
-
-    protected $platform = 'unknown';
-    protected $pagetype = 'compliant';
     
     static private $arrows = array(
         '1' => 'n',
@@ -149,9 +146,6 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         if (isset($args['DAEMON_MODE'])) {
             $this->daemonMode = $args['DAEMON_MODE'];
         }
-        
-        $this->pagetype = Kurogo::deviceClassifier()->getPagetype();
-        $this->platform = Kurogo::deviceClassifier()->getPlatform();
         
         $this->loadData();
     }
