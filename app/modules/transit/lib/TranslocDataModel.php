@@ -218,7 +218,7 @@ class TranslocDataModel extends TransitDataModel
                 
                 $routeSegments[$routeID] = new TranslocTransitSegment(
                     self::LOOP_DIRECTION,
-                    '',
+                    self::LOOP_DIRECTION_NAME,
                     $routeService,
                     self::LOOP_DIRECTION,
                     $routeID,

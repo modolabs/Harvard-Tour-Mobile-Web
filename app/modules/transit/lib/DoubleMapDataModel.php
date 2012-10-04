@@ -210,7 +210,7 @@ class DoubleMapDataModel extends TransitDataModel
             // Single segment containing all stops:
             $routeSegment = new DoubleMapTransitSegment(
                 self::LOOP_DIRECTION,
-                '',
+                self::LOOP_DIRECTION_NAME,
                 $routeService,
                 self::LOOP_DIRECTION,
                 $routeId,

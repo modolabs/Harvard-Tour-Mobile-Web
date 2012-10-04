@@ -409,7 +409,7 @@ class TransitWebModule extends WebModule {
                         if (isset($directionInfo['predictions'])) {
                             $entry['predictions'] = $directionInfo['predictions'];
                         }
-                        if ($directionInfo['name'] && $directionID != TransitDataModel::LOOP_DIRECTION) {
+                        if ($directionInfo['name']) {
                             $entry['title'] .= '<br/>'.$directionInfo['name'];
                         }
           

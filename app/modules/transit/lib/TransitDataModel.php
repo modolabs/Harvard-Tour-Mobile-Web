@@ -55,6 +55,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     const GOOGLE_CHART_API_URL = 'http://chart.apis.google.com/chart?';
     
     const LOOP_DIRECTION = 'loop';
+    const LOOP_DIRECTION_NAME = '';  // Suppress name since it is redundant
     
     // Set this to true for stop order debugging
     // Do not leave this set to true because it modifies the REST API output
@@ -448,7 +449,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             
             $directionPredictions = array(
                 self::LOOP_DIRECTION => array(
-                    'name'        => implode(' / ', array_filter($names)),
+                    'name'        => self::LOOP_DIRECTION_NAME,
                     'predictions' => $predictions,
                     'running'     => $running,
                 ),
@@ -662,7 +663,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         
         return array(
             self::LOOP_DIRECTION => array(
-                'name'     => implode(' / ', array_filter($names)),
+                'name'     => self::LOOP_DIRECTION_NAME,
                 'segments' => $segments,
                 'stops'    => $stops,
             ),
@@ -942,16 +943,19 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 $directionName = '';
                 $stopOrder = $this->lookupStopOrder($route->getAgencyID(), $routeID, $direction, $directionName);
                 
-                if (!$directionName) {
+                if ($direction == self::LOOP_DIRECTION) {
+                    $directionName = self::LOOP_DIRECTION_NAME;
+                    
+                } else if (!$directionName) {
                     foreach ($segments as $segment) {
                         $directionName = trim($segment->getName());
                         if ($directionName) {
                             break;
                         }
                     }
-                }
-                if (!$directionName) {
-                    $directionName = "Direction {$direction}";
+                    if (!$directionName) {
+                        $directionName = "Direction {$direction}";
+                    }
                 }
                 
                 $routeDirections[$directionID] = array(
@@ -1718,7 +1722,8 @@ class TransitSegment
     }
     
     public function getName() {
-        return $this->name;
+        return $this->direction == TransitDataModel::LOOP_DIRECTION ? 
+            TransitDataModel::LOOP_DIRECTION_NAME : $this->name;
     }
   
     public function getDirection() {
