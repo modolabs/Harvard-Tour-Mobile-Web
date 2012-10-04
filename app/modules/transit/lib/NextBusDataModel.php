@@ -90,11 +90,13 @@ class NextBusDataModel extends TransitDataModel
                 if ($this->viewRouteAsLoop($routeID)) {
                     $vehicles[$vehicleID]['directionID'] = self::LOOP_DIRECTION;
                     
-                } else {
+                } else if ($attributes->getNamedItem('dirTag')) {
                     $directionID = $this->getDirectionID($routeID, $attributes->getNamedItem('dirTag')->nodeValue);
                     if (in_array($directionID, $route->getDirections())) {
                         $vehicles[$vehicleID]['directionID'] = $directionID;
                     }
+                } else {
+                     $vehicles[$vehicleID]['directionID'] = '';
                 }
             }
         }
