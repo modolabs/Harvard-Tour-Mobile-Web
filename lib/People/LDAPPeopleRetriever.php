@@ -49,6 +49,7 @@ class LDAPPeopleRetriever extends DataRetriever implements PeopleRetriever
     protected $readTimelimit=30;
     protected $baseAttributes = array();
     protected $searchFields = array();
+    protected $additionalFilters = array();
     
     protected function retrieveResponse() {
         $response = $this->initResponse();
@@ -250,6 +251,11 @@ class LDAPPeopleRetriever extends DataRetriever implements PeopleRetriever
         } else {
             $this->errorMsg = "Invalid query";
         }
+        
+        if ($this->additionalFilters) {
+        	$filters = array_merge(array($filter), $this->additionalFilters);
+			$filter = new LDAPCompoundFilter(LDAPCompoundFilter::JOIN_TYPE_AND, $filters);
+        }
 
         return $filter;
     }
@@ -307,6 +313,15 @@ class LDAPPeopleRetriever extends DataRetriever implements PeopleRetriever
 
         if (isset($args['SEARCH_FIELDS'])) {
             $this->searchFields = $args['SEARCH_FIELDS'];
+        }
+        
+        if (isset($args['LDAP_FILTER'])) {
+        	if (!is_array($args['LDAP_FILTER'])) {
+        		throw new KurogoConfigurationException("LDAP_FILTER expected to be an array");
+        	}
+        	foreach ($args['LDAP_FILTER'] as $filterString) {
+        		$this->additionalFilters[] = new LDAPFilter($filterString, null, LDAPFilter::FILTER_OPTION_CUSTOM);
+        	}
         }
         
         $this->fieldMap = array(
