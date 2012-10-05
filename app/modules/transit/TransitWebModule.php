@@ -274,9 +274,6 @@ class TransitWebModule extends WebModule {
               
             case 'route':
                 $routeID = $this->getArg('id');
-                $isAjax = $this->getArg('ajax', 0);
-                
-                unset($this->args['ajax']); // do not propagate 
                 
                 $routeInfo = $view->getRouteInfo($routeID);
                 
@@ -378,7 +375,7 @@ class TransitWebModule extends WebModule {
                 $this->assign('routeInfo', $routeInfo);
         
                 // Ajax page view
-                if ($isAjax) {
+                if ($this->ajaxContentLoad) {
                     $this->setTemplatePage('routeajax');
                     break;
                 }
@@ -390,10 +387,7 @@ class TransitWebModule extends WebModule {
             
             case 'stop':
                 $stopID = $this->getArg('id');
-                $isAjax = $this->getArg('ajax', 0);
                 
-                unset($this->args['ajax']); // do not propagate 
-        
                 $stopInfo = $view->getStopInfo($stopID);
                 
                 $runningRouteIDs = array();
@@ -427,7 +421,7 @@ class TransitWebModule extends WebModule {
                 $this->assign('offlineRoutes', $offlineRoutes);
                 
                 // Ajax page view
-                if ($isAjax) {
+                if ($this->ajaxContentLoad) {
                     $this->setTemplatePage('stopajax');
                     break;
                 }
@@ -635,7 +629,7 @@ class TransitWebModule extends WebModule {
     }
     
     function initListUpdate() {
-        $listUpdateURL = FULL_URL_PREFIX.ltrim($this->buildURL($this->page, array_merge(array('ajax' => 1), $this->args)), '/');
+        $listUpdateURL = $this->buildAjaxBreadcrumbURL($this->page, array_merge(array(self::AJAX_PARAMETER => 1), $this->args));
         $this->addInlineJavascript("\n".
             'var htmlUpdateURL = "'.$listUpdateURL."\";\n".
             'var listUpdateFrequency = '.$this->getOptionalModuleVar('STOP_LIST_UPDATE_FREQ', 20).";\n"
