@@ -236,6 +236,7 @@ class PeopleAPIModule extends APIModule
                             'feed'         => $feed,
                             'displayField' => 'name',
                             'results'      => $results,
+                            'requiresDetail'=> (bool) $this->getOptionalModuleVar('API_REQUIRES_DETAIL'),
                             'error'        => isset($error) ? $error : null
                             );
                     }
