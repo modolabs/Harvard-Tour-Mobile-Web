@@ -928,7 +928,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                     
                     if (!isset($routeDirections[$headsign])) {
                         $directionName = $headsign;
-                        $stopOrder = $this->lookupStopOrder($route->getAgencyID(), $routeID, $headsign, $headsignName);
+                        $stopOrder = $this->lookupStopOrder($route->getAgencyID(), $routeID, $headsign, $directionName);
                         
                         $routeDirections[$headsign] = array(
                             'name'      => $directionName,
@@ -942,8 +942,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             } else {
                 $directionName = '';
                 $stopOrder = $this->lookupStopOrder($route->getAgencyID(), $routeID, $direction, $directionName);
-                
-                if ($direction == self::LOOP_DIRECTION) {
+                if ($direction === self::LOOP_DIRECTION) {
                     $directionName = self::LOOP_DIRECTION_NAME;
                     
                 } else if (!$directionName) {
@@ -1722,7 +1721,7 @@ class TransitSegment
     }
     
     public function getName() {
-        return $this->direction == TransitDataModel::LOOP_DIRECTION ? 
+        return $this->direction === TransitDataModel::LOOP_DIRECTION ? 
             TransitDataModel::LOOP_DIRECTION_NAME : $this->name;
     }
   

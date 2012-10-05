@@ -252,7 +252,7 @@ class NextBusDataModel extends TransitDataModel
 
                 foreach ($directions as $directionID => $direction) {
                     $segmentID = $directionID;
-                    if ($segmentID == self::LOOP_DIRECTION) {
+                    if ($segmentID === self::LOOP_DIRECTION) {
                         $segmentID = $routeID;
                     }
                     
