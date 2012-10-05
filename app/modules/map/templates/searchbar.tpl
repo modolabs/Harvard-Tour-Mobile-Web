@@ -12,7 +12,7 @@
                         type="text"
                         value="{$searchTerms|default:''|escape}"
                         name="filter"
-                        placeholder={"MAP_SEARCH_PLACEHOLDER"|getLocalizedString}
+                        placeholder="{"MAP_SEARCH_PLACEHOLDER"|getLocalizedString}"
                         onfocus="androidPlaceholderFix(this);showSearchFormButtons();" />
                     {if $group && !$campuses}
                         <input type="hidden" name="group" value="{$group}" />
