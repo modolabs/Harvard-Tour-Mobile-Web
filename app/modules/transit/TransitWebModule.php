@@ -178,6 +178,10 @@ class TransitWebModule extends WebModule {
                 $offlineRoutes = array_fill_keys(array_keys($indexConfig['agencies']), false);
         
                 foreach ($routeConfigs as $routeID => $routeConfig) {
+                    if (!$routeConfig['inService']) {
+                        continue; // only show routes in service
+                    }
+                    
                     $agencyID = $routeConfig['agency'];
                     $entry = array(
                         'title' => $routeConfig['name'],

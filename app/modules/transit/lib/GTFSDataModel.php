@@ -376,28 +376,24 @@ class GTFSTransitRoute extends TransitRoute
         return $this->model->query($sql, $params);
     }
 
-    public function isRunning($time, &$inService=null, &$runningSegmentNames=null) {
-        $isRunning = false;
+    public function isRunning($time, &$inService=null) {
         $inService = false;
-        $runningSegmentNames = array();
-
+        
         $this->getDirections();
         foreach ($this->directions as $directionID => $direction) {
             foreach ($direction['segments'] as $segment) {
                 $inService = true; // if a segment exists it is in service
+                TransitDataModel::dlog("Route {$this->id} ({$this->name}) is in service", TransitDataModel::DLOG_IS_RUNNING);
+                
                 if ($segment->isRunning($time)) {
-                    $name = $segment->getName();
-                    if (isset($name) && !isset($runningSegmentNames[$name])) {
-                        TransitDataModel::dlog("   Route {$this->getName()} has named running segment '$name' (direction '$directionID')", TransitDataModel::DLOG_STOP_GRAPH_SORT);
-                        
-                        $runningSegmentNames[$name] = $name;
-                    }
-                    $isRunning = true;
+                    TransitDataModel::dlog("Route {$this->id} ({$this->name}) is running", TransitDataModel::DLOG_IS_RUNNING);
+                    return true;
                 }
             }
         }
-        $runningSegmentNames = array_values($runningSegmentNames);
-        return $isRunning;
+        
+        TransitDataModel::dlog("Route {$this->id} ({$this->name}) is not running", TransitDataModel::DLOG_IS_RUNNING);
+        return false;
     }
     
     public function getServiceFrequency($time, $transitMaxArrivalDelay) {

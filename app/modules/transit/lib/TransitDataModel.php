@@ -1516,15 +1516,8 @@ class TransitRoute
         return false;
     }
     
-    public function isRunning($time, &$inService=null, &$runningSegmentNames=null) {
-        $isRunning = false;
+    public function isRunning($time, &$inService=null) {
         $inService = false;
-        $runningSegmentNames = array();
-        
-        // Check if there is a valid segment
-        $servicesForDate = null;
-        
-        TransitDataModel::dlog("Looking at route {$this->id} ({$this->name})", TransitDataModel::DLOG_IS_RUNNING);
         
         foreach ($this->directions as $directionID => $direction) {
             foreach ($direction['segments'] as $segment) {
@@ -1532,22 +1525,18 @@ class TransitRoute
                 
                 if ($segment->getService()->isRunning($time)) {
                     $inService = true;
+                    TransitDataModel::dlog("Route {$this->id} ({$this->name}) is in service", TransitDataModel::DLOG_IS_RUNNING);
                     
                     if ($segment->isRunning($time)) {
-                        $name = $segment->getName();
-                        if (isset($name) && !isset($runningSegmentNames[$name])) {
-                            TransitDataModel::dlog("   Route {$this->name} has named running segment '$name' (direction '$directionID')", TransitDataModel::DLOG_IS_RUNNING);
-                            
-                            $runningSegmentNames[$name] = $name;
-                        }
-                        $isRunning = true;
+                        TransitDataModel::dlog("Route {$this->id} ({$this->name}) is running", TransitDataModel::DLOG_IS_RUNNING);
+                        return true;
                     }
                 }
             }
         }
         
-        $runningSegmentNames = array_values($runningSegmentNames);
-        return $isRunning;
+        TransitDataModel::dlog("Route {$this->id} ({$this->name}) is not running", TransitDataModel::DLOG_IS_RUNNING);
+        return false;
     }
     
     protected function segmentsUseFrequencies() {

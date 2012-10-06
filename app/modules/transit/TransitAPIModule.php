@@ -294,7 +294,9 @@ class TransitAPIModule extends APIModule {
               $response = array();
               $routesInfo = $view->getRoutes();
               foreach ($routesInfo as $routeId => $routeInfo) {
-                  $response[] = $this->formatBriefRouteInfo($routeId, $routeInfo);
+                  if ($routeInfo['inService']) { // only show routes in service
+                      $response[] = $this->formatBriefRouteInfo($routeId, $routeInfo);
+                  }
               }
               
               $this->setResponse($response);
