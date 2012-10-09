@@ -110,7 +110,8 @@ class AthleticsWebModule extends WebModule {
                 }
             }
     
-            $link['url'] = $this->buildBreadcrumbURL('news_detail', $options, true);
+            $addBreadcrumb = isset($data['addBreadcrumb']) ? $data['addBreadcrumb'] : true;
+            $link['url'] = $this->buildBreadcrumbURL('news_detail', $options, $addBreadcrumb);
         } elseif ($url = $story->getLink()) {
             $link['url'] = $url;
         }
@@ -750,7 +751,7 @@ class AthleticsWebModule extends WebModule {
                     
                     $stories = array();
                     foreach ($items as $item) {
-                        $stories[] = $this->linkForNewsItem($item, array('section' => $section));
+                        $stories[] = $this->linkForNewsItem($item, array('section' => $section, 'addBreadcrumb'=>false));
                     }
                     $this->assign('stories', $stories);
                 }
