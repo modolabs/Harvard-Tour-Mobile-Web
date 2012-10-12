@@ -232,7 +232,8 @@ class AthleticsWebModule extends WebModule {
             'start'         => $this->timeText($event),
             'pastStatus'    => $event->getStartTime() > time() ? false : true,
             'location'      => $event->getLocation(),
-            'link'          => $event->getLink()
+            'link'          => $event->getLink(),
+            'description'   => $event->getDescription(),
         );
     }
     
