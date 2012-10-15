@@ -242,19 +242,36 @@ class TransitWebModule extends WebModule {
                 //
                 // Info Pane
                 //
+                $keyRemap = array(
+                    'subtitles' => 'subtitle',
+                    'urls'      => 'url',
+                    'classes'   => 'class',
+                    'infokeys'  => 'url',
+                );
                 $infosections = array();
                 foreach ($indexConfig['infosections'] as $key => $heading) {
+                    if (!isset($indexConfig[$key]['titles'])) { continue; }
+                    
                     $infosection = array(
                         'heading' => $heading,
                         'items'   => array(),
                     );
                     foreach ($indexConfig[$key]['titles'] as $index => $title) {
-                        $infosection['items'][] = array(
-                            'title'    => $title,
-                            'url'      => isset($indexConfig[$key]['urls'])      ? $indexConfig[$key]['urls'][$index]      : null,
-                            'subtitle' => isset($indexConfig[$key]['subtitles']) ? $indexConfig[$key]['subtitles'][$index] : null,
-                            'class'    => isset($indexConfig[$key]['classes'])   ? $indexConfig[$key]['classes'][$index]   : null,
+                        $item = array(
+                            'title' => $title,
                         );
+                        foreach ($keyRemap as $configKey => $itemKey) {
+                            if (isset($indexConfig[$key][$configKey])) {
+                                if ($configKey == 'infokeys') {
+                                    $item[$itemKey] = $this->buildBreadcrumbURL('info', array(
+                                        'id' => $indexConfig[$key][$configKey][$index],
+                                    ));
+                                } else {
+                                    $item[$itemKey] = $indexConfig[$key][$configKey][$index];
+                                }
+                            }
+                        }
+                        $infosection['items'][] = $item;
                     }
                     if (count($infosection['items'])) {
                         $infosections[] = $infosection;

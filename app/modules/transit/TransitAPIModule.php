@@ -15,6 +15,7 @@ class TransitAPIModule extends APIModule {
     protected $vmax = 3;
     protected $defaultNewsModel = 'TransitNewsDataModel';
     protected $collapseRouteTabs = false;
+    protected $hideOfflineRoutes = false;
     
     protected function formatBriefRouteInfo($routeId, $routeInfo) {
         return array(
@@ -201,9 +202,13 @@ class TransitAPIModule extends APIModule {
         switch($this->command) {
             case 'info':
                 $config = $this->getModuleSection('module');
-                if(isset($config['collapse_route_tabs'])){
+                if (isset($config['collapse_route_tabs'])){
                     $this->collapseRouteTabs = $config['collapse_route_tabs'];
                 }
+                if (isset($config['hide_offline_routes'])){
+                    $this->hideOfflineRoutes = $config['hide_offline_routes'];
+                }
+
                 $keyRemap = array(
                     'subtitles' => 'subtitle',
                     'urls'      => 'url',
@@ -267,23 +272,45 @@ class TransitAPIModule extends APIModule {
                     }
                 }
                 
+                $tabKeys = array();
+                if ($this->collapseRouteTabs) {
+                    $tabKeys[] = 'routes';
+                } else {
+                    $tabKeys[] = 'running';
+                    if (!$this->hideOfflineRoutes) {
+                        $tabKeys[] = 'offline';
+                    }
+                }
+                if (count($this->getModuleSections('feeds-news'))) {
+                    $tabKeys[] = 'news';
+                }
+                if (count($results['sections'])) {
+                    $tabKeys[] = 'info';
+                }
+                
                 $tabs = array();
                 $pageData = $this->getModuleSections('pages');
                 $indexTabs = $pageData['index'];
                 foreach ($indexTabs as $tabID => $tabName) {
-                    if($this->collapseRouteTabs){
-                        if($tabID == 'tab_running'){
-                            # If collapsing, rename running to routes
-                            $tabID = 'tab_routes';
-                        }
+                    $tabKey = substr($tabID, 4); // Remove 'tab_'
+                    
+                    if (isset($tabKeys[$tabKey])) {
+                        $tabs[$tabKey] = array(
+                            'id'    => $tabKey,
+                            'title' => $tabName,
+                        );
                     }
-                    $tabs[] = array(
-                        # Remove 'tab_'
-                        'id' => substr($tabID, 4),
-                        'title' => $tabName,
-                    );
                 }
-                $results['tabs'] = $tabs;
+                foreach ($tabKeys as $tabKey) {
+                    if (!isset($tabs[$tabKey])) {
+                        // Add tabs with no configured titles at the end
+                        $tabs[$tabKey] = array(
+                            'id'    => $tabKey,
+                            'title' => ucfirst($tabKey),
+                        );
+                    }
+                }
+                $results['tabs'] = array_values($tabs); // strip indexes
                 
                 $this->setResponse($results);
                 $this->setResponseVersion($responseVersion);
