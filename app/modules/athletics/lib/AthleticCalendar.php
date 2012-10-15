@@ -2,6 +2,7 @@
 
 class  AthleticCalendar implements CalendarInterface {
     protected $events = array();
+    public $timezone;
 
     public function addEvent(AthleticEvent $event) {
         $this->events[] = $event;
