@@ -419,7 +419,7 @@ class TranslocTransitSegment extends TransitSegment
         $this->model = $model;
     }
   
-    public function isRunning($time) {
+    public function isRunning($timestampRange) {
         return $this->model->translocRouteIsRunning($this->routeID);
     }
 }
