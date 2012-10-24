@@ -50,6 +50,8 @@ class DoubleMapDataModel extends TransitDataModel
         return true;
     }
     
+    /* 
+    // If we get permission from DoubleMap to use their icon API, we can uncomment this
     protected function getMapIconUrlForRouteVehicle($routeID, $vehicle=null) {
         if ($this->doubleMapMarkersURL) {
             $args = array(
@@ -62,20 +64,7 @@ class DoubleMapDataModel extends TransitDataModel
             return parent::getMapIconUrlForRouteVehicle($routeID, $vehicle);
         }
     }
-    
-    protected function getMapMarkersForVehicles($vehicles) {
-        $query = '';
-        
-        foreach ($vehicles as $vehicle) {
-            if ($vehicle['lat'] && $vehicle['lon']) {
-                $query .= '&'.http_build_query(array(
-                    'markers' => "icon:{$vehicle['iconURL']}|{$vehicle['lat']},{$vehicle['lon']}",
-                ));
-            }
-        }
-        
-        return $query;
-    }
+    */
 
     protected function getRouteColor($routeId) {
         if (isset($this->routeColors[$routeId])) {
@@ -90,7 +79,7 @@ class DoubleMapDataModel extends TransitDataModel
     }
     
     protected function getServiceId() {
-        return $this->doubleMapServiceURL;
+        return 'doublemap';
     }
     
     protected function getServiceLink() {
