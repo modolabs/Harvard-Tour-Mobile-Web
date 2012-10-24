@@ -1807,7 +1807,7 @@ abstract class WebModule extends Module {
             }
 
             if ($session_max_idle = intval(Kurogo::getOptionalSiteVar('AUTHENTICATION_IDLE_TIMEOUT', 0))) {
-                $this->setRefresh($session_max_idle+2);
+                $this->setRefresh($session_max_idle+60);
             }
         } else {
             $this->assign('footerLoginClass', 'noauth');
