@@ -95,7 +95,7 @@ class NewsAPIModule extends APIModule {
     }
     
     protected function encodeValue($value) {
-        return mb_convert_encoding($value, 'UTF-8', 'HTML-ENTITIES');
+        return trim(mb_convert_encoding($value, 'UTF-8', 'HTML-ENTITIES'));
     }
 
     protected function formatStory($story, $mode) {
