@@ -18,6 +18,7 @@ class OAuthDataRetriever extends URLDataRetriever
     protected $consumerSecret;
     protected $signatureMethod = 'HMAC-SHA1';
     protected $requiresToken = false;
+    protected $requiresExpect = true;
     protected $cert;
     protected $OAuthProvider;
     protected $OAuthProviderClass;
@@ -313,7 +314,9 @@ class OAuthDataRetriever extends URLDataRetriever
         }
         
 	    $headers['Authorization'] = $this->getAuthorizationHeader();
-	    $headers['Expect'] = '';
+	    if ($this->requiresExpect) {
+            $headers['Expect'] = '';
+        }
         return $headers;        
     }
     
