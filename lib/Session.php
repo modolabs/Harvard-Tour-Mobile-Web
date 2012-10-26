@@ -83,6 +83,7 @@ abstract class Session
             $this->remainLoggedIn = true;
             $this->setLoginCookie();
         }
+        $this->setSessionVars();
     }
     
     protected function getUserFromLoginCookie() {
@@ -100,6 +101,7 @@ abstract class Session
             // see if max idle time has been reached
             if ( $this->maxIdleTime && ($diff > $this->maxIdleTime)) {
                 Kurogo::log(LOG_NOTICE, "User was logged off after $diff seconds", 'session');
+                $this->logoutAllUsers();
                 // right now the user is just logged off, but we could show and error if necessary.
             } else {
                 $ok = false;
@@ -283,6 +285,15 @@ abstract class Session
         $this->setLoginCookie();
         session_regenerate_id(true);
         return true;
+    }
+    
+    protected function logoutAllUsers() {
+        foreach ($_SESSION['users'] as $userData) {
+            if ($authority = AuthenticationAuthority::getAuthenticationAuthority($userData['auth'])) {
+                $authority->logout($this, false);
+            }
+        }
+        $this->setSessionVars();
     }
 
     private function getSessionData() {
