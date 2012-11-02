@@ -93,13 +93,17 @@ class NewsAPIModule extends APIModule {
                  break;
         }
     }
+    
+    protected function encodeValue($value) {
+        return trim(mb_convert_encoding($value, 'UTF-8', 'HTML-ENTITIES'));
+    }
 
     protected function formatStory($story, $mode) {
        $item = array(
             'GUID'        => $story->getGUID(),
             'link'        => $story->getLink(),
-            'title'       => strip_tags($story->getTitle()),
-            'description' => strip_tags($story->getDescription()),
+            'title'       => $this->encodeValue(strip_tags($story->getTitle())),
+            'description' => $this->encodeValue(strip_tags($story->getDescription())),
             'pubDate'     => $story->getPubTimestamp()
        );
 

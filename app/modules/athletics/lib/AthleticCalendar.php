@@ -2,6 +2,7 @@
 
 class  AthleticCalendar implements CalendarInterface {
     protected $events = array();
+    public $timezone;
 
     public function addEvent(AthleticEvent $event) {
         $this->events[] = $event;
@@ -43,7 +44,7 @@ class  AthleticCalendar implements CalendarInterface {
             }
         }
 
-        uasort($events, array($this, "sort_events"));
+        usort($events, array($this, "sort_events"));
         
         // in some case, it doesn't work properly if we just sort $this->eventStartTimes
         return $events;

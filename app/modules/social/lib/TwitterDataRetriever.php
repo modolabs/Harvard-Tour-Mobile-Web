@@ -17,6 +17,7 @@ class TwitterDataRetriever extends OAuthDataRetriever implements SocialDataRetri
     protected $OAuthProviderClass='TwitterOAuthProvider';
     protected $cacheGroup='Twitter';
     protected $user;
+    protected $requiresExpect = false;
     
     public function getServiceName() {
         return 'twitter';

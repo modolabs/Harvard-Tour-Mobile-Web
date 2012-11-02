@@ -1056,7 +1056,7 @@ class ICalendar extends ICalObject implements CalendarInterface {
             }
         }
 
-        uasort($occurrences, array($this, "sort_events"));
+        usort($occurrences, array($this, "sort_events"));
         
         // in some case, it doesn't work properly if we just sort $this->eventStartTimes
         return $occurrences;
