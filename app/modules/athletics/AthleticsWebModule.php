@@ -91,6 +91,12 @@ class AthleticsWebModule extends WebModule {
 
         $image = $this->getImageForStory($story);
 
+        if (isset($data['federatedSearch']) && $data['federatedSearch'] && !$this->getOptionalModuleVar('SHOW_DESCRIPTION_IN_FEDERATED_SEARCH', 1)) {
+            $subtitle = '';
+        }else{
+            $subtitle = $this->htmlEncodeFeedString($story->getDescription());
+        }
+
         $link = array(
             'title'   => $this->htmlEncodeFeedString($story->getTitle()),
             'pubDate' => $date,

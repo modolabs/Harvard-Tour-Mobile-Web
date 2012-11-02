@@ -54,6 +54,23 @@ class CalendarAPIModule extends APIModule
         return $calendars;
     }
 
+    protected function getEventCategories() {
+    
+        $categories = array();
+    
+        if ($this->getOptionalModuleVar('SHOW_CATEGORIES', false, 'categories')) {
+            $type     = $this->getArg('type', 'static');
+            $calendar = $this->getArg('calendar', $this->getDefaultFeed($type));
+            $limit    = $this->getArg('limit', $this->getOptionalModuleVar('SHOW_POPULAR_CATEGORIES',null,'categories'));
+    
+            $feed = $this->getFeed($calendar, $type);
+            
+            $categories = $feed->getEventCategories($limit);
+        }
+        
+        return $categories;
+    }
+
     // modified from CalendarWebModule
     protected function getFeedsByType() {
         $groups = $this->getAPIConfigData('groups');
@@ -490,17 +507,8 @@ class CalendarAPIModule extends APIModule
                 break;
 
             case 'categories':
-                $categories = array();
+                $categories = $this->getEventCategories();
 
-                if ($this->getOptionalModuleVar('SHOW_CATEGORIES', false, 'categories')) {
-                    $type     = $this->getArg('type', 'static');
-                    $calendar = $this->getArg('calendar', $this->getDefaultFeed($type));
-                    $limit    = $this->getArg('limit', $this->getOptionalModuleVar('SHOW_POPULAR_CATEGORIES',null,'categories'));
-    
-                    $feed = $this->getFeed($calendar, $type);
-                    
-                    $categories = $feed->getEventCategories($limit);
-                }
                 
                 $response = $this->apiArrayFromCategories($categories);
                 $this->setResponse($response);
