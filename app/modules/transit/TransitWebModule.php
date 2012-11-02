@@ -16,14 +16,18 @@ class TransitWebModule extends WebModule {
     protected $defaultNewsModel = 'TransitNewsDataModel';
     protected $newsFeeds = array();
     protected $collapseRouteTabs = false;
+    protected $hideOfflineRoutes = false;
     const RELOAD_TIME = 60;
     
     protected function initialize() {
         $config = $this->getModuleSection('module');
-        if(isset($config['collapse_route_tabs'])){
+        if (isset($config['collapse_route_tabs'])){
             $this->collapseRouteTabs = $config['collapse_route_tabs'];
         }
-    }   
+        if (isset($config['hide_offline_routes'])){
+            $this->hideOfflineRoutes = $config['hide_offline_routes'];
+        }
+    }
   
     protected function getNewsForRoutes() {
         $news = array();
@@ -54,7 +58,7 @@ class TransitWebModule extends WebModule {
                         'items' => array(),
                     );
                 }
-              
+                
                 foreach ($items as $item) {
                     $content = $item->getContent();
                     if (!$content) {
@@ -174,8 +178,11 @@ class TransitWebModule extends WebModule {
                 // Running and Offline Panes
                 //
                 $routeConfigs = $view->getRoutes();
-                $runningRoutes = array_fill_keys(array_keys($indexConfig['agencies']), false);
-                $offlineRoutes = array_fill_keys(array_keys($indexConfig['agencies']), false);
+                $routesByTab = array(
+                    'routes'  => array_fill_keys(array_keys($indexConfig['agencies']), false),
+                    'running' => array_fill_keys(array_keys($indexConfig['agencies']), false),
+                    'offline' => array_fill_keys(array_keys($indexConfig['agencies']), false),
+                );
         
                 foreach ($routeConfigs as $routeID => $routeConfig) {
                     if (!$routeConfig['inService']) {
@@ -189,48 +196,42 @@ class TransitWebModule extends WebModule {
                         'class' => $routeConfig['running'] ? 'running' : 'offline',
                     );
                     
-                    if ($routeConfig['running'] || $this->collapseRouteTabs) {
-                        if (!isset($runningRoutes[$agencyID]) || !$runningRoutes[$agencyID]) {
+                    if ($routeConfig['running'] || !$this->hideOfflineRoutes) {
+                        $type = 'offline';
+                        if ($this->collapseRouteTabs) {
+                            $type = 'routes';
+                        } else if ($routeConfig['running']) {
+                            $type = 'running';
+                        }
+                        
+                        if (!isset($routesByTab[$type][$agencyID]) || !$routesByTab[$type][$agencyID]) {
                             $heading = isset($indexConfig['agencies'][$agencyID]) ? 
                                 $indexConfig['agencies'][$agencyID] : $agencyID;
-                        
-                            $runningRoutes[$agencyID] = array(
+                            
+                            $routesByTab[$type][$agencyID] = array(
                                 'heading' => $heading,
                                 'items' => array(),
                             );
                         }
-                        $runningRoutes[$agencyID]['items'][$routeID] = $entry;
+                        
+                        $routesByTab[$type][$agencyID]['items'][$routeID] = $entry;
+                        
                         if ($this->collapseRouteTabs && !$routeConfig['running']) {
-                            $runningRoutes[$agencyID]['items'][$routeID]['class'] = 'offline';
+                            $routesByTab[$type][$agencyID]['items'][$routeID]['class'] = 'offline';
                         }
-                    } else {
-                        if (!isset($offlineRoutes[$agencyID]) || !$offlineRoutes[$agencyID]) {
-                            $heading = isset($indexConfig['agencies'][$agencyID]) ? 
-                                $indexConfig['agencies'][$agencyID] : $agencyID;
-                        
-                            $offlineRoutes[$agencyID] = array(
-                                'heading' => $heading,
-                                'items' => array(),
-                            );
-                        }
-                        $offlineRoutes[$agencyID]['items'][$routeID] = $entry;
                     }
                 }
                 
                 // Remove empty sections
-                $runningRoutes = array_filter($runningRoutes);
-                $offlineRoutes = array_filter($offlineRoutes);
-        
-                // Display running and offline routes in separate tabs if we have both
-                if ($runningRoutes) {
-                    $tabs[] = 'running';
+                foreach ($routesByTab as $type => $ignored) {
+                    $routesByTab[$type] = array_filter($routesByTab[$type]);
+                    if ($routesByTab[$type]) {
+                        $tabs[] = $type;
+                    }
                 }
-                if ($offlineRoutes) {
-                    $tabs[] = 'offline';
-                }
-                $this->assign('runningRoutes', $runningRoutes);
-                $this->assign('offlineRoutes', $offlineRoutes);
-        
+                
+                $this->assign('routesByTab', $routesByTab);
+                
                 //
                 // News Pane
                 //
@@ -283,8 +284,6 @@ class TransitWebModule extends WebModule {
                 
                 $this->enableTabs($tabs);
                 
-                $this->assign('runningRoutes', $runningRoutes);
-                $this->assign('offlineRoutes', $offlineRoutes);
                 $this->assign('news',          $news);
                 $this->assign('infosections',  $infosections);
                 break;

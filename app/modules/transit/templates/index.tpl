@@ -2,29 +2,19 @@
 
 {$tabBodies = array()}
 
-{if $runningRoutes}
-  {capture name="runningPane" assign="runningPane"}
-    {block name="runningPane"}
-      {foreach $runningRoutes as $section}
-        <h3>{$section['heading']}</h3>
-        {include file="findInclude:common/templates/navlist.tpl" navlistItems=$section['items'] accessKey=false nested=true}
-      {/foreach}
-    {/block}
-  {/capture}
-  {$tabBodies['running'] = $runningPane}
-{/if}
-
-{if $offlineRoutes}
-  {capture name="offlinePane" assign="offlinePane"}
-    {block name="offlinePane"}
-      {foreach $offlineRoutes as $section}
-        <h3>{$section['heading']}</h3>
-        {include file="findInclude:common/templates/navlist.tpl" navlistItems=$section['items'] accessKey=false nested=true}
-      {/foreach}
-    {/block}
-  {/capture}
-  {$tabBodies['offline'] = $offlinePane}
-{/if}
+{foreach $routesByTab as $tabKey => $routes}
+  {if $routes}
+    {capture name="routesPane" assign="routesPane"}
+      {block name="routesPane"}
+        {foreach $routes as $section}
+          <h3>{$section['heading']}</h3>
+          {include file="findInclude:common/templates/navlist.tpl" navlistItems=$section['items'] accessKey=false nested=true}
+        {/foreach}
+      {/block}
+    {/capture}
+    {$tabBodies[$tabKey] = $routesPane}
+  {/if}
+{/foreach}
 
 {if $news}
   {capture name="newsPane" assign="newsPane"}
