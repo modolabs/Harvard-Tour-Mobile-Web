@@ -69,12 +69,12 @@ paneStories.prototype = {
         if (this.stories.length) {
             var storyClipHeight = getCSSHeight(this.element)
                 - this.pager.offsetHeight
-                - parseFloat(getCSSValue(this.stories[0], 'border-top-width')) 
-                - parseFloat(getCSSValue(this.stories[0], 'border-bottom-width'))
-                - parseFloat(getCSSValue(this.stories[0], 'padding-top'))
-                - parseFloat(getCSSValue(this.stories[0], 'padding-bottom'))
-                - parseFloat(getCSSValue(this.stories[0], 'margin-top'))
-                - parseFloat(getCSSValue(this.stories[0], 'margin-bottom'));
+                - getCSSValueNumber(this.stories[0], 'border-top-width')
+                - getCSSValueNumber(this.stories[0], 'border-bottom-width')
+                - getCSSValueNumber(this.stories[0], 'padding-top')
+                - getCSSValueNumber(this.stories[0], 'padding-bottom')
+                - getCSSValueNumber(this.stories[0], 'margin-top')
+                - getCSSValueNumber(this.stories[0], 'margin-bottom');
               
             for (var i = 0; i < this.stories.length; i++) {
                 this.stories[i].style.height = storyClipHeight+'px';

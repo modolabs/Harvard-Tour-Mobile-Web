@@ -288,20 +288,27 @@ function scrollToTop() {
                     var refreshOnLoad = function () {
                         setTimeout(function () {
                             self.detailScroller.refresh();
-                        }, 0);
+                        }, 100);
                     };
                     
                     // As images load the height of the detail view will change so
                     // refresh the scroller when each image loads:
                     var images = self.content.getElementsByTagName("img");
                     for (var i = 0; i < images.length; i++) {
-                        // ignore images with a height attribute since the DOM already knows their height
-                        if (images[i].getAttribute("height")) { continue; }
-                        
                         if (images[i].addEventListener) {
                             images[i].addEventListener("load", refreshOnLoad, false);
                         } else if (images[i].attachEvent) {
                             images[i].attachEvent("onload", refreshOnLoad);
+                        }
+                    }
+                    // As iframes load the height of the detail view may change so
+                    // refresh the scroller when each iframe loads:
+                    var iframes = self.content.getElementsByTagName("iframe");
+                    for (var i = 0; i < iframes.length; i++) {
+                        if (iframes[i].addEventListener) {
+                            iframes[i].addEventListener("load", refreshOnLoad, false);
+                        } else if (iframes[i].attachEvent) {
+                            iframes[i].attachEvent("onload", refreshOnLoad);
                         }
                     }
                     refreshOnLoad();

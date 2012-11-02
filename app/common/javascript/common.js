@@ -517,7 +517,7 @@ function insertContentIntoContainer(options) {
 
     var defaults = {
         html: null, 
-        container: null, 
+        container: null
     };
     for (var i in defaults) {
         if (typeof options[i] == 'undefined') {
@@ -526,37 +526,48 @@ function insertContentIntoContainer(options) {
     }
     if (!options.html || !options.container) { return; } // safety
 
-    // innerHTML outside of DOM hierarchy to avoid drawing issues
-    var div = document.createElement("div");
-    div.innerHTML = options.html;
+    options.container.innerHTML = options.html;
     
-    // copy elements so we can move them without the list changing
-    var children = [];
-    for (var i = 0; i < div.childNodes.length; i++) {
-        children.push(div.childNodes[i]);
-    }
-    
-    // Manually appendChild elements so scripts get evaluated
-    for (var i = 0; i < children.length; i++) {
-        if (children[i].nodeName == "SCRIPT") {
-            // must clone script tags or they won't get executed
-            document.body.appendChild(children[i].cloneNode(true));
-            
-        } else if (children[i].nodeName == "STYLE") {
-            // clone styles in case some browsers treat them like scripts
-            document.getElementsByTagName("head")[0].appendChild(children[i].cloneNode(true));
-            
-        } else {
-            // don't clone anything else because browser may have already started 
-            // loading assets associated with this element (e.g. img src)
-            options.container.appendChild(children[i]);
+    var scripts = options.container.getElementsByTagName('script');
+    for (var i = 0; i < scripts.length; i++) {
+        var script = scripts[i];
+        
+        // Manually execute scripts
+        var src = (script.text || script.textContent || script.innerHTML || "");
+        if (src.length) {
+            try {
+                if (window.execScript) {
+                    window.execScript(src);
+                } else {
+                    (function(src) {
+                        window.eval.call(window, src);
+                    })(src);
+                }
+            } catch (e) {
+            }
+        } else if (script.src && script.src.length) {
+            // create new javascript include and add to head
+            // which is the only cross-browser way to ensure it executes
+            var copy = document.createElement("script");
+            if (script.type && script.type.length) {
+                copy.type = script.type;
+            }
+            copy.src = script.src;
+            document.getElementsByTagName("head")[0].appendChild(copy);
         }
     }
+    
+    // move styles to head tag
+    var styles = options.container.getElementsByTagName('style');
+    for (var i = 0; i < styles.length; i++) {
+        document.getElementsByTagName("head")[0].appendChild(styles[i]);
+    }
+    onDOMChange();
 }
 
 function getCSSValue(element, key) {
     if (window.getComputedStyle) {
-        return document.defaultView.getComputedStyle(element, null).getPropertyValue(key);
+      return document.defaultView.getComputedStyle(element, null).getPropertyValue(key);
         
     } else if (element.currentStyle) {
         if (key == 'float') { 
@@ -569,17 +580,63 @@ function getCSSValue(element, key) {
                 });
             }
         }
-        return element.currentStyle[key] ? element.currentStyle[key] : null;
+        var style = element.currentStyle[key] ? element.currentStyle[key] : '';
+        
+        // Fix IE8 border width and margins so that parseFloat doesn't return NaN on them
+        var parts = [ 'Top', 'Left', 'Bottom', 'Right' ];
+        for (var i = 0; i < parts.length; i++) {
+            if (key == "border"+parts[i]+"Width" && element.currentStyle["border"+parts[i]+"Style"] == "none") {
+                style = "0px";
+                break;
+            }
+        }
+        for (var i = 0; i < parts.length; i++) {
+            if (key == "margin"+parts[i] && style == "auto") {
+                style = "0px";
+                break;
+            }
+        }
+        return style;
     }
     return '';
 }
 
+function setCSSValue(element, key, value) {
+    if (key == 'float') { 
+        key = 'styleFloat'; 
+    } else {
+        var re = /(\-([a-z]){1})/g; // hyphens to camel case
+        if (re.test(key)) {
+            key = key.replace(re, function () {
+                return arguments[2].toUpperCase();
+            });
+        }
+    }
+    
+    try {
+        element.style[key] = value; // IE will go kaboom here if the style is bad
+    } catch (e) {}
+}
+
+function getCSSValueNumber(element, key) {
+    var number = parseFloat(getCSSValue(element, key));
+    return isNaN(number) ? 0 : number;
+}
+
 function getCSSHeight(element) {
     return element.offsetHeight
-        - parseFloat(getCSSValue(element, 'border-top-width')) 
-        - parseFloat(getCSSValue(element, 'border-bottom-width'))
-        - parseFloat(getCSSValue(element, 'padding-top'))
-        - parseFloat(getCSSValue(element, 'padding-bottom'));
+        - getCSSValueNumber(element, 'border-top-width')
+        - getCSSValueNumber(element, 'border-bottom-width')
+        - getCSSValueNumber(element, 'padding-top')
+        - getCSSValueNumber(element, 'padding-bottom');
+}
+
+function getCSSWidth(element) {
+    return element.offsetWidth
+        - getCSSValueNumber(element, 'border-left-width') 
+        - getCSSValueNumber(element, 'border-right-width')
+        - getCSSValueNumber(element, 'padding-left')
+        - getCSSValueNumber(element, 'padding-right');
 }
 
 function _getStringForArgs(args) {
@@ -601,4 +658,90 @@ function redirectTo(page, args) {
 
 function redirectToModule(module, page, args) {
     window.location = "../" + module + "/" + page + _getStringForArgs(args);
+}
+
+/*
+	Developed by Robert Nyman, http://www.robertnyman.com
+	Code/licensing: http://code.google.com/p/getelementsbyclassname/
+	
+	Reversed element and tag arguments for convenience
+*/	
+var getElementsByClassName = function (className, elm, tag) {
+    if (document.getElementsByClassName) {
+        getElementsByClassName = function (className, elm, tag) {
+            elm = elm || document;
+            var elements = elm.getElementsByClassName(className),
+                nodeName = (tag)? new RegExp("\\b" + tag + "\\b", "i") : null,
+                returnElements = [],
+                current;
+            for (var i=0, il=elements.length; i<il; i+=1){
+                current = elements[i];
+                if (!nodeName || nodeName.test(current.nodeName)) {
+                    returnElements.push(current);
+                }
+            }
+            return returnElements;
+        };
+    }
+    else if (document.evaluate) {
+        getElementsByClassName = function (className, elm, tag) {
+          tag = tag || "*";
+          elm = elm || document;
+          var classes = className.split(" "),
+              classesToCheck = "",
+              xhtmlNamespace = "http://www.w3.org/1999/xhtml",
+              namespaceResolver = (document.documentElement.namespaceURI === xhtmlNamespace)? xhtmlNamespace : null,
+              returnElements = [],
+              elements,
+              node;
+          for (var j=0, jl=classes.length; j<jl; j+=1){
+              classesToCheck += "[contains(concat(' ', @class, ' '), ' " + classes[j] + " ')]";
+          }
+          try	{
+              elements = document.evaluate(".//" + tag + classesToCheck, elm, namespaceResolver, 0, null);
+          }
+          catch (e) {
+              elements = document.evaluate(".//" + tag + classesToCheck, elm, null, 0, null);
+          }
+          while ((node = elements.iterateNext())) {
+              returnElements.push(node);
+          }
+          return returnElements;
+        };
+    }
+    else {
+        getElementsByClassName = function (className, elm, tag) {
+            tag = tag || "*";
+            elm = elm || document;
+            var classes = className.split(" "),
+                classesToCheck = [],
+                elements = (tag === "*" && elm.all)? elm.all : elm.getElementsByTagName(tag),
+                current,
+                returnElements = [],
+                match;
+            for (var k=0, kl=classes.length; k<kl; k+=1){
+                classesToCheck.push(new RegExp("(^|\\s)" + classes[k] + "(\\s|$)"));
+            }
+            for (var l=0, ll=elements.length; l<ll; l+=1){
+                current = elements[l];
+                match = false;
+                for(var m=0, ml=classesToCheck.length; m<ml; m+=1){
+                    match = classesToCheck[m].test(current.className);
+                    if (!match) {
+                        break;
+                    }
+                }
+                if (match) {
+                    returnElements.push(current);
+                }
+            }
+            return returnElements;
+        };
+    }
+    return getElementsByClassName(className, elm, tag);
+};
+
+function getFirstElementByClassName(className, elem, tag) {
+    var elements = getElementsByClassName(className, elem, tag);
+    return elements.length ? elements[0] : null;
 }
