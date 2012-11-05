@@ -90,13 +90,13 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
             $this->stopCacheLifetime = $this->initArgs['TRANSIT_VIEW_CACHE_TIMEOUT'];
         }
         if (isset($this->initArgs['CACHE_LIFETIME_ROUTES'])) {
-            $this->routesCacheLifetime = $this->initArgs['CACHE_LIFETIME_ROUTES'];
+            $this->routesCacheLifetime = intval($this->initArgs['CACHE_LIFETIME_ROUTES']);
         }
         if (isset($this->initArgs['CACHE_LIFETIME_ROUTE'])) {
-            $this->routeCacheLifetime = $this->initArgs['CACHE_LIFETIME_ROUTE'];
+            $this->routeCacheLifetime = intval($this->initArgs['CACHE_LIFETIME_ROUTE']);
         }
         if (isset($this->initArgs['CACHE_LIFETIME_STOP'])) {
-            $this->stopCacheLifetime = $this->initArgs['CACHE_LIFETIME_STOP'];
+            $this->stopCacheLifetime = intval($this->initArgs['CACHE_LIFETIME_STOP']);
         }
         
         if (defined('KUROGO_SHELL')) {
@@ -105,44 +105,60 @@ class TransitViewDataModel extends DataModel implements TransitDataModelInterfac
             TransitDataModel::updateCacheLifetimeForShell($this->stopCache);
         }
         
-        $this->routesCache = DataCache::factory($this->cacheClass, array('CACHE_FOLDER' => $this->cacheFolder));
-        $this->routesCache->setCacheGroup('View');
-        $this->routesCache->setCacheLifetime($this->routesCacheLifetime);
-
-        $this->routeCache = DataCache::factory($this->cacheClass, array('CACHE_FOLDER' => $this->cacheFolder));
-        $this->routeCache->setCacheGroup('View');
-        $this->routeCache->setCacheLifetime($this->routeCacheLifetime);
-
-        $this->stopCache = DataCache::factory($this->cacheClass, array('CACHE_FOLDER' => $this->cacheFolder));
-        $this->stopCache->setCacheGroup('View');
-        $this->stopCache->setCacheLifetime($this->stopCacheLifetime);
+        if ($this->routesCacheLifetime > 0) {
+            $this->routesCache = DataCache::factory($this->cacheClass, array('CACHE_FOLDER' => $this->cacheFolder));
+            $this->routesCache->setCacheGroup('View');
+            $this->routesCache->setCacheLifetime($this->routesCacheLifetime);
+        }
+        if ($this->routeCacheLifetime > 0) {
+            $this->routeCache = DataCache::factory($this->cacheClass, array('CACHE_FOLDER' => $this->cacheFolder));
+            $this->routeCache->setCacheGroup('View');
+            $this->routeCache->setCacheLifetime($this->routeCacheLifetime);
+        }
+        if ($this->stopCacheLifetime > 0) {
+            $this->stopCache = DataCache::factory($this->cacheClass, array('CACHE_FOLDER' => $this->cacheFolder));
+            $this->stopCache->setCacheGroup('View');
+            $this->stopCache->setCacheLifetime($this->stopCacheLifetime);
+        }
     }
     
     // Cache for getRoutes()
     protected function getCachedRoutesView() {
-        $view = $this->routesCache->get('routes');
-        return $view ? $view : array();
+        if ($this->routesCache && $view = $this->routesCache->get('routes')) {
+            return $view;
+        }
+        return array();
     }
     protected function cacheRoutesView($view) {
-        $this->routesCache->set('routes', $view);
+        if ($this->routesCache) {
+            $this->routesCache->set('routes', $view);
+        }
     }
     
     // Cache for getRouteInfo()
     protected function getCachedRouteView($globalID) {
-        $view = $this->routeCache->get("route.$globalID");
-        return $view ? $view : array();
+        if ($this->routeCache && $view = $this->routeCache->get("route.$globalID")) {
+            return $view;
+        }
+        return array();
     }
     protected function cacheRouteView($globalID, $view) {
-        $this->routeCache->set("route.$globalID", $view);
+        if ($this->routeCache) {
+            $this->routeCache->set("route.$globalID", $view);
+        }
     }
     
     // Cache for getStopInfo()
     protected function getCachedStopView($globalStopID) {
-        $view = $this->stopCache->get("stop.$globalStopID");
-        return $view ? $view : array();
+        if ($this->stopCache && $view = $this->stopCache->get("stop.$globalStopID")) {
+            return $view;
+        }
+        return array();
     }
     protected function cacheStopView($globalStopID, $view) {
-        $this->stopCache->set("stop.$globalStopID", $view);
+        if ($this->routesCache) {
+            $this->routesCache->set("stop.$globalStopID", $view);
+        }
     }
     
     public function refreshLiveServices() {

@@ -337,7 +337,7 @@ class TranslocDataModel extends TransitDataModel
         return $results && isset($results['data']) ? $results['data'] : array();
     }
     
-    protected function setUpcomingRouteStops($routeID, &$directions) {
+    protected function setUpcomingRouteStops($routeID, &$directions, $segmentTimeRange) {
         $upcomingVehicleStops = array();
         if ($this->translocRouteIsRunning($routeID)) {
             $agencyVehiclesInfo = $this->getTranslocData('vehicles');

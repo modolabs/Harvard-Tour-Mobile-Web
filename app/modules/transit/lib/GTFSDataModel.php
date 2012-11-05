@@ -360,7 +360,7 @@ class GTFSTransitRoute extends TransitRoute
         return false;
     }
     
-    public function getServiceFrequency($timestampRange, $transitMaxArrivalDelay) {
+    public function getServiceFrequency($timestampRange) {
         // Time between shuttles at the same stop
         $frequency = 0;
         

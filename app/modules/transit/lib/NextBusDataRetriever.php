@@ -24,10 +24,6 @@ class NextBusDataRetriever extends URLDataRetriever
     const DEFAULT_BASE_URL = 'http://webservices.nextbus.com/service/publicXMLFeed';
     
     public function init($args) {
-        if (!isset($args['CACHE_CLASS'])) {
-            $args['CACHE_CLASS'] = 'NextBusDataCache';
-        }
-        
         if (!isset($args['BASE_URL'])) {
             $args['BASE_URL'] = self::DEFAULT_BASE_URL;
         }
@@ -142,15 +138,13 @@ class NextBusDataRetriever extends URLDataRetriever
     
     public function getDataAndAge(&$age, &$response=null) {
         $data = parent::getData($response);
-        $age = $this->cache->getAge($this->cacheKey());
+        
+        $age = null;
+        $modified = $this->cache->getModified($this->cacheKey());
+        if (!is_null($modified)) {
+            $age = time() - $modified;    
+        }
         
         return $data;
-    }
-}
-
-class NextBusDataCache extends DataCache
-{
-    public function getAge($cacheKey) {
-        return $this->getDiskAge($cacheKey);
     }
 }

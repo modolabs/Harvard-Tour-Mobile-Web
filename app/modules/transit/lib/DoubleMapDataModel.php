@@ -252,7 +252,7 @@ class DoubleMapDataModel extends TransitDataModel
     
     /*
     // TODO: if "lastStop" becomes reliable, start using it
-    protected function setUpcomingRouteStops($routeId, &$directions) {
+    protected function setUpcomingRouteStops($routeId, &$directions, $segmentTimeRange) {
         $upcomingVehicleStops = array();
         if ($this->doubleMapRouteIsRunning($routeId)) {
             $stopsInfo = $this->getRoute($routeId)->getStops();

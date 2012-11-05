@@ -57,6 +57,11 @@ class NextBusDataModel extends TransitDataModel
             $this->initArgs['EXTERNAL_SERVICE_URL'] : 'http://www.nextbus.com/';
     }
     
+    protected function safeGetNamedItem($attributes, $name, $default=null) {
+        $item = $attributes->getNamedItem($name);
+        return isset($item) ? $item->nodeValue : $default;
+    }
+    
     public function getRouteVehicles($routeID) {
         $route = $this->getRoute($routeID);
         if (!$route) { return array(); }
@@ -72,14 +77,15 @@ class NextBusDataModel extends TransitDataModel
             foreach ($xml->getElementsByTagName('vehicle') as $vehicle) {
                 $attributes = $vehicle->attributes;
                 
-                $vehicleID = $attributes->getNamedItem('id')->nodeValue;
+                $vehicleID = $this->safeGetNamedItem($attributes, 'id', null);
+                if (!isset($vehicleID)) { continue; } // safety
+                
                 $vehicles[$vehicleID] = array(
-                    'secsSinceReport' => 
-                                intval($attributes->getNamedItem('secsSinceReport')->nodeValue),
-                    'lat'      => $attributes->getNamedItem('lat')->nodeValue,
-                    'lon'      => $attributes->getNamedItem('lon')->nodeValue,
-                    'heading'  => $attributes->getNamedItem('heading')->nodeValue,
-                    'speed'    => $attributes->getNamedItem('speedKmHr')->nodeValue,
+                    'secsSinceReport' => intval($this->safeGetNamedItem($attributes, 'secsSinceReport', 0)),
+                    'lat'      => $this->safeGetNamedItem($attributes, 'lat', 0),
+                    'lon'      => $this->safeGetNamedItem($attributes, 'lon', 0),
+                    'heading'  => $this->safeGetNamedItem($attributes, 'heading', 0),
+                    'speed'    => $this->safeGetNamedItem($attributes, 'speedKmHr', 0),
                     'agency'   => $route->getAgencyID(),
                     'routeID'  => $routeID,
                 );

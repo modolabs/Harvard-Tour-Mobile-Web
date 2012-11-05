@@ -25,10 +25,10 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     protected $viewAsLoopRoutes = array();
     protected $scheduleViewRoutes = array();
     protected $splitByHeadsignRoutes = array();
-    protected $transitMaxArrivalDelay = 7200; // 2 hours
     protected $transitDefaultRouteColor = "b12727"; // shade of redirect
-    protected $transitScheduleRouteRunningPadding = 14400; // 4 hours
-    protected $transitListRouteRunningPadding = 3600; // 1 hour
+    protected $transitRouteRunningPadding = 1800; // 30 mins
+    protected $transitListUpcomingBusPadding = 7200; // 2 hours
+    protected $transitScheduleUpcomingBusPadding = 14400; // 4 hours
     
     protected static $routeRunningPadding = null;
     
@@ -137,20 +137,16 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             }
         }
         
-        if (isset($args['TRANSIT_MAX_ARRIVAL_DELAY'])) {
-            $this->transitMaxArrivalDelay = $args['TRANSIT_MAX_ARRIVAL_DELAY'];
+        if (isset($args['TRANSIT_ROUTE_RUNNING_PADDING'])) {
+            $this->transitRouteRunningPadding = $args['TRANSIT_ROUTE_RUNNING_PADDING'];
         }
         
-        if (isset($args['TRANSIT_DEFAULT_ROUTE_COLOR'])) {
-            $this->transitDefaultRouteColor = $args['TRANSIT_DEFAULT_ROUTE_COLOR'];
+        if (isset($args['TRANSIT_LIST_UPCOMING_BUS_PADDING'])) {
+            $this->transitListUpcomingBusPadding = $args['TRANSIT_LIST_UPCOMING_BUS_PADDING'];
         }
         
-        if (isset($args['TRANSIT_SCHEDULE_ROUTE_RUNNING_PADDING'])) {
-            $this->transitScheduleRouteRunningPadding = $args['TRANSIT_SCHEDULE_ROUTE_RUNNING_PADDING'];
-        }
-        
-        if (isset($args['TRANSIT_LIST_ROUTE_RUNNING_PADDING'])) {
-            $this->transitListRouteRunningPadding = $args['TRANSIT_LIST_ROUTE_RUNNING_PADDING'];
+        if (isset($args['TRANSIT_SCHEDULE_UPCOMING_BUS_PADDING'])) {
+            $this->transitScheduleRouteRunningPadding = $args['TRANSIT_SCHEDULE_UPCOMING_BUS_PADDING'];
         }
         
         $this->loadData();
@@ -183,19 +179,31 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         return array();
     }
     
-    protected function getValidTimeRangeForRouteTimestamp($routeID, $timestamp) {
+    protected function getRouteRunningPadding() {
+        return $this->transitRouteRunningPadding;
+    }
+    
+    protected function getValidRouteSegmentTimeRangeForTimestamp($routeID, $timestamp) {
         if (!$timestamp) {
           $timestamp = TransitTime::getCurrentTime();
         }
-        $padding = $this->viewRouteInScheduleView($routeID) ? 
-            $this->transitScheduleRouteRunningPadding : $this->transitListRouteRunningPadding;
-        return array($timestamp, $timestamp + $padding);
+        $segmentPadding = $this->viewRouteInScheduleView($routeID) ? 
+            $this->transitScheduleUpcomingBusPadding : $this->transitListUpcomingBusPadding;
+        return array($timestamp, $timestamp + $segmentPadding);
     }
     
-    protected function setUpcomingRouteStops($routeID, &$directions) {
+    protected function getValidRouteRunningTimeRangeForTimestamp($routeID, $timestamp) {
+        if (!$timestamp) {
+          $timestamp = TransitTime::getCurrentTime();
+        }
+        return array($timestamp, $timestamp + $this->getRouteRunningPadding());
+    }
+    
+    protected function setUpcomingRouteStops($routeID, &$directions, $segmentTimeRange) {
         // override if you have vehicle locations that say what stop is upcoming
         
-        $now = time();
+        $time = reset($segmentTimeRange);
+        $segmentPadding = end($segmentTimeRange) - reset($segmentTimeRange);
         
         foreach ($directions as $directionID => $directionInfo) {
             // Walk the stops to figure out which is upcoming
@@ -222,7 +230,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             foreach ($stopIndexes as $i => $stopIndex) {
                 $arrives = $directionInfo['stops'][$stopIndex]['arrives'];
                 
-                $prevArrives = PHP_INT_MAX; // Non-loop case
+                $prevArrives = 0; // Non-loop case
                 if ($stopIndex == $firstStopIndex) {
                     if ($firstStopPrevIndex) {
                         // Loop case
@@ -231,7 +239,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 } else {
                     $prevArrives = $directionInfo['stops'][$stopIndexes[$i-1]]['arrives'];
                 }
-                $nextArrives = PHP_INT_MAX; // Non-loop case
+                $nextArrives = 0; // Non-loop case
                 if ($stopIndex == $lastStopIndex) {
                     if ($lastStopNextIndex) {
                         // Loop case
@@ -240,11 +248,20 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 } else {
                     $nextArrives = $directionInfo['stops'][$stopIndexes[$i+1]]['arrives'];
                 }
-                
-                // Suppress any soonest stops which are more than 2 hours from now
+                // Suppress any stops which are outside the upcoming segment padding
                 $directions[$directionID]['stops'][$stopIndex]['upcoming'] = 
-                    (abs($arrives - $now) < $this->transitMaxArrivalDelay) && 
+                    (abs($arrives - $time) < $segmentPadding) && 
                     ($arrives <= $prevArrives && $arrives < $nextArrives);
+                
+                self::dlog('stop '.
+                    str_pad($directions[$directionID]['stops'][$stopIndex]['id'], 8, ' ', STR_PAD_RIGHT).' upcoming check: '.
+                    str_pad(intval($arrives), 10, ' ', STR_PAD_RIGHT).' <= '.
+                    str_pad(intval($prevArrives), 10, ' ', STR_PAD_RIGHT).' '.
+                    ($arrives <= $prevArrives ? 'true ' : 'false').' // '.
+                    str_pad(intval($arrives), 10, ' ', STR_PAD_RIGHT).' < '.
+                    str_pad(intval($nextArrives), 10, ' ', STR_PAD_RIGHT).' '.
+                    ($arrives < $nextArrives ? 'true ' : 'false').
+                    ($directions[$directionID]['stops'][$stopIndex]['upcoming'] ? ' UPCOMING' : ''), self::DLOG_ARRIVAL_TIMES);
             }
         }
     }
@@ -488,17 +505,18 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         foreach ($this->routes as $routeID => $route) {
             if (!$route->hasStop($stopID)) { continue; }
             
-            $timestampRange = $this->getValidTimeRangeForRouteTimestamp($routeID, $time);
+            $runningTimeRange = $this->getValidRouteRunningTimeRangeForTimestamp($routeID, $time);
+            $segmentTimeRange = $this->getValidRouteSegmentTimeRangeForTimestamp($routeID, $time);
             
             $this->updatePredictionData($route->getID());
             
-            $directionPredictions = $this->getRouteDirectionPredictionsForStop($routeID, $stopID, $timestampRange);
+            $directionPredictions = $this->getRouteDirectionPredictionsForStop($routeID, $stopID, $segmentTimeRange);
             
             $routePredictions[$routeID] = array(
                 'name'       => $route->getName(),
                 'agency'     => $route->getAgencyID(),
                 'directions' => $directionPredictions,
-                'running'    => $route->isRunning($timestampRange),
+                'running'    => $route->isRunning($runningTimeRange),
                 'live'       => $this->isLive(),
             );
         }
@@ -557,9 +575,9 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         ));
       
         $time = TransitTime::getCurrentTime();
-        $timestampRange = $this->getValidTimeRangeForRouteTimestamp($id, $time);
+        $runningTimeRange = $this->getValidRouteRunningTimeRangeForTimestamp($id, $time);
         
-        if ($route->isRunning($timestampRange)) {
+        if ($route->isRunning($runningTimeRange)) {
             $vehicles = $this->getRouteVehicles($id);
             $query .= $this->getMapMarkersForVehicles($vehicles);
         }
@@ -584,10 +602,10 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         }
         
         $this->updatePredictionData($routeID);
-    
-        $timestampRange = $this->getValidTimeRangeForRouteTimestamp($routeID, $time);
+
+        $runningTimeRange = $this->getValidRouteRunningTimeRangeForTimestamp($routeID, $time);
         
-        return $route->isRunning($timestampRange);
+        return $route->isRunning($runningTimeRange);
     }
     
     public function getRoutePaths($routeID) {
@@ -607,11 +625,12 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             return array();
         }
         $this->updatePredictionData($routeID);
-    
-        $timestampRange = $this->getValidTimeRangeForRouteTimestamp($routeID, $time);
+        
+        $runningTimeRange = $this->getValidRouteRunningTimeRangeForTimestamp($routeID, $time);
+        $segmentTimeRange = $this->getValidRouteSegmentTimeRangeForTimestamp($routeID, $time);
         
         $inService = false;
-        $isRunning = $route->isRunning($timestampRange, $inService);
+        $isRunning = $route->isRunning($runningTimeRange, $inService);
         
         $routeInfo = array(
             'agency'          => $route->getAgencyID(),
@@ -619,7 +638,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             'description'     => $route->getDescription(),
             'color'           => $this->getRouteColor($routeID),
             'live'            => $isRunning ? $this->isLive() : false,
-            'frequency'       => round($route->getServiceFrequency($timestampRange, $this->transitMaxArrivalDelay) / 60, 0),
+            'frequency'       => round($route->getServiceFrequency($segmentTimeRange) / 60, 0),
             'running'         => $isRunning,
             'inService'       => $inService,
             'stopIconURL'     => $this->getMapIconUrlForRouteStop($routeID),
@@ -629,7 +648,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             'directions'      => array(),
         );
         
-        $routeDirections = $this->getRouteDirections($route, $timestampRange);
+        $routeDirections = $this->getRouteDirections($route, $runningTimeRange);
         self::dlog('routeDirectionIDs: '.implode(', ', array_keys($routeDirections)));
         
         foreach ($routeDirections as $directionID => $directionInfo) {
@@ -637,7 +656,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
             
             // Get formatted direction information
             $routeInfo['directions'][$directionID] = $this->getDirectionInfo(
-                $routeID, $directionInfo['name'], $directionInfo['segments'], $directionInfo['stopOrder'], $timestampRange);
+                $routeID, $directionInfo['name'], $directionInfo['segments'], $directionInfo['stopOrder'], $segmentTimeRange);
             $routeInfo['directions'][$directionID]['running'] = $directionInfo['running'];
             
             // sort stops 
@@ -645,7 +664,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         }
         self::dlog('routeInfo[\'directions\']: '.print_r($routeInfo['directions'], true), self::DLOG_STOP_GRAPH_SORT);
         
-        $this->setUpcomingRouteStops($routeID, $routeInfo['directions']);
+        $this->setUpcomingRouteStops($routeID, $routeInfo['directions'], $segmentTimeRange);
         
         $this->applyRouteInfoOverrides($routeID, $routeInfo);
         
@@ -687,18 +706,19 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
     public function getRoutes($time=null) {
         $routes = array();
         foreach ($this->routes as $routeID => $route) {
-            $timestampRange = $this->getValidTimeRangeForRouteTimestamp($routeID, $time);
+            $runningTimeRange = $this->getValidRouteRunningTimeRangeForTimestamp($routeID, $time);
+            $segmentTimeRange = $this->getValidRouteSegmentTimeRangeForTimestamp($routeID, $time);
             
             $this->updatePredictionData($routeID);
             
             $inService = false; // Safety in case isRunning doesn't set this
-            $isRunning = $route->isRunning($timestampRange, $inService);
+            $isRunning = $route->isRunning($runningTimeRange, $inService);
             
             $routes[$routeID] = array(
                 'name'         => $route->getName(),
                 'description'  => $route->getDescription(),
                 'color'        => $this->getRouteColor($routeID),
-                'frequency'    => round($route->getServiceFrequency($timestampRange, $this->transitMaxArrivalDelay) / 60),
+                'frequency'    => round($route->getServiceFrequency($segmentTimeRange) / 60),
                 'agency'       => $route->getAgencyID(),
                 'live'         => $isRunning ? $this->isLive() : false,
                 'inService'    => $inService,
@@ -1605,7 +1625,9 @@ class TransitRoute
         return array(false, false);
     }
     
-    public function getServiceFrequency($timestampRange, $transitMaxArrivalDelay) {
+    public function getServiceFrequency($timestampRange) {
+        $upcomingSegmentPadding = end($timestampRange) - reset($timestampRange);
+        
         // Time between shuttles at the same stop
         $frequency = 0;
         
@@ -1644,7 +1666,7 @@ class TransitRoute
                             $frequency = $arrivalTimes[$i] - $arrivalTimes[$i-1];
                         }
                     }
-                    if ($frequency > 0 && $frequency < $transitMaxArrivalDelay) { break; }
+                    if ($frequency > 0 && $frequency < $upcomingSegmentPadding) { break; }
                 }
             }
             if ($frequency == 0) { $frequency = 60*60; } // default to 1 hour
@@ -1908,14 +1930,8 @@ class TransitSegment
                 $firstStop = reset($this->stops);
                 $lastStop  = end($this->stops);
                 
-                if (count($this->frequencyStartTimes)) {
-                    $firstStartTT = reset($this->frequencyStartTimes);
-                    $lastStartTT = end($this->frequencyStartTimes);
-                    
-                    $firstArrivalForFirstStopTT = TransitTime::addTimes($firstStop['arrives'], $firstStartTT);
-                    $lastArrivalForLastStopTT = TransitTime::addTimes($lastStop['arrives'], $lastStartTT);
-                    
-                    if (timesRangeIsValidForTimestampRange($firstArrivalForFirstStopTT, $lastArrivalForLastStopTT, $timestampRange)) {
+                if (isset($firstStop['arrives'], $lastStop['departs'])) {
+                    if (TransitTime::timesRangeIsValidForTimestampRange($firstStop['arrives'], $lastStop['departs'], $timestampRange)) {
                         return true;
                     }
                 }
