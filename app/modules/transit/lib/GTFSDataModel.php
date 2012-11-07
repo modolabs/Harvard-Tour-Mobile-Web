@@ -93,7 +93,7 @@ class GTFSDataModel extends TransitDataModel
             $routePredictions = array();
             while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
                 $routeID = $row['route_id'];
-                $timestampRange = $this->getValidTimeRangeForRouteTimestamp($routeID, $time);
+                $timestampRange = $this->getValidRouteSegmentTimeRangeForTimestamp($routeID, $time);
                 $route = $this->getRoute($routeID);
                 if ($route) {
                     $this->updatePredictionData($routeID);
