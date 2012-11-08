@@ -94,7 +94,7 @@ class KMLPlacemark extends XMLElement implements Placemark
         return $this->snippet;
     }
     
-    public function getDescription() {
+    public function getDescription($suppressFileds=null) {
         return $this->description;
     }
     

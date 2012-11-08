@@ -458,6 +458,17 @@ class MapAPIModule extends APIModule
 
             case 'detail':
 
+                $suppress = array();
+                try {
+                    $configFile = $this->getConfig('detail');
+                    $detailConfig = $configFile->getOptionalSection('details');
+                    if ($detailConfig && isset($detailConfig['suppress'])) {
+                        $suppress = $detailConfig['suppress'];
+                    }
+                } catch (KurogoConfigurationException $e) {
+                    // ignore
+                }
+
                 $dataController = $this->getDataModel();
                 $placemarkId = $this->getArg('id', null);
                 if ($dataController && $placemarkId !== null) {
@@ -472,8 +483,19 @@ class MapAPIModule extends APIModule
                         'title'    => $placemark->getTitle(),
                         'subtitle' => $placemark->getSubtitle(),
                         'address'  => $placemark->getAddress(),
-                        'details'  => $placemark->getFields(),
                     );
+
+                    if ($this->requestedVersion >= 2) {
+                        $response['description'] = $placemark->getDescription($suppress);
+                        $responseVersion = 2;
+                    } else {
+                        $response['details'] = array('description' => $placemark->getDescription($suppress));
+                        $photoURL = $placemark->getField('PhotoURL');
+                        if ($photoURL) {
+                            $response['photoURL'] = $photoURL;
+                        }
+                        $responseVersion = 1;
+                    }
 
                     if ($geometry) {
                         $center = $geometry->getCenterCoordinate();
@@ -484,7 +506,7 @@ class MapAPIModule extends APIModule
                     }
 
                     $this->setResponse($response);                                                              
-                    $this->setResponseVersion(1);                                                               
+                    $this->setResponseVersion($responseVersion);
                 }
 
                 break;

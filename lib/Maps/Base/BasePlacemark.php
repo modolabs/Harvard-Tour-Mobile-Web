@@ -151,6 +151,17 @@ class BasePlacemark implements Placemark
         }
         return null;
     }
+
+    public function getDescription($suppressFields=null) {
+        $htmlLines = array();
+        $separator = ':';
+        foreach ($this->fields as $field => $value) {
+            if (!in_array($field, $suppressFields)) {
+                $htmlLines[] = "<li><b>{$field}{$separator}</b> $value</li>";
+            }
+        }
+        return '<ul>'.implode("\n", $htmlLines).'</ul>';
+    }
     
     public function setField($fieldName, $value) {
         $this->fields[$fieldName] = $value;

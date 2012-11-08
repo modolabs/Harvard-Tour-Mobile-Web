@@ -27,5 +27,7 @@ interface Placemark extends MapListElement, Serializable
     public function getField($fieldName);
     public function setField($fieldName, $value);
     public function getFields();
+
+    public function getDescription($suppressFileds=null);
 }
 

@@ -691,7 +691,6 @@ class MapWebModule extends WebModule {
                     if (isset($detailConfig['details'], $detailConfig['details']['suppress'])) {
                         $suppress = $detailConfig['details']['suppress'];
                     }
-
                     foreach ($fields as $name => $value) {
                         if (!isset($suppress) || !in_array($name, $suppress)) {
                             $aDetail = array('label' => $name, 'title' => $value);
