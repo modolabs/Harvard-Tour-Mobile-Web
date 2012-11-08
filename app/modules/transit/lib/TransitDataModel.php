@@ -438,7 +438,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                 }
                 
                 if ($segmentHasStop) {
-                    $predictions = array_merge($predictions, $segment->getArrivalTimesForStop($stopID, $timestampRange));
+                    $predictions = array_merge($predictions, $segment->getPredictionsForStop($stopID, $timestampRange));
                 }
             }
             
@@ -447,7 +447,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
                     sort($predictions);
                     $predictions = array_values(array_unique($predictions, SORT_NUMERIC));
                 }
-    
+                
                 $directionPredictions[$directionID] = array(
                     'name'        => $directionInfo['name'],
                     'running'     => $directionInfo['running'],
@@ -531,7 +531,7 @@ abstract class TransitDataModel extends DataModel implements TransitDataModelInt
         );
         
         $this->applyStopInfoOverrides($stopID, $stopInfo);
-    
+        
         return $stopInfo;
     }
     
@@ -1942,22 +1942,17 @@ class TransitSegment
     }
     
     public function getArrivalTimesForStop($stopID, $timestampRange) {
-        $arrivalTimes = array(); 
+        // If there are predictions, let them take precedence over the schedule
+        $arrivalTimes = $this->getPredictionsForStop($stopID, $timestampRange);
+        if ($arrivalTimes) { return $arrivalTimes; }
+        
         $index = 0;
         if (isset($stopID)) {
             $index = $this->getIndexForStop($stopID);
         }
-
+        
         if ($index !== false && isset($this->stops[$index])) {
             $stop = $this->stops[$index];
-            
-            if (isset($stop['predictions'])) {
-                foreach ($stop['predictions'] as $prediction) {
-                    if (TransitTime::timestampIsValidForTimestampRange($prediction, $timestampRange)) {
-                        $arrivalTimes[] = $prediction;
-                    }
-                }
-            }
             
             if (!count($arrivalTimes) && isset($stop['arrives'])) {
                 if (count($this->frequencyStartTimes)) {
@@ -1990,6 +1985,27 @@ class TransitSegment
             }
         }
         return $arrivalTimes;
+    }
+    
+    public function getPredictionsForStop($stopID, $timestampRange) {
+        $predictions = array(); 
+        $index = 0;
+        if (isset($stopID)) {
+            $index = $this->getIndexForStop($stopID);
+        }
+        
+        if ($index !== false && isset($this->stops[$index])) {
+            $stop = $this->stops[$index];
+            
+            if (isset($stop['predictions'])) {
+                foreach ($stop['predictions'] as $prediction) {
+                    if (TransitTime::timestampIsValidForTimestampRange($prediction, $timestampRange)) {
+                        $predictions[] = $prediction;
+                    }
+                }
+            }
+        }
+        return $predictions;
     }
 }
 

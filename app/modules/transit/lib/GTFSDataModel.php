@@ -93,13 +93,14 @@ class GTFSDataModel extends TransitDataModel
             $routePredictions = array();
             while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
                 $routeID = $row['route_id'];
-                $timestampRange = $this->getValidRouteSegmentTimeRangeForTimestamp($routeID, $time);
+                $runningTimeRange = $this->getValidRouteRunningTimeRangeForTimestamp($routeID, $time);
+                $segmentTimeRange = $this->getValidRouteSegmentTimeRangeForTimestamp($routeID, $time);
                 $route = $this->getRoute($routeID);
                 if ($route) {
                     $this->updatePredictionData($routeID);
                     
-                    $routePredictions[$routeID]['directions'] = $this->getRouteDirectionPredictionsForStop($routeID, $stopID, $timestampRange);
-                    $routePredictions[$routeID]['running'] = $route->isRunning($timestampRange, $inService) && $inService;
+                    $routePredictions[$routeID]['directions'] = $this->getRouteDirectionPredictionsForStop($routeID, $stopID, $segmentTimeRange);
+                    $routePredictions[$routeID]['running'] = $route->isRunning($runningTimeRange, $inService) && $inService;
                     $routePredictions[$routeID]['name'] = $route->getName();
                     $routePredictions[$routeID]['agency'] = $route->getAgencyID();
                     $routePredictions[$routeID]['live'] = $this->isLive();
