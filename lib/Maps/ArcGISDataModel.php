@@ -58,20 +58,28 @@ class ArcGISDataModel extends MapDataModel
 
     public function search($searchTerms) {
         $categories = $this->leafCategories();
-        $results = array();
-        foreach ($categories as $category) {
-            $this->retriever->setSelectedLayer($category->getId());
-            $results = array_merge($results, parent::search($searchTerms));
+        if (!$categories) {
+            return parent::search($searchTerms);
+        } else {
+            $results = array();
+            foreach ($categories as $category) {
+                $this->retriever->setSelectedLayer($category->getId());
+                $results = array_merge($results, parent::search($searchTerms));
+            }
         }
         return $results;
     }
 
     public function searchByProximity($center, $tolerance, $maxItems=0) {
         $categories = $this->leafCategories();
-        $results = array();
-        foreach ($categories as $category) {
-            $this->retriever->setSelectedLayer($category->getId());
-            $results = array_merge($results, parent::searchByProximity($center, $tolerance, $maxItems));
+        if (!$categories) {
+            return parent::searchByProximity($center, $tolerance, $maxItems);
+        } else {
+            $results = array();
+            foreach ($categories as $category) {
+                $this->retriever->setSelectedLayer($category->getId());
+                $results = array_merge($results, parent::searchByProximity($center, $tolerance, $maxItems));
+            }
         }
         return $results;
     }
