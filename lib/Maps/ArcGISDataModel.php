@@ -39,26 +39,6 @@ class ArcGISDataModel extends MapDataModel
         $this->setupRetrieverForPlacemarks();
         return $this->returnPlacemarks($this->retriever->getData());
     }
-    
-    protected function doSearch($categories, $action) {
-        $results = array();
-        $this->retriever->setAction($action);
-
-        if (count($categories) > 1) {
-            foreach ($categories as $category) {
-                $this->retriever->setSelectedLayer($category->getId());
-                if ($action == ArcGISDataRetriever::ACTION_SEARCH) {
-                    $this->retriever->setAction(ArcGISDataRetriever::ACTION_CATEGORIES);
-                    $this->retriever->getData();
-                    $this->retriever->setAction($action);
-                }
-                $results = array_merge($results, $this->returnPlacemarks($this->retriever->getData()));
-            }
-        } else {
-            $results = $this->returnPlacemarks($this->retriever->getData());
-        }
-        return $results;
-    }
 
     protected function leafCategories($categories=array()) {
         $result = array();
@@ -76,18 +56,24 @@ class ArcGISDataModel extends MapDataModel
         return $result;
     }
 
-    // for the following search functions, the call to categories()
-    // causes us to initialize internal variables like projection
-    // it also causes the retriever's action to be set to "categories"
     public function search($searchTerms) {
-        $categories = $this->leafCategories(); 
-        $this->retriever->setSearchFilters(array('text' => $searchTerms));
-        return $this->doSearch($categories, ArcGISDataRetriever::ACTION_SEARCH);
+        $categories = $this->leafCategories();
+        $results = array();
+        foreach ($categories as $category) {
+            $this->retriever->setSelectedLayer($category->getId());
+            $results = array_merge($results, parent::search($searchTerms));
+        }
+        return $results;
     }
 
     public function searchByProximity($center, $tolerance, $maxItems=0) {
-        $categories = $this->leafCategories(); 
-        $this->retriever->setSearchFilters(array('center' => $center, 'tolerance' => $tolerance));
-        return $this->doSearch($categories, ArcGISDataRetriever::ACTION_SEARCH_NEARBY);
+        $categories = $this->leafCategories();
+        $results = array();
+        foreach ($categories as $category) {
+            $this->retriever->setSelectedLayer($category->getId());
+            $results = array_merge($results, parent::searchByProximity($center, $tolerance, $maxItems));
+        }
+        return $results;
     }
+
 }

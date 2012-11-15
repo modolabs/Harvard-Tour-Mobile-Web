@@ -249,6 +249,7 @@ class ArcGISDataParser extends DataParser implements MapDataParser
 
                     $geometry = $this->projectGeometry($geometry);
                     $placemark = new BasePlacemark($geometry);
+                    $placemark->addCategoryId($this->feedId);
                     foreach ($displayAttribs as $name => $value) {
                         $placemark->setField($name, $value);
                     }
