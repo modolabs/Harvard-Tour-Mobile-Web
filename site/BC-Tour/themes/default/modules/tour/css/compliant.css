@@ -220,6 +220,7 @@ p, dl, ul {
   position: relative;
 }
 #tabbodies .tabbody {
+  opacity: 0;
   visibility: hidden;
   position: absolute;
   top: 0;
@@ -229,6 +230,7 @@ p, dl, ul {
   overflow: hidden;
 }
 #tabbodies .tabbody.active {
+  opacity: 1;
   z-index: 10000;
   visibility: visible;
   position: relative;
