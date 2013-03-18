@@ -8,7 +8,11 @@
         <img src="/modules/map/images/powered-by-google-on-white.png"/>
     </div>
     {/if}
+    {if $places}
     {include file="findInclude:common/templates/navlist.tpl" navlistItems=$places}
+    {else}
+    {"NO_RESULTS"|getLocalizedString}
+    {/if}
 {/capture}
 
 {capture name="browsePane" assign="browsePane"}

@@ -23,10 +23,12 @@ The index.php script will analyze the path for several patterns
 
 * favicon.ico if a favicon.ico file exists in the *CURRENT_THEME/common/images* folder it will be 
   sent to the client
+* robots.txt - Kurogo will send a dynamic version of robots.txt depending on which modules
+  have their *robots* option set in their module.ini file.
 * ga.php will be sent from the lib folder
 * requests with a path of *common* or *modules* with a subpath of *images*, *css* or *javascript* are 
   served using the rules according to :ref:`pageandplatform`. This includes examples such as: 
-  /modules/home/images/x.png, /common/css/compliant.css, /modules/admin/javascript/admin.js
+  /modules/HOME_MODULE/images/x.png, /common/css/compliant.css, /modules/admin/javascript/admin.js
 * requests with a path of /media will be searched for in the indicated subfolder of the 
   current site folder: i.e. /media/file will map to *SITE_DIR*/media/file
 

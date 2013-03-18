@@ -10,6 +10,9 @@ to early generation smart phones, to modern devices and tablets. It currently in
 * Event Calendar
 * Maps
 * Video
+* Photos
+* Athletics
+* Social
 * Emergency
 * Links
 * Statistics
@@ -39,22 +42,14 @@ Kurogo is a PHP application. It is currently qualified for use with
 To install, simply copy the files to your webserver, and set the document root to the www
 folder. For more detailed setup information, please see the Developer's guide on kurogo.org/docs
 
-## Version 1.4
+## Version 1.5 RC1
 
-This version includes a number of fixes and improvements, including:
-
-* NEW MODULE: Photos. Show photos from Flickr or Picassa
-* NEW MODULE: Athletics. Show news and score information
-* Updated map module interface
-* Overhauled Data access classes for simpler creation of new data retrieval methods including support for SOAP and Database calls.
-* Added support for more types of recurring events
-* Federated search will be asynchronous in supported devices
-* You can define an alert banner to show on the home screen (i.e. from emergency module)
-* Added option to fetch RSS content if there is not full text in the feed
-* Most of the theme colors and options can now be easily customized by editing the config.ini in the theme folder. This requires copying either the default or hi-def themes from Universitas
-* Added basic encryption functions to store sensitive data
-* Added support for in-memory caching using APC or Memcache
-* Many other fixes and improvements to the included modules
+* Version 1.5 is released under the Lesser GNU Public License v2.1
+* NEW MODULE : Social. Show feeds from facebook and Twitter
+* Data can be fetched in the background improving performance
+* New XML Parser (SimpleXMLDataParser) makes it easier to parse simple XML documents
+* Add Shibboleth authentication authority (requires a shibboleth SP installed on the Kurogo Server)
+* Many other improvements and fixes
 
 ## History
 

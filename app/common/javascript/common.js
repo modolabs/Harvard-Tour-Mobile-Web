@@ -1,48 +1,114 @@
-var currentTab;
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
 
 String.prototype.strip = function() {
     return this.replace(/^\s+/, '').replace(/\s+$/, '');
 }
 
-function showTab(strID, objTrigger) {
-// Displays the tab with ID strID
-	var objTab = document.getElementById(strID);
-	if(objTab) {
-		show(strID);
-		if(currentTab && (currentTab != objTab)) {
-			hide(currentTab.id);
-			//currentTab.style.display = "none";
-		}
-	}
-	currentTab = objTab; // Remember which is the currently displayed tab
-	
-	// Set the clicked tab to look current
-	var objTabs = document.getElementById("tabs");
-  if (objTabs) {
-    var arrTabs = objTabs.getElementsByTagName("li");
-    if(objTrigger) {
-      for(var i=0; i<arrTabs.length; i++) {
-        arrTabs[i].className="";
-      }
-      var objTriggerTab = objTrigger.parentNode;
-      if(objTriggerTab) {
-        objTriggerTab.className="active";
-      }
+function showTab(id) {
+    var tabId = id+'-tab';
+    var tabbodyId = id+'-tabbody';
+    
+    var tab = document.getElementById(tabId);
+    var tabbody = document.getElementById(tabbodyId);
+    if (!tab || !tabbody) { return; } // safety check
+    
+    var tabs = tab.parentNode.getElementsByTagName('li');
+    if (!tabs) { return; } // safety check
+    
+    var tabBodies = tabbody.parentNode.childNodes;
+    if (!tabBodies) { return; } // safety check
+    
+    // Display the tab body and hide others
+    for (var i = 0; i < tabBodies.length; i++) {
+        if (tabBodies[i].id == tabbodyId) {
+            show(tabBodies[i].id);
+        } else {
+            hide(tabBodies[i].id);
+        }
     }
-
+    
+    // Display the tab and hide others
+    for (var i = 0; i < tabs.length; i++) {
+        if (tabs[i].id == tabId) {
+            addClass(tabs[i], 'active');
+        } else {
+            removeClass(tabs[i], 'active');
+        }
+    }
+    
     // fake resize event in case tab body was resized while hidden 
     if (document.createEvent) {
-      var e = document.createEvent('HTMLEvents');
-      e.initEvent('resize', true, true);
-      window.dispatchEvent(e);
+        var e = document.createEvent('HTMLEvents');
+        e.initEvent('resize', true, true);
+        window.dispatchEvent(e);
     
     } else if( document.createEventObject ) {
-      var e = document.createEventObject();
-      document.documentElement.fireEvent('onresize', e);
+        var e = document.createEventObject();
+        document.documentElement.fireEvent('onresize', e);
     }
-  }
-	
-	onDOMChange();
+    
+    onDOMChange();
+}
+
+function onOrientationChange() {
+    /* the galaxy tab sends orientation change events constantly */
+    if (typeof onOrientationChange.lastOrientation == 'undefined') {
+        onOrientationChange.lastOrientation = null;
+    }
+    
+    var newOrientation = getOrientation();
+    
+    if (newOrientation != onOrientationChange.lastOrientation) {
+        rotateScreen();
+        
+        if (typeof onOrientationChange.callbackFunctions !== 'undefined') {
+            for (var i = 0; i < onOrientationChange.callbackFunctions.length; i++) {
+                onOrientationChange.callbackFunctions[i]();
+            }
+        }
+        
+        onOrientationChange.lastOrientation = newOrientation;
+    }
+}
+
+function onResize() {
+    if (typeof onResize.callbackFunctions !== 'undefined') {
+        for (var i = 0; i < onResize.callbackFunctions.length; i++) {
+            onResize.callbackFunctions[i]();
+        }
+    }
+}
+
+function addOnOrientationChangeCallback(callback) {
+    if (typeof onOrientationChange.callbackFunctions == 'undefined') {
+        onOrientationChange.callbackFunctions = [];
+    }
+    onOrientationChange.callbackFunctions.push(callback);
+    
+    if (typeof onResize.callbackFunctions == 'undefined') {
+        onResize.callbackFunctions = [];
+    }
+    onResize.callbackFunctions.push(callback);
+}
+
+function setupOrientationChangeHandlers() {
+    if (window.addEventListener) {
+        window.addEventListener("orientationchange", onOrientationChange, false);
+    } else if (window.attachEvent) {
+        window.attachEvent("onorientationchange", onOrientationChange);
+    }
+    if (window.addEventListener) {
+        window.addEventListener("resize", onResize, false);
+    } else if (window.attachEvent) {
+        window.attachEvent("onresize", onResize);
+    }
 }
 
 function rotateScreen() {
@@ -101,12 +167,24 @@ function setOrientation(orientation) {
     addClass(body, orientation);
 }
 
+// Localized ajax loading and error content
+// takes either an element or an id
+function showAjaxLoadingMsg(e) {
+    if (typeof e == 'string') {
+        e = document.getElementById(element);
+    }
+	if (e) {
+		e.innerHTML = AJAX_CONTENT_LOADING_HTML;
+	}
+	onDOMChange();
+}
 
-function showLoadingMsg(strID) {
-// Show a temporary loading message in the element with ID strID
-	var objToStuff = document.getElementById(strID);
-	if(objToStuff) {
-		objToStuff.innerHTML = "<div class=\"loading\"><img src=\"../common/images/loading.gif\" width=\"27\" height=\"21\" alt=\"\" align=\"absmiddle\" />Loading data...</div >";
+function showAjaxErrorMsg(e) {
+    if (typeof e == 'string') {
+        e = document.getElementById(element);
+    }
+	if (e) {
+		e.innerHTML = AJAX_CONTENT_ERROR_HTML;
 	}
 	onDOMChange();
 }
@@ -226,16 +304,24 @@ function toggleClass(ele, cls) {
 
 // Share-related functions
 function showShare() {
-    if (!document.getElementById("sharesheet")) {
+    var sharesheet = document.getElementById("sharesheet");
+    if (!sharesheet) {
         return;
     }
-	document.getElementById("sharesheet").style.display="block";
-	var iframes = document.getElementsByTagName('iframe');
-	for (var i=0; i<iframes.length; i++) {
-	    iframes[i].style.visibility = 'hidden';
-	    iframes[i].style.height = '0';
-	}
-	window.scrollTo(0,0);
+    if (!sharesheet.parentNode || sharesheet.parentNode.nodeName != 'BODY') {
+        var elements = document.getElementsByTagName('body');
+        if (elements.length) {
+            var body = elements[0];
+            body.appendChild(sharesheet);
+        }
+    }
+    sharesheet.style.display="block";
+    var iframes = document.getElementsByTagName('iframe');
+    for (var i=0; i<iframes.length; i++) {
+        iframes[i].style.visibility = 'hidden';
+        iframes[i].style.height = '0';
+    }
+    window.scrollTo(0,0);
 }
 function hideShare() {
     if (!document.getElementById("sharesheet")) {
@@ -327,10 +413,335 @@ if (typeof makeAPICall === 'undefined' && typeof jQuery === 'undefined') {
   }
 }
 
+function ajaxContentIntoContainer(options) {
+    if (typeof options != 'object') { return; } // safety
+    
+    if (typeof ajaxContentIntoContainer.pendingRequests == 'undefined') {
+        ajaxContentIntoContainer.pendingRequests = new Array();
+    }
+    
+    var _removeRequestsForContainer = function (container) {
+        // go backwards so removing items doesn't cause us to skip requests
+        for (var i = ajaxContentIntoContainer.pendingRequests.length-1; i >= 0; i--) {
+            if (ajaxContentIntoContainer.pendingRequests[i].options.container == container) {
+                ajaxContentIntoContainer.pendingRequests[i].httpRequest.abort();
+                ajaxContentIntoContainer.pendingRequests.splice(i, 1);
+            }
+        }
+    }
+    
+    var _removeCompletedRequest = function (httpRequest) {
+        for (var i = 0; i < ajaxContentIntoContainer.pendingRequests.length; i++) {
+            if (ajaxContentIntoContainer.pendingRequests[i].httpRequest == httpRequest) {
+                ajaxContentIntoContainer.pendingRequests.splice(i, 1);
+                break;
+            }
+        }
+    }
+   
+    var defaults = {
+        url: null, 
+        container: null, 
+        timeout: 60, 
+        addAjaxParameter: true,
+        loadMessage: true,
+        errorMessage: true,
+        success: function () {},
+        error: function (code) {} 
+    };
+    for (var i in defaults) {
+        if (typeof options[i] == 'undefined') {
+            options[i] = defaults[i];
+        }
+    }
+    if (!options.url || !options.container) { return; } // safety
+    
+    if (options.addAjaxParameter && options.url.search(/[\?\&]ajax=/) < 0) {
+        options.url += (options.url.search(/\?/) < 0 ? "?" : "&")+"ajax=1";
+    }
+    
+    _removeRequestsForContainer(options.container);
+    
+    var httpRequest = new XMLHttpRequest();
+    httpRequest.open("GET", options.url, true);
+    
+    var requestTimer = setTimeout(function() {
+        // some browsers set readyState to 4 on abort so remove handler first
+        httpRequest.onreadystatechange = function() { };
+        httpRequest.abort();
+        
+        options.error(408); // http request timeout status code
+    }, options.timeout * 1000);
+    
+    httpRequest.onreadystatechange = function() {
+        // return if still in progress
+        if (httpRequest.readyState != 4) { return; }
+        
+        // Got answer, don't abort
+        clearTimeout(requestTimer);
+        
+        if (httpRequest.status == 200) { // Success
+            options.container.innerHTML = "";
+            
+            insertContentIntoContainer({
+                "container" : options.container,
+                "html"      : httpRequest.responseText
+            });
+            
+            options.success();
+            
+        } else {
+            if (options.errorMessage) {
+                showAjaxErrorMsg(options.container);
+            }
+            options.error(httpRequest.status);
+        }
+        
+        _removeCompletedRequest(httpRequest);
+    };
+    
+    if (options.loadMessage) {
+        showAjaxLoadingMsg(options.container);
+    }
+    
+    httpRequest.send(null);
+    
+    ajaxContentIntoContainer.pendingRequests.push({
+        'options'     : options,
+        'httpRequest' : httpRequest
+    });
+}
 
+function insertContentIntoContainer(options) {
+    if (typeof options != 'object') { return; } // safety
 
+    var defaults = {
+        html: null, 
+        container: null
+    };
+    for (var i in defaults) {
+        if (typeof options[i] == 'undefined') {
+            options[i] = defaults[i];
+        }
+    }
+    if (!options.html || !options.container) { return; } // safety
 
+    options.container.innerHTML = options.html;
+    
+    var scripts = options.container.getElementsByTagName('script');
+    for (var i = 0; i < scripts.length; i++) {
+        var script = scripts[i];
+        
+        // Manually execute scripts
+        var src = (script.text || script.textContent || script.innerHTML || "");
+        if (src.length) {
+            try {
+                if (window.execScript) {
+                    window.execScript(src);
+                } else {
+                    (function(src) {
+                        window.eval.call(window, src);
+                    })(src);
+                }
+            } catch (e) {
+            }
+        } else if (script.src && script.src.length) {
+            // create new javascript include and add to head
+            // which is the only cross-browser way to ensure it executes
+            var copy = document.createElement("script");
+            if (script.type && script.type.length) {
+                copy.type = script.type;
+            }
+            copy.src = script.src;
+            document.getElementsByTagName("head")[0].appendChild(copy);
+        }
+    }
+    
+    // move styles to head tag
+    var styles = options.container.getElementsByTagName('style');
+    for (var i = 0; i < styles.length; i++) {
+        document.getElementsByTagName("head")[0].appendChild(styles[i]);
+    }
+    onDOMChange();
+}
 
+function getCSSValue(element, key) {
+    if (window.getComputedStyle) {
+      return document.defaultView.getComputedStyle(element, null).getPropertyValue(key);
+        
+    } else if (element.currentStyle) {
+        if (key == 'float') { 
+            key = 'styleFloat'; 
+        } else {
+            var re = /(\-([a-z]){1})/g; // hyphens to camel case
+            if (re.test(key)) {
+                key = key.replace(re, function () {
+                    return arguments[2].toUpperCase();
+                });
+            }
+        }
+        var style = element.currentStyle[key] ? element.currentStyle[key] : '';
+        
+        // Fix IE8 border width and margins so that parseFloat doesn't return NaN on them
+        var parts = [ 'Top', 'Left', 'Bottom', 'Right' ];
+        for (var i = 0; i < parts.length; i++) {
+            if (key == "border"+parts[i]+"Width" && element.currentStyle["border"+parts[i]+"Style"] == "none") {
+                style = "0px";
+                break;
+            }
+        }
+        for (var i = 0; i < parts.length; i++) {
+            if (key == "margin"+parts[i] && style == "auto") {
+                style = "0px";
+                break;
+            }
+        }
+        return style;
+    }
+    return '';
+}
 
+function setCSSValue(element, key, value) {
+    if (key == 'float') { 
+        key = 'styleFloat'; 
+    } else {
+        var re = /(\-([a-z]){1})/g; // hyphens to camel case
+        if (re.test(key)) {
+            key = key.replace(re, function () {
+                return arguments[2].toUpperCase();
+            });
+        }
+    }
+    
+    try {
+        element.style[key] = value; // IE will go kaboom here if the style is bad
+    } catch (e) {}
+}
 
+function getCSSValueNumber(element, key) {
+    var number = parseFloat(getCSSValue(element, key));
+    return isNaN(number) ? 0 : number;
+}
 
+function getCSSHeight(element) {
+    return element.offsetHeight
+        - getCSSValueNumber(element, 'border-top-width')
+        - getCSSValueNumber(element, 'border-bottom-width')
+        - getCSSValueNumber(element, 'padding-top')
+        - getCSSValueNumber(element, 'padding-bottom');
+}
+
+function getCSSWidth(element) {
+    return element.offsetWidth
+        - getCSSValueNumber(element, 'border-left-width') 
+        - getCSSValueNumber(element, 'border-right-width')
+        - getCSSValueNumber(element, 'padding-left')
+        - getCSSValueNumber(element, 'padding-right');
+}
+
+function _getStringForArgs(args) {
+    var argString = "";
+    if (typeof args == "string" && args.length) {
+        argString = "?" + args;
+    } else if (typeof args == "object") {
+        for (var param in args) {
+            argString += (argString.length ? "&" : "?") + 
+                param + "=" + encodeURIComponent(args[param]);
+        }
+    }
+    return argString;    
+}
+
+function redirectTo(page, args) {
+    window.location = "./" + page + _getStringForArgs(args);
+}
+
+function redirectToModule(module, page, args) {
+    window.location = "../" + module + "/" + page + _getStringForArgs(args);
+}
+
+/*
+	Developed by Robert Nyman, http://www.robertnyman.com
+	Code/licensing: http://code.google.com/p/getelementsbyclassname/
+	
+	Reversed element and tag arguments for convenience
+*/	
+var getElementsByClassName = function (className, elm, tag) {
+    if (document.getElementsByClassName) {
+        getElementsByClassName = function (className, elm, tag) {
+            elm = elm || document;
+            var elements = elm.getElementsByClassName(className),
+                nodeName = (tag)? new RegExp("\\b" + tag + "\\b", "i") : null,
+                returnElements = [],
+                current;
+            for (var i=0, il=elements.length; i<il; i+=1){
+                current = elements[i];
+                if (!nodeName || nodeName.test(current.nodeName)) {
+                    returnElements.push(current);
+                }
+            }
+            return returnElements;
+        };
+    }
+    else if (document.evaluate) {
+        getElementsByClassName = function (className, elm, tag) {
+          tag = tag || "*";
+          elm = elm || document;
+          var classes = className.split(" "),
+              classesToCheck = "",
+              xhtmlNamespace = "http://www.w3.org/1999/xhtml",
+              namespaceResolver = (document.documentElement.namespaceURI === xhtmlNamespace)? xhtmlNamespace : null,
+              returnElements = [],
+              elements,
+              node;
+          for (var j=0, jl=classes.length; j<jl; j+=1){
+              classesToCheck += "[contains(concat(' ', @class, ' '), ' " + classes[j] + " ')]";
+          }
+          try	{
+              elements = document.evaluate(".//" + tag + classesToCheck, elm, namespaceResolver, 0, null);
+          }
+          catch (e) {
+              elements = document.evaluate(".//" + tag + classesToCheck, elm, null, 0, null);
+          }
+          while ((node = elements.iterateNext())) {
+              returnElements.push(node);
+          }
+          return returnElements;
+        };
+    }
+    else {
+        getElementsByClassName = function (className, elm, tag) {
+            tag = tag || "*";
+            elm = elm || document;
+            var classes = className.split(" "),
+                classesToCheck = [],
+                elements = (tag === "*" && elm.all)? elm.all : elm.getElementsByTagName(tag),
+                current,
+                returnElements = [],
+                match;
+            for (var k=0, kl=classes.length; k<kl; k+=1){
+                classesToCheck.push(new RegExp("(^|\\s)" + classes[k] + "(\\s|$)"));
+            }
+            for (var l=0, ll=elements.length; l<ll; l+=1){
+                current = elements[l];
+                match = false;
+                for(var m=0, ml=classesToCheck.length; m<ml; m+=1){
+                    match = classesToCheck[m].test(current.className);
+                    if (!match) {
+                        break;
+                    }
+                }
+                if (match) {
+                    returnElements.push(current);
+                }
+            }
+            return returnElements;
+        };
+    }
+    return getElementsByClassName(className, elm, tag);
+};
+
+function getFirstElementByClassName(className, elem, tag) {
+    var elements = getElementsByClassName(className, elem, tag);
+    return elements.length ? elements[0] : null;
+}

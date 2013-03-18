@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class BasePlacemark implements Placemark
 {
     protected $id;
@@ -12,6 +21,8 @@ class BasePlacemark implements Placemark
     protected $fields = array();
     protected $categories = array();
     protected $urlParams = array();
+    // aliases map for placemark searching
+    protected $aliases = array();
     
     public function __construct(MapGeometry $geometry) {
         $this->geometry = $geometry;
@@ -30,14 +41,19 @@ class BasePlacemark implements Placemark
         $this->address = $address;
     }
 
+    public function setAliases($aliases) {
+        $this->aliases = $aliases;
+    }
+
     public function filterItem($filters) {
         foreach ($filters as $filter=>$value) {
             switch ($filter) {
                 case 'search':
-                    if (stripos($this->getTitle(), $value) === FALSE && stripos($this->getSubTitle(), $value) === FALSE) {
-                        return false;
-                    }
-                    break;
+                    $contents = array(
+                        'title' => $this->getTitle(),
+                        'subtitle' => $this->getSubTitle(),
+                    );
+                    return stringFilter($value, $contents, $this->aliases);
                 case 'min':
                     if (!isset($center)) {
                         $center = $this->getGeometry()->getCenterCoordinate();
@@ -134,6 +150,17 @@ class BasePlacemark implements Placemark
             return $this->fields[$fieldName];
         }
         return null;
+    }
+
+    public function getDescription($suppressFields=null) {
+        $htmlLines = array();
+        $separator = ':';
+        foreach ($this->fields as $field => $value) {
+            if (!in_array($field, $suppressFields)) {
+                $htmlLines[] = "<li><b>{$field}{$separator}</b> $value</li>";
+            }
+        }
+        return '<ul>'.implode("\n", $htmlLines).'</ul>';
     }
     
     public function setField($fieldName, $value) {

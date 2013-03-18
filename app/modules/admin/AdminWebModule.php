@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
   * @package Module
   * @subpackage Admin
@@ -11,6 +21,7 @@
 class AdminWebModule extends WebModule {
     protected $id = 'admin';
     protected $canBeRemoved = false;
+    protected $canAllowRobots = false;
   
     private function getNavSections() {
         $navSections = array(
@@ -42,6 +53,7 @@ class AdminWebModule extends WebModule {
         if (!isset($configData[$type])) {
             $files = array(
                 APP_DIR . "/common/config/admin-{$type}.json",
+                SHARED_APP_DIR . "/common/config/admin-{$type}.json",
                 SITE_APP_DIR . "/common/config/admin-{$type}.json"
             );
             $data = array();
@@ -237,6 +249,17 @@ class AdminWebModule extends WebModule {
                 $this->assign('subNavSections', $subNavSections);
                 
                 if (isset($subNavSections[$section])) {
+                    switch ($section)
+                    {
+                        case 'license':
+                            $licenseFile = ROOT_DIR . "/LICENSE";
+                            if (is_file($licenseFile)) {
+                                $this->assign('license', file_get_contents($licenseFile));
+                            } else {
+                                die($licenseFile);
+                                throw new KurogoException("Unable to load LICENSE file, you may have a compromised Kurogo Installation");
+                            }
+                    }
                     $this->setTemplatePage($section);
                 } else {
                     $this->redirectTo('section', array());

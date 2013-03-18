@@ -1,11 +1,20 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 if (!class_exists('DOMDocument')) {
-    die('DOMDocument Functions not available (php-xml)');
+    throw new KurogoException('DOMDocument PHP extension is not installed. http://www.php.net/manual/en/book.dom.php');
 }
 
 if (!function_exists('mb_convert_encoding')) {
-    die('Multibyte String Functions not available (mbstring)');
+    throw new KurogoException('Multibyte String PHP extension is not installed. http://www.php.net/manual/en/book.mbstring.php');
 }
 
 class DOMDataParser extends DataParser
@@ -30,7 +39,9 @@ class DOMDataParser extends DataParser
 
         if (isset($args['BASE_URL']) && $args['BASE_URL']) {
             $urlArray = parse_url($args['BASE_URL']);
-            $this->baseUrl = $urlArray['scheme'] . "://" . $urlArray['host'];
+            if (isset($urlArray['scheme'])) {
+				$this->baseUrl = $urlArray['scheme'] . "://" . $urlArray['host'];
+			}
             $this->relativeUrl = dirname($args['BASE_URL']);
         }
     }

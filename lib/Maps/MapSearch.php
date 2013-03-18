@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 // classes in here are required for unserialization
 Kurogo::includePackage('Maps', 'KML');
 Kurogo::includePackage('Maps', 'Shapefile');
@@ -167,7 +176,9 @@ class MapSearch extends DataRetriever {
     protected function doSearchByText($query) {
         $allResults = array();
     	foreach ($this->feeds as $id => $feedData) {
-            $feedData['group'] = $this->feedGroup;
+    	    if ($this->feedGroup) {
+                $feedData['group'] = $this->feedGroup;
+            }
             $controller = mapModelFromFeedData($feedData);
 
             if ($controller->canSearch()) {

@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 includePackage('Authentication');
 class GoogleAppsCalendarListRetriever extends OAuthDataRetriever implements CalendarListRetriever
 {
@@ -73,13 +82,9 @@ class GoogleAppsCalendarListParser extends DataParser
     }
     
     private function getBaseFeed() {
-        $baseFeed = array(
-            'RETRIEVER_CLASS'=>'GoogleAppsCalendarDataRetriever',
-        );
-        
-        if ($this->authority) {
-            $baseFeed['AUTHORITY'] = $this->authority->getAuthorityIndex();
-        }
+    	$baseFeed = $this->initArgs;
+        unset($baseFeed['PARSER_CLASS']);
+        $baseFeed['RETRIEVER_CLASS']='GoogleAppsCalendarDataRetriever';
         
         return $baseFeed;
     }

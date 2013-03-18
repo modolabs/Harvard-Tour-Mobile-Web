@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
   * @package People
   */
@@ -44,66 +54,4 @@ class PeopleDataModel extends ItemListDataModel
         return $this->capabilities;
     }
 
-}
-
-abstract class PeopleDataParser extends DataParser
-{
-    protected $personClass = 'Person';
-    
-    public function setPersonClass($className) {
-    	if ($className) {
-    		if (!class_exists($className)) {
-    			throw new KurogoConfigurationException("Cannot load class $className");
-    		}
-
-            $class = new ReflectionClass($className); 
-            if (!$class->isSubclassOf('Person')) {
-                throw new KurogoConfigurationException("$className is not a subclass of Person");
-            }
-			$this->personClass = $className;
-		}
-    }
-    
-    public function init($args) {
-        parent::init($args);
-        if (isset($args['PERSON_CLASS'])) {
-            $this->setPersonClass($args['PERSON_CLASS']);
-        }
-    }
-}
-
-abstract class Person implements KurogoObject
-{
-    protected $attributes = array();
-    abstract public function getName();
-    
-    public function getTitle() {
-        return $this->getName();
-    }
-        
-    public function filterItem($filters) {
-        foreach ($filters as $filter=>$value) {
-            switch ($filter)
-            {
-                case 'search':
-                    return  (stripos($this->getName(), $value)!==FALSE);
-                    break;
-            }
-        }
-        
-        return true;
-    }
-
-    public function getField($field) {
-        if (array_key_exists($field, $this->attributes)) {
-          return $this->attributes[$field];
-        }
-        return NULL;
-    }
-}
-
-interface PeopleRetriever extends SearchDataRetriever
-{
-    public function getUser($id);
-    public function setAttributes($attributes);
 }

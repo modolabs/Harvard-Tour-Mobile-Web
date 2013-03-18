@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 Kurogo::includePackage('Maps');
 
 class MapAPIModule extends APIModule
@@ -24,11 +33,15 @@ class MapAPIModule extends APIModule
         $urlArgs = $placemark->getURLParams();
 
         // mimic getMergedConfigData in MapWebModule
-        $categoryArg = isset($urlArgs['category']) ? $urlArgs['category'] : null;
-        $categories = explode(MAP_CATEGORY_DELIMITER, $categoryArg);
-        $category = current($categories);
-        if ($category) {
-            $urlArgs['feed'] = $category;
+        if (isset($urlArgs['feed'])) {
+            $category = $urlArgs['feed'];
+        } else {
+            $categoryArg = isset($urlArgs['category']) ? $urlArgs['category'] : null;
+			$categories = explode(MAP_CATEGORY_DELIMITER, $categoryArg);
+			$category = current($categories);
+			if ($category) {
+				$urlArgs['feed'] = $category;
+			}
         }
 
         $configData = $this->getDataForGroup($this->feedGroup);
@@ -143,8 +156,8 @@ class MapAPIModule extends APIModule
         $feedConfigFile = NULL;
         
         if ($this->feedGroup === NULL) {
-            if ($this->getArg('group')) {
-                $this->feedGroup = $this->getArg('group');
+            if ($feedGroup = $this->getArg(array('feedgroup', 'group'), NULL)) {
+                $this->feedGroup = $feedGroup;
             } elseif ($this->numGroups === 1) {
                 $this->feedGroup = key($this->feedGroups);
             }
@@ -445,6 +458,17 @@ class MapAPIModule extends APIModule
 
             case 'detail':
 
+                $suppress = array();
+                try {
+                    $configFile = $this->getConfig('detail');
+                    $detailConfig = $configFile->getOptionalSection('details');
+                    if ($detailConfig && isset($detailConfig['suppress'])) {
+                        $suppress = $detailConfig['suppress'];
+                    }
+                } catch (KurogoConfigurationException $e) {
+                    // ignore
+                }
+
                 $dataController = $this->getDataModel();
                 $placemarkId = $this->getArg('id', null);
                 if ($dataController && $placemarkId !== null) {
@@ -459,8 +483,19 @@ class MapAPIModule extends APIModule
                         'title'    => $placemark->getTitle(),
                         'subtitle' => $placemark->getSubtitle(),
                         'address'  => $placemark->getAddress(),
-                        'details'  => $placemark->getFields(),
                     );
+
+                    if ($this->requestedVersion >= 2) {
+                        $response['description'] = $placemark->getDescription($suppress);
+                        $responseVersion = 2;
+                    } else {
+                        $response['details'] = array('description' => $placemark->getDescription($suppress));
+                        $photoURL = $placemark->getField('PhotoURL');
+                        if ($photoURL) {
+                            $response['photoURL'] = $photoURL;
+                        }
+                        $responseVersion = 1;
+                    }
 
                     if ($geometry) {
                         $center = $geometry->getCenterCoordinate();
@@ -471,7 +506,7 @@ class MapAPIModule extends APIModule
                     }
 
                     $this->setResponse($response);                                                              
-                    $this->setResponseVersion(1);                                                               
+                    $this->setResponseVersion($responseVersion);
                 }
 
                 break;
@@ -511,8 +546,7 @@ class MapAPIModule extends APIModule
                         1000, 10);
 
                 } else {
-                    $searchTerms = $this->getArg('q');
-                    if ($searchTerms) {
+                    if ($searchTerms = $this->getArg(array('filter', 'q'))) {
                         $searchResults = $mapSearch->searchCampusMap($searchTerms);
                     }
                 }

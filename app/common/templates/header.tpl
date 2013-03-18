@@ -1,95 +1,124 @@
-<?xml version="1.0" encoding="UTF-8"?>
+{if !$webBridgeAjaxContentLoad && !$ajaxContentLoad}<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML Basic 1.1//EN" "http://www.w3.org/TR/xhtml-basic/xhtml-basic11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-  <meta http-equiv="content-type" content="application/xhtml+xml" charset={$charset}" />
+  <meta http-equiv="content-type" content="application/xhtml+xml" charset="{$charset}" />
   {if $refreshPage}
     <meta http-equiv="refresh" content="{$refreshPage}" />
   {/if}
-  <title>{if !$isModuleHome}{$moduleName}: {/if}{$pageTitle|strip_tags|escape:'htmlall'}</title>
+  <title>{block name="pageTitle"}{if !$isModuleHome}{$moduleName}: {/if}{$pageTitle|strip_tags|escape:'htmlall'}{/block}</title>
   <link rel="shortcut icon" href="/favicon.ico" />
-  <link href="{$minify['css']|escape}" rel="stylesheet" media="all" type="text/css"/>
-  {foreach $inlineCSSBlocks as $css}
-    <style type="text/css" media="screen">
-      {$css}
-    </style>
-  {/foreach}
-  {foreach $cssURLs as $cssURL}
-    <link href="{$cssURL|escape}" rel="stylesheet" media="all" type="text/css"/>
-  {/foreach}
+{/if}
   
-  {block name="javascript"}
+  {capture name="headerCSS" assign="headerCSS"}
+    {block name="minifyCSS"}
+      <link href="{$minify['css']|escape}" rel="stylesheet" media="all" type="text/css"/>
+    {/block}
+    
+    {block name="cssURLs"}
+      {foreach $cssURLs as $cssURL}
+        <link href="{$cssURL|escape}" rel="stylesheet" media="all" type="text/css"/>
+      {/foreach}
+    {/block}
+    
+    {block name="inlineCSS"}
+      {foreach $inlineCSSBlocks as $css}
+        <style type="text/css" media="screen">
+          {$css}
+        </style>
+      {/foreach}
+    {/block}
+  {/capture}
+  
+  {capture name="ajaxContentLoadingHTML" assign="ajaxContentLoadingHTML"}{strip}
+    {block name="ajaxContentLoadingHTML"}
+      <div class="loading"><div><img src="/common/images/loading.gif" width="27" height="21" alt="Loading" align="absmiddle" />{"AJAX_CONTENT_LOADING"|getLocalizedString}</div></div>
+    {/block}
+  {/strip}{/capture}
+  
+  {capture name="ajaxContentErrorHTML" assign="ajaxContentErrorHTML"}{strip}
+    {block name="ajaxContentErrorHTML"}
+      <div class="nonfocal">{"AJAX_CONTENT_LOAD_FAILED"|getLocalizedString}</div>
+    {/block}
+  {/strip}{/capture}
+  
+  {capture name="headerJavascript" assign="headerJavascript"}
+    {block name="urlBaseJavascript"}
       <script type="text/javascript">
         var URL_BASE='{$smarty.const.URL_BASE}';
         var API_URL_PREFIX='{$smarty.const.API_URL_PREFIX}';
       </script>
-    {if strlen($GOOGLE_ANALYTICS_ID)}
+    {/block}
+    
+    {block name="ajaxJavascript"}
       <script type="text/javascript">
-        var _gaq = _gaq || [];
-        _gaq.push(['_setAccount', '{$GOOGLE_ANALYTICS_ID}']);
-        {if $GOOGLE_ANALYTICS_DOMAIN}
-        _gaq.push(['_setDomainName', '{$GOOGLE_ANALYTICS_DOMAIN}']);
-        {/if}
-        _gaq.push(['_trackPageview']);
+        var AJAX_CONTENT_LOADING_HTML = '{$ajaxContentLoadingHTML|escape:"quotes"}';
+        var AJAX_CONTENT_ERROR_HTML = '{$ajaxContentErrorHTML|escape:"quotes"}';
       </script>
-    {/if}
-    {if strlen($PERCENT_MOBILE_ID)}
-        <script src="{$PERCENT_MOBILE_URL}" type="text/javascript" charset="utf-8"></script>
-    {/if}
-    
-    {foreach $javascriptURLs as $url}
-      <script src="{$url|escape}" type="text/javascript"></script>
-    {/foreach}
-    
-    <script src="{$minify['js']|escape}" type="text/javascript"></script>
-    
-    {foreach $inlineJavascriptBlocks as $inlineJavascriptBlock}
-      <script type="text/javascript">{$inlineJavascriptBlock}</script>
-    {/foreach}
+    {/block}
 
-    <script type="text/javascript">
-      function onOrientationChange() {ldelim}
-        {* the galaxy tab sends orientation change events constantly *}
-        if (typeof onOrientationChange.lastOrientation == 'undefined') {ldelim}
-          onOrientationChange.lastOrientation = null;
-        {rdelim}
-        var newOrientation = getOrientation();
-        if (newOrientation != onOrientationChange.lastOrientation) {ldelim}
-          rotateScreen();
-          {foreach $onOrientationChangeBlocks as $script}
-            {$script}
-          {/foreach}
-        {rdelim}
-        onOrientationChange.lastOrientation = newOrientation;
-      {rdelim}
-      if (window.addEventListener) {ldelim}
-        window.addEventListener("orientationchange", onOrientationChange, false);
-      {rdelim} else if (window.attachEvent) {ldelim}
-        window.attachEvent("onorientationchange", onOrientationChange);
-      {rdelim}
-      {if count($onOrientationChangeBlocks)}
-        function onResize() {ldelim}
-          {foreach $onOrientationChangeBlocks as $script}
-            {$script}
-          {/foreach}
-        {rdelim}
-        if (window.addEventListener) {ldelim}
-          window.addEventListener("resize", onResize, false);
-        {rdelim} else if (window.attachEvent) {ldelim}
-          window.attachEvent("onresize", onResize);
-        {rdelim}
+    {block name="analyticsJavascript"}
+      {if strlen($GOOGLE_ANALYTICS_ID)}
+        <script type="text/javascript">
+          var _gaq = _gaq || [];
+          _gaq.push(['_setAccount', '{$GOOGLE_ANALYTICS_ID}']);
+          {if $GOOGLE_ANALYTICS_DOMAIN}
+          _gaq.push(['_setDomainName', '{$GOOGLE_ANALYTICS_DOMAIN}']);
+          {/if}
+          _gaq.push(['_trackPageview']);
+        </script>
       {/if}
-    </script>
+    {/block}
     
-    {if count($onLoadBlocks)}
+    {block name="javascriptURLs"}
+      {foreach $javascriptURLs as $url}
+        <script src="{$url|escape}" type="text/javascript"></script>
+      {/foreach}
+    {/block}
+    
+    {block name="minifyJavascript"}
+      <script src="{$minify['js']|escape}" type="text/javascript"></script>
+    {/block}
+    
+    {block name="inlineJavascriptBlocks"}
+      {foreach $inlineJavascriptBlocks as $inlineJavascriptBlock}
+        <script type="text/javascript">{$inlineJavascriptBlock}</script>
+      {/foreach}
+    {/block}
+
+    {block name="orientationChangeJavascript"}
       <script type="text/javascript">
-        function onLoad() {ldelim}
-          {foreach $onLoadBlocks as $script}
-            {$script}
-          {/foreach}
-        {rdelim}
+        setupOrientationChangeHandlers();
+        {if count($onOrientationChangeBlocks)}
+          addOnOrientationChangeCallback(function () {ldelim}
+            {foreach $onOrientationChangeBlocks as $script}
+              {$script}
+            {/foreach}
+          {rdelim});
+        {/if}
       </script>
-    {/if}
+    {/block}
+    
+    {block name="onLoadJavascriptBlocks"}
+      {if count($onLoadBlocks)}
+        <script type="text/javascript">
+          function onLoad() {ldelim}
+            {foreach $onLoadBlocks as $script}
+              {$script}
+            {/foreach}
+          {rdelim}
+        </script>
+      {/if}
+    {/block}
+  {/capture}
+  
+{if !$webBridgeAjaxContentLoad && !$ajaxContentLoad}
+  {block name="css"}
+    {$headerCSS}
+  {/block}
+
+  {block name="javascript"}
+    {$headerJavascript}
   {/block}
   
   {if !$autoPhoneNumberDetection}
@@ -98,7 +127,7 @@
   <meta name="HandheldFriendly" content="true" />
   {block name="viewportHeadTag"}
     <meta name="viewport" id="viewport" 
-      content="width=device-width, {if $scalable|default:true}user-scalable=yes{else}user-scalable=no, initial-scale=1.0, maximum-scale=1.0{/if}" />
+      content="width=device-width, {if $scalable|default:true}user-scalable=yes{else}user-scalable=no{/if}, initial-scale=1.0, maximum-scale=1.5" />
   {/block}
   {block name="homeScreenIcon"}
   <link rel="apple-touch-icon" href="{$smarty.const.FULL_URL_BASE|nosecure}common/images/icon.png" />
@@ -131,7 +160,7 @@
           {/if}
           
         {/if}
-        {if $moduleID != 'home' || !$breadcrumb@first}
+        {if $configModule != $homeModuleID || !$breadcrumb@first}
           <a href="{$breadcrumb['url']|sanitize_url}" {if isset($crumbClass)}class="{$crumbClass}{/if}">
             {if $breadcrumb@first}
               <img src="/common/images/title-{$navImageID|default:$configModule}.png" width="{$module_nav_image_width|default:28}" height="{$module_nav_image_height|default:28}" alt="" />
@@ -182,3 +211,18 @@
     {block name="containerStart"}
       <div id="container">
     {/block}
+{else}
+  {block name="ajaxContentHeader"}
+    {foreach $inlineCSSBlocks as $css}
+      <style type="text/css" media="screen">
+        {$css}
+      </style>
+    {/foreach}
+
+    <script type="text/javascript">
+      {foreach $inlineJavascriptBlocks as $script}
+        {$script}
+      {/foreach}
+    </script>
+  {/block}
+{/if}

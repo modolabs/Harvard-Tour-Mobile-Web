@@ -2,16 +2,16 @@
 
 {block name="newsHeader"}
   {if count($sections) > 1}
-    <form method="get" action="index.php" id="category-form">
+    <form method="get" action="/{$configModule}/index" id="category-form">
       <label for="section" class="formlabel">Section:</label>
       {$categorySelect}
       <input type="submit" id="cat_btn" value="Go" />
       
       {foreach $hiddenArgs as $arg => $value}
-        <input type="hidden" name="{$arg}" value="{$value}" />
+        <input type="hidden" name="{$arg}" value="{$value|escape}" />
       {/foreach}
       {foreach $breadcrumbSamePageArgs as $arg => $value}
-        <input type="hidden" name="{$arg}" value="{$value}" />
+        <input type="hidden" name="{$arg}" value="{$value|escape}" />
       {/foreach}
     </form>
   {else}

@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class Watchdog {
     private static $_instance = NULL;
     protected $workingRealpath = false;
@@ -64,6 +73,7 @@ class Watchdog {
                 $delimiter.
                 '^('.preg_quote(realpath(THEME_DIR), $delimiter).'|'.
                       preg_quote(realpath(SITE_DIR).DIRECTORY_SEPARATOR, $delimiter).'app|'.
+                      preg_quote(realpath(SHARED_DIR).DIRECTORY_SEPARATOR, $delimiter).'app|'.
                       preg_quote(realpath(ROOT_DIR).DIRECTORY_SEPARATOR, $delimiter).'app)'.
                   preg_quote(DIRECTORY_SEPARATOR, $delimiter).
                   '(common|modules'.preg_quote(DIRECTORY_SEPARATOR, $delimiter).'[^'.preg_quote(DIRECTORY_SEPARATOR, $delimiter).']+)'.
@@ -120,6 +130,22 @@ class Watchdog {
         // path is invalid or outside Kurogo directories
         return false;
     }
+    
+    protected function _safeFilename($filename) {
+        $ext = '';
+        $parts = explode('.', $filename);
+        if (count($parts) > 1 && ctype_alnum(end($parts))) {
+            $ext = array_pop($parts);
+            $filename = implode('.', $parts);
+        }
+        
+        // Make sure not to double url encode if the name is already encoded
+        $filename = urlencode(urldecode($filename));
+        if ($ext) {
+            $filename .= ".$ext";
+        }
+        return $filename;
+    }
 
     //
     // Shared instance of Watchdog class
@@ -137,6 +163,10 @@ class Watchdog {
     //
     // Public static helper functions
     //
+
+    public static function safeFilename($filename) {
+        return self::sharedInstance()->_safeFilename($filename);
+    }
 
     public static function safePath($path) {
         return self::sharedInstance()->_safePath($path);

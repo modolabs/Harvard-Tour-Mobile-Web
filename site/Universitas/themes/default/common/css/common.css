@@ -10,8 +10,9 @@ body {
 	font: @@@base_font_size@@@/1.33em @@@primary_font_family@@@;
 }
 
-body, th, td, li, option, select, input {
-	/* Primary text color */
+body, th, td, li, option, select, input, textarea {
+	/* Primary text style and color */
+	font-family: @@@primary_font_family@@@;
 	color: @@@primary_text_color@@@;
 }
 
@@ -72,7 +73,7 @@ dt, .label, .legend, .legend h2, .legend h3, .searchlegend {
 /* Text labels for springboards (grids of icons, e.g., homescreen) */
 
 .springboard a, .springboard a:visited {
-	color: @@@primary_link_color@@@;
+	color: @@@focal_link_color@@@;
 }
 
 
@@ -132,7 +133,7 @@ dt, .label, .legend, .legend h2, .legend h3, .searchlegend {
 	border-color: @@@focal_border_color@@@;
 }
 
-.nav, .results, .nav a, .nav a:visited, .nav span.nolink, .results a, .results a:visited  {
+.nav, .results, .nav a, .nav a:visited, .nav span.nolink, .results a, .results a:visited, .tabstrip a  {
 	/* Text color for all navigation and results lists */
 	color: @@@primary_text_color@@@;
 }
@@ -217,7 +218,7 @@ dt, .label, .legend, .legend h2, .legend h3, .searchlegend {
 	background-color: @@@focal_background_color@@@;
 }
 
-#tabs li a {
+#tabs li a, .tabstrip a {
 	/* Text label of unselected tab */
 	color: @@@secondary_text_color@@@;
 }
@@ -237,10 +238,11 @@ dt, .label, .legend, .legend h2, .legend h3, .searchlegend {
 	border-color: @@@focal_border_color@@@;
 }
 
-.tabbody .nested {
+.tabbody .nested, .tabbody ul.nav {
 	/* Navigation list inside a tab body needs a bit of background color to contrast from tab body background */
 	background-color: @@@subfocal_background_color@@@;
 }
+
 
 
 
@@ -288,7 +290,7 @@ h1.slugline, h2.itemtitle {
     font-size: 129.4%;
 	line-height: 1.25em;
 	font-weight: normal;
-    color: @@@heading_text_color@@@;
+    color: @@@primary_heading_color@@@;
 	margin: 0 0 0.75em 0;
 }
 

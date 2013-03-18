@@ -13,14 +13,14 @@
         {if $story['img']}
           <img class="thumbnail" src="{$story['img']}" />
         {else}
-          <img class="thumbnail" src="/modules/{$moduleID}/images/news-placeholder{$imageExt}" />
+          <img class="thumbnail" src="/modules/{$configModule}/images/news-placeholder{$imageExt}" />
         {/if}
         {/if}
         <div class="ellipsis" id="ellipsis_{$ellipsisCount++}">
           <div class="title">{$story["title"]}</div>
           {if $showAuthor}<div class="author">{$story['author']}</div>{/if}
           {if $showPubDate}<div class="pubdate">{$story['pubDate']}</div>{/if}
-          {$story['subtitle']|strip_tags}
+          {$story['subtitle']}
         </div>
       </a>
     </li>

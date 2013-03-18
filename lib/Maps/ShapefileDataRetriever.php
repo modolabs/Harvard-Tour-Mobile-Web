@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class ShapefileDataRetriever extends DataRetriever
 {
     protected $DEFAULT_PARSER_CLASS = 'ShapefileDataParser';
@@ -22,11 +31,7 @@ class ShapefileDataRetriever extends DataRetriever
 
             $zip = new ZipArchive();
             if (strpos($this->fileStem, 'http') === 0 || strpos($this->fileStem, 'ftp') === 0) {
-                $tmpDir = Kurogo::tempDirectory();
-                if (!is_writable($tmpDir)) {
-                    throw new KurogoConfigurationException("Temporary directory $tmpDir not available");
-                }
-                $tmpFile = $tmpDir.'/tmp.zip';
+                $tmpFile = Kurogo::tempFile();
                 copy($this->fileStem, $tmpFile);
                 $zip->open($tmpFile);
             } else {

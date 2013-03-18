@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
   * @package People
   */
@@ -7,12 +17,15 @@
   * @package People
   */
 class DatabasePeopleRetriever extends DatabaseDataRetriever implements PeopleRetriever {
+    const MIN_NAME_SEARCH = 3;
+    
     protected $DEFAULT_PARSER_CLASS = 'DatabasePeopleParser';
     protected $table;
     protected $fieldMap=array();
     protected $personClass = 'DatabasePerson';
     protected $sortFields=array('lastname','firstname');
     protected $attributes = array();
+    protected $searchFields = array();
 
     public function debugInfo() {
         return sprintf("Using Database");
@@ -22,13 +35,29 @@ class DatabasePeopleRetriever extends DatabaseDataRetriever implements PeopleRet
         return false;
     }
     
+    protected function getSearchFields() {
+        if ($this->searchFields) {
+            $defaultFields = array(
+                $this->getField('firstname'),
+                $this->getField('lastname'),
+                $this->getField('email')
+            );
+            
+            if ($searchFields = array_diff($this->searchFields, $defaultFields)) {
+                return array_unique($searchFields);
+            }
+        }
+        
+        return null;
+    }
+    
     protected function buildSearchQuery($searchString) {
         $sql = "";
         $parameters = array();
 
         if (empty($searchString)) {
             $this->errorMsg = "Query was blank";
-            return;
+            return;  
         } elseif (Validator::isValidEmail($searchString)) {
             $sql = sprintf("SELECT %s FROM %s WHERE %s LIKE ?", '*', $this->table, $this->getField('email'));
             $parameters = array('%'.$searchString.'%');
@@ -40,6 +69,9 @@ class DatabasePeopleRetriever extends DatabaseDataRetriever implements PeopleRet
         } elseif ($this->getField('phone') && preg_match('/^[0-9]+/', $searchString)) { //partial phone number
             $sql = sprintf("SELECT %s FROM %s WHERE %s LIKE ?", '*', $this->table, $this->getField('phone'));
             $parameters = array($searchString.'%');
+        } elseif (strlen(trim($searchString)) < self::MIN_NAME_SEARCH) {
+            $sql = sprintf("SELECT %s FROM %s WHERE %s = ? OR %s = ?", '*', $this->table, $this->getField('firstname'), $this->getField('lastname'));
+            $parameters = array($searchString, $searchString);
         } elseif (preg_match('/[A-Za-z]+/', $searchString)) { // assume search by name
 
             $names = preg_split("/\s+/", $searchString);
@@ -84,9 +116,19 @@ class DatabasePeopleRetriever extends DatabaseDataRetriever implements PeopleRet
 
                     $where = implode(" OR ", $where);
             }
-
-            $sql = sprintf("SELECT %s FROM %s WHERE %s ORDER BY %s", '*', $this->table, $where, implode(",", array_map(array($this,'getField'),$this->sortFields)));
             
+            //build search for additional fields
+            if ($searchField = $this->getSearchFields()) {
+                $fieldWhere = array();
+                foreach ($searchField as $field) {
+                    $fieldWhere[] = sprintf("%s LIKE ?", $field);
+                    $parameters[] = "%" . $searchString . "%";
+                }
+                
+                $where .= ' OR ' . implode(" OR ", $fieldWhere);
+            }
+            
+            $sql = sprintf("SELECT %s FROM %s WHERE %s ORDER BY %s", '*', $this->table, $where, implode(",", array_map(array($this,'getField'),$this->sortFields)));
 
         } else {
             $this->errorMsg = "Invalid query";
@@ -97,7 +139,6 @@ class DatabasePeopleRetriever extends DatabaseDataRetriever implements PeopleRet
     }
     
     public function search($searchString, &$response=null) {
-
         $this->setQuery($this->buildSearchQuery($searchString));
         $this->setOption('action', 'search');
         $this->setContext('value', $searchString);
@@ -152,6 +193,10 @@ class DatabasePeopleRetriever extends DatabaseDataRetriever implements PeopleRet
             'phone'=>isset($args['DB_PHONE_FIELD']) ? $args['DB_PHONE_FIELD'] : ''
         );
         
+        if (isset($args['SEARCH_FIELDS'])) {
+            $this->searchFields = $args['SEARCH_FIELDS'];
+        }
+        
         $this->setContext('fieldMap',$this->fieldMap);
     }
 }
@@ -165,7 +210,8 @@ class DatabasePeopleParser extends PeopleDataParser
     }
         
     public function parseResponse(DataResponse $response) {
-
+        $this->setResponse($response);
+        
         $result = $response->getResponse();    
         if (!$result instanceOf PDOStatement) {
             return false;
@@ -182,7 +228,7 @@ class DatabasePeopleParser extends PeopleDataParser
                     $person->setAttributes($row);
                     $results[] = $person;
                 }
-                
+                $this->setTotalItems(count($results));
                 return $results;
                 break;
                 
@@ -195,7 +241,7 @@ class DatabasePeopleParser extends PeopleDataParser
                 }
                 
                 $result->closeCursor();
-                            
+                $this->setTotalItems($person ? 1 : 0);   
                 return $person;
         }
 
@@ -222,8 +268,11 @@ class DatabasePerson extends Person
 
     public function setAttributes($data) {
         foreach ($data as $field=>$value) {
-            $this->attributes[strtolower($field)] = $value;
+            $this->setField(strtolower($field), $value);
         }
     }    
 
+    public function getAttributes(){
+        return $this->attributes;
+    }
 }

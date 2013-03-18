@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
   * @package Module
   * @subpackage News
@@ -10,7 +20,7 @@
   */
 
 if (!function_exists('mb_convert_encoding')) {
-    die('Multibyte String Functions not available (mbstring)');
+    throw new KurogoException('Multibyte String PHP extension is not installed. http://www.php.net/manual/en/book.mbstring.php');
 }
 
 includePackage('News');
@@ -28,6 +38,8 @@ class NewsWebModule extends WebModule {
   protected $showPubDate = false;
   protected $showAuthor = false;
   protected $showLink = false;
+  protected $showBodyPubDate = true;
+  protected $showBodyAuthor = true;
   protected $showBodyThumbnail = true;
   protected $legacyController = false;
   
@@ -148,11 +160,20 @@ class NewsWebModule extends WebModule {
 
         $image = $this->showImages ? $story->getImage() : false;
         
+        if (isset($data['federatedSearch']) && $data['federatedSearch'] && !$this->getOptionalModuleVar('SHOW_DESCRIPTION_IN_FEDERATED_SEARCH', 1)) {
+            $subtitle = '';
+        } else {
+			$subtitle = $this->htmlEncodeFeedString($story->getDescription());
+        	if ($this->getOptionalModuleVar('STRIP_TAGS_IN_DESCRIPTION', 1)) {
+        		$subtitle = Sanitizer::sanitizeHTML($subtitle, array());
+        	}
+        }
+        
         $link = array(
             'title'   => $this->htmlEncodeFeedString($story->getTitle()),
             'pubDate' => $date,
             'author'  => $this->htmlEncodeFeedString($story->getAuthor()),
-            'subtitle'=> $this->htmlEncodeFeedString($story->getDescription()),
+            'subtitle'=> $subtitle,
             'img'     => $image ? $image->getURL() : ''
         );
         
@@ -203,6 +224,8 @@ class NewsWebModule extends WebModule {
         $this->showPubDate = isset($feedData['SHOW_PUBDATE']) ? $feedData['SHOW_PUBDATE'] : false;
         $this->showAuthor = isset($feedData['SHOW_AUTHOR']) ? $feedData['SHOW_AUTHOR'] : false;
         $this->showLink = isset($feedData['SHOW_LINK']) ? $feedData['SHOW_LINK'] : false;
+        $this->showBodyPubDate = isset($feedData['SHOW_BODY_PUBDATE']) ? $feedData['SHOW_BODY_PUBDATE'] : true;
+        $this->showBodyAuthor = isset($feedData['SHOW_BODY_AUTHOR']) ? $feedData['SHOW_BODY_AUTHOR'] : true;
         $this->showBodyThumbnail = isset($feedData['SHOW_BODY_THUMBNAIL']) ? $feedData['SHOW_BODY_THUMBNAIL'] : true;
     }    
     
@@ -234,8 +257,7 @@ class NewsWebModule extends WebModule {
         
         if (!$content = $this->cleanContent($story->getContent())) {
           if ($url = $story->getLink()) {
-              header("Location: $url");
-              exit();
+              Kurogo::redirectToURL($url);
           } 
           
           // no content or link. Attempt to get description
@@ -266,9 +288,10 @@ class NewsWebModule extends WebModule {
         $this->assign('author',        $this->htmlEncodeFeedString($story->getAuthor()));
         $this->assign('image',         $this->getImageForStory($story));
         $this->assign('link',          $story->getLink());
-        $this->assign('ajax',          $this->getArg('ajax'));
         $this->assign('showLink',      $this->showLink);
         $this->assign('showBodyThumbnail', $this->showBodyThumbnail);
+        $this->assign('showBodyPubDate', $this->showBodyPubDate);
+        $this->assign('showBodyAuthor', $this->showBodyAuthor);
         break;
         
       case 'search':
@@ -334,30 +357,35 @@ class NewsWebModule extends WebModule {
         break;
         
       case 'pane':
-        $start = 0;
-        if ($this->legacyController) {
-            $items = $this->feed->items($start, $this->maxPerPane);
-        } else {
-            $this->feed->setStart(0);
-            $this->feed->setLimit($this->maxPerPane);
-            $items = $this->feed->items();
+        if ($this->ajaxContentLoad) {
+            $start = 0;
+            if ($this->legacyController) {
+                $items = $this->feed->items($start, $this->maxPerPane);
+            } else {
+                $this->feed->setStart(0);
+                $this->feed->setLimit($this->maxPerPane);
+                $items = $this->feed->items();
+            }
+            $stories = array();
+            $options = array(
+                'noBreadcrumbs'=>true,
+                'section' => $this->feedIndex
+            );
+    
+            foreach ($items as $story) {
+                $stories[] = $this->linkForItem($story, $options);
+            }
+            
+            foreach ($stories as $i => $story) {
+                $stories[$i]['url'] = $this->buildURL('index').
+                    '#'.urlencode(FULL_URL_PREFIX.ltrim($story['url'], '/'));
+            }
+            
+            $this->assign('showImages', $this->showImages);
+            $this->assign('stories', $stories);
         }
-        $stories = array();
-        $options = array(
-            'noBreadcrumbs'=>true,
-            'section' => $this->feedIndex
-        );
-
-        foreach ($items as $story) {
-            $stories[] = $this->linkForItem($story, $options);
-        }
-        
-        foreach ($stories as $i => $story) {
-            $stories[$i]['url'] = $this->buildURL('index').
-                '#'.urlencode(FULL_URL_PREFIX.ltrim($story['url'], '/'));
-        }
-        
-        $this->assign('stories', $stories);
+        $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
+        $this->addInternalJavascript('/common/javascript/lib/paneStories.js');
         break;
       
       case 'index':

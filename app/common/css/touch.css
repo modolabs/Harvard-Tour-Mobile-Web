@@ -324,6 +324,7 @@ a.module img {
 	padding: 0;	   
 	margin: 0.5em; 
 	border: 1px solid #ccc;
+	position: relative;
 }
 
 .nav li {	
@@ -341,7 +342,7 @@ a.module img {
   padding-top: 2px;
 }
 
-.nav span.nolink {
+.nav span.nolink, .results span.nolink {
 	display: block;
 	background-repeat: no-repeat;
 	background-position: right; 
@@ -351,6 +352,7 @@ a.module img {
 
 .nav a  {
 	display: block;
+	position: relative;
 	padding: 0.6em 30px 0.6em 0.5em;
 	margin: -0.6em -0.5em;	 
 	background-image: url(/common/images/action-arrow.gif); 
@@ -432,12 +434,14 @@ ul.focal li:first-child {
 	margin: 0.5em 0; 
 	border-top: 1px solid #ccc;
 	border-bottom: 1px solid #ccc;
+	position: relative;
 }
 
 .results li {	
 	list-style-type: none;		
 	border-top: 1px solid #ccc;
 	padding: 0.6em 0.5em;
+	position: relative;
 }
 
 .results li:first-child {
@@ -446,6 +450,7 @@ ul.focal li:first-child {
 
 .results a  {
 	display: block;
+	position: relative;
 	padding: 0.6em 2em 0.6em 0.5em;
 	margin: -0.6em -0.5em;	 
 	background-image: url(/common/images/action-arrow.gif); 
@@ -580,20 +585,20 @@ ul.focal li:first-child {
 }
 
 .label {
-    display: block;
-    width: 6em;
-    font-size: 85%;
-    position: relative;
-    line-height: 1.3em;
-    font-weight: bold;
-    text-align: right;
-    vertical-align: top;
+  display: block;
+  font-size: 85%;
+  line-height: 1.3em;
+  font-weight: bold;
+  text-align: right;
+  vertical-align: top;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .value {
     display: block;
-    margin-top: -1.2em;
-    margin-left: 5.5em;
     font-size: 100%;
     min-height: 1.3em;
     line-height: 1.3em;
@@ -854,8 +859,12 @@ h2.icon {
 	padding: 0.6em 0.33em;
 }
 
+#tabscontainer {
+	padding: 0 10px;
+}
+
 #tabbodies {
-	margin: -12px -0.5em 0 -0.5em;
+	margin: -10px -10px 0 -10px;
 	clear: both;
 	border-top: 1px solid #bbb;
 }
@@ -883,8 +892,11 @@ h2.icon {
 	margin-top: 2px;
 }
 
-.tabstrip ,
-#tabstrip {
+.tabbody ul.results {
+	margin: 0 -0.5em;
+}
+
+.tabstrip {
 	list-style-type: none;
 	height: 32px;
 	margin: 0;
@@ -893,28 +905,29 @@ h2.icon {
 	overflow: hidden;
 }
 
-.tabstrip li ,
-#tabstrip li {
+.tabstrip li {
 	float: left;
 	margin: 0;
 	text-align: center;
 	height: 33px;
 }
 
-.tabstrip a ,
-#tabstrip a {
+.tabstrip a, .tabstrip a:visited {
 	display: block;
 	height: 32px;
 	line-height: 32px;
 	text-decoration: none;
-	color: #fff;
-	background: url(/common/images/tabstrip.jpg) repeat-x;
 	border-right: 1px solid #999;
 }	
 
-.tabstrip li.active a ,
-#tabstrip li.active a {
-	background-image: url(/common/images/tabstrip-active.jpg);
+.focal .tabstrip a, .tabbody .tabstrip a {
+	background-color: #f0f0f0;
+	color: #505050;
+}
+
+.tabstrip li.active a {
+	background-color: #444;
+	color: #fff;
 }
 
 .twotabs li {

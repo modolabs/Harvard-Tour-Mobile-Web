@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 includePackage('Maps', 'Shapefile');
 
 function ieee64FromLong($arg) {
@@ -47,7 +56,10 @@ class ShapefileDataParser extends BinaryFileParser implements MapDataParser
         //'25' => 'addPolygonM',
         //'28' => 'addMultiPointM',
         //'31' => 'addMultiPatch',
-        );
+    );
+
+    // aliases for placemark searching
+    protected $aliases;
 
     public function init($args) {
         parent::init($args);
@@ -61,6 +73,10 @@ class ShapefileDataParser extends BinaryFileParser implements MapDataParser
         }
 
         $this->feedId = mapIdForFeedData($args);
+
+        if(isset($args['ALIASES'])) {
+            $this->aliases = $args['ALIASES'];
+        }
     }
 
     public function parseResponse(DataResponse $response) {
@@ -247,6 +263,7 @@ class ShapefileDataParser extends BinaryFileParser implements MapDataParser
         }
         $geometry = new MapBasePoint($struct);
         $point = new ShapefilePlacemark($geometry);
+        $point->setAliases($this->aliases);
         return $point;
     }
 
@@ -277,6 +294,7 @@ class ShapefileDataParser extends BinaryFileParser implements MapDataParser
             $geometry = $this->mapProjector->projectGeometry($geometry);
         }
         $polyline = new ShapefilePlacemark($geometry);
+        $polyline->setAliases($this->aliases);
         return $polyline;
     }
 
@@ -295,6 +313,7 @@ class ShapefileDataParser extends BinaryFileParser implements MapDataParser
             $geometry = $this->mapProjector->projectGeometry($geometry);
         }
         $polygon = new ShapefilePlacemark($geometry);
+        $polygon->setAliases($this->aliases);
         return $polygon;
     }
 

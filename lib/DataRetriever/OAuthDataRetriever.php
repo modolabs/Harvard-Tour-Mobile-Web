@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class OAuthDataRetriever extends URLDataRetriever
 {
     protected $oauthVersion='1.0';
@@ -9,6 +18,7 @@ class OAuthDataRetriever extends URLDataRetriever
     protected $consumerSecret;
     protected $signatureMethod = 'HMAC-SHA1';
     protected $requiresToken = false;
+    protected $requiresExpect = true;
     protected $cert;
     protected $OAuthProvider;
     protected $OAuthProviderClass;
@@ -304,7 +314,9 @@ class OAuthDataRetriever extends URLDataRetriever
         }
         
 	    $headers['Authorization'] = $this->getAuthorizationHeader();
-	    $headers['Expect'] = '';
+	    if ($this->requiresExpect) {
+            $headers['Expect'] = '';
+        }
         return $headers;        
     }
     
@@ -315,12 +327,13 @@ class OAuthDataRetriever extends URLDataRetriever
             return $response;
         }
 
+        $startTime = microtime(true);
         $headers = $this->headers(true);
         $response = parent::retrieveResponse();
         
         //if there is a location header we need to re-sign before redirecting
         if ($redirectURL = $response->getHeader("Location")) {
-            Kurogo::log(LOG_WARNING, "Found Location Header", 'oauth');
+            Kurogo::log(LOG_NOTICE, "Found Location Header", 'oauth');
 		    $redirectParts = parse_url($redirectURL);
 		    //if the redirect does not include the host or scheme, use the scheme/host from the original URL
             if (!isset($redirectParts['scheme']) || !isset($redirectParts['host'])) {
@@ -339,9 +352,12 @@ class OAuthDataRetriever extends URLDataRetriever
 
 		    //reset headers
 		    $this->setHeaders($headers);
-            Kurogo::log(LOG_DEBUG, "Redirecting to $this->baseURL", 'oauth');
+            Kurogo::log(LOG_INFO, "Redirecting to $this->baseURL", 'oauth');
             $response =  $this->retrieveResponse();
         }
+        
+        //reset the start time to include the whole process
+        $response->setStartTime($startTime);
         
         return $response;
     }

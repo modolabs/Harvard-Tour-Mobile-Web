@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
   * ICalendar
   * The ICal* classes in this file together partially implement RFC 2445.
@@ -16,6 +26,11 @@ class ICSDataParser extends DataParser
     protected $calendarClass='ICalendar';
     protected function unfold($text) {
         return str_replace("\n ", "", $text);
+    }
+    
+    protected function cleanContent($contents) {
+        $contents = str_replace("\r\n", "\n", trim($contents));
+        return $contents;
     }
 
     public function getEventCategories()
@@ -50,8 +65,9 @@ class ICSDataParser extends DataParser
             $contentline['value'] = trim(ICalendar::ical_unescape_text($parts[2]));
             $contentline['params'] = array();
             foreach ($params as $param) {
-                preg_match("/(.*?)=(.*)/", $param, $param_bits);
-                $contentline['params'][$param_bits[1]] = str_replace("\"", "", $param_bits[2]);
+                if (preg_match("/(.*?)=(.*)/", $param, $param_bits)) {
+                    $contentline['params'][$param_bits[1]] = str_replace("\"", "", $param_bits[2]);
+                }
             }
         } else {
             Kurogo::log(LOG_WARNING, "Found an invalid ICS line: $line", 'data');
@@ -100,7 +116,8 @@ class ICSDataParser extends DataParser
         }
         $nesting = array();
         $nestingType = array();
-        $contents = str_replace("\r\n", "\n", $contents);
+        //all leading and trailing whitespace will be ignored
+        $contents = $this->cleanContent($contents);
         $lines = explode("\n", $this->unfold($contents));
         foreach ($lines as $line) {
             $contentline = $this->contentline($line);

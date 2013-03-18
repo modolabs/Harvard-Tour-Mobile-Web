@@ -1,3 +1,4 @@
+{if !$webBridgeAjaxContentLoad && !$ajaxContentLoad}
   {if $moduleDebug && count($moduleDebugStrings)}
     <p class="legend nonfocal">
       {foreach $moduleDebugStrings as $string}
@@ -38,16 +39,21 @@
   {/block}
 
   {block name="footer"}
-    <div id="footer">
-      {$footerHTML}
-    </div>
+    {if isset($customFooter)}
+      {$customFooter|default:''}
+    {else}
+      <div id="footer">
+        {$footerHTML}
+      </div>
+    {/if}
   {/block}
 
   {block name="deviceDetection"}
-    {if $moduleID == 'home' && $showDeviceDetection}
+    {if $configModule == $homeModuleID && $showDeviceDetection}
       <table class="devicedetection">
         <tr><th>Pagetype:</th><td>{$pagetype}</td></tr>
         <tr><th>Platform:</th><td>{$platform}</td></tr>
+        <tr><th>Platform:</th><td>{$browser}</td></tr>
         <tr><th>User Agent:</th><td>{$smarty.server.HTTP_USER_AGENT}</td></tr>
       </table>
     {/if}
@@ -69,13 +75,6 @@
         {rdelim})();
       </script>
     {/if}
-    {if strlen($PERCENT_MOBILE_ID)}
-        <script>
-           <!--
-            percent_mobile_track('{$PERCENT_MOBILE_ID}', '{$pageTitle}');
-            -->
-        </script>
-    {/if}
   {/block}
 {block name="containerEnd"}
 </div>
@@ -86,3 +85,26 @@
 {/block}
 </body>
 </html>
+{else}
+  {block name="ajaxContentFooter"}
+    <script type="text/javascript">
+      {foreach $inlineJavascriptFooterBlocks as $script}
+        {$script}
+      {/foreach}
+      
+      {foreach $onLoadBlocks as $script}
+        {$script}
+      {/foreach}
+    
+      {if count($onOrientationChangeBlocks)}
+        addOnOrientationChangeCallback(function () {ldelim}
+          {foreach $onOrientationChangeBlocks as $script}
+            {$script}
+          {/foreach}
+        {rdelim});
+      {/if}
+      
+      onOrientationChange();
+    </script>
+  {/block}
+{/if}

@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 includePackage('News');
 class NewsAPIModule extends APIModule {
 
@@ -47,11 +56,11 @@ class NewsAPIModule extends APIModule {
                 foreach ($feeds as $index => $feedData) {
                     $response[] = array('id' => strval($index),
                     					'title' => strip_tags($feedData['TITLE']),
-                                        'show_images'=>isset($feedData['SHOW_IMAGES']) ? $feedData['SHOW_IMAGES'] : true,
-                                        'show_pubdate'=>isset($feedData['SHOW_PUBDATE']) ? $feedData['SHOW_PUBDATE'] : false,
-                                        'show_author' => isset($feedData['SHOW_AUTHOR']) ? $feedData['SHOW_AUTHOR'] : false,
-                                        'show_link' => isset($feedData['SHOW_LINK']) ? $feedData['SHOW_LINK'] : false,
-                                        'show_body_thumbnail' => isset($feedData['SHOW_BODY_THUMBNAIL']) ? $feedData['SHOW_BODY_THUMBNAIL'] : true
+                                        'show_images'=>isset($feedData['SHOW_IMAGES']) ? (bool) $feedData['SHOW_IMAGES'] : true,
+                                        'show_pubdate'=>isset($feedData['SHOW_PUBDATE']) ? (bool) $feedData['SHOW_PUBDATE'] : false,
+                                        'show_author' => isset($feedData['SHOW_AUTHOR']) ? (bool) $feedData['SHOW_AUTHOR'] : false,
+                                        'show_link' => isset($feedData['SHOW_LINK']) ? (bool) $feedData['SHOW_LINK'] : false,
+                                        'show_body_thumbnail' => isset($feedData['SHOW_BODY_THUMBNAIL']) ? (bool) $feedData['SHOW_BODY_THUMBNAIL'] : true
                     					);
                 }
                 $this->setResponse($response);
@@ -84,13 +93,17 @@ class NewsAPIModule extends APIModule {
                  break;
         }
     }
+    
+    protected function encodeValue($value) {
+        return trim(mb_convert_encoding($value, 'UTF-8', 'HTML-ENTITIES'));
+    }
 
     protected function formatStory($story, $mode) {
        $item = array(
             'GUID'        => $story->getGUID(),
             'link'        => $story->getLink(),
-            'title'       => strip_tags($story->getTitle()),
-            'description' => $story->getDescription(),
+            'title'       => $this->encodeValue(strip_tags($story->getTitle())),
+            'description' => $this->encodeValue(strip_tags($story->getDescription())),
             'pubDate'     => $story->getPubTimestamp()
        );
 

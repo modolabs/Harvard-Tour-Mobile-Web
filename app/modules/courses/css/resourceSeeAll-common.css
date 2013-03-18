@@ -1,0 +1,17 @@
+.results li.icon {
+    min-height: 48px;
+    padding: 0;
+}
+
+.results li.icon a {
+    margin: 0;
+    padding: 10px 30px 10px 32px;
+    line-height: 1.2em;
+}
+
+.results li.icon img {
+    width: 16px; 
+    height: 16px;
+    top: 12px;
+    left: 8px;
+}

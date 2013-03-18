@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 define('MILES_PER_METER', 0.000621371192);
 define('FEET_PER_METER', 3.2808399);
 define('GEOGRAPHIC_PROJECTION', 4326);
@@ -121,7 +130,7 @@ function mapModelFromFeedData($feedData) {
 }
 
 function mapIdForFeedData(Array $feedData) {
-    $identifier = $feedData['TITLE'];
+    $identifier = Kurogo::arrayVal($feedData, 'TITLE', '');
     if (isset($feedData['BASE_URL'])) {
         $identifier .= $feedData['BASE_URL'];
     } else {
@@ -190,6 +199,47 @@ function encodeBase64URLSafe($value) {
 // Decode a string from URL-safe base64
 function decodeBase64URLSafe($value) {
     return base64_decode(str_replace(array('-', '_'), array('+', '/'), $value));
+}
+
+function filterContent($search, $content) {
+    if(stripos($content, $search) === false) {
+        return false;
+    }else {
+        return true;
+    }
+}
+
+function stringFilter($search, $contents, $aliasMap = array()) {
+    $search = trim($search);
+    foreach($contents as $key => $content) {
+        switch($key) {
+            case "title":
+            case "subtitle":
+                // find search for alias
+                if($aliasMap && isset($aliasMap[$content])) {
+                    $aliasContent = $aliasMap[$content];
+                    if(filterContent($search, $aliasContent)) {
+                        return true;
+                    }
+                    // find content in search
+                    if(strlen($aliasContent) >= 3 && filterContent($aliasContent, $search)) {
+                        return true;
+                    }
+                }
+                // find content in search
+                // some cases, subtitle only contains 1 character
+                if(strlen($content) >= 3 && filterContent($content, $search)) {
+                    return true;
+                }
+            default:
+                // find current search
+                if(filterContent($search, $content)) {
+                    return true;
+                }
+        }
+    }
+
+    return false;
 }
 
 class MapsAdmin

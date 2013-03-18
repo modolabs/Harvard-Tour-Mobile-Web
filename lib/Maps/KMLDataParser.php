@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 // http://schemas.opengis.net/kml/2.2.0/ogckml22.xsd
 // http://portal.opengeospatial.org/files/?artifact_id=27810
 // http://code.google.com/apis/kml/documentation/kmlreference.html
@@ -15,6 +24,8 @@ class KMLDataParser extends XMLDataParser implements MapDataParser
     protected $folders = array();
     protected $placemarks = array();
     protected $title;
+    // aliases for placemark searching
+    protected $aliases;
 
     protected $parseMode=self::PARSE_MODE_STRING;
     
@@ -32,6 +43,9 @@ class KMLDataParser extends XMLDataParser implements MapDataParser
     public function init($args) {
         parent::init($args);
         $this->feedId = mapIdForFeedData($args);
+        if(isset($args['ALIASES'])) {
+            $this->aliases = $args['ALIASES'];
+        }
     }
 
     /////// MapDataParser
@@ -120,6 +134,7 @@ class KMLDataParser extends XMLDataParser implements MapDataParser
                 break;
             case 'PLACEMARK':
                 $placemark = new KMLPlacemark($name, $attribs);
+                $placemark->setAliases($this->aliases);
                 $parent = end($this->elementStack);
                 $this->elementStack[] = $placemark;
 

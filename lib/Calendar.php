@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 includePackage('DateTime');
 require_once(LIB_DIR . '/Calendar/ICalendar.php');
 
@@ -13,6 +22,15 @@ interface CalendarInterface {
 
 interface CalendarEvent {
     public function init($args);
+    public function get_location_coordinates();
+    public function get_location();
+    public function get_uid();
+    public function get_start();
+    public function get_summary();
+    public function get_description();
+    public function get_end();
+    public function isAllDay();
+    public function get_attribute($field);
 }
 
 class Calendar 

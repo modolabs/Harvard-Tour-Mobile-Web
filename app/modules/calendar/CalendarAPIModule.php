@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 Kurogo::includePackage('Calendar');
 
 class CalendarAPIModule extends APIModule
@@ -8,7 +17,7 @@ class CalendarAPIModule extends APIModule
 
     protected $id = 'calendar';
     protected $vmin = 1;
-    protected $vmax = 2;
+    protected $vmax = 3;
 
     protected $timezone;
     protected $fieldConfig;
@@ -43,6 +52,23 @@ class CalendarAPIModule extends APIModule
             }
         }
         return $calendars;
+    }
+
+    protected function getEventCategories() {
+    
+        $categories = array();
+    
+        if ($this->getOptionalModuleVar('SHOW_CATEGORIES', false, 'categories')) {
+            $type     = $this->getArg('type', 'static');
+            $calendar = $this->getArg('calendar', $this->getDefaultFeed($type));
+            $limit    = $this->getArg('limit', $this->getOptionalModuleVar('SHOW_POPULAR_CATEGORIES',null,'categories'));
+    
+            $feed = $this->getFeed($calendar, $type);
+            
+            $categories = $feed->getEventCategories($limit);
+        }
+        
+        return $categories;
     }
 
     // modified from CalendarWebModule
@@ -175,14 +201,14 @@ class CalendarAPIModule extends APIModule
         }
     }
 
-    protected function apiArrayFromEvent(ICalEvent $event, $version) {
+    protected function apiArrayFromEvent(CalendarEvent $event, $version) {
         $standardAttributes = array(
           'datetime', 'start', 'end', 'uid', 'summary', 'description', 'location', 'geo');
         
         $result = array(
             'id'            => $event->get_uid(),
             'title'         => $event->get_summary(),
-            'description'   => $event->get_description(),
+            'description'   => nl2br($event->get_description()),
             'start'         => $event->get_start(),
             'end'           => $event->get_end(),
             'allday'        => ($event->isAllDay()),
@@ -307,10 +333,23 @@ class CalendarAPIModule extends APIModule
 
                 // default to the full day that includes current time
                 $current = $this->getArg('time', time());
-                $start   = $this->getStartArg($current);
                 $feed    = $this->getFeed($calendar, $type);
-                $feed->setStartDate($start);
-                
+
+				// in v3 the start parameter is used to paginate (along with limit)
+				if ($this->requestedVersion >= 3) {
+					$start = new DateTime(date('Y-m-d H:i:s', $current), $this->timezone);
+					$start->setTime(0,0,0);
+					$startEvent = $this->getArg('start', 0);
+				} else {
+					$start = $this->getStartArg($current);
+					$startEvent = 0;
+				}
+
+				$feed->setStartDate($start);
+				if (!$this->legacyController) {
+					$feed->setStart($startEvent);
+				}
+
                 if ($limit = $this->getArg('limit')) {
                     if (!$this->legacyController) {
                         $feed->setLimit($limit);
@@ -324,7 +363,7 @@ class CalendarAPIModule extends APIModule
                     if ($catid) {
                         $feed->addFilter('category', $catid);
                     }
-                    $iCalEvents = $feed->items(0, $limit);
+                    $iCalEvents = $feed->items($startEvent, $limit);
                 } else if ($catid) {
                     $iCalEvents = $feed->getEventsByCategory($catid);
                 } else {
@@ -468,15 +507,10 @@ class CalendarAPIModule extends APIModule
                 break;
 
             case 'categories':
-                $type     = $this->getArg('type', 'static');
-                $calendar = $this->getArg('calendar', $this->getDefaultFeed($type));
-                $limit    = $this->getArg('limit', null);
+                $categories = $this->getEventCategories();
 
-                $feed = $this->getFeed($calendar, $type);
                 
-                $categories = $feed->getEventCategories($limit);
                 $response = $this->apiArrayFromCategories($categories);
-                
                 $this->setResponse($response);
                 $this->setResponseVersion($responseVersion);
                 break;

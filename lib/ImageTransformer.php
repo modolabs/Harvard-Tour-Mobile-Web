@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class ImageTransformer
 {
     protected $rules=array();
@@ -27,29 +36,43 @@ class ImageTransformer
     }
 
     public function getBoundingBox($width, $height) {
+        $destWidth = $this->rules['max_width'];
+        $destHeight= $this->rules['max_height'];
         if (isset($this->rules['crop']) && isset($this->rules['max_width']) && isset($this->rules['max_height'])) {
             // KGO-282
-            $destWidth = $this->rules['max_width'];
-            $destHeight= $this->rules['max_height'];
             
             // fit width first
             $newHeight = $width * $destHeight / $destWidth;
             // fit height second
             $newWidth = $height * $destWidth / $destHeight;
             // decide crop or fill
-            if ($destHeight > $height && $destWidth > $width){
+            if ($destHeight >= $height && $destWidth >= $width){
                 // only one case fill
                 if (isset($this->rules['rgb'])) {
-                    return array($this->rules['max_width'], $this->rules['max_height'], $width, $height, true, $this->rules['rgb']);
+                    return array($destWidth, $destHeight, $width, $height, true, $this->rules['rgb']);
                 } else {
-                    return array($this->rules['max_width'], $this->rules['max_height'], $width, $height, true);
+                    return array($destWidth, $destHeight, $width, $height, true);
                 }
             } elseif($newHeight > $height){
                 $newHeight = $height;
             } else {
                 $newWidth = $width;
             }
-            return array($this->rules['max_width'], $this->rules['max_height'], $newWidth, $newHeight);
+            return array($destWidth, $destHeight, $newWidth, $newHeight);
+        }elseif (isset($this->rules['rgb']) && isset($this->rules['max_width']) && isset($this->rules['max_height'])) {
+            // shrink and fill
+            if($width > $destWidth || $height > $destHeight) {
+                // shrink
+                $aspect = round($width/$height, 4);
+                if($width > $height) {
+                    $width = $destWidth;
+                    $height = ceil($destWidth / $aspect);;
+                }else {
+                    $width = ceil($destHeight * $aspect);
+                    $height = $destHeight;
+                }
+            }
+            return array($destWidth, $destHeight, $width, $height, true, $this->rules['rgb']);
         }
 
         $aspect = round($width/$height, 4);

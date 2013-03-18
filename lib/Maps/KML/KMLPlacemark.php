@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class KMLPlacemark extends XMLElement implements Placemark
 {
     protected $name = 'Placemark';
@@ -14,17 +23,25 @@ class KMLPlacemark extends XMLElement implements Placemark
     protected $geometry;
     protected $urlParams = array();
     protected $categories = array();
+    // aliases map for placemark searching
+    protected $aliases = array();
 
     private $fields = array();
+
+    public function setAliases($aliases) {
+        $this->aliases = $aliases;
+    }
 
     public function filterItem($filters) {
         foreach ($filters as $filter=>$value) {
             switch ($filter) {
                 case 'search':
-                    if (stripos($this->getTitle(), $value) === FALSE && stripos($this->getSubTitle(), $value) === FALSE && stripos($this->getDescription(), $value) === FALSE) {
-                        return false;
-                    }
-                    break;
+                    $contents = array(
+                        'title' => $this->getTitle(),
+                        'subtitle' => $this->getSubTitle(),
+                        'description' => $this->getDescription(),
+                    );
+                    return stringFilter($value, $contents, $this->aliases);
                 case 'min':
                     if (!isset($center)) {
                         $center = $this->getGeometry()->getCenterCoordinate();
@@ -77,7 +94,7 @@ class KMLPlacemark extends XMLElement implements Placemark
         return $this->snippet;
     }
     
-    public function getDescription() {
+    public function getDescription($suppressFileds=null) {
         return $this->description;
     }
     

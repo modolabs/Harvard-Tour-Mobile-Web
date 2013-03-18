@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
   * @package Module
   * @subpackage People
@@ -6,7 +16,7 @@
 Kurogo::includePackage('People');
 
 if (!function_exists('mb_convert_encoding')) {
-    die('Multibyte String Functions not available (mbstring)');
+    throw new KurogoException('Multibyte String PHP extension is not installed. http://www.php.net/manual/en/book.mbstring.php');
 }
 
 /**
@@ -21,9 +31,11 @@ class PeopleWebModule extends WebModule {
     protected $detailAttributes = array();
     protected $encoding = 'UTF-8';
     protected $feeds=array();
+    protected $feed;
     protected $contactGroups = array();
     protected $controllers = array();
     protected $legacyController = true;
+    protected $defaultAllowRobots = false; // Require sites to intentionally turn this on
 
     protected function detailURLForBookmark($aBookmark) {
         parse_str($aBookmark, $params);
@@ -59,7 +71,8 @@ class PeopleWebModule extends WebModule {
         if (isset($info['format'])) {
             $value = vsprintf($this->replaceFormat($info['format']), $values);
         } else {
-            $value = implode(' ', $values);
+            $delimiter = isset($info['delimiter']) ? $info['delimiter'] : ' ';
+            $value = implode($delimiter, $values);
         }
     
         $detail = array(
@@ -85,6 +98,18 @@ class PeopleWebModule extends WebModule {
                 $detail['class'] = 'phone';
                 break;
  
+            case 'imgdata':
+                $detail['title'] = "";
+                $detail['class'] = 'img';
+                $detail['img'] = $this->buildURL('photo', array('id'=>$person->getID()));
+                break;
+
+            case 'imgurl':
+                $detail['title'] = "";
+                $detail['class'] = 'img';
+                $detail['img'] = $value;
+                break;
+
             // compatibility
             case 'map':
                 $info['module'] = 'map';
@@ -162,7 +187,8 @@ class PeopleWebModule extends WebModule {
     }
     
     public function searchItems($searchTerms, $limit=null, $options=null) {
-        $feed = isset($options['feed']) ? $options['feed'] : 'people';
+        $feed = $this->feed ? $this->feed : $this->getDefaultFeed();
+        //$feed = isset($options['feed']) ? $options['feed'] : 'people';
         $PeopleController = $this->getFeed($feed);
         $people = $PeopleController->search($searchTerms);
         return $people;
@@ -197,26 +223,59 @@ class PeopleWebModule extends WebModule {
         }
     }
 
-  
+    protected function getDefaultFeed() {
+        if ($this->feeds) {
+            return current(array_keys($this->feeds));
+        }
+        return '';
+    }
+    
+    protected function getSearchFeeds() {
+        $feeds = array();
+        foreach ($this->feeds as $feed => $feedData) {
+            $feeds[$feed] = Kurogo::arrayVal($feedData,'TITLE', $feed);
+        }
+        return $feeds;
+    }
     protected function initialize() {
         $this->feeds = $this->loadFeedData();
-        $this->detailFields = $this->loadPageConfigFile('detail', 'detailFields');
-        foreach($this->detailFields as $field => $info) {
-            $this->detailAttributes = array_merge($this->detailAttributes, $info['attributes']);
+    }
+
+    protected function loadDetailAttributes($feed){
+        if($this->feeds){
+            if(count($this->feeds) == 1){
+                # Load detail fields from page-detail.ini
+                $this->detailFields = $this->loadPageConfigFile('detail', 'detailFields');
+            }else{
+                # Load detail fields from page-detail-[feed].ini
+                $detailConfig = "detail-$feed";
+                $this->detailFields = $this->loadPageConfigFile($detailConfig, 'detailFields');
+            }
+            foreach($this->detailFields as $field => $info) {
+                $this->detailAttributes = array_merge($this->detailAttributes, $info['attributes']);
+            }
+            $this->detailAttributes = array_values(array_unique($this->detailAttributes));
         }
-        $this->detailAttributes = array_values(array_unique($this->detailAttributes));
     }
     
     public function linkforItem(KurogoObject $person, $options=null) {    
+        $title = $person->getName() ? $this->htmlEncodeString($person->getName()) : $this->getLocalizedString('NO_HEADER_TITLE');
         return array(
-            'title'=>$this->htmlEncodeString($person->getName()),
+            'title'=>$title,
             'url'  =>$this->buildBreadcrumbURL('detail', array(
-                                            'uid'    => $person->getId(),
-                                            'filter' => $this->getArg('filter')
+                                            'id'    => $person->getId(),
+                                            'filter' => self::argVal($options,'filter'),
+                                            'feed'   => $this->feed
                     ))
         );
     }
 
+    public function linkForValue($value, Module $callingModule, KurogoObject $otherValue=null) {
+        return array_merge(
+            parent::linkForValue($value, $callingModule, $otherValue), 
+            array('class' => 'action people'));
+    }
+    
     protected function getContactGroup($group) {
         if (!$this->contactGroups) {
             $this->contactGroups = $this->getModuleSections('contacts-groups');
@@ -258,23 +317,23 @@ class PeopleWebModule extends WebModule {
         return $contacts;
     }
     
-
     protected function initializeForPage() {
-
-        $PeopleController = $this->getFeed('people');
+        $this->feed = $this->getArg('feed', $this->getDefaultFeed());
+        $this->loadDetailAttributes($this->feed);
+        $PeopleController = $this->getFeed($this->feed);
         
+        $this->assign('selectedFeed', $this->feed);
         if (Kurogo::getSiteVar('MODULE_DEBUG')) {
             $this->addModuleDebugString($PeopleController->debugInfo());
         }
-    
+
         switch ($this->page) {
         
             case 'detail':
-                if ($uid = $this->getArg('uid')) {
+                if ($uid = $this->getArg(array('id', 'uid'))) {
                     $person = $PeopleController->getUser($uid);
           
                     if ($person) {
-                    
                         $this->setLogData($uid, $person->getName());
                         $personDetails =  $this->formatPersonDetails($person);
                         // Bookmark
@@ -287,6 +346,16 @@ class PeopleWebModule extends WebModule {
                             $cookieID = http_build_query($cookieParams);
                             $this->generateBookmarkOptions($cookieID);
                         }
+                        
+                        $headerSectionKeys = array('HEADER_THUMBNAIL', 'HEADER_TITLE', 'HEADER_SUBTITLE');
+                        $headerSections = array();
+                        foreach ($headerSectionKeys as $section) {
+                            if (isset($personDetails[$section])) {
+                                $headerSections[$section] = $personDetails[$section];
+                                unset($personDetails[$section]);
+                            }
+                        }
+                        $this->assign('headerSections', $headerSections);
                         $this->assign('personDetails', $personDetails);
                         break;
                     } else {
@@ -296,27 +365,52 @@ class PeopleWebModule extends WebModule {
                     $this->assign('searchError', 'No username specified');
                 }
                 break;
+                
+            case 'photo':
+                if ($uid = $this->getArg(array('id', 'uid'))) {
+                    if ($person = $PeopleController->getUser($uid)) {
+                        if ($data = $person->getPhotoData()) {
+                            header("Content-type: ".$person->getPhotoMIMEType());
+                            echo $data;
+                            exit(0);
+                        }
+                    }
+                }
+                
+                header("HTTP/1.1 404 Not Found");
+                exit(0);
+                break;
         
             case 'search':
-                if ($filter = $this->getArg('filter')) {
+                if ($filter = trim($this->getArg(array('filter', 'q')))) {
                     $searchTerms = trim($filter);
-          
+                    
+                    $this->assign('feeds', $this->getSearchFeeds());
                     $this->assign('searchTerms', $searchTerms);
+          
+                    $startIndex = $this->getArg('start', 0);
+                    $limit = $this->getOptionalModuleVar('MAX_PER_PAGE', 20);
+                    $PeopleController->setStart($startIndex);
+                    $PeopleController->setLimit($limit);
           
                     $this->setLogData($searchTerms);
                     $people = $this->searchItems($searchTerms);
                     $this->assign('searchError', $PeopleController->getResponseError());
 
-                    if ($people !== false) {
+                    if ($people != false && count($people) > 0) {
                         $resultCount = count($people);
-            
-                        switch ($resultCount) 
+                        $totalItems = $PeopleController->getTotalItems();
+
+                        switch ($totalItems) 
                         {
                             case 1:
                                 $person = $people[0];
                                 $this->logView();
                                 $this->redirectTo('detail', array(
-                                    'uid'=>$person->getId()
+                                    'id'=>$person->getId(),
+                                    'total'=>1,
+                                    'filter'=>$filter,
+                                    'feed'=>$this->feed
                                     )
                                 );
                                 break;
@@ -324,11 +418,27 @@ class PeopleWebModule extends WebModule {
                             default:
                                 $results = array();
                                 
+                                $options = array('filter' => $filter);
                                 foreach ($people as $person) {
-                                    $results[] = $this->linkforItem($person);
+                                    $results[] = $this->linkforItem($person, $options);
                                 }
                                 //error_log(print_r($results, true));
-                                $this->assign('resultCount', $resultCount);
+                                if($totalItems > $resultCount)
+                                {
+                                    if($startIndex + $limit <= $totalItems)
+                                    {
+                                        $nextLink = $this->buildURL('search', array('feed' => $this->feed, 'filter' => $searchTerms, 'start' => $startIndex + $limit));
+                                        $next = array('title' => $this->getLocalizedString("NEXT_PEOPLE_TEXT", $limit), 'url' => $nextLink, 'class' => 'pagerlink');
+                                        array_push($results, $next);
+                                    }
+                                    if($startIndex > 0)
+                                    {
+                                        $prevLink = $this->buildURL('search', array('feed' => $this->feed, 'filter' => $searchTerms, 'start' => $startIndex - $limit));
+                                        $prev = array('title' => $this->getLocalizedString("PREVIOUS_PEOPLE_TEXT", $limit), 'url' => $prevLink, 'class' => 'pagerlink');
+                                        array_unshift($results, $prev);
+                                    }
+                                }
+                                $this->assign('resultCount', $this->getFeed($this->feed)->getTotalItems());
                                 $this->assign('results', $results);
                                 break;
                         }
@@ -383,6 +493,7 @@ class PeopleWebModule extends WebModule {
                 if ($this->getOptionalModuleVar('BOOKMARKS_ENABLED', 1)) {
                     $this->generateBookmarkLink();
                 }
+                $this->assign('feeds', $this->getSearchFeeds());
                 $this->assign('placeholder', $this->getLocalizedString("SEARCH"));
                 $this->assign('searchTip', $this->getOptionalModuleVar('SEARCH_TIP'));
                 $this->assign('contactsSubTitleNewline', $this->getOptionalModuleVar('CONTACTS_SUBTITLE_NEWLINE', false));

@@ -1,11 +1,22 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
  * @package Module
  * @subpackage Stats
  */
 
 class StatsWebModule extends WebModule {
-	protected $id = 'stats';
+	  protected $id = 'stats';
+    protected $defaultAllowRobots = false; // Require sites to intentionally turn this on
 
     protected function getServiceTypes() {
         return array(
@@ -25,23 +36,36 @@ class StatsWebModule extends WebModule {
         
         return $interval_types;
     }
-   
+    
 	protected function initializeForPage() {
-	
 	    if (!Kurogo::getOptionalSiteVar('STATS_ENABLED', true)) {
 	        throw new KurogoException($this->getLocalizedString('STATS_DISABLED'));
 	    }
+
+        if ($this->page == 'updateStats'){
+            KurogoStats::exportStatsData();
+            $this->redirectTo('index', array());
+        }
+        
+        if ($this->getOptionalModuleVar('AUTO_UPDATE_STATS')) {
+            KurogoStats::exportStatsData();
+        }
+
 	
 	    $serviceTypes = $this->getServiceTypes();
 	    $service = $this->getArg('service', 'web');
 	    if (!array_key_exists($service, $serviceTypes)) {
-	        $service = 'web';
+	        $args = $this->args;
+	        $args['service'] = 'web';
+	        $this->redirectTo($this->page, $args);
 	    }
 
         $interval_types = $this->getIntervalTypes();
         $interval = $this->getArg('interval', 'day');
         if (!array_key_exists($interval, $interval_types)) {
-	        $interval = 'day';
+	        $args = $this->args;
+	        $args['interval'] = 'day';
+	        $this->redirectTo($this->page, $args);
 	    }
 
         if ($interval == 'custom') {
@@ -98,15 +122,26 @@ class StatsWebModule extends WebModule {
             'start'=>$startTime,
             'end'=>$endTime
         );
-        
+
+		if ($date = KurogoStats::getLastDateFromSummary()){
+			includePackage('DateTime');
+			$date = new DateTime($date);
+			$this->assign('lastUpdated', DateFormatter::formatDate($date, DateFormatter::LONG_STYLE, DateFormatter::NO_STYLE));
+		}
+		        
 		switch ($this->page) {
 			case 'index':
+
 			    //get config
 			    $chartsConfig = $this->getModuleSections('stats-index');
 			        
 			    $charts = array();
 			    foreach ($chartsConfig as $chartIndex=>$chartData) {
-			        $charts[] = $this->prepareChart(array_merge($chartData, $commonData), $interval);
+                    try {
+			            $charts[] = $this->prepareChart(array_merge($chartData, $commonData), $interval);
+                    } catch (KurogoStatsConfigurationException $e) {
+                        $this->redirectTo('statsconfigerror', array('chart' => $chartData['title']));
+                    }
 			    }
 
                 $this->assign('charts', $charts);
@@ -114,25 +149,49 @@ class StatsWebModule extends WebModule {
                 
             case 'detail':
                 if (!$group = $this->getArg('group')) {
-                    $this->redirectTo('index');
+                    $this->redirectTo('index', array());
                 }
                 
+                if (!in_array($group, array('moduleID','platform','pagetype'))) {
+                    $this->redirectTo('index', array());
+                }
+                
+                
                 if (!$$group = $this->getArg($group)) {
-                    $this->redirectTo('index');
+                    $this->redirectTo('index', array());
+                }
+                
+                switch ($group)
+                {
+                    case 'moduleID':
+                        
+                        break;
+                    case 'platform':
+                        break;
+                    case 'pagetype':
+                        break;
                 }
                 
                 if (!$chartsConfig = $this->getChartsConfig($group, $$group)) {
-                    $this->redirectTo('index');
+                    $this->redirectTo('index', array());
                 }
 
 			    $charts = array();
 			    $commonData[$group] = $$group;
 			    foreach ($chartsConfig as $chartIndex=>$chartData) {
-			        $charts[] = $this->prepareChart(array_merge($chartData, $commonData), $interval);
+                    try {
+                        $charts[] = $this->prepareChart(array_merge($chartData, $commonData), $interval);    
+                    } catch (KurogoStatsConfigurationException $e) {
+                        $this->redirectTo('statsconfigerror', array('chart' => $chartData['title']));
+                    }
+			        
 			    }
 
                 $this->setPageTitle(sprintf("Stats for %s", $$group));
                 $this->assign('charts', $charts);
+                break;
+            case 'statsconfigerror':
+                $this->assign('chart', $this->getArg('chart'));
                 break;
 		}
 	}
@@ -188,11 +247,11 @@ class StatsWebModule extends WebModule {
         }
 
         if ($chartData['start']) {
-            $kurogoOption->addFilter('timestamp', 'GT', $chartData['start']);
+            $kurogoOption->addFilter('timestamp', 'GTE', $chartData['start']);
         }
 
         if ($chartData['end']) {
-            $kurogoOption->addFilter('timestamp', 'LT', $chartData['end']);
+            $kurogoOption->addFilter('timestamp', 'LTE', $chartData['end']);
         }
 
         if (isset($chartData['sort'])) {
@@ -221,7 +280,7 @@ class StatsWebModule extends WebModule {
             }
         }
 
-        return KurogoStats::retrieveStats($kurogoOption);
+        return KurogoStats::retrieveStats($kurogoOption, $chartData);
 	}
 
     protected function getIntervalTimesForInterval($interval, $data=null) {
@@ -338,7 +397,7 @@ class StatsWebModule extends WebModule {
                     $module = Webmodule::factory($groupValue);
                     $moduleChartsConfig = $module->getModuleSections('stats-detail');
                     
-                } catch (ModuleNotFound $e) {
+                } catch (KurogoModuleNotFound $e) {
                     return false;
                 } catch (Exception $e) {
                     $moduleChartsConfig = array();
@@ -346,9 +405,18 @@ class StatsWebModule extends WebModule {
                 $chartsConfig = array_merge($chartsConfig, $moduleChartsConfig);
                 break;
             case 'platform':
+                $platforms = KurogoStats::$platforms;
+                if (!array_key_exists($groupValue, $platforms)) {
+                    return false;
+                }
                 $chartsConfig = $this->getModuleSections("stats-platform-detail");
+                
                 break;
             case 'pagetype':
+                $pagetypes = KurogoStats::$pagetypes;
+                if (!array_key_exists($groupValue, $pagetypes)) {
+                    return false;
+                }
                 $chartsConfig = $this->getModuleSections("stats-pagetype-detail");
                 break;
             default:

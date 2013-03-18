@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class AdminAPIModule extends APIModule
 {
     protected $id = 'admin';
@@ -41,6 +50,7 @@ class AdminAPIModule extends APIModule
         if (!isset($configData[$type])) {
             $files = array(
                 APP_DIR . "/common/config/admin-{$type}.json",
+                SHARED_APP_DIR . "/common/config/admin-{$type}.json",
                 SITE_APP_DIR . "/common/config/admin-{$type}.json"
             );
             $data = array();
@@ -140,7 +150,15 @@ class AdminAPIModule extends APIModule
                     if (isset($field['value'])) {
                         // value is set. used typically for hidden fields
                     } elseif (isset($field['valueMethod'])) {
-                        $field['value'] = call_user_func(array($module, $field['valueMethod']));
+                        if (is_array($field['valueMethod'])) {
+                            $method = array_shift($field['valueMethod']);
+                            $field['value'] = call_user_func_array(array($module, $method), $field['valueMethod']);
+                        } else {
+                            $field['value'] = call_user_func(array($module, $field['valueMethod']));
+                        }
+                        if (is_null($field['value']) && isset($field['default'])) {
+                            $field['value'] = $field['default'];
+                        }
                         unset($field['valueMethod']);
                     } elseif (isset($field['valueKey'])) {
                         $field['value'] = $module->getLocalizedString($field['valueKey']);
@@ -189,11 +207,23 @@ class AdminAPIModule extends APIModule
                     }
     
                     if (isset($field['value'])) {
-                        $value = $this->getUnconstantedValue($field['value'], $constant);
-                        if ($constant) {
-                            $field['value'] = $value;
-                            $field['constant'] = $constant;
+                        $useConstant = isset($field['useConstant']) ? $field['useConstant'] : true;
+                        if ($useConstant) {
+                            $value = $this->getUnconstantedValue($field['value'], $constant);
+                            if ($constant) {
+                                $field['value'] = $value;
+                                $field['constant'] = $constant;
+                            }
                         }
+                    }
+                    
+                    if (isset($field['enabledMethod'])) {
+                        if (is_array($field['enabledMethod'])) {
+                            $field['enabled'] = call_user_func($field['enabledMethod']);
+                        } else {
+                            $field['enabled'] = $module->$field['enabledMethod']();
+                        }
+                        unset($field['enabledMethod']);
                     }
                 }
                 break;
@@ -648,7 +678,15 @@ class AdminAPIModule extends APIModule
                     $this->throwError(new KurogoError(1, "Error clearing caches", "There was an error ($result) clearing the caches"));
                 }
                 break;
-                
+            case 'buildNativeWebTemplates':
+                $moduleID = $this->getArg('module','');
+                $platform = $this->getArg('platform','');
+                $module = WebModule::factory($moduleID);
+                $module->buildNativeWebTemplatesForPlatform($platform);
+                $this->setResponse(true);
+                $this->setResponseVersion(1);
+                break;
+
             case 'upload':
                 $type = $this->getArg('type');
                 $section = $this->getArg('section','');
@@ -887,7 +925,7 @@ class AdminAPIModule extends APIModule
                 
                 Kurogo::log(LOG_NOTICE, "Updating module layout", 'admin');
                 $data = $this->getArg('data', array());
-                $config = ModuleConfigFile::factory('home', 'module');
+                $config = ModuleConfigFile::factory($this->getHomeModuleID(), 'module');
                 if (!isset($data['primary_modules'])) {
                     $data['primary_modules'] = array();
                 }

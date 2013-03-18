@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
   * @package Core
   */
@@ -8,6 +18,16 @@
   */
 class Validator
 {
+    public static function isValidMonth($value) {
+        return preg_match("/^\d+$/", $value) && $value >= 1 && $value <=12;
+    }
+
+    public static function isValidDay($value, $month=1, $year=null) {
+        $year = is_null($year) ? date('Y') : $year;
+        $time = @mktime(0,0,0, $month, $value, $year);
+        return $time === false ? false : true;
+    }
+
     public static function isValidEmail($value) 
     {
         if (!is_string($value)) {

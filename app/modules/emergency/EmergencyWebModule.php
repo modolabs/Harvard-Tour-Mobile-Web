@@ -1,6 +1,13 @@
 <?php
 
-Kurogo::includePackage('Emergency');
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
 
 class EmergencyWebModule extends WebModule implements HomeAlertInterface
 {
@@ -48,6 +55,7 @@ class EmergencyWebModule extends WebModule implements HomeAlertInterface
     }
 
     protected function initializeForPage() {
+        $this->assign('subTitleNewline', $this->getOptionalModuleVar('CONTACTS_SUBTITLE_NEWLINE', false));
         // construct controllers
 
         switch($this->page) {
@@ -114,10 +122,11 @@ class EmergencyWebModule extends WebModule implements HomeAlertInterface
 
 
     protected static function contactNavListItem($contact) {
+        $subtitle = $contact->getSubtitle() ? $contact->getSubtitle() : '('.$contact->getPhoneDelimitedByPeriods().')';
         return array(
             'title' => $contact->getTitle(),
-            'subtitle' => $contact->getSubtitle() . ' (' . $contact->getPhoneDelimitedByPeriods() . ')',
-            'url' => 'tel:' . $contact->getPhoneDialable(),
+            'subtitle' => $subtitle,
+            'url' => $contact->getPhoneDialable(),
             'class' => 'phone',
         );
     }

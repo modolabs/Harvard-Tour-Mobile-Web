@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
  * CalendarDataController
  * @package ExternalData
@@ -86,6 +96,7 @@ class CalendarDataModel extends ItemListDataModel
     }
 
     public function getEventsByCategory($cateID) {
+        $limit = $this->getLimit();
         $this->setLimit(null);
         $items = $this->items();
         $events = array();
@@ -94,6 +105,9 @@ class CalendarDataModel extends ItemListDataModel
             if(in_array($cateID, $eventCategories)) {
                 $events[] = $item;
             }
+        }
+        if ($limit) {
+            $events = $this->limitItems($events, 0, $limit);
         }
         return $events;
     }
@@ -260,8 +274,9 @@ class CalendarDataModel extends ItemListDataModel
         $startTimestamp = $this->startTimestamp() ? $this->startTimestamp() : CalendarDataController::START_TIME_LIMIT;
         $endTimestamp = $this->endTimestamp() ? $this->endTimestamp() : CalendarDataController::END_TIME_LIMIT;
         $range = new TimeRange($startTimestamp, $endTimestamp);
-        
         $events = $calendar->getEventsInRange($range, $this->getLimit(), $this->filters);
+        //set total items number
+        $this->setTotalItems(count($events));
         return $this->limitItems($events, $this->getStart(), $this->getLimit());
     }
     

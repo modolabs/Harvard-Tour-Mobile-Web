@@ -1,6 +1,4 @@
-{if !$ajax}
 {include file="findInclude:common/templates/header.tpl"}
-{/if}
 
 <div class="news">
     {block name="slugline"}
@@ -14,11 +12,13 @@
         <p class="byline">
           {block name="byline"}
               
-            {if $author}
+            {if $author && $showBodyAuthor}
               <span class="credit author">{"AUTHOR_CREDIT"|getLocalizedString:$author}</span><br />
             {/if}
     
-            <span class="postdate">{$date}</span>
+            {if $showBodyPubDate}
+              <span class="postdate">{$date}</span>
+            {/if}
           {/block}
         </p>    
     {/if}        
@@ -49,6 +49,4 @@
   </div><!--story-->
 </div>
 
-{if !$ajax}
 {include file="findInclude:common/templates/footer.tpl"}
-{/if}

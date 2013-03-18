@@ -1,7 +1,16 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 if (!function_exists('xml_parser_create')) {
-    die('XML Parser commands not available.');
+    throw new KurogoException('XML Parser PHP extension is not installed. http://www.php.net/manual/en/intro.xml.php');
 }
 
 abstract class XMLDataParser extends DataParser
@@ -28,6 +37,10 @@ abstract class XMLDataParser extends DataParser
 
     protected function startElement($xml_parser, $name, $attribs)
     {
+        if (!is_null($this->data) && $this->data !== '' && count($this->elementStack) > 0) {
+            $parent = end($this->elementStack);
+            $parent->setValue($parent->value().$this->data);
+        }
         $this->data = '';
         if ($this->shouldHandleStartElement($name)) {
             $this->handleStartElement($name, $attribs);
@@ -49,7 +62,7 @@ abstract class XMLDataParser extends DataParser
                 }
                 $element->shouldStripTags($this->shouldStripTags($element));
                 $element->shouldHTMLDecodeCDATA($this->shouldHTMLDecodeCDATA($element));
-                $element->setValue($this->data);
+                $element->setValue($element->value().$this->data);
                 $this->data = '';
             }
             $parent = end($this->elementStack);

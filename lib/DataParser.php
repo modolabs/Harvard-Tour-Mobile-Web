@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
  * @package ExternalData
  */
@@ -70,6 +80,11 @@ abstract class DataParser
     public static function factory($parserClass, $args)
     {
         Kurogo::log(LOG_DEBUG, "Initializing DataParser $parserClass", "data");
+
+        if (isset($args['PACKAGE'])) {
+            Kurogo::includePackage($args['PACKAGE']);
+        }
+
         if (!class_exists($parserClass)) {
             throw new KurogoConfigurationException("Parser class $parserClass not defined");
         } 

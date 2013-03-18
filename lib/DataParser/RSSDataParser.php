@@ -1,12 +1,18 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
   * @package ExternalData
   * @subpackage RSS
   */
-
-if (!function_exists('xml_parser_create')) {
-    die('XML Parser commands not available.');
-}
 
 /**
   */
@@ -43,6 +49,12 @@ class RSSDataParser extends XMLDataParser
     
     public function getTitle() {
         return $this->channel->getTitle();
+    }
+
+    public function clearInternalCache() {
+    	parent::clearInternalCache();
+    	$this->items = array();
+    	$this->guids = array();
     }
 
     public function init($args)
@@ -222,6 +234,7 @@ class RSSDataParser extends XMLDataParser
             case 'CONTENT:ENCODED':
             case 'CONTENT':
             case 'BODY':
+            case 'DESCRIPTION':
                 $strip_tags = false;
                 break;
         }

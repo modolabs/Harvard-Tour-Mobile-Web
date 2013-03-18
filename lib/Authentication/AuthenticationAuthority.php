@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
  * @package Authentication
  */
@@ -35,7 +45,7 @@ abstract class AuthenticationAuthority
     protected $AuthorityImage; 
 
     /** 
-      * User Login type. One of 3 values: FORM, LINK or NONE
+      * User Login type. One of 3 values: FORM, LINK, AUTO or NONE
       * @var string
       */
     protected $userLogin;
@@ -95,6 +105,14 @@ abstract class AuthenticationAuthority
     public function isLoggedIn() {
         $session = Kurogo::getSession();
         return $session->isLoggedIn($this);
+    }
+    
+    /**
+     * Sets the user class used to create users
+     * @param string $class the class name of the user class. Should be a subclass of User
+     */
+    protected function setUserClass($class) {
+    	$this->userClass = $class;
     }
 
     /**
@@ -164,6 +182,10 @@ abstract class AuthenticationAuthority
         if (isset($args['LOGGEDIN_IMAGE_URL']) && strlen($args['LOGGEDIN_IMAGE_URL'])) {
             $this->setAuthorityImage($args['LOGGEDIN_IMAGE_URL']);
         }
+
+        if (isset($args['USER_CLASS']) && strlen($args['USER_CLASS'])) {
+            $this->setUserClass($args['USER_CLASS']);
+        }
     }
     
     /**
@@ -173,12 +195,12 @@ abstract class AuthenticationAuthority
       */
     protected function validUserLogins()
     {
-        return array('FORM', 'LINK', 'NONE');
+        return array('FORM', 'LINK', 'AUTO', 'NONE');
     }
     
     /**
       * Sets the user login type
-      * @param string userLogin a valid userLogin type (FORM, LINK, NONE)
+      * @param string userLogin a valid userLogin type (FORM, LINK, AUTO, NONE)
       * @return boolean true if it was successful or false if it was not
       */
     public function setUserLogin($userLogin)
@@ -305,8 +327,9 @@ abstract class AuthenticationAuthority
     */
     public static function getDefaultAuthenticationAuthority()
     {
-        $authorities = self::getDefinedAuthenticationAuthorities();
-        return current($authorities);
+    	return self::getAuthenticationAuthority(
+    		self::getDefaultAuthenticationAuthorityIndex()
+    	);
     }
 
     public static function getDefaultAuthenticationAuthorityIndex()

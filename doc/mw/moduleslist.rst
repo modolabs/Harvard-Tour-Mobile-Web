@@ -18,6 +18,7 @@ you can learn more about these modules, what they do and how to configure them.
    modulemap
    modulephotos
    moduleathletics
+   modulesocial
    modulelinks
    modulecontent
    moduleurl
@@ -25,4 +26,5 @@ you can learn more about these modules, what they do and how to configure them.
    moduleabout
    modulelogin
    modulestats
-   
+   moduletransit
+   modulekitchensink

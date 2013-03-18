@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
  * @package DataModel
  */
@@ -114,7 +124,7 @@ abstract class ItemListDataModel extends DataModel {
 
     /**
      * Clears the internal cache of data. Subclasses can override this method to clean up any necessary
-     * state, if necessary. Subclasses should call parent::clearInteralCache()
+     * state, if necessary. Subclasses should call parent::clearInternalCache()
      */
     public function clearInternalCache() {
         $this->setTotalItems(null);
@@ -133,7 +143,7 @@ abstract class ItemListDataModel extends DataModel {
         $limit = is_null($limit) ? null : intval($limit);
         
         if (!is_array($items)) {
-            throw new KurogoDataException("Items list is not an array");
+            return array();
         }
         
         if ($start>0 || !is_null($limit)) {
@@ -150,11 +160,12 @@ abstract class ItemListDataModel extends DataModel {
      * @return mixed the item or false if it's not there
      */
     public function getItemByIndex($index) {
-        if ($items = $this->items($index,1)) {
-            return current($items); 
-        } else {
-            return false;
+        if ($items = $this->items()) {
+            if(isset($items[$index])){
+                return $items[$index];
+            }
         }
+        return false;
     }
     
     /**

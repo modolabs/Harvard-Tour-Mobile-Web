@@ -1,6 +1,15 @@
 <?php
 
-Kurogo::includePackage('Video');
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
+includePackage('Video');
 
 class VideoWebModule extends WebModule
 {
@@ -115,33 +124,37 @@ class VideoWebModule extends WebModule
         
         switch ($this->page)
         {  
-              case 'pane':
-                $start = 0;
-                $maxPerPage = $this->getOptionalModuleVar('MAX_PANE_RESULTS', 5);
-                $data = array(
-                    'noBreadcrumbs'=>true,
-                    'section'=>$section
-                );
-
-                if ($this->legacyController) {
-                    $items = $controller->items($start, $maxPerPage);
-                } else {
-                    $controller->setStart($start);
-                    $controller->setLimit($maxPerPage);
-                    $items = $controller->items();
+            case 'pane':
+                if ($this->ajaxContentLoad) {
+                  $start = 0;
+                  $maxPerPage = $this->getOptionalModuleVar('MAX_PANE_RESULTS', 5);
+                  $data = array(
+                      'noBreadcrumbs'=>true,
+                      'section'=>$section
+                  );
+  
+                  if ($this->legacyController) {
+                      $items = $controller->items($start, $maxPerPage);
+                  } else {
+                      $controller->setStart($start);
+                      $controller->setLimit($maxPerPage);
+                      $items = $controller->items();
+                  }
+                  $videos = array();
+  
+                  foreach ($items as $video) {
+                      $videos[] = $this->linkForItem($video, $data);
+                  }
+                  
+                  foreach ($videos as $i => $video) {
+                      $videos[$i]['url'] = $this->buildURL('index').
+                          '#'.urlencode(FULL_URL_PREFIX.ltrim($video['url'], '/'));
+                  }
+  
+                  $this->assign('stories', $videos);
                 }
-                $videos = array();
-
-                foreach ($items as $video) {
-                    $videos[] = $this->linkForItem($video, $data);
-                }
-                
-                foreach ($videos as $i => $video) {
-                    $videos[$i]['url'] = $this->buildURL('index').
-                        '#'.urlencode(FULL_URL_PREFIX.ltrim($video['url'], '/'));
-                }
-
-                $this->assign('videos', $videos);
+                $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
+                $this->addInternalJavascript('/common/javascript/lib/paneStories.js');
                 break;
             case 'search':
             case 'index':
@@ -201,9 +214,14 @@ class VideoWebModule extends WebModule
                     }		
                 }
     
-                $hiddenArgs = array(
-                  'section'=>$section
-                );
+    			/* only assign section if it's the search page, otherwise section comes from select box */
+    			if ($this->page=='search') {
+					$hiddenArgs = array(
+					  'section'=>$section
+					);
+				} else {
+					$hiddenArgs = array();
+				}				
           
                 $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
                 $this->addOnLoad('setupVideosListing();');
@@ -259,7 +277,6 @@ class VideoWebModule extends WebModule
                     $this->setLogData($videoid, $video->getTitle());
                     $this->setTemplatePage('detail-' . $video->getType());
                     if ($video->canPlay(Kurogo::deviceClassifier())) {
-                        $this->assign('ajax'      ,       $this->getArg('ajax', null));
                         $this->assign('videoTitle',       $video->getTitle());
                         $this->assign('videoid',          $video->getID());
                         $this->assign('videoStreamingURL',$video->getStreamingURL());

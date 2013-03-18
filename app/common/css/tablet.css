@@ -85,7 +85,7 @@ strong {
 /* Major layout blocks */
 
 #container {
-	min-height: 320px;
+	min-height: 100%;
 }
 
 #containerinset {
@@ -536,6 +536,7 @@ a.module img {
 	border: 1px solid #ccc;
 	-webkit-border-radius: 9px;	
 	border-radius: 9px;	
+	position: relative;
 }
 
 .nav li {	
@@ -553,7 +554,7 @@ a.module img {
   padding-top: 2px;
 }
 
-.nav span.nolink {
+.nav span.nolink, .results span.nolink {
 	display: block;
 	padding: 8px;
 	margin: -8px;	 
@@ -561,11 +562,16 @@ a.module img {
 	background-position: right; 
 	line-height: 1.2em;
 	text-decoration: none;
+}
+
+.nav span.nolink {
 	-webkit-border-radius: 5px;	
+	border-radius: 5px;	
 }
 
 .nav a  {
 	display: block;
+	position: relative;
 	padding: 8px 24px 10px 8px;
 	margin: -8px;	 
 	background-image: url(/common/images/action-arrow.png); 
@@ -574,6 +580,7 @@ a.module img {
 	line-height: 1.2em;
 	text-decoration: none;
 	-webkit-border-radius: 5px;	
+	border-radius: 5px;	
 }
 
 .nav li.icon {
@@ -625,17 +632,11 @@ ul.focal li:first-child {
 .tabbody .nav {
 	margin: 0 -8px;
 	border: none;
-	-webkit-border-bottom-right-radius: 8px;	
-	-webkit-border-bottom-left-radius: 8px;	
-	border-bottom-right-radius: 8px;
-	border-bottom-left-radius: 8px;
 }
 
 .tabbody .results {
 	margin: 8px 4px 0 4px;
 	border-width: 1px 0 0 0;
-	-webkit-border-bottom-right-radius: 8px;	
-	-webkit-border-bottom-left-radius: 8px;	
 }
 
 .tabbody .nested {
@@ -652,12 +653,14 @@ ul.focal li:first-child {
 	margin: 10px 0; 
 	border-top: 1px solid #ccc;
 	border-bottom: 1px solid #ccc;
+	position: relative;
 }
 
 .results li {	
 	list-style-type: none;		
 	border-top: 1px solid #ccc;
 	padding: 10px;
+	position: relative;
 }
 
 .results li:first-child {
@@ -666,6 +669,7 @@ ul.focal li:first-child {
 
 .results a  {
 	display: block;
+	position: relative;
 	padding: 9px 25px 9px 7px;
 	margin: -7px;	 
 	background-image: url(/common/images/action-arrow.png); 
@@ -790,6 +794,7 @@ ul.focal li:first-child {
 	position: absolute;
 	top: 0;
 	background: transparent url(/common/images/sidenav-arrows.png) no-repeat;
+	background-size: 48px 58px;
 	height: 29px;
 	line-height: 29px;
 	padding: 0 10px;
@@ -909,19 +914,18 @@ a.sidenav-next {
 }
 
 .label {
-    display: block;
-    width: 6em;
-    position: relative;
-    font-size: 76.471%;
-    line-height: 1.3em;
-    font-weight: bold;
-    text-align: right;
+  display: block;
+  font-size: 76.471%;
+  line-height: 1.3em;
+  font-weight: bold;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .value {
     display: block;
-    margin-top: -1.2em;
-    margin-left: 5em;
     font-size: 100%;
     min-height: 1.3em;
     line-height: 1.3em;
@@ -1188,7 +1192,7 @@ h2.icon {
 #tabs li a {
 	display: block;
 	text-decoration: none;
-	min-width: 30px;
+	min-width: 25px;
 	padding: 8px 10px 10px 10px;
 }
 
@@ -1202,12 +1206,14 @@ h2.icon {
 	padding-left: 7px;
 }
 
+#tabscontainer {
+	padding: 0 12px;
+}
+
 #tabbodies {
 	margin: -12px -12px 0 -12px;
 	clear: both;
 	border-top: 1px solid #bbb;
-	-webkit-border-bottom-right-radius: 8px;	
-	-webkit-border-bottom-left-radius: 8px;	
 }
 
 .shaded #tabbodies {
@@ -1216,8 +1222,8 @@ h2.icon {
 
 .tabbody {
 	position: relative;
-	min-height: 230px;
-	padding: 8px;
+	min-height: 400px;
+	padding: 12px;
 }
 
 .tabbody h3 {
@@ -1233,55 +1239,60 @@ h2.icon {
 	margin-top: 2px;
 }
 
-.tabstrip ,
-#tabstrip {
+.tabstrip {
 	list-style-type: none;
-	height: 32px;
-	-webkit-border-radius: 10px;	
+	height: 36px;
+	-webkit-border-radius: 7px;	
+	border-radius: 7px;	
 	margin: 0;
 	padding: 0;
 	left: 0;
 	overflow: hidden;
+	font-size: 88.24%;
 }
 
-.tabstrip li ,
-#tabstrip li {
+.tabstrip li  {
 	float: left;
 	margin: 0;
 	text-align: center;
-	height: 33px;
+	height: 34px;
 }
 
-.tabstrip a ,
-#tabstrip a {
+.tabstrip a, .tabstrip a:visited {
 	display: block;
-	height: 32px;
+	height: 34px;
 	line-height: 32px;
 	text-decoration: none;
-	color: #fff;
-	background: url(/common/images/tabstrip.jpg) repeat-x;
-	-webkit-background-origin: padding-box; 
-	-webkit-background-clip: content-box; 
-	border-right: 1px solid #999;
-	-webkit-border-radius: 1px;	
-	border-radius: 1px;	
+	background-color: transparent;
+	border: 1px solid #ccc;
+	border-right: none
 }	
 
-.tabstrip li.active a ,
-#tabstrip li.active a {
-	background-image: url(/common/images/tabstrip-active.jpg);
+.tabstrip li:last-child a {
+    border-right: 1px solid #999;;
 }
 
-.tabstrip li:first-child a ,
-#tabstrip li:first-child a {
-	-webkit-border-bottom-left-radius: 10px;	
-	-webkit-border-top-left-radius: 10px;	
+.focal .tabstrip a, .tabbody .tabstrip a {
+	color: #505050;
 }
 
-.tabstrip li:last-child a ,
-#tabstrip li:last-child a {
-	-webkit-border-bottom-right-radius: 10px;	
-	-webkit-border-top-right-radius: 10px;	
+.tabstrip li.active a {
+	background-color: #444;
+	color: #fff;
+}
+
+.tabstrip li:first-child a {
+	-webkit-border-bottom-left-radius: 6px;	
+	-webkit-border-top-left-radius: 6px;	
+	border-bottom-left-radius: 6px;	
+	border-top-left-radius: 6px;	
+}
+
+.tabstrip li:last-child a {
+	-webkit-border-bottom-right-radius: 6px;	
+	-webkit-border-top-right-radius: 6px;	
+	border-bottom-right-radius: 6px;	
+	border-top-right-radius: 6px;	
 }
 
 .twotabs li {
@@ -1797,6 +1808,103 @@ table.section-search form {
 	font-size: 89%;
 }
 
+/* stories panes */
+
+.pane-stories-container,
+.pane-stories {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+.pane-stories > * {
+  margin: 12px;
+  display: none;
+  list-style-type: none;
+  overflow: hidden;
+}
+
+.pane-stories > a.current {
+  display: list-item;
+}
+
+.pane-stories a,
+.pane-stories a:visited {
+  color: #222;
+  text-decoration: none;
+}
+
+.pane-stories .thumbnail {
+  float: left;
+  margin: 0 12px 6px 0;
+  height: 6.5em;
+  width: 6.5em;
+  line-height: 6.5em;
+  line-height: 6.5em;
+  overflow: hidden;
+}
+.pane-stories .thumbnail img {
+  width: 100%;
+  vertical-align: middle;
+}
+
+.pane-stories .title {
+  font-size: 110%;
+  font-weight: bold;
+  padding-bottom: 6px;
+}
+
+.pane-stories-pager {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  text-align: right;
+  height: 45px;
+}
+
+.pane-stories-pager-dots {
+  display: block;
+  margin-right: 108px;
+  text-align: center;
+  overflow: hidden;
+  height: 38px;
+  white-space: nowrap;
+}
+
+.pane-stories-pager-dots > * {
+  display: inline-block;
+  height: 38px;
+  width: 12px;
+  margin: 0 0 0 12px;
+  background: transparent url(/common/images/page-dot.png) no-repeat left center;
+}
+.pane-stories-pager-dots > *:first-child {
+  margin-left: 0;
+}
+.pane-stories-pager-dots .current {
+  background-image: url(/common/images/page-dot-current.png);
+}
+
+.pane-stories-pager-prev,
+.pane-stories-pager-next {
+  cursor: pointer;
+  position: absolute;
+  top: 0;
+  right: 61px;
+  height: 38px;
+  width: 47px;
+  background: transparent url(/common/images/page-prev.png) no-repeat left top;
+}
+.pane-stories-pager-next {
+  background-image: url(/common/images/page-next.png);
+  right: 7px;
+}
+.pane-stories-pager-prev.disabled,
+.pane-stories-pager-next.disabled {
+  cursor: default;
+}
 
 
 

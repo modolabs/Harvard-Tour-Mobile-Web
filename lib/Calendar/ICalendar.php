@@ -1,4 +1,28 @@
 <?php
+
+/*
+ * Copyright © 2009 - 2010 Massachusetts Institute of Technology
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 /**
  * ICalendar
  * The ICal* classes in this file together partially implement RFC 2445.
@@ -127,6 +151,7 @@ class ICalEvent extends ICalObject implements KurogoObject, CalendarEvent {
     protected $location;
     protected $geo;
     protected $tzid;
+    protected $timezone;
     protected $url;
     protected $created;
     protected $updated;
@@ -185,6 +210,10 @@ class ICalEvent extends ICalObject implements KurogoObject, CalendarEvent {
         return $this->tzid;
     }
     
+    public function get_timezone() {
+        return $this->timezone;
+    }
+    
     public function getID() {
         return $this->uid;
     }
@@ -217,8 +246,35 @@ class ICalEvent extends ICalObject implements KurogoObject, CalendarEvent {
         return $this->range->get_start();
     }
 
+    public function set_start($timestamp, $dayOnly=false) {
+        if (!$this->range) {
+            throw new KurogoDataException("set_start called before range is initialized");
+        }
+        $this->range->set_start($timestamp);
+        $this->starttime = $timestamp;
+    }
+
     public function get_end() {
         return $this->range->get_end();
+    }
+
+    public function set_end($timestamp, $dayOnly=false) {
+        if (!$this->range) {
+            throw new KurogoDataException("set_end called before range is initialized");
+        }
+        $start = $this->range->get_start();
+        
+        if ($timestamp < $start) {
+            // if the end time is an all day time then just use the start time.
+            if ($dayOnly) {
+                $timestamp = $start;
+            } else {
+            	//ignore end time if it's later
+            	return false;
+            }
+        }
+            
+        $this->range->set_end($timestamp);
     }
 
     public function get_summary() {
@@ -337,8 +393,27 @@ class ICalEvent extends ICalObject implements KurogoObject, CalendarEvent {
             $this->geo = implode(';', array_values($coordinates));
         }
     }
+
+    private static function timezoneMap() {
+    	return array(
+    		'US-Eastern' => 'America/New_York',
+    		'US-Central' => 'America/Chicago',
+    		'US-Mountain' => 'America/Denver',
+    		'US-Pacific' => 'America/Los_Angeles',
+    	);
+    }
+    
+    private static function timezoneFilter($tzid) {
+    	$timezoneMap = self::timezoneMap();
+    	if(array_key_exists($tzid, $timezoneMap)) {
+    		$tzid = $timezoneMap[$tzid];
+    	}
+    	
+        return $tzid;
+    }
     
     private static function getTimezoneForID($tzid) {
+        $tzid = self::timezoneFilter($tzid);
         try {
             $timezone = new DateTimeZone($tzid);
         } catch (Exception $e) {
@@ -348,6 +423,19 @@ class ICalEvent extends ICalObject implements KurogoObject, CalendarEvent {
         return $timezone;
     }
 
+    /**
+     * reset the end time when the start time is less than the start time
+     */
+    protected function rectifyRange() {
+        if ($this->range) {
+            $start = $this->range->get_start();
+            $end = $this->range->get_end();
+            if ($end < $start) {
+                $this->range->set_end($start);
+            }
+        }
+    }
+    
     public function set_attribute($attr, $value, $params=NULL) {
         switch ($attr) {
             case 'UID':
@@ -416,29 +504,47 @@ class ICalEvent extends ICalObject implements KurogoObject, CalendarEvent {
                 $this->dtstamp = $datetime->format('U');
                 break;
             case 'DTSTART':
-            case 'DTEND':
+                // set the event timezone if it's present in the start time
                 if (array_key_exists('TZID', $params)) {
-                    $timezone = self::getTimezoneForID($params['TZID']);
-                    $datetime = new DateTime($value, $timezone);
+                    $this->timezone = self::getTimezoneForID($params['TZID']);
+                    $this->tzid = $this->timezone->getName();
+                }
+            case 'DTEND':
+                $dayOnly = false;
+
+            case 'DTEND':
+
+                //reset the system timezone to calculate the timestamp
+                if ($this->tzid) {
+                    $old_timezone = date_default_timezone_get();
+                    date_default_timezone_set($this->tzid);
+                    $datetime = new DateTime($value, $this->timezone);
                 } else {
                     $datetime = new DateTime($value);
                 }
 
+                $t = strpos($value, 'T');
+                // if there is no "T" or if the "T" is at the end
+                if ( ($t === FALSE) || ($t == (strlen($value)-1))) {
+                    $dayOnly = true;
+                }
+
                 $timestamp = $datetime->format('U');
+
+                if ($this->tzid) {
+                    date_default_timezone_set($old_timezone);
+                }
                 
                 if ($attr=='DTEND') {
-                    if (strpos($value, 'T')== FALSE) {
+                    if ($dayOnly) {
                         // make all day events end at 11:59:59 so they don't overlap next day
                         $timestamp -= 1;
                     }
                 }
 
                 if (!$this->range) {
-                    if (strpos($value, 'T')!== FALSE) {
-                        $this->setRange(new TimeRange($timestamp));
-                    } else {
-                        $this->setRange(new DayRange($timestamp));
-                    }
+                    $range = $dayOnly ? new DayRange($timestamp, null, $this->tzid) : new TimeRange($timestamp, null, $this->tzid);
+                    $this->setRange($range);
 
                     if (isset($this->properties['duration'])) {
                         $this->range->set_icalendar_duration($this->properties['duration']);
@@ -449,11 +555,10 @@ class ICalEvent extends ICalObject implements KurogoObject, CalendarEvent {
                     switch ($attr)
                     {
                         case 'DTSTART':
-                            $this->range->set_start($timestamp);
-                            $this->starttime= $timestamp;
+                            $this->set_start($timestamp, $dayOnly);
                             break;
                         case 'DTEND':
-                            $this->range->set_end($timestamp);
+                            $this->set_end($timestamp, $dayOnly);
                             break;
                     }
                 }
@@ -482,7 +587,9 @@ class ICalEvent extends ICalObject implements KurogoObject, CalendarEvent {
                 $this->exdates[] = $datetime->format('U'); // start time
                 break;
             case 'TZID': // this only gets called by ICalendar::__construct
-                $this->tzid = $value;
+                $timezone = self::getTimezoneForID($value);
+                $this->timezone = $timezone;
+                $this->tzid = $timezone->getName();
                 break;
             default:
                 $this->properties[$attr] = iCalendar::ical_unescape_text($value);
@@ -682,7 +789,16 @@ class ICalRecurrenceRule extends ICalObject {
         }
     }
 
-    private function nextIncrement($time, $type, $interval = 1) {
+    private function nextIncrement($time, $type, $interval = 1, $tzid = null) {
+        //remember the initial time
+        $startTime = $time;
+
+        //keep the current timezone
+        if ($tzid) {
+            $old_timezone = date_default_timezone_get();
+            date_default_timezone_set($tzid);
+        }
+        
         switch ($type) {
             case 'SECONDLY': 
                 $time += $interval; 
@@ -704,7 +820,7 @@ class ICalRecurrenceRule extends ICalObject {
                 }
                 break;
             case 'WEEKLY':
-                $time = self::nextIncrement($time, 'DAILY', 7*$interval);
+                $time = self::nextIncrement($time, 'DAILY', 7*$interval, $tzid);
                 break;
             case 'WEEKLY-BYDAY':
                 $current_day = strtoupper(substr(date('D', $time), 0,2));
@@ -723,20 +839,20 @@ class ICalRecurrenceRule extends ICalObject {
                         $next_day = next($this->occurs_by_day);
                         if ($next_day) {
                             $offset = self::$dayIndex[$next_day] - self::$dayIndex[$current_day];
-                            $time = self::nextIncrement($time, 'DAILY', $offset);
+                            $time = self::nextIncrement($time, 'DAILY', $offset, $tzid);
                         }
                         // If we have reached the end of the sequence, use the beginning and add 7
                         else {
                             reset($this->occurs_by_day);
                             $next_day = current($this->occurs_by_day);
                             $offset = 7 + self::$dayIndex[$next_day] - self::$dayIndex[$current_day];
-                            $time = self::nextIncrement($time, 'DAILY', $offset + (($interval - 1) * 7));
+                            $time = self::nextIncrement($time, 'DAILY', $offset + (($interval - 1) * 7), $tzid);
                         }
                         break;
                     }
                     $day = next($this->occurs_by_day);
                 }
-                //$time = self::nextIncrement($time, 'DAILY', $offset*$interval);
+                //$time = self::nextIncrement($time, 'DAILY', $offset*$interval, $tzid);
                 break;
             case 'MONTHLY':
             	$time = mktime(date('H', $time), date('i', $time), date('s', $time), date('m', $time)+$interval, date('d', $time), date('Y', $time));
@@ -748,13 +864,31 @@ class ICalRecurrenceRule extends ICalObject {
                 throw new ICalendarException("Invalid type $type");
         }
 
-        return $this->affectRules($time);
+        //restore the old timezone
+        if ($tzid) {
+            date_default_timezone_set($old_timezone);
+        }
+
+        //ensure that the time has changed
+        if ($time == $startTime) {
+            throw new KurogoDataException("nextIncrement was the same when parsing a recurring event rule. There is likely a bug in the iCalendar code. Please report this behavior");
+        }
+
+        return $this->affectRules($time, $tzid);
     }
 
-    function affectRules($time) {
+    private function affectRules($time, $tzid) {
+
         if(empty($this->occurs_by_list)) {
             return $time;
         }
+
+        //keep the current timezone
+        if ($tzid) {
+            $old_timezone = date_default_timezone_get();
+            date_default_timezone_set($tzid);
+        }
+
         foreach($this->occurs_by_list as $rule => $val) {
             switch($rule) {
                 case 'BYDAY':
@@ -795,6 +929,12 @@ class ICalRecurrenceRule extends ICalObject {
                 default:
             }
         }
+        
+        //restore the timezone
+        if ($tzid) {
+            date_default_timezone_set($old_timezone);
+        }
+        
         return $time;
     }
 
@@ -809,7 +949,7 @@ class ICalRecurrenceRule extends ICalObject {
 
         //    echo date('m/d/Y H:i:s', $time) . "<br>\n";
 
-        $time = $this->nextIncrement($time, $this->type, $this->interval);
+        $time = $this->nextIncrement($time, $this->type, $this->interval, $event->get_tzid());
         while ($time <= $range->get_end()) {
             //      echo date('m/d/Y H:i:s', $time) . "<br>\n";
             if ( ($limitType=='UNTIL') && ($time > $limit) ) {
@@ -840,7 +980,7 @@ class ICalRecurrenceRule extends ICalObject {
             if ( !is_null($max) && count($occurrences)>=$max) {
                 break;
             }
-            $time = $this->nextIncrement($time, $this->type, $this->interval);
+            $time = $this->nextIncrement($time, $this->type, $this->interval, $event->get_tzid());
             $count++;
         }
 
@@ -916,7 +1056,7 @@ class ICalendar extends ICalObject implements CalendarInterface {
             }
         }
 
-        uasort($occurrences, array($this, "sort_events"));
+        usort($occurrences, array($this, "sort_events"));
         
         // in some case, it doesn't work properly if we just sort $this->eventStartTimes
         return $occurrences;
@@ -956,7 +1096,7 @@ class ICalendar extends ICalObject implements CalendarInterface {
     }
 
     public static function ical_unescape_text($text) {
-        $text = str_replace(array("DQUOTE","\\\\", "\,","\;","\\n"), array("\"","\\",",",";","\n"), $text);
+        $text = str_replace(array("DQUOTE","\\\\", "\,","\;","\\n","\\r"), array("\"","\\",",",";","\n",""), $text);
         return $text;
     }
 

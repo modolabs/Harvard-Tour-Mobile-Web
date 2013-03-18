@@ -1,6 +1,14 @@
 <?php
 
-includePackage('Athletics');
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 includePackage('News');
 includePackage('DateTime');
 class AthleticsWebModule extends WebModule {
@@ -30,7 +38,8 @@ class AthleticsWebModule extends WebModule {
     public function getGenders() {
         return array(
             'men'=>$this->getLocalizedString('GENDER_MEN'),
-            'women'=>$this->getLocalizedString('GENDER_WOMEN')
+            'women'=>$this->getLocalizedString('GENDER_WOMEN'),
+            'coed'=>$this->getLocalizedString('GENDER_COED')
         );
         
     }
@@ -82,6 +91,12 @@ class AthleticsWebModule extends WebModule {
 
         $image = $this->getImageForStory($story);
 
+        if (isset($data['federatedSearch']) && $data['federatedSearch'] && !$this->getOptionalModuleVar('SHOW_DESCRIPTION_IN_FEDERATED_SEARCH', 1)) {
+            $subtitle = '';
+        }else{
+            $subtitle = $this->htmlEncodeFeedString($story->getDescription());
+        }
+
         $link = array(
             'title'   => $this->htmlEncodeFeedString($story->getTitle()),
             'pubDate' => $date,
@@ -101,7 +116,8 @@ class AthleticsWebModule extends WebModule {
                 }
             }
     
-            $link['url'] = $this->buildBreadcrumbURL('news_detail', $options, true);
+            $addBreadcrumb = isset($data['addBreadcrumb']) ? $data['addBreadcrumb'] : true;
+            $link['url'] = $this->buildBreadcrumbURL('news_detail', $options, $addBreadcrumb);
         } elseif ($url = $story->getLink()) {
             $link['url'] = $url;
         }
@@ -222,7 +238,8 @@ class AthleticsWebModule extends WebModule {
             'start'         => $this->timeText($event),
             'pastStatus'    => $event->getStartTime() > time() ? false : true,
             'location'      => $event->getLocation(),
-            'link'          => $event->getLink()
+            'link'          => $event->getLink(),
+            'description'   => $event->getDescription(),
         );
     }
     
@@ -248,13 +265,20 @@ class AthleticsWebModule extends WebModule {
     
     protected function getNavData($tab) {
     
+    	//use the data in page-index first
         $data = isset($this->navFeeds[$tab]) ? $this->navFeeds[$tab] : '';
         if (!$data) {
-            throw new KurogoDataException($this->getLocalizedString('ERROR_NAV', $tab));
+        	//use the data in pages tab_ 
+            $vars = $this->getOptionalModuleSection("index", "pages");
+            $key = "tab_" . $tab;
+            if (isset($vars[$key])) {
+                $data = array('TITLE' => $vars[$key]);
+            } else {
+            	//no data for this type
+                $data = null;
+            }
         }
-        
         return $data;
-        
     }
 
     protected function getScheduleFeed($sport) {
@@ -387,8 +411,7 @@ class AthleticsWebModule extends WebModule {
         
                 if (!$content = $this->cleanContent($story->getContent())) {
                   if ($url = $story->getLink()) {
-                      header("Location: $url");
-                      exit();
+                      Kurogo::redirectToURL($url);
                   } else {
                       throw new KurogoDataException($this->getLocalizedString('ERROR_CONTENT_NOT_FOUND', $storyID));
                   }
@@ -671,25 +694,27 @@ class AthleticsWebModule extends WebModule {
                 }
                 
                 //get sports for each gender
-                foreach (array('men','women') as $gender) {
+                foreach (array('men','women','coed') as $gender) {
                     $sportsData = $this->getNavData($gender);
-                    if ($sportsConfig = $this->getSportsForGender($gender)) {
-                        $sports = array();
-                        foreach ($sportsConfig as $key => $sportData) {
-                            $image = "modules/{$this->configModule}/images/".
-                              (isset($sportData['ICON']) ? $sportData['ICON'] : strtolower($sportData['TITLE'])).
-                              $this->imageExt;
-                            $sport = array(
-                                'title' =>$sportData['TITLE'],
-                                'img'   =>$image,
-                                'url'   =>$this->buildURL('sport', array('sport' => $key))
-                            );
-                            $sports[] = $sport;
+                    if($sportsData) {
+                        if ($sportsConfig = $this->getSportsForGender($gender)) {
+                            $sports = array();
+                            foreach ($sportsConfig as $key => $sportData) {
+                                $image = "modules/{$this->configModule}/images/".
+                                    (isset($sportData['ICON']) ? $sportData['ICON'] : strtolower($sportData['TITLE'])).
+                                    $this->imageExt;
+                                $sport = array(
+                                    'title' =>$sportData['TITLE'],
+                                    'img'   =>$image,
+                                    'url'   =>$this->buildURL('sport', array('sport' => $key))
+                                );
+                                $sports[] = $sport;
+                            }
+
+                            $tabs[] = $gender;
+                            $this->assign($gender. 'SportsTitle', $sportsData['TITLE']);
+                            $this->assign($gender.'Sports', $sports);
                         }
-                    
-                        $tabs[] = $gender;
-                        $this->assign($gender. 'SportsTitle', $sportsData['TITLE']);
-                        $this->assign($gender.'Sports', $sports);
                     }
                 }
                 
@@ -718,7 +743,28 @@ class AthleticsWebModule extends WebModule {
                 $this->assign('bookmarks', $bookmarks);
                 $this->assign('tabs', $tabs);
                 $this->enableTabs($tabs);
+                break;
                 
+            case 'pane':
+                if ($this->ajaxContentLoad) {
+                    $section = 'topnews';
+                    
+                    $newsFeed = $this->getNewsFeed($section);
+                    $newsFeed->setStart(0);
+                    $newsFeed->setLimit($this->maxPerPage);
+                    
+                    $items = $newsFeed->items();
+                    $this->setLogData($section, $newsFeed->getTitle());
+                    
+                    $stories = array();
+                    foreach ($items as $item) {
+                        $stories[] = $this->linkForNewsItem($item, array('section' => $section, 'addBreadcrumb'=>false));
+                    }
+                    $this->assign('showImages', $this->showImages);
+                    $this->assign('stories', $stories);
+                }
+                $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
+                $this->addInternalJavascript('/common/javascript/lib/paneStories.js');
                 break;
         }
     }

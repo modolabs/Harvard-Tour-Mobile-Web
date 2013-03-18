@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 // represents a top level map category
 // for KML, each KML file is a top level category
 // for ArcGIS, each layer (or service instance?) is a top level category
@@ -476,11 +485,7 @@ class MapDataController extends DataController implements MapFolder
             if (!class_exists('ZipArchive')) {
                 throw new KurogoException("class ZipArchive (php-zip) not available");
             }
-            $tmpDir = Kurogo::tempDirectory();
-            if (!is_writable($tmpDir)) {
-                throw new KurogoConfigurationException("Temporary directory $tmpDir not available");
-            }
-            $tmpFile = $tmpDir.'/tmp.kmz';
+            $tmpFile = Kurogo::tempFile();
 
             copy($url, $tmpFile);
             $zip = new ZipArchive();

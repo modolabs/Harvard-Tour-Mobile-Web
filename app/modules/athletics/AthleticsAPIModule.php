@@ -1,6 +1,14 @@
 <?php
 
-Kurogo::includePackage('Athletics');
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 Kurogo::includePackage('News');
 
 class AthleticsAPIModule extends APIModule
@@ -8,6 +16,7 @@ class AthleticsAPIModule extends APIModule
     protected $id = 'athletics';
     protected $vmin = 1;
     protected $vmax = 1;
+    protected $imageExt = ".png";
 
     protected static $defaultEventModel = 'AthleticEventsDataModel';
     protected static $defaultNewsModel = 'NewsDataModel';
@@ -15,6 +24,21 @@ class AthleticsAPIModule extends APIModule
     protected $maxPerPage = 10;
     protected $feeds;
     protected $navFeeds;
+
+    protected function cleanContent($content) {
+        //deal with pre tags. strip out pre tags and add <br> for newlines
+        $bits = preg_split( '#(<pre.*?'.'>)(.*?)(</pre>)#s', $content, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $content = array_shift($bits);
+        $i=0;
+        while ($i<count($bits)) {
+            $tag = $bits[$i++];
+            $content .= nl2br($bits[$i++]);
+            $close = $bits[$i++];
+            $i++;
+        }
+    
+        return $content;
+    }
     
     public function  initializeForCommand() {
 
@@ -23,22 +47,46 @@ class AthleticsAPIModule extends APIModule
         $responseVersion = $this->requestedVersion < 2 ? 1 : 2;
         
         switch ($this->command) {
+            case 'genders':
+                $genders = array();
+                $response = array();
+                foreach($this->feeds as $feed) {
+                    $gender = $feed['GENDER'];
+                    if($tabData = $this->getNavData($gender)) {
+                    	if (!in_array($gender, $genders)) {
+                            $genders[] = $gender;
+                            $response[] = array(
+                                'key' => $gender,
+                                'title' => $tabData['TITLE']
+                            );
+                        }
+                    }
+                }
+                $this->setResponse($response);
+                $this->setResponseVersion(1);
+                break;
             case 'sports':
                 // sports
                 $gender = $this->getArg('gender');
                 
-                $tabData = $this->getNavData($gender);
-                $sportsConfig = $this->getSportsForGender($gender);
-                
-                $sports = array();
-                foreach ($sportsConfig as $key => $sportData) {
-                    $sports[] = array('key'=>$key, 'title' => $sportData['TITLE']);
+                if($tabData = $this->getNavData($gender)) {
+                    $sportsConfig = $this->getSportsForGender($gender);
+
+                    $sports = array();
+                    foreach ($sportsConfig as $key => $sportData) {
+                        $image = FULL_URL_BASE . "modules/{$this->configModule}/images/" .
+                            (isset($sportData['ICON']) ? $sportData['ICON'] : strtolower($sportData['TITLE'])) .
+                            $this->imageExt;
+                        $sports[] = array('key'=>$key, 'title' => $sportData['TITLE'], 'icon' => $image);
+                    }
+
+                    $response = array(
+                        'sports' => $sports,
+                        'sporttitle'    => $tabData['TITLE'],
+                    );
+                }else {
+                    $response = null;
                 }
-                
-                $response = array(
-                    'sports' => $sports,
-                    'sporttitle'    => $tabData['TITLE'],
-                );
                 
                 $this->setResponse($response);
                 $this->setResponseVersion(1);
@@ -162,20 +210,24 @@ class AthleticsAPIModule extends APIModule
         
         return null;
     }
+
+    protected function encodeValue($value) {
+        return trim(mb_convert_encoding($value, 'UTF-8', 'HTML-ENTITIES'));
+    }
     
     protected function formatStory($story, $mode) {
         
         $item = array(
             'GUID'        => $story->getGUID(),
             'link'        => $story->getLink(),
-            'title'       => strip_tags($story->getTitle()),
-            'description' => $story->getDescription(),
+            'title'       => $this->encodeValue(strip_tags($story->getTitle())),
+            'description' => $this->encodeValue(strip_tags($story->getDescription())),
             'pubDate'     => $story->getPubTimestamp()
         );
 
         if($story->getContent()) {
             if($mode == 'full') {
-                $item['body'] = $story->getContent();
+                $item['body'] = $this->cleanContent($story->getContent());
             }
             $item['hasBody'] = TRUE;
         } else {
@@ -264,7 +316,13 @@ class AthleticsAPIModule extends APIModule
         $data = isset($this->navFeeds[$tab]) ? $this->navFeeds[$tab] : '';
         
         if (!$data) {
-            throw new KurogoConfigurationException('Unable to load data for nav '. $tab);
+            $vars = $this->getOptionalModuleSection("index", "pages");
+            $key = "tab_" . $tab;
+            if(isset($vars[$key])) {
+                $data['TITLE'] = $vars[$key];
+            }else {
+                $data = null;
+            }
         }
         
         return $data;
@@ -295,8 +353,10 @@ class AthleticsAPIModule extends APIModule
     protected function getNewsFeed($sport, $gender=null) {
         if ($sport=='topnews') {
             $feedData = $this->getNavData('topnews');
+        } elseif (isset($this->feeds[$sport])) {
+            $feedData = $this->feeds[$sport];
         } else {
-            $feedData = $this->getOptionalModuleSection($sport, 'feeds');
+            throw new KurogoDataException($this->getLocalizedString('ERROR_INVALID_SPORT', $sport));
         }
         
         if (isset($feedData['DATA_RETRIEVER']) || isset($feedData['BASE_URL'])) {

@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
   * @copyright 2010 Modo Labs Inc.
   * @package Core
@@ -31,6 +41,9 @@ class DiskCache {
                 if (!mkdir($path, 0700, true)) {
                     throw new KurogoDataException("Could not create $path");
                 }
+            }
+            if (!realpath_exists($path)) {
+                throw new KurogoDataException("Path $path is not valid for cache");
             }
         }
         
@@ -75,13 +88,7 @@ class DiskCache {
     if ($filename === NULL) {
       return $this->path;
     } else {
-      // this replaces %20 with + signs
-      $filename = urlencode(urldecode($filename));
-
-      return $this->path . '/' 
-           . $this->prefix 
-           . $filename 
-           . $this->suffix;
+      return $this->path.'/'.Watchdog::safeFilename($this->prefix.$filename.$this->suffix);
     }
   }
 

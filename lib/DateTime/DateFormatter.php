@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class DateFormatter
 {
     const NO_STYLE=0;
@@ -18,6 +27,9 @@ class DateFormatter
         
         $string = '';
         if ($dateStyleConstant) {
+            if (($dateStyleConstant=='SHORT_DATE_FORMAT') && date('Y') != date('Y', $date)) {
+                $dateStyleConstant .="_YEAR";
+            }
             $format = Kurogo::getLocalizedString($dateStyleConstant);
 
             // Work around lack of %e support in windows

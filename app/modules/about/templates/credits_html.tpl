@@ -1,5 +1,3 @@
-<p>Kurogo is distributed under the MIT License by Modo Labs, Inc.</p>
-
 <p>
 <strong>Modo Labs, Inc.</strong><br />
 100 Cambridgepark Drive, Suite 302<br />
@@ -14,12 +12,14 @@ Cambridge, MA 02140<br />
     <li>Pete Akins (Lead Developer, Mobile Web)</li>
     <li>Muhammad Amjad</li>
     <li>Dario Baldoni</li>
+    <li>Dylan Conger</li>
     <li>Alexis Ellwood</li>
+    <li>Austin Emmons</li>
     <li>Ian Gavalakis</li>
     <li>Wesley Hirsch</li>
     <li>Sonya Huang (Lead Developer, iOS)</li>
     <li>Jim Kang</li>
-    <li>Edward Liu</li>
+    <li>KeFei Liu</li>
     <li>Newstar Liu</li>
     <li>Ebrahim Kobeissi</li>
     <li>David Ormsbee</li>
@@ -94,5 +94,3 @@ Cambridge, MA 02140<br />
     <li>Copyright: Stig Brautaset</li>
     <li><a href="http://stig.github.com/json-framework">http://stig.github.com/json-framework</a>
 </ul>    
-   
-<h2>Third Party Libraries (Android)</h2>

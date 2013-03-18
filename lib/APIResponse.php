@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class APIResponse
 {
     public $id='';
@@ -7,6 +16,7 @@ class APIResponse
     public $command;
     public $version;
     public $error;
+    public $warnings;
     public $response;
     public $context;
     
@@ -44,6 +54,13 @@ class APIResponse
     
     public function setError(KurogoError $error) {
         $this->error = $error;
+    }
+    
+    public function addWarning(KurogoWarning $warning) {
+        if (!isset($this->warnings)) {
+            $this->warnings = array();
+        }
+        $this->warnings[] = $warning;
     }
     
     public function setResponse($response) {

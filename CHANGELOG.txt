@@ -1,3 +1,53 @@
+1.5 (Aug 14, 2012)
+* Version 1.5 is released under the Lesser GNU Public License v2.1
+* NEW MODULE : Social. Show feeds from facebook and Twitter
+* Created ShellModule to create modules that run on the command line (UNIX only at this time)
+* Kurogo shell modules have been created that can fetch public feed data in the background. See dev guide for setting up automatic fetching
+* Kurogo will load libraries and configuration from the shared site directory to reduce code duplication
+* It is possible to change which module is the home module
+* It is possible to change which module is the login module
+* CACHE_LIFETIME is now respected
+* New XML Parser (SimpleXMLDataParser) makes it easier to parse simple XML documents
+* Improved the Calendar Detail page
+* More configurability of Map Module behavior
+* robots.txt file is now dynamic and modules can specify whether they should permit robot scraping
+* Enabled pagination of people results
+* Most module's library files are now included in the module's "lib" folder
+* Add Shibboleth authentication authority (requires a shibboleth SP installed on the Kurogo Server)
+* Tablet Panes are now loaded Asynchronously
+* Updated handling of stats information to improve stats module performance. See dev guide for important migration information
+* Improved tablet interface for Photos (issue 57, 58)
+* Added ability to retrieve data using the cURL library
+* Federated search can be disabled
+* A custom user class can be specified in Authentication configurations eliminating the need to create a custom authority
+* Improved styling of spring board to accomodate devices of various sizes
+* More informative error messages when required PHP extensions are not avaialable
+* Support for Co-Ed sports in Athletics module (issue 56)
+* The people module will perform exact searches for names less than 3 characters (to prevent too many results)
+* ArcGIS data feed results can be sorted
+* KurogoReader now utilizes the URLDataRetriver and therefore respects proxy and other settings
+* Fixes for pagination in Flickr feeds
+* Removed suport for Percent Mobile (service is ending)
+* Proper handling of calendars where the time zone is different than the server time zone (issue 53)
+* The MySQL DB class will now connect to hosts without a password (strongly discouraged except in dev environments)
+* If an event's end time is less than it's start time, an exception will no longer be thrown. In this case the end time will be disregarded
+
+
+1.4.1 (Apr 27, 2012)
+* Fixed issues with Drupal Contacts
+* Many fixes for maps module
+* More flexibility for propertly handling HTML tags in RSS feeds
+* Fixed several issues with custom LDAP searching
+* Responses that contain errors will no longer be cached
+* Clean whitespace from calendar feeds
+* Some non-standard time zones are now recognized
+* Initialization arguments are now passed to the DataResponse object
+* Add previous/next buttons when browsing Photos
+* Fixes for searching phone numbers in people module
+* Fixes for athletics icons
+* Fixed links found when FETCH_CONTENT is used if the url is redirected
+* Redirects are now given SEO friendly HTTP status codes
+
 1.4 (Mar 4, 2012)
 * NEW MODULE: Photos. Show photos from Flickr or Picassa
 * NEW MODULE: Athletics. Show news and score information

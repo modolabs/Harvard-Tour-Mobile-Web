@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 abstract class MapImageController
 {
     protected static $DEFAULT_JS_MAP_CLASS = 'GoogleJSMap';
@@ -10,8 +19,11 @@ abstract class MapImageController
     protected $bufferBox;
 
     protected $zoomLevel = 14;
-    protected $maxZoomLevel = 20;
-    protected $minZoomLevel = 0;
+    protected $minZoomLevel = 2;
+    protected $maxZoomLevel = 25;
+
+    // adjust map viewport when placemark is added
+    protected $resizeOnAddPlacemark = true;
 
     protected $imageWidth = 300;
     protected $imageHeight = 300;
@@ -61,7 +73,6 @@ abstract class MapImageController
 
         $baseMap = new $mapClass();
         $baseMap->init($params);
-
         return $baseMap;
     }
 
@@ -75,7 +86,17 @@ abstract class MapImageController
             $this->setZoomLevel($params['DEFAULT_ZOOM_LEVEL']);
         }
 
-        $this->maxZoomLevel = isset($params['MAXIMUM_ZOOM_LEVEL']) ? $params['MAXIMUM_ZOOM_LEVEL'] : $this->zoomLevel;
+        if (isset($params['resizeOnAddPlacemark'])){
+            $this->resizeOnAddPlacemark = $params['resizeOnAddPlacemark'];
+        }
+
+        if (isset($params['MINIMUM_ZOOM_LEVEL'])){
+            $this->minZoomLevel = $params['MINIMUM_ZOOM_LEVEL'];
+        }
+
+        if (isset($params['MAXIMUM_ZOOM_LEVEL']) && $params['MAXIMUM_ZOOM_LEVEL'] >= $this->minZoomLevel){
+            $this->maxZoomLevel = $params['MAXIMUM_ZOOM_LEVEL'];
+        }
 
         $this->bufferBox = array('xmin' => 180, 'ymin' => 90, 'xmax' => -180, 'ymax' => -90);
 
@@ -151,19 +172,25 @@ abstract class MapImageController
     protected function addPolygon(Placemark $polygon)
     {
         $rings = $polygon->getGeometry()->getRings();
-        $this->adjustBufferForPolyline($rings[0]);
+        if ($this->resizeOnAddPlacemark) {
+            $this->adjustBufferForPolyline($rings[0]);
+        }
     }
 
     protected function addPath(Placemark $polyline)
     {
         $geometry = $polyline->getGeometry();
-        $this->adjustBufferForPolyline($geometry);
+        if ($this->resizeOnAddPlacemark) {
+            $this->adjustBufferForPolyline($geometry);
+        }
     }
 
     protected function addPoint(Placemark $point)
     {
         $center = $point->getGeometry()->getCenterCoordinate();
-        $this->adjustBufferForPoint($center);
+        if ($this->resizeOnAddPlacemark) {
+            $this->adjustBufferForPoint($center);
+        }
     }
 
     protected function adjustBufferForPolyline(MapPolyline $polyline)

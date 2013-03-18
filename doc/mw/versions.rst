@@ -5,6 +5,25 @@ Version History
 Kurogo continues to be improved. The following are significant improvements in each version.
 For more detailed release notes, see the included CHANGELOG file
 
+Version 1.5
+===============================
+* NEW MODULE : :doc:`Social <modulesocial>`. Show feeds from Facebook and Twitter
+* Created :doc:`ShellModule <shellmodule>` to create modules that run on the command line (UNIX only at this time)
+* Kurogo shell modules have been created that can fetch public feed data in the background. See dev guide for setting up automatic fetching
+* It is possible to change which module is the home module
+* New XML Parser (SimpleXMLDataParser) makes it easier to parse simple XML documents
+* Improved the :doc:`Calendar <modulecalendar>` Detail page
+* Improved :doc:`Map Module <modulemap>` flexibility
+* Enabled pagination of people results
+* Add :doc:`Shibboleth authentication <ShibbolethAuthentication>` authority
+* Tablet Panes are now loaded Asynchronously
+* Improved tablet interface for Photos
+* Added ability to retrieve data using the cURL library
+* A custom user class can be specified in :doc:`Authentication <authentication>` configurations eliminating the need to create a custom authority
+* Support for Co-Ed sports in :doc:`Athletics <moduleathletics>` module
+* Updated handling of stats date. See :ref:`stats_migration` for important details on migrating existing stats data
+* Many other bug fixes and minor improvements
+
 Version 1.4 (March 5, 2012)
 ===============================
 * NEW Module: :doc:`Athletics <moduleathletics>`

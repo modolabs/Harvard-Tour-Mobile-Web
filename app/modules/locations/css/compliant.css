@@ -1,0 +1,18 @@
+#locations li.closed {
+    background-image: url("/modules/locations/images/locations-status-closed.png");
+}
+
+#locations li {
+    background-position: 6px 12px;
+    background-repeat: no-repeat;
+    background-size: 20px;
+    -o-background-size: 20px;
+    -moz-background-size: 20px;
+    -khtml-background-size: 20px;
+    -webkit-background-size: 20px;
+    padding-left: 40px;
+}
+
+#locations li.open {
+    background-image: url("/modules/locations/images/locations-status-open.png");
+}

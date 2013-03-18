@@ -1,6 +1,13 @@
 <?php
 
-Kurogo::includePackage('Emergency');
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
 
 class EmergencyAPIModule extends APIModule {
 
@@ -40,24 +47,26 @@ class EmergencyAPIModule extends APIModule {
                 break;
 
             case 'contacts':
-                $contactsConfig = $config->getSection('contacts');
+                if($contactsConfig = $config->getOptionalSection('contacts')) {
+                    try {
+                        if (isset($contactsConfig['CONTROLLER_CLASS'])) {
+                            $modelClass = $contactsConfig['CONTROLLER_CLASS'];
+                        } else {
+                            $modelClass = isset($contactsConfig['MODEL_CLASS']) ? $contactsConfig['MODEL_CLASS'] : 'EmergencyContactsDataModel';
+                        }
 
-                try {
-                    if (isset($contactsConfig['CONTROLLER_CLASS'])) {
-                        $modelClass = $contactsConfig['CONTROLLER_CLASS'];
-                    } else {
-                        $modelClass = isset($contactsConfig['MODEL_CLASS']) ? $contactsConfig['MODEL_CLASS'] : 'EmergencyContactsDataModel';
+                        $contactsController = EmergencyContactsDataModel::factory($modelClass, $contactsConfig);
+                    } catch (KurogoException $e) { 
+                        $contactsController = DataController::factory($contactsConfig['CONTROLLER_CLASS'], $contactsConfig);
                     }
-                    
-                    $contactsController = EmergencyContactsDataModel::factory($modelClass, $contactsConfig);
-                } catch (KurogoException $e) { 
-                    $contactsController = DataController::factory($contactsConfig['CONTROLLER_CLASS'], $contactsConfig);
-                }
 
-                $response = array(
-                    'primary' => self::formatContacts($contactsController->getPrimaryContacts()),
-                    'secondary' => self::formatContacts($contactsController->getSecondaryContacts()),
-                );
+                    $response = array(
+                        'primary' => self::formatContacts($contactsController->getPrimaryContacts()),
+                        'secondary' => self::formatContacts($contactsController->getSecondaryContacts()),
+                    );
+                }else {
+                    $response = new stdClass();
+                }
                 $this->setResponse($response);
                 $this->setResponseVersion(2);
                 break;
@@ -81,7 +90,7 @@ class EmergencyAPIModule extends APIModule {
                 'title' => $contact->getTitle(),
                 'subtitle' => $subtitle,
                 'type' => 'phone',
-                'url' => 'tel:'.$contact->getPhoneDialable(),
+                'url' => $contact->getPhoneDialable(),
              );
         }
         return $formattedContacts;

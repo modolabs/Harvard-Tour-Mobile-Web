@@ -1,6 +1,15 @@
 <?php
 
 /*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
+/*
 http://trac.osgeo.org/proj/wiki/GenParms
 
 +a         Semimajor radius of the ellipsoid axis
@@ -258,8 +267,8 @@ class MapProjection
             case 'cea': // 2 SRIDs; http://en.wikipedia.org/wiki/Cylindrical_equal-area_projection
             case 'nzmg': // 1
             case 'krovak': // 1
-            default:die();
-                //throw new KurogoConfigurationException("reverse projection not implemented for {$this->proj}");
+            default:
+                throw new KurogoConfigurationException("reverse projection not implemented for {$this->proj}");
                 break;
         }
     }
