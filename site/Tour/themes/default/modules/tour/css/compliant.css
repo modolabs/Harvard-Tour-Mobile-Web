@@ -635,7 +635,6 @@ img.headphones {
 	padding: 14px 8px;
 	font-size: 76.5%;
 	color: #666;
-	display:none;
 } 
 .footnote strong {
 	color: #505050;
@@ -645,8 +644,4 @@ img.headphones {
 	font-size: 85.7%;
 	font-weight: bold;
 	text-transform: uppercase;
-}
-
-.lens-legend {
-	display:none;
 }
