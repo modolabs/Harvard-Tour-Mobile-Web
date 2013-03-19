@@ -10,6 +10,20 @@
 function kurogo_tour_menu_default_menu_links() {
   $menu_links = array();
 
+  // Exported menu link: main-menu:<front>
+  $menu_links['main-menu:<front>'] = array(
+    'menu_name' => 'main-menu',
+    'link_path' => '<front>',
+    'router_path' => '',
+    'link_title' => 'Home',
+    'options' => array(),
+    'module' => 'menu',
+    'hidden' => '0',
+    'external' => '1',
+    'has_children' => '0',
+    'expanded' => '0',
+    'weight' => '-50',
+  );
   // Exported menu link: main-menu:admin/content
   $menu_links['main-menu:admin/content'] = array(
     'menu_name' => 'main-menu',
@@ -26,7 +40,7 @@ function kurogo_tour_menu_default_menu_links() {
     'external' => '0',
     'has_children' => '0',
     'expanded' => '0',
-    'weight' => '-49',
+    'weight' => '0',
   );
   // Exported menu link: main-menu:node/add/lens-content-photo-text
   $menu_links['main-menu:node/add/lens-content-photo-text'] = array(
@@ -44,7 +58,7 @@ function kurogo_tour_menu_default_menu_links() {
     'external' => '0',
     'has_children' => '0',
     'expanded' => '0',
-    'weight' => '-47',
+    'weight' => '-48',
   );
   // Exported menu link: main-menu:node/add/lens-content-slideshow
   $menu_links['main-menu:node/add/lens-content-slideshow'] = array(
@@ -62,7 +76,7 @@ function kurogo_tour_menu_default_menu_links() {
     'external' => '0',
     'has_children' => '0',
     'expanded' => '0',
-    'weight' => '-46',
+    'weight' => '-47',
   );
   // Exported menu link: main-menu:node/add/lens-content-video
   $menu_links['main-menu:node/add/lens-content-video'] = array(
@@ -80,7 +94,7 @@ function kurogo_tour_menu_default_menu_links() {
     'external' => '0',
     'has_children' => '0',
     'expanded' => '0',
-    'weight' => '-45',
+    'weight' => '-46',
   );
   // Exported menu link: main-menu:node/add/tour-stop
   $menu_links['main-menu:node/add/tour-stop'] = array(
@@ -98,7 +112,7 @@ function kurogo_tour_menu_default_menu_links() {
     'external' => '0',
     'has_children' => '0',
     'expanded' => '0',
-    'weight' => '-48',
+    'weight' => '-49',
   );
   // Translatables
   // Included for use with string extractors like potx.
@@ -107,6 +121,7 @@ function kurogo_tour_menu_default_menu_links() {
   t('Add Tab (Slideshow)');
   t('Add Tab (Video)');
   t('All Content');
+  t('Home');
 
 
   return $menu_links;

@@ -169,8 +169,8 @@ function kurogo_tour_field_group_info() {
     'weight' => '8',
     'children' => array(
       0 => 'field_finish',
-      1 => 'field_finish_links',
-      2 => 'field_finish_footer',
+      1 => 'field_finish_footer',
+      2 => 'field_finish_links',
     ),
     'format_type' => 'htab',
     'format_settings' => array(
@@ -223,14 +223,14 @@ function kurogo_tour_field_group_info() {
   $field_group->parent_name = 'group_tourtabs';
   $field_group->data = array(
     'label' => 'Help Page',
-    'weight' => '9',
+    'weight' => '10',
     'children' => array(
       0 => 'field_help',
       1 => 'field_help_footer',
-      2 => 'field_help_middle',
-      3 => 'field_help_lenses',
-      4 => 'field_help_links',
-      5 => 'field_help_links_2',
+      2 => 'field_help_lenses',
+      3 => 'field_help_links',
+      4 => 'field_help_links_2',
+      5 => 'field_help_middle',
       6 => 'field_help_middle_2',
     ),
     'format_type' => 'htab',
@@ -688,7 +688,7 @@ function kurogo_tour_field_group_info() {
   $field_group->parent_name = 'group_tourtabs';
   $field_group->data = array(
     'label' => 'Stop Detail Legend',
-    'weight' => '10',
+    'weight' => '11',
     'children' => array(
       0 => 'field_stop_legend_lenses',
     ),
@@ -768,13 +768,13 @@ function kurogo_tour_field_group_info() {
   $field_group->parent_name = '';
   $field_group->data = array(
     'label' => 'Tabs',
-    'weight' => '0',
+    'weight' => '1',
     'children' => array(
-      0 => 'group_stops',
-      1 => 'group_welcome',
-      2 => 'group_finish',
-      3 => 'group_help',
-      4 => 'group_stop_detail_legend',
+      0 => 'group_finish',
+      1 => 'group_help',
+      2 => 'group_stop_detail_legend',
+      3 => 'group_stops',
+      4 => 'group_welcome',
     ),
     'format_type' => 'htabs',
     'format_settings' => array(

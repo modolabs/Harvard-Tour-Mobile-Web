@@ -10,7 +10,7 @@
 function kurogo_tour_field_default_fields() {
   $fields = array();
 
-  // Exported field: 'node-lens_content_photo_text-field_internal_notes'
+  // Exported field: 'node-lens_content_photo_text-field_internal_notes'.
   $fields['node-lens_content_photo_text-field_internal_notes'] = array(
     'field_config' => array(
       'active' => '1',
@@ -31,6 +31,7 @@ function kurogo_tour_field_default_fields() {
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',
@@ -78,7 +79,7 @@ function kurogo_tour_field_default_fields() {
     ),
   );
 
-  // Exported field: 'node-lens_content_photo_text-field_photo'
+  // Exported field: 'node-lens_content_photo_text-field_photo'.
   $fields['node-lens_content_photo_text-field_photo'] = array(
     'field_config' => array(
       'active' => '1',
@@ -99,6 +100,7 @@ function kurogo_tour_field_default_fields() {
           0 => 'fid',
         ),
       ),
+      'locked' => '0',
       'module' => 'image',
       'settings' => array(
         'default_image' => 0,
@@ -119,8 +121,10 @@ function kurogo_tour_field_default_fields() {
             'slideshow_caption' => 'title',
             'slideshow_caption_link' => '',
             'slideshow_carousel_circular' => 0,
+            'slideshow_carousel_follow' => 0,
             'slideshow_carousel_image_style' => '',
             'slideshow_carousel_scroll' => '1',
+            'slideshow_carousel_skin' => '',
             'slideshow_carousel_speed' => '500',
             'slideshow_carousel_vertical' => 0,
             'slideshow_carousel_visible' => '3',
@@ -130,6 +134,8 @@ function kurogo_tour_field_default_fields() {
             'slideshow_colorbox_speed' => '350',
             'slideshow_colorbox_transition' => 'elastic',
             'slideshow_controls' => 0,
+            'slideshow_controls_pause' => 0,
+            'slideshow_controls_position' => 'after',
             'slideshow_field_collection_image' => '',
             'slideshow_fx' => 'fade',
             'slideshow_image_style' => '',
@@ -137,8 +143,10 @@ function kurogo_tour_field_default_fields() {
             'slideshow_order' => '',
             'slideshow_pager' => '',
             'slideshow_pager_image_style' => '',
+            'slideshow_pager_position' => 'after',
             'slideshow_pause' => 0,
             'slideshow_speed' => '1000',
+            'slideshow_start_on_hover' => 0,
             'slideshow_timeout' => '0',
           ),
           'type' => 'slideshow',
@@ -157,6 +165,7 @@ function kurogo_tour_field_default_fields() {
       'required' => 0,
       'settings' => array(
         'alt_field' => 0,
+        'default_image' => 0,
         'file_directory' => 'photos',
         'file_extensions' => 'jpg jpeg',
         'max_filesize' => '200KB',
@@ -178,7 +187,7 @@ function kurogo_tour_field_default_fields() {
     ),
   );
 
-  // Exported field: 'node-lens_content_photo_text-field_text'
+  // Exported field: 'node-lens_content_photo_text-field_text'.
   $fields['node-lens_content_photo_text-field_text'] = array(
     'field_config' => array(
       'active' => '1',
@@ -199,6 +208,7 @@ function kurogo_tour_field_default_fields() {
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',
@@ -248,7 +258,7 @@ Hint: Use Shift-Enter to generate a newline.',
     ),
   );
 
-  // Exported field: 'node-lens_content_slideshow-field_internal_notes'
+  // Exported field: 'node-lens_content_slideshow-field_internal_notes'.
   $fields['node-lens_content_slideshow-field_internal_notes'] = array(
     'field_config' => array(
       'active' => '1',
@@ -269,6 +279,7 @@ Hint: Use Shift-Enter to generate a newline.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',
@@ -316,7 +327,7 @@ Hint: Use Shift-Enter to generate a newline.',
     ),
   );
 
-  // Exported field: 'node-lens_content_slideshow-field_photos'
+  // Exported field: 'node-lens_content_slideshow-field_photos'.
   $fields['node-lens_content_slideshow-field_photos'] = array(
     'field_config' => array(
       'active' => '1',
@@ -337,6 +348,7 @@ Hint: Use Shift-Enter to generate a newline.',
           0 => 'fid',
         ),
       ),
+      'locked' => '0',
       'module' => 'image',
       'settings' => array(
         'default_image' => 0,
@@ -357,8 +369,10 @@ Hint: Use Shift-Enter to generate a newline.',
             'slideshow_caption' => 'title',
             'slideshow_caption_link' => '',
             'slideshow_carousel_circular' => 0,
+            'slideshow_carousel_follow' => 0,
             'slideshow_carousel_image_style' => 'thumbnail',
             'slideshow_carousel_scroll' => '1',
+            'slideshow_carousel_skin' => '',
             'slideshow_carousel_speed' => '500',
             'slideshow_carousel_vertical' => 0,
             'slideshow_carousel_visible' => '5',
@@ -368,6 +382,8 @@ Hint: Use Shift-Enter to generate a newline.',
             'slideshow_colorbox_speed' => '350',
             'slideshow_colorbox_transition' => 'elastic',
             'slideshow_controls' => 0,
+            'slideshow_controls_pause' => 0,
+            'slideshow_controls_position' => 'after',
             'slideshow_field_collection_image' => '',
             'slideshow_fx' => 'fade',
             'slideshow_image_style' => '',
@@ -375,8 +391,10 @@ Hint: Use Shift-Enter to generate a newline.',
             'slideshow_order' => '',
             'slideshow_pager' => 'image',
             'slideshow_pager_image_style' => 'thumbnail',
+            'slideshow_pager_position' => 'after',
             'slideshow_pause' => 0,
             'slideshow_speed' => '10',
+            'slideshow_start_on_hover' => 0,
             'slideshow_timeout' => '0',
           ),
           'type' => 'slideshow',
@@ -395,6 +413,7 @@ Hint: Use Shift-Enter to generate a newline.',
       'required' => 0,
       'settings' => array(
         'alt_field' => 0,
+        'default_image' => 0,
         'file_directory' => 'photos',
         'file_extensions' => 'jpg jpeg',
         'max_filesize' => '200KB',
@@ -416,7 +435,7 @@ Hint: Use Shift-Enter to generate a newline.',
     ),
   );
 
-  // Exported field: 'node-lens_content_video-field_caption'
+  // Exported field: 'node-lens_content_video-field_caption'.
   $fields['node-lens_content_video-field_caption'] = array(
     'field_config' => array(
       'active' => '1',
@@ -437,6 +456,7 @@ Hint: Use Shift-Enter to generate a newline.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',
@@ -482,7 +502,7 @@ Hint: Use Shift-Enter to generate a newline.',
     ),
   );
 
-  // Exported field: 'node-lens_content_video-field_internal_notes'
+  // Exported field: 'node-lens_content_video-field_internal_notes'.
   $fields['node-lens_content_video-field_internal_notes'] = array(
     'field_config' => array(
       'active' => '1',
@@ -503,6 +523,7 @@ Hint: Use Shift-Enter to generate a newline.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',
@@ -550,7 +571,7 @@ Hint: Use Shift-Enter to generate a newline.',
     ),
   );
 
-  // Exported field: 'node-lens_content_video-field_mpeg4'
+  // Exported field: 'node-lens_content_video-field_mpeg4'.
   $fields['node-lens_content_video-field_mpeg4'] = array(
     'field_config' => array(
       'active' => '1',
@@ -571,6 +592,7 @@ Hint: Use Shift-Enter to generate a newline.',
           0 => 'fid',
         ),
       ),
+      'locked' => '0',
       'module' => 'file',
       'settings' => array(
         'display_default' => 1,
@@ -622,7 +644,7 @@ Hint: Use Shift-Enter to generate a newline.',
     ),
   );
 
-  // Exported field: 'node-lens_content_video-field_text'
+  // Exported field: 'node-lens_content_video-field_text'.
   $fields['node-lens_content_video-field_text'] = array(
     'field_config' => array(
       'active' => '1',
@@ -643,6 +665,7 @@ Hint: Use Shift-Enter to generate a newline.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',
@@ -692,7 +715,7 @@ Hint: Use Shift-Enter to generate a newline.',
     ),
   );
 
-  // Exported field: 'node-lens_content_video-field_youtube'
+  // Exported field: 'node-lens_content_video-field_youtube'.
   $fields['node-lens_content_video-field_youtube'] = array(
     'field_config' => array(
       'active' => '1',
@@ -713,6 +736,7 @@ Hint: Use Shift-Enter to generate a newline.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(
         'max_length' => '20',
@@ -771,7 +795,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-lens_descriptions-field_fastfacts_desc'
+  // Exported field: 'node-lens_descriptions-field_fastfacts_desc'.
   $fields['node-lens_descriptions-field_fastfacts_desc'] = array(
     'field_config' => array(
       'active' => '1',
@@ -792,6 +816,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(
         'max_length' => '40',
@@ -803,7 +828,7 @@ The YouTube version of the video is used for the mobile web.',
       'bundle' => 'lens_descriptions',
       'default_value' => array(
         0 => array(
-          'value' => 'Interesting facts and trivia',
+          'value' => 'Description of tab type B',
         ),
       ),
       'deleted' => '0',
@@ -814,7 +839,7 @@ The YouTube version of the video is used for the mobile web.',
           'module' => 'text',
           'settings' => array(),
           'type' => 'text_default',
-          'weight' => '3',
+          'weight' => '7',
         ),
         'teaser' => array(
           'label' => 'above',
@@ -843,7 +868,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-lens_descriptions-field_fastfacts_name'
+  // Exported field: 'node-lens_descriptions-field_fastfacts_name'.
   $fields['node-lens_descriptions-field_fastfacts_name'] = array(
     'field_config' => array(
       'active' => '1',
@@ -864,6 +889,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(
         'max_length' => '15',
@@ -915,7 +941,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-lens_descriptions-field_history_desc'
+  // Exported field: 'node-lens_descriptions-field_history_desc'.
   $fields['node-lens_descriptions-field_history_desc'] = array(
     'field_config' => array(
       'active' => '1',
@@ -936,6 +962,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(
         'max_length' => '40',
@@ -947,7 +974,7 @@ The YouTube version of the video is used for the mobile web.',
       'bundle' => 'lens_descriptions',
       'default_value' => array(
         0 => array(
-          'value' => 'Highlights and stories',
+          'value' => 'Description of tab type D',
         ),
       ),
       'deleted' => '0',
@@ -958,7 +985,7 @@ The YouTube version of the video is used for the mobile web.',
           'module' => 'text',
           'settings' => array(),
           'type' => 'text_default',
-          'weight' => '5',
+          'weight' => '9',
         ),
         'teaser' => array(
           'label' => 'above',
@@ -987,7 +1014,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-lens_descriptions-field_history_name'
+  // Exported field: 'node-lens_descriptions-field_history_name'.
   $fields['node-lens_descriptions-field_history_name'] = array(
     'field_config' => array(
       'active' => '1',
@@ -1008,6 +1035,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(
         'max_length' => '15',
@@ -1059,7 +1087,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-lens_descriptions-field_info_desc'
+  // Exported field: 'node-lens_descriptions-field_info_desc'.
   $fields['node-lens_descriptions-field_info_desc'] = array(
     'field_config' => array(
       'active' => '1',
@@ -1080,6 +1108,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(
         'max_length' => '40',
@@ -1102,7 +1131,7 @@ The YouTube version of the video is used for the mobile web.',
           'module' => 'text',
           'settings' => array(),
           'type' => 'text_default',
-          'weight' => '14',
+          'weight' => '5',
         ),
         'teaser' => array(
           'label' => 'above',
@@ -1131,7 +1160,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-lens_descriptions-field_info_name'
+  // Exported field: 'node-lens_descriptions-field_info_name'.
   $fields['node-lens_descriptions-field_info_name'] = array(
     'field_config' => array(
       'active' => '1',
@@ -1152,6 +1181,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(
         'max_length' => '15',
@@ -1174,7 +1204,7 @@ The YouTube version of the video is used for the mobile web.',
           'module' => 'text',
           'settings' => array(),
           'type' => 'text_default',
-          'weight' => '13',
+          'weight' => '0',
         ),
         'teaser' => array(
           'label' => 'above',
@@ -1203,7 +1233,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-lens_descriptions-field_innovation_desc'
+  // Exported field: 'node-lens_descriptions-field_innovation_desc'.
   $fields['node-lens_descriptions-field_innovation_desc'] = array(
     'field_config' => array(
       'active' => '1',
@@ -1224,6 +1254,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(
         'max_length' => '40',
@@ -1235,7 +1266,7 @@ The YouTube version of the video is used for the mobile web.',
       'bundle' => 'lens_descriptions',
       'default_value' => array(
         0 => array(
-          'value' => 'Groundbreaking moments',
+          'value' => 'Description of tab type C',
         ),
       ),
       'deleted' => '0',
@@ -1246,7 +1277,7 @@ The YouTube version of the video is used for the mobile web.',
           'module' => 'text',
           'settings' => array(),
           'type' => 'text_default',
-          'weight' => '7',
+          'weight' => '8',
         ),
         'teaser' => array(
           'label' => 'above',
@@ -1275,7 +1306,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-lens_descriptions-field_innovation_name'
+  // Exported field: 'node-lens_descriptions-field_innovation_name'.
   $fields['node-lens_descriptions-field_innovation_name'] = array(
     'field_config' => array(
       'active' => '1',
@@ -1296,6 +1327,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(
         'max_length' => '15',
@@ -1318,7 +1350,7 @@ The YouTube version of the video is used for the mobile web.',
           'module' => 'text',
           'settings' => array(),
           'type' => 'text_default',
-          'weight' => '6',
+          'weight' => '3',
         ),
         'teaser' => array(
           'label' => 'above',
@@ -1347,7 +1379,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-lens_descriptions-field_insideout_desc'
+  // Exported field: 'node-lens_descriptions-field_insideout_desc'.
   $fields['node-lens_descriptions-field_insideout_desc'] = array(
     'field_config' => array(
       'active' => '1',
@@ -1368,6 +1400,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(
         'max_length' => '40',
@@ -1379,7 +1412,7 @@ The YouTube version of the video is used for the mobile web.',
       'bundle' => 'lens_descriptions',
       'default_value' => array(
         0 => array(
-          'value' => 'An insider\'s view',
+          'value' => 'Description of tab type A',
         ),
       ),
       'deleted' => '0',
@@ -1390,7 +1423,7 @@ The YouTube version of the video is used for the mobile web.',
           'module' => 'text',
           'settings' => array(),
           'type' => 'text_default',
-          'weight' => '8',
+          'weight' => '6',
         ),
         'teaser' => array(
           'label' => 'above',
@@ -1419,7 +1452,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-lens_descriptions-field_insideout_name'
+  // Exported field: 'node-lens_descriptions-field_insideout_name'.
   $fields['node-lens_descriptions-field_insideout_name'] = array(
     'field_config' => array(
       'active' => '1',
@@ -1440,6 +1473,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(
         'max_length' => '15',
@@ -1462,7 +1496,7 @@ The YouTube version of the video is used for the mobile web.',
           'module' => 'text',
           'settings' => array(),
           'type' => 'text_default',
-          'weight' => '7',
+          'weight' => '1',
         ),
         'teaser' => array(
           'label' => 'above',
@@ -1491,7 +1525,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-lens_descriptions-field_internal_notes'
+  // Exported field: 'node-lens_descriptions-field_internal_notes'.
   $fields['node-lens_descriptions-field_internal_notes'] = array(
     'field_config' => array(
       'active' => '1',
@@ -1512,6 +1546,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',
@@ -1528,7 +1563,7 @@ The YouTube version of the video is used for the mobile web.',
           'module' => 'text',
           'settings' => array(),
           'type' => 'text_default',
-          'weight' => '5',
+          'weight' => '11',
         ),
         'teaser' => array(
           'label' => 'above',
@@ -1557,7 +1592,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-tour-field_finish'
+  // Exported field: 'node-tour-field_finish'.
   $fields['node-tour-field_finish'] = array(
     'field_config' => array(
       'active' => '1',
@@ -1578,6 +1613,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',
@@ -1623,7 +1659,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-tour-field_finish_footer'
+  // Exported field: 'node-tour-field_finish_footer'.
   $fields['node-tour-field_finish_footer'] = array(
     'field_config' => array(
       'active' => '1',
@@ -1644,6 +1680,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',
@@ -1689,7 +1726,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-tour-field_finish_links'
+  // Exported field: 'node-tour-field_finish_links'.
   $fields['node-tour-field_finish_links'] = array(
     'field_config' => array(
       'active' => '1',
@@ -1699,6 +1736,7 @@ The YouTube version of the video is used for the mobile web.',
       'field_name' => 'field_finish_links',
       'foreign keys' => array(),
       'indexes' => array(),
+      'locked' => '0',
       'module' => 'navlist',
       'settings' => array(
         'attributes' => array(
@@ -1750,7 +1788,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-tour-field_help'
+  // Exported field: 'node-tour-field_help'.
   $fields['node-tour-field_help'] = array(
     'field_config' => array(
       'active' => '1',
@@ -1771,6 +1809,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',
@@ -1816,7 +1855,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-tour-field_help_footer'
+  // Exported field: 'node-tour-field_help_footer'.
   $fields['node-tour-field_help_footer'] = array(
     'field_config' => array(
       'active' => '1',
@@ -1837,6 +1876,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',
@@ -1882,7 +1922,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-tour-field_help_lenses'
+  // Exported field: 'node-tour-field_help_lenses'.
   $fields['node-tour-field_help_lenses'] = array(
     'field_config' => array(
       'active' => '1',
@@ -1903,6 +1943,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'nid',
         ),
       ),
+      'locked' => '0',
       'module' => 'node_reference',
       'settings' => array(
         'referenceable_types' => array(
@@ -1963,7 +2004,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-tour-field_help_links'
+  // Exported field: 'node-tour-field_help_links'.
   $fields['node-tour-field_help_links'] = array(
     'field_config' => array(
       'active' => '1',
@@ -1973,6 +2014,7 @@ The YouTube version of the video is used for the mobile web.',
       'field_name' => 'field_help_links',
       'foreign keys' => array(),
       'indexes' => array(),
+      'locked' => '0',
       'module' => 'navlist',
       'settings' => array(
         'attributes' => array(
@@ -2030,7 +2072,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-tour-field_help_links_2'
+  // Exported field: 'node-tour-field_help_links_2'.
   $fields['node-tour-field_help_links_2'] = array(
     'field_config' => array(
       'active' => '1',
@@ -2040,6 +2082,7 @@ The YouTube version of the video is used for the mobile web.',
       'field_name' => 'field_help_links_2',
       'foreign keys' => array(),
       'indexes' => array(),
+      'locked' => '0',
       'module' => 'navlist',
       'settings' => array(
         'attributes' => array(
@@ -2091,7 +2134,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-tour-field_help_middle'
+  // Exported field: 'node-tour-field_help_middle'.
   $fields['node-tour-field_help_middle'] = array(
     'field_config' => array(
       'active' => '1',
@@ -2112,6 +2155,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',
@@ -2157,7 +2201,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-tour-field_help_middle_2'
+  // Exported field: 'node-tour-field_help_middle_2'.
   $fields['node-tour-field_help_middle_2'] = array(
     'field_config' => array(
       'active' => '1',
@@ -2178,6 +2222,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',
@@ -2223,7 +2268,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-tour-field_internal_notes'
+  // Exported field: 'node-tour-field_internal_notes'.
   $fields['node-tour-field_internal_notes'] = array(
     'field_config' => array(
       'active' => '1',
@@ -2244,6 +2289,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',
@@ -2262,7 +2308,7 @@ The YouTube version of the video is used for the mobile web.',
           'module' => 'text',
           'settings' => array(),
           'type' => 'text_default',
-          'weight' => '1',
+          'weight' => '2',
         ),
         'teaser' => array(
           'label' => 'above',
@@ -2291,7 +2337,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-tour-field_stop_legend_lenses'
+  // Exported field: 'node-tour-field_stop_legend_lenses'.
   $fields['node-tour-field_stop_legend_lenses'] = array(
     'field_config' => array(
       'active' => '1',
@@ -2312,6 +2358,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'nid',
         ),
       ),
+      'locked' => '0',
       'module' => 'node_reference',
       'settings' => array(
         'referenceable_types' => array(
@@ -2372,7 +2419,7 @@ The YouTube version of the video is used for the mobile web.',
     ),
   );
 
-  // Exported field: 'node-tour-field_stops'
+  // Exported field: 'node-tour-field_stops'.
   $fields['node-tour-field_stops'] = array(
     'field_config' => array(
       'active' => '1',
@@ -2393,6 +2440,7 @@ The YouTube version of the video is used for the mobile web.',
           0 => 'nid',
         ),
       ),
+      'locked' => '0',
       'module' => 'node_reference',
       'settings' => array(
         'referenceable_types' => array(
@@ -2459,7 +2507,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
     ),
   );
 
-  // Exported field: 'node-tour-field_welcome'
+  // Exported field: 'node-tour-field_welcome'.
   $fields['node-tour-field_welcome'] = array(
     'field_config' => array(
       'active' => '1',
@@ -2480,6 +2528,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',
@@ -2525,7 +2574,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
     ),
   );
 
-  // Exported field: 'node-tour-field_welcome_footer'
+  // Exported field: 'node-tour-field_welcome_footer'.
   $fields['node-tour-field_welcome_footer'] = array(
     'field_config' => array(
       'active' => '1',
@@ -2546,6 +2595,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',
@@ -2591,7 +2641,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
     ),
   );
 
-  // Exported field: 'node-tour-field_welcome_lenses'
+  // Exported field: 'node-tour-field_welcome_lenses'.
   $fields['node-tour-field_welcome_lenses'] = array(
     'field_config' => array(
       'active' => '1',
@@ -2612,6 +2662,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
           0 => 'nid',
         ),
       ),
+      'locked' => '0',
       'module' => 'node_reference',
       'settings' => array(
         'referenceable_types' => array(
@@ -2672,7 +2723,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
     ),
   );
 
-  // Exported field: 'node-tour_stop-field_approach_photo'
+  // Exported field: 'node-tour_stop-field_approach_photo'.
   $fields['node-tour_stop-field_approach_photo'] = array(
     'field_config' => array(
       'active' => '1',
@@ -2693,6 +2744,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
           0 => 'fid',
         ),
       ),
+      'locked' => '0',
       'module' => 'image',
       'settings' => array(
         'default_image' => 0,
@@ -2729,6 +2781,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
       'required' => 0,
       'settings' => array(
         'alt_field' => 0,
+        'default_image' => 0,
         'file_directory' => 'photos',
         'file_extensions' => 'jpg jpeg',
         'max_filesize' => '200KB',
@@ -2750,7 +2803,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
     ),
   );
 
-  // Exported field: 'node-tour_stop-field_approach_thumbnail'
+  // Exported field: 'node-tour_stop-field_approach_thumbnail'.
   $fields['node-tour_stop-field_approach_thumbnail'] = array(
     'field_config' => array(
       'active' => '1',
@@ -2771,6 +2824,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
           0 => 'fid',
         ),
       ),
+      'locked' => '0',
       'module' => 'image',
       'settings' => array(
         'default_image' => 0,
@@ -2811,6 +2865,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
       'required' => 0,
       'settings' => array(
         'alt_field' => 0,
+        'default_image' => 0,
         'file_directory' => 'photos',
         'file_extensions' => 'jpg jpeg',
         'max_filesize' => '',
@@ -2832,7 +2887,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
     ),
   );
 
-  // Exported field: 'node-tour_stop-field_building'
+  // Exported field: 'node-tour_stop-field_building'.
   $fields['node-tour_stop-field_building'] = array(
     'field_config' => array(
       'active' => '1',
@@ -2853,6 +2908,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(
         'max_length' => '10',
@@ -2900,7 +2956,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
     ),
   );
 
-  // Exported field: 'node-tour_stop-field_fastfacts'
+  // Exported field: 'node-tour_stop-field_fastfacts'.
   $fields['node-tour_stop-field_fastfacts'] = array(
     'field_config' => array(
       'active' => '1',
@@ -2921,6 +2977,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
           0 => 'nid',
         ),
       ),
+      'locked' => '0',
       'module' => 'node_reference',
       'settings' => array(
         'referenceable_types' => array(
@@ -2981,7 +3038,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
     ),
   );
 
-  // Exported field: 'node-tour_stop-field_history'
+  // Exported field: 'node-tour_stop-field_history'.
   $fields['node-tour_stop-field_history'] = array(
     'field_config' => array(
       'active' => '1',
@@ -3002,6 +3059,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
           0 => 'nid',
         ),
       ),
+      'locked' => '0',
       'module' => 'node_reference',
       'settings' => array(
         'referenceable_types' => array(
@@ -3062,7 +3120,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
     ),
   );
 
-  // Exported field: 'node-tour_stop-field_innovation'
+  // Exported field: 'node-tour_stop-field_innovation'.
   $fields['node-tour_stop-field_innovation'] = array(
     'field_config' => array(
       'active' => '1',
@@ -3083,6 +3141,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
           0 => 'nid',
         ),
       ),
+      'locked' => '0',
       'module' => 'node_reference',
       'settings' => array(
         'referenceable_types' => array(
@@ -3143,7 +3202,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
     ),
   );
 
-  // Exported field: 'node-tour_stop-field_insideout'
+  // Exported field: 'node-tour_stop-field_insideout'.
   $fields['node-tour_stop-field_insideout'] = array(
     'field_config' => array(
       'active' => '1',
@@ -3164,6 +3223,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
           0 => 'nid',
         ),
       ),
+      'locked' => '0',
       'module' => 'node_reference',
       'settings' => array(
         'referenceable_types' => array(
@@ -3224,7 +3284,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
     ),
   );
 
-  // Exported field: 'node-tour_stop-field_internal_notes'
+  // Exported field: 'node-tour_stop-field_internal_notes'.
   $fields['node-tour_stop-field_internal_notes'] = array(
     'field_config' => array(
       'active' => '1',
@@ -3245,6 +3305,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',
@@ -3292,7 +3353,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
     ),
   );
 
-  // Exported field: 'node-tour_stop-field_location'
+  // Exported field: 'node-tour_stop-field_location'.
   $fields['node-tour_stop-field_location'] = array(
     'field_config' => array(
       'active' => '1',
@@ -3309,6 +3370,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
           0 => 'lng',
         ),
       ),
+      'locked' => '0',
       'module' => 'geolocation',
       'settings' => array(),
       'translatable' => '1',
@@ -3364,7 +3426,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
     ),
   );
 
-  // Exported field: 'node-tour_stop-field_photo'
+  // Exported field: 'node-tour_stop-field_photo'.
   $fields['node-tour_stop-field_photo'] = array(
     'field_config' => array(
       'active' => '1',
@@ -3385,6 +3447,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
           0 => 'fid',
         ),
       ),
+      'locked' => '0',
       'module' => 'image',
       'settings' => array(
         'default_image' => 0,
@@ -3405,8 +3468,10 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
             'slideshow_caption' => 'title',
             'slideshow_caption_link' => '',
             'slideshow_carousel_circular' => 0,
+            'slideshow_carousel_follow' => 0,
             'slideshow_carousel_image_style' => '',
             'slideshow_carousel_scroll' => '1',
+            'slideshow_carousel_skin' => '',
             'slideshow_carousel_speed' => '500',
             'slideshow_carousel_vertical' => 0,
             'slideshow_carousel_visible' => '3',
@@ -3416,6 +3481,8 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
             'slideshow_colorbox_speed' => '350',
             'slideshow_colorbox_transition' => 'elastic',
             'slideshow_controls' => 0,
+            'slideshow_controls_pause' => 0,
+            'slideshow_controls_position' => 'after',
             'slideshow_field_collection_image' => '',
             'slideshow_fx' => 'fade',
             'slideshow_image_style' => '',
@@ -3423,8 +3490,10 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
             'slideshow_order' => '',
             'slideshow_pager' => '',
             'slideshow_pager_image_style' => '',
+            'slideshow_pager_position' => 'after',
             'slideshow_pause' => 0,
             'slideshow_speed' => '1000',
+            'slideshow_start_on_hover' => 0,
             'slideshow_timeout' => '0',
           ),
           'type' => 'slideshow',
@@ -3443,6 +3512,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
       'required' => 0,
       'settings' => array(
         'alt_field' => 0,
+        'default_image' => 0,
         'file_directory' => 'photos',
         'file_extensions' => 'jpg jpeg',
         'max_filesize' => '200KB',
@@ -3464,7 +3534,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
     ),
   );
 
-  // Exported field: 'node-tour_stop-field_subtitle'
+  // Exported field: 'node-tour_stop-field_subtitle'.
   $fields['node-tour_stop-field_subtitle'] = array(
     'field_config' => array(
       'active' => '1',
@@ -3485,6 +3555,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',
@@ -3531,7 +3602,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
     ),
   );
 
-  // Exported field: 'node-tour_stop-field_text'
+  // Exported field: 'node-tour_stop-field_text'.
   $fields['node-tour_stop-field_text'] = array(
     'field_config' => array(
       'active' => '1',
@@ -3552,6 +3623,7 @@ Adding a new tour stop requires two steps: <ol><li>Create a stop using the "Add 
           0 => 'format',
         ),
       ),
+      'locked' => '0',
       'module' => 'text',
       'settings' => array(),
       'translatable' => '1',

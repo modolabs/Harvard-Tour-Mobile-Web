@@ -41,12 +41,14 @@ function hook_rest_server_response_formatters_alter(&$formatters) {
    * nonsensical but illustrates the proper use of this hook.
    */
 
-  // Add a Yaml response format.
-  $formatters['yaml'] = array(
-    'mime types' => array('text/plain', 'application/x-yaml', 'text/yaml'),
-    'view' => 'RESTServerViewBuiltIn',
-    'view arguments' => array('format' => 'yaml'),
-  );
+  // Add a Yaml response format conditionally.
+  if (($library = libraries_load('spyc')) && !empty($library['loaded'])) {
+    $formatters['yaml'] = array(
+      'mime types' => array('text/plain', 'application/x-yaml', 'text/yaml'),
+      'view' => 'RESTServerViewBuiltIn',
+      'view arguments' => array('format' => 'yaml'),
+    );
+  }
 
   // Add a Rss response format.
   $formatters['rss'] = array(
@@ -59,3 +61,25 @@ function hook_rest_server_response_formatters_alter(&$formatters) {
   unset($formatters['jsonp']);
 }
 
+/**
+ * Alter error messages right before delivering.
+ *
+ * @param array $errors
+ *  Array of following properties:
+ *   'code' -- error code
+ *   'header_message' -- message that will be returned in Status header
+ *   'body_data' -- data returned in the body of the response
+ *  You can alter 'header_message' and 'body_data' in your hook implementations.
+ * @param type $controller
+ *  Executed controller.
+ * @param type $arguments
+ *  Arguments of the controller.
+ */
+function hook_rest_server_execute_errors_alter(&$error, $controller, $arguments) {
+  $error_code = $error['code'];
+  if (user_is_logged_in() && $error_code == 401) {
+    global $user;
+    $error['header_message'] = '403 ' . t('Access denied for user @user',
+      array('@user' => $user->name));
+  }
+}

@@ -17,7 +17,7 @@ function kurogo_tour_default_services_endpoint() {
   $endpoint->server = 'rest_server';
   $endpoint->path = 'services/rest';
   $endpoint->authentication = array();
-  $endpoint->server_settings = '';
+  $endpoint->server_settings = array();
   $endpoint->resources = array(
     'file' => array(
       'operations' => array(

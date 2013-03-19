@@ -26,17 +26,18 @@ $info = array(
   // Pre-defined color schemes.
   'schemes' => array(
     'default' => array(
-      'title' => t('Kurogo Tour (default)'),
+      'title' => t('Kurogo (default)'),
       'colors' => array(
+        'base' => '#ffffff',
         'bg' => '#ffffff',
-        'link' => '#7d0313',
-        'top' => '#c20014',
-        'bottom' => '#000000',
-        'text' => '#3b3b3b',
-        'sidebar' => '#f6f6f2',
-        'sidebarborders' => '#f9f9f9',
-        'footer' => '#292929',
-        'titleslogan' => '#fffeff',
+        'link' => '#003366',
+        'top' => '#dbdbdb',
+        'bottom' => '#787878',
+        'text' => '#191919',
+        'sidebar' => '#ffffff',
+        'sidebarborders' => '#cccccc',
+        'footer' => '#24272c',
+        'titleslogan' => '#000000',
       ),
     ),
     'blue_lagoon' => array(

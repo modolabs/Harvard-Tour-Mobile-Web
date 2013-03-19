@@ -567,3 +567,29 @@ textarea {
 .poll .total {
   font-size: 100%;
 }
+
+.ds-3col-stacked-fluid .group-middle .field {
+    margin-right: .5em;
+}
+
+.ds-3col-stacked-fluid .group-middle .field-name-title h2 {
+    padding-top: 0;
+}
+
+.field-name-field-info-name,
+.field-name-field-insideout-name,
+.field-name-field-history-name,
+.field-name-field-innovation-name,
+.field-name-field-fastfacts-name {
+    font-weight: bold;
+    text-align: right;
+    margin-right: .75em;
+}
+.field-name-field-info-name .field-item:after,
+.field-name-field-insideout-name .field-item:after,
+.field-name-field-history-name .field-item:after,
+.field-name-field-innovation-name .field-item:after,
+.field-name-field-fastfacts-name .field-item:after {
+    content: ":";
+}
+

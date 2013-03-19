@@ -140,50 +140,10 @@ function kurogo_tour_ds_field_settings_info() {
   $ds_fieldsetting->bundle = 'tour';
   $ds_fieldsetting->view_mode = 'default';
   $ds_fieldsetting->settings = array(
-    'links' => array(
+    'title' => array(
       'weight' => '0',
       'label' => 'hidden',
       'format' => 'default',
-    ),
-    'field_insideout_name' => array(
-      'ft' => array(
-        'styles' => 'field-inline-label',
-      ),
-    ),
-    'field_fastfacts_name' => array(
-      'ft' => array(
-        'styles' => 'field-inline-label',
-      ),
-    ),
-    'field_innovation_name' => array(
-      'ft' => array(
-        'styles' => 'field-inline-label',
-      ),
-    ),
-    'field_history_name' => array(
-      'ft' => array(
-        'styles' => 'field-inline-label',
-      ),
-    ),
-    'field_insideout_desc' => array(
-      'ft' => array(
-        'styles' => 'field-inline-value',
-      ),
-    ),
-    'field_fastfacts_desc' => array(
-      'ft' => array(
-        'styles' => 'field-inline-value',
-      ),
-    ),
-    'field_innovation_desc' => array(
-      'ft' => array(
-        'styles' => 'field-inline-value',
-      ),
-    ),
-    'field_history_desc' => array(
-      'ft' => array(
-        'styles' => 'field-inline-value',
-      ),
     ),
   );
   $export['node|tour|default'] = $ds_fieldsetting;
@@ -278,46 +238,41 @@ function kurogo_tour_ds_layout_settings_info() {
   $ds_layout->entity_type = 'node';
   $ds_layout->bundle = 'lens_descriptions';
   $ds_layout->view_mode = 'default';
-  $ds_layout->layout = 'ds_1col';
+  $ds_layout->layout = 'ds_3col_stacked_fluid';
   $ds_layout->settings = array(
-    'hide_empty_regions' => 0,
+    'hide_empty_regions' => 1,
+    'hide_sidebars' => 0,
     'regions' => array(
-      'ds_content' => array(
-        0 => 'group_info',
-        1 => 'group_insideout',
-        2 => 'group_innovation',
-        3 => 'field_fastfacts_name',
-        4 => 'group_fastfacts',
-        5 => 'field_fastfacts_desc',
-        6 => 'group_history',
-        7 => 'field_history_name',
-        8 => 'field_internal_notes',
-        9 => 'field_history_desc',
-        10 => 'field_innovation_name',
-        11 => 'field_insideout_name',
-        12 => 'field_innovation_desc',
-        13 => 'field_insideout_desc',
-        14 => 'field_info_name',
-        15 => 'field_info_desc',
+      'left' => array(
+        0 => 'field_info_name',
+        1 => 'field_insideout_name',
+        2 => 'field_fastfacts_name',
+        3 => 'field_innovation_name',
+        4 => 'field_history_name',
+      ),
+      'middle' => array(
+        0 => 'field_info_desc',
+        1 => 'field_insideout_desc',
+        2 => 'field_fastfacts_desc',
+        3 => 'field_innovation_desc',
+        4 => 'field_history_desc',
+      ),
+      'footer' => array(
+        0 => 'field_internal_notes',
       ),
     ),
     'fields' => array(
-      'group_info' => 'ds_content',
-      'group_insideout' => 'ds_content',
-      'group_innovation' => 'ds_content',
-      'field_fastfacts_name' => 'ds_content',
-      'group_fastfacts' => 'ds_content',
-      'field_fastfacts_desc' => 'ds_content',
-      'group_history' => 'ds_content',
-      'field_history_name' => 'ds_content',
-      'field_internal_notes' => 'ds_content',
-      'field_history_desc' => 'ds_content',
-      'field_innovation_name' => 'ds_content',
-      'field_insideout_name' => 'ds_content',
-      'field_innovation_desc' => 'ds_content',
-      'field_insideout_desc' => 'ds_content',
-      'field_info_name' => 'ds_content',
-      'field_info_desc' => 'ds_content',
+      'field_info_name' => 'left',
+      'field_insideout_name' => 'left',
+      'field_fastfacts_name' => 'left',
+      'field_innovation_name' => 'left',
+      'field_history_name' => 'left',
+      'field_info_desc' => 'middle',
+      'field_insideout_desc' => 'middle',
+      'field_fastfacts_desc' => 'middle',
+      'field_innovation_desc' => 'middle',
+      'field_history_desc' => 'middle',
+      'field_internal_notes' => 'footer',
     ),
     'classes' => array(),
   );
@@ -420,42 +375,45 @@ function kurogo_tour_ds_layout_settings_info() {
   $ds_layout->layout = 'ds_1col';
   $ds_layout->settings = array(
     'hide_empty_regions' => 0,
+    'hide_sidebars' => 0,
     'regions' => array(
       'ds_content' => array(
-        0 => 'group_tourtabs',
+        0 => 'title',
         1 => 'field_stops',
-        2 => 'field_internal_notes',
-        3 => 'group_stops',
-        4 => 'group_welcome',
-        5 => 'group_finish',
-        6 => 'group_help',
-        7 => 'group_stop_detail_legend',
+        2 => 'group_tourtabs',
+        3 => 'field_internal_notes',
+        4 => 'group_stops',
+        5 => 'group_welcome',
+        6 => 'group_finish',
+        7 => 'group_help',
         8 => 'field_welcome',
-        9 => 'field_welcome_lenses',
-        10 => 'field_welcome_footer',
-        11 => 'field_finish',
-        12 => 'field_finish_links',
-        13 => 'field_help',
-        14 => 'field_finish_footer',
-        15 => 'field_help_lenses',
-        16 => 'field_stop_legend_lenses',
-        17 => 'field_help_middle',
-        18 => 'field_help_links',
-        19 => 'field_help_middle_2',
-        20 => 'field_help_links_2',
-        21 => 'field_help_footer',
+        9 => 'group_stop_detail_legend',
+        10 => 'field_welcome_lenses',
+        11 => 'field_welcome_footer',
+        12 => 'field_finish',
+        13 => 'field_finish_links',
+        14 => 'field_help',
+        15 => 'field_finish_footer',
+        16 => 'field_help_lenses',
+        17 => 'field_stop_legend_lenses',
+        18 => 'field_help_middle',
+        19 => 'field_help_links',
+        20 => 'field_help_middle_2',
+        21 => 'field_help_links_2',
+        22 => 'field_help_footer',
       ),
     ),
     'fields' => array(
-      'group_tourtabs' => 'ds_content',
+      'title' => 'ds_content',
       'field_stops' => 'ds_content',
+      'group_tourtabs' => 'ds_content',
       'field_internal_notes' => 'ds_content',
       'group_stops' => 'ds_content',
       'group_welcome' => 'ds_content',
       'group_finish' => 'ds_content',
       'group_help' => 'ds_content',
-      'group_stop_detail_legend' => 'ds_content',
       'field_welcome' => 'ds_content',
+      'group_stop_detail_legend' => 'ds_content',
       'field_welcome_lenses' => 'ds_content',
       'field_welcome_footer' => 'ds_content',
       'field_finish' => 'ds_content',
