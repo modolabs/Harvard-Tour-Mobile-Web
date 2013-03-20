@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
   * Compatibility Functions
   * @package Compatability
@@ -58,9 +68,13 @@ function mime_type($filename) {
     
     // ms office
     'doc' => 'application/msword',
+    'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'rtf' => 'application/rtf',
     'xls' => 'application/vnd.ms-excel',
+    'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'ppt' => 'application/vnd.ms-powerpoint',
+    'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'pptm' => 'application/vnd.ms-powerpoint.presentation.macroEnabled.12',
     
     // open office
     'odt' => 'application/vnd.oasis.opendocument.text',
@@ -77,7 +91,7 @@ function mime_type($filename) {
   if (array_key_exists($ext, $mime_types)) {
     return $mime_types[$ext];
     
-  } elseif (function_exists('finfo_open')) {
+  } elseif (function_exists('finfo_open') && is_readable($filename)) {
     $finfo = finfo_open(FILEINFO_MIME);
     $mimetype = finfo_file($finfo, $filename);
     finfo_close($finfo);
@@ -95,9 +109,6 @@ if(!function_exists('json_decode')) {
     include(LIB_DIR .'/compat/JSON.php');
 }
 
-/**
-  * Simulate PHP 5.3 behavior on 5.2
-  */
 function realpath_exists($path) {
   return Watchdog::kurogoPath($path);
 }

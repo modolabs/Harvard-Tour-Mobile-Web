@@ -3,23 +3,23 @@
 {block name="footerNavLinks"}
   {if $hasHelp}
     <p class="secondary">
-      <a href="help.php">{$moduleName} Help</a>
+      <a href="{$helpLink}">{$helpLinkText}</a>
     </p>
   {/if}
   
-  {if $moduleID != 'home' || $page != 'index'}
+  {if $configModule != $homeModuleID || $page != 'index'}
     {html_access_key_reset index=0 force=true}
     <p class="bottomnav">
-      <a href="#top">Back to top</a>
+      <a href="#top">{$footerBackToTop}</a>
       <br />
-      {html_access_key_link href="/home/"}{$strings.SITE_NAME} Home{/html_access_key_link}
+      {html_access_key_link href="{$homeLink}"}{$homeLinkText}{/html_access_key_link}
       {if !$isModuleHome}
         {foreach $breadcrumbs as $breadcrumb}
-          {if $moduleID != 'home' || !$breadcrumb@first}
+          {if $configModule != $homeModuleID || !$breadcrumb@first}
             <br/>
             {html_access_key_link href=$breadcrumb['url']}
               {if $breadcrumb@first}
-                {$moduleName} Home
+                {$moduleHomeLinkText}
               {else}
                 {$breadcrumb['longTitle']}
               {/if}
@@ -37,17 +37,9 @@
 {/block}
 
   {block name="loginHTML"}
-    {if $session && $moduleID == 'home'}
+    {if $showLogin}
 	<div class="loginstatus">
-        {if $session_isLoggedIn}
-        {if $session_multiple_logins}
-			<p><a href="{$session_logout_url}">Signed in with multiple identities</a></p>
-        {else}
-			<p class="{$session_authority_class}"><a href="../login">Signed in via {$session_authority_title} as {$session_fullName}{if $session_multiple_logins} (and other identities){/if}</a></p>
-		{/if}
-		{else}
-			<p class="noauth"><a href="../login">Sign in to {$strings.SITE_NAME}</a></p>
-		{/if}
+		<p{if $footerLoginClass} class="{$footerLoginClass}"{/if}><a href="{$footerLoginLink}">{$footerLoginText}</a></p>
 	</div>
 	{/if}
   {/block}
@@ -55,7 +47,7 @@
 {block name="footer"}
   <div class="nonfocal">
     <p class="fontsize">
-      Font size:&nbsp;
+      {"FONT_SIZE_SELECTION_TITLE"|getLocalizedString}&nbsp;
       {foreach $fontsizes as $size}
         {if $size == $fontsize}
           <span class="font{$fontsize}">A</span>
@@ -81,5 +73,6 @@
   {if strlen($pmImageURL)}
     <img src="{$pmImageURL}" width="2" height="2" alt="" />
   {/if}
-
 {/block}
+
+{block name="ajaxContentFooter"}{/block}

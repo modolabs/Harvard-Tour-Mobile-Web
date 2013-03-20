@@ -1,9 +1,30 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class MapDBDataParser extends DataParser implements MapDataParser
 {
     private $category = null;
     private $categoryId;
+
+    public function placemarks() {
+        return $this->getAllPlacemarks();
+    }
+
+    public function categories() {
+        return $this->getChildCategories();
+    }
+
+    public function getId() {
+        return $this->categoryId;
+    }
 
     // MapDataParser interface
 

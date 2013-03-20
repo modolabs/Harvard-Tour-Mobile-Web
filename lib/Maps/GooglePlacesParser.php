@@ -1,7 +1,19 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class GooglePlacesParser extends DataParser implements MapDataParser
 {
+    protected $id = 'Google Places';
+    protected $title = 'Google Places';
+
     private $items = array();
 
     public function parseData($data)
@@ -24,12 +36,10 @@ class GooglePlacesParser extends DataParser implements MapDataParser
             $coord['lon'] = $coord['lng'];
             $centroid = new MapBasePoint($coord);
             $placemark = new BasePlacemark($centroid);
-            if (isset($decodedData['name'])) {
+            if (isset($result['name'])) {
                 $placemark->setTitle($result['name']);
             } elseif (isset($result['formatted_address'])) {
                 $placemark->setTitle($result['formatted_address']);
-            } else {
-                $placemark->setTitle($this->dataController->getSearchText());
             }
             if (isset($decodedData['icon'])) {
                 $placemark->setStyleForTypeAndParam(
@@ -42,7 +52,6 @@ class GooglePlacesParser extends DataParser implements MapDataParser
             } else {
                 $placemark->setId($position);
             }
-            $placemark->addCategoryId($this->dataController->getCategoryId());
 
             // fields returned by detail query
             // http://code.google.com/apis/maps/documentation/places/#PlaceDetails
@@ -68,8 +77,22 @@ class GooglePlacesParser extends DataParser implements MapDataParser
 
     public function getTitle()
     {
-        return 'Google Places';
+        return $this->title;
     }
+
+    public function placemarks() {
+        return $this->items;
+    }
+
+    public function categories() {
+        return array();
+    }
+
+    public function getId() {
+        return $this->id;
+    }
+
+    // everything below is legacy functions
 
     public function getProjection()
     {

@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class DBase3FileParser extends BinaryFileParser
 {
     protected $wordSize = 1;
@@ -114,7 +123,7 @@ class DBase3FileParser extends BinaryFileParser
             $this->records[] = $this->readRecord();
         }
         if ($this->readChar() != "\x1a") {
-            throw new Exception("error finding dBase file terminator");
+            throw new KurogoDataException("error finding dBase file terminator");
         }
     }
 

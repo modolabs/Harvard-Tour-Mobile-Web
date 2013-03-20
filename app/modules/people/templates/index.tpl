@@ -1,7 +1,17 @@
 {include file="findInclude:common/templates/header.tpl"}
 
+{capture name="selectSection" assign="selectSection"}
+{if $feeds|@count>1}
+    <select id="feed" name="feed">
+	{foreach $feeds as $feed => $title}
+		<option value="{$feed}"{if $selectedFeed==$feed} selected="selected"{/if}>{"PEOPLE_SEARCH_IN"|getLocalizedString:$title}</option>
+	{/foreach}
+	</select>
+{/if}
+{/capture}
+
 {block name="searchbox"}
-{include file="findInclude:common/templates/search.tpl" placeholder="Search" resultCount=$resultCount tip=$searchTip|default:"You can search by part or all of a person's name, email address or phone number."}
+{include file="findInclude:common/templates/search.tpl" resultCount=$resultCount tip=$searchTip additionalInputs=$selectSection}
 {/block}
 
 {if $hasBookmarks}
@@ -9,7 +19,7 @@
 {/if}
 
 {block name="contactslist"}
-{include file="findInclude:common/templates/navlist.tpl" navlistItems=$contacts secondary=true accessKey=false}
+{include file="findInclude:common/templates/navlist.tpl" navlistItems=$contacts secondary=true accessKey=false subTitleNewline=$contactsSubTitleNewline}
 {/block}
 
 {include file="findInclude:common/templates/footer.tpl"}

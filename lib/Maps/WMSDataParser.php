@@ -1,6 +1,17 @@
 <?php
 
-require_once realpath(LIB_DIR.'/XMLElement.php');
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
+if (!function_exists('xml_parser_create')) {
+    throw new KurogoException('XML Parser PHP extension is not installed. http://www.php.net/manual/en/intro.xml.php');
+}
 
 class WMSLayer extends XMLElement
 {
@@ -292,7 +303,7 @@ class WMSDataParser extends DataParser
         xml_set_character_data_handler($xml_parser, array($this,"characterData"));
         
         if (!xml_parse($xml_parser, $contents)) {
-            throw new Exception(sprintf("XML error: %s at line %d",
+            throw new KurogoDataException(sprintf("XML error: %s at line %d",
                         xml_error_string(xml_get_error_code($xml_parser)),
                         xml_get_current_line_number($xml_parser)));
         }

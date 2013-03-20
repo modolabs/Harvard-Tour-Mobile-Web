@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class MapDevice
 {
     protected $pagetype;
@@ -14,11 +23,12 @@ class MapDevice
     // if we fine Google or ArcGIS works badly for certain browsers
     public function pageSupportsDynamicMap($mapClass=null)
     {
-        return ($this->pagetype == 'compliant' ||
-                $this->pagetype == 'tablet')
-            && $this->platform != 'blackberry'
-            && $this->platform != 'bbplus'
-            && $this->platform != 'webos';
+        return $this->pagetype == 'tablet' ||
+            ($this->pagetype == 'compliant' &&
+             $this->platform != 'blackberry' &&
+             $this->platform != 'bbplus' &&
+             $this->platform != 'winphone7' && // not reliable
+             $this->platform != 'webos');
     }
 
     public function staticMapImageFormat()

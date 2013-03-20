@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
   * @package Module
   * @subpackage Error
@@ -13,39 +23,47 @@ class ErrorWebModule extends WebModule {
   protected $configModule = 'error';
   protected $moduleName = 'Error';
   protected $canBeAddedToHomeScreen = false;
+  protected $canBeRemoved = false;
+  protected $canBeDisabled = false;
+  protected $canAllowRobots = false;
 
-  private $errors = array(
-    'data' => array(
-      'status'  => '504 Gateway Timeout',
-      'message' => 'We are sorry the server is currently experiencing errors. Please try again later.',
-    ),
-    'internal' => array(
-      'status'  => '500 Internal Server Error',
-      'message' => 'Internal server error',
-    ),
-    'notfound' => array(
-      'status'  => '404 Not Found',
-      'message' => 'Page not found',
-    ),
-    'forbidden' => array(
-      'status'  => '403 Forbidden',
-      'message' => 'Not authorized to view this page',
-    ),
-    'device_notsupported' => array(
-      'status'  => null,
-      'message' => 'This functionality is not supported on this device',
-    ),
-    'disabled'  => array(
-      'message' =>  'This module has been disabled'
-    ),
-    'protected' => array(
-      'message' =>  'You are not permitted to use this module'
-    ),
-    'default' => array(
-      'status'  => '500 Internal Server Error',
-      'message' => 'Unknown error',
-    )
-  );
+    protected function getError($code) {
+        static $errors = array(
+            'server' => array(
+              'status'    => '504 Gateway Timeout'
+            ),
+            'data' => array(
+              'status'    => '500 Internal Server Error'
+            ),
+            'user'=> array(
+              'status'    => '500 Internal Server Error'
+            ),
+            'config'=> array(
+              'status'    => '500 Internal Server Error'
+            ),
+            'internal' => array(
+              'status'  => '500 Internal Server Error',
+            ),
+            'notfound' => array(
+              'status'  => '404 Not Found',
+            ),
+            'forbidden' => array(
+              'status'  => '403 Forbidden',
+            ),
+            'disabled'  => array(
+            ),
+            'protected' => array(
+            ),
+            'default' => array(
+              'status'  => '500 Internal Server Error',
+            )
+          );
+
+        $code =   isset($errors[$code]) ? $code : 'default';
+        $error = $errors[$code];
+        $error['message'] = $this->getLocalizedString(strtoupper('ERROR_' . $code));
+        return $error;
+    }
 
     protected function init($page='', $args=array()) {
       if(!Kurogo::getSiteVar('PRODUCTION_ERROR_HANDLER_ENABLED')) {
@@ -53,9 +71,16 @@ class ErrorWebModule extends WebModule {
       }
       $this->pagetype = Kurogo::deviceClassifier()->getPagetype();
       $this->platform = Kurogo::deviceClassifier()->getPlatform();
+      $this->browser  = Kurogo::deviceClassifier()->getBrowser();
       $this->page = 'index';
       $this->setTemplatePage($this->page, $this->id);
-      $this->args = $args;
+      $this->setArgs($args);
+      $this->ajaxContentLoad = $this->getArg(self::AJAX_PARAMETER) ? true : false;
+      $this->logView = Kurogo::getOptionalSiteVar('STATS_ENABLED', true) ? true : false;
+      try {
+          $this->moduleName = $this->getOptionalModuleVar('title', 'Error', 'module');
+      } catch (KurogoConfigurationException $e) {
+      }
       return;
   }
 
@@ -65,19 +90,17 @@ class ErrorWebModule extends WebModule {
 
   protected function initializeForPage() {
     $code = $this->getArg('code', 'default');
-    $url  = $this->getArg('url', '');
-    
-    $error = isset($this->errors[$code]) ? 
-      $this->errors[$code] : $this->errors['default'];;
-    
+    $url = $this->buildURLFromArray($this->args);
+
+    $error = $this->getError($code);
+
     if (isset($error['status'])) {
       header('Status: '.$error['status']);
     }
 
-    if (isset($error['linkText'])) {
-        $this->assign('linkText', $error['linkText']);
-    }
-    
+    $linkText = isset($error['linkText']) ? $error['linkText'] : $this->getLocalizedString('DEFAULT_LINK_TEXT');
+    $this->assign('linkText', $linkText);
+
     if($this->devError() === false){
       $this->assign('message', $error['message']);
     } else {
@@ -85,14 +108,14 @@ class ErrorWebModule extends WebModule {
     }
     $this->assign('url', $url);
   }
-  
+
   protected function devError() {
-    
+
     // production
     if(Kurogo::getSiteVar('PRODUCTION_ERROR_HANDLER_ENABLED')) {
       return false;
     }
-      
+
     // check for development errors
     if(isset($_GET['error'])){
       $path = explode('/', $_GET['error']);
@@ -104,8 +127,8 @@ class ErrorWebModule extends WebModule {
         return $msg;
       }
     }
-    
+
     return false;
   }
-  
+
 }

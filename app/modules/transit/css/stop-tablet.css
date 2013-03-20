@@ -1,0 +1,22 @@
+#stopinfo {
+  overflow: hidden;
+  display: table;
+  width: 100%;
+}
+#stopinfo > * {
+  display: table-cell;
+  vertical-align: top;
+}
+#mapcontainer #map_dynamic {
+  margin-left: 12px;
+}
+#stopinfo #ajaxcontainer {
+  width: 300px;
+}
+
+.portrait #mapcontainer #map_dynamic {
+  height: 600px;
+}
+.landscape #mapcontainer #map_dynamic {
+  height: 400px;
+}

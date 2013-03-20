@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 // sort addresses using natsort
 // but move numbers to the end first
 function addresscmp($addr1, $addr2) {
@@ -30,6 +39,18 @@ class ArcGISLayer implements MapFolder, MapListElement {
     
     private $features = array();
     private $isPopulated = false;
+
+    // forward compatibility functions
+
+    public function placemarks() {
+        return $this->getAllPlacemarks();
+    }
+
+    public function categories() {
+        return $this->getChildCategories();
+    }
+
+    ///
     
     public function __construct($id, $name, ArcGISParser $parent) {
         $this->id = $id;
@@ -42,6 +63,18 @@ class ArcGISLayer implements MapFolder, MapListElement {
     }
     
     // MapListElement interface
+
+    public function filterItem($filters) {
+        foreach ($filters as $filter=>$value) {
+            switch ($filter)
+            {
+                case 'search': //case insensitive
+                    return  (stripos($this->getTitle(), $value)!==FALSE) || (stripos($this->getSubTitle(), $value)!==FALSE);
+                    break;
+            }
+        }   
+        return true;
+    }
     
     public function getId() {
         return $this->id;

@@ -1,1 +1,5 @@
-{include file="findInclude:common/templates/results.tpl" results=$events noResultsText="No Events Today" subTitleNewline=false}
+{extends file="findExtends:common/templates/pane.tpl"}
+
+{block name="content"}
+  {include file="findInclude:common/templates/results.tpl" results=$events subTitleNewline=false}
+{/block}

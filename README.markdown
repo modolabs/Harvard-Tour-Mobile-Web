@@ -10,6 +10,9 @@ to early generation smart phones, to modern devices and tablets. It currently in
 * Event Calendar
 * Maps
 * Video
+* Photos
+* Athletics
+* Social
 * Emergency
 * Links
 * Statistics
@@ -21,42 +24,32 @@ to early generation smart phones, to modern devices and tablets. It currently in
 
 We strongly recommend developers read the developer's guide:
 
-* [HTML](http://modolabs.com/kurogo/guide)
-* [PDF](http://modolabs.com/kurogo/guide.pdf)
+* [HTML](http://kurogo.org/docs/mw/)
 
 Please contact kurogo@modolabs.com for more information.
 
 ## Quick Setup and Requirements
 
 Kurogo is a PHP application. It is currently qualified for use with
+
 * Apache 2.x
     * mod_rewrite, and .htaccess support (AllowOverride)
 * IIS 7.5
    * URL Rewrite Module 2.0
-* PHP 5.2 or higher with the following modules
-    * xml, dom, json, pdo (SQLite/MySQL), mbstring, LDAP, curl
+* PHP 5.2 (5.3 recommended) or higher with the following extensions
+    * zlib, xml, dom, json, pdo, mbstring, LDAP, curl
 
-To install, simply copy the files to your webserver, and point your site's document root to the included www
-folder. For more detailed setup information, please see the developer's guide.
+To install, simply copy the files to your webserver, and set the document root to the www
+folder. For more detailed setup information, please see the Developer's guide on kurogo.org/docs
 
-## Version 1.2
+## Version 1.5 RC1
 
-This version includes a number of fixes and improvements, including:
-
-* Support for IIS Web Server
-* Vastly streamlined default theme with updated theme documentation
-* Support for grouping static contacts in the People module
-* Support for grouping links in the Links module
-* Added established pattern for linking to and receiving data from other modules (See Dev guide for more info)
-* Modules can now present dynamic data on the home screen. (See Dev guide for more info)
-* Support for different HTTP methods and headers in the DataController class
-* Significant documentation improvements and updates.
-* The admin module (/admin) can be used on tablets (with certain issues)
-* Various bug fixes
-* Many other small improvements and fixes outlined in the CHANGELOG
-
-Important note: You MUST delete all your server caches due to underlying changes in the template engine.
-Cache files in the minify and smarty folders must be removed.
+* Version 1.5 is released under the Lesser GNU Public License v2.1
+* NEW MODULE : Social. Show feeds from facebook and Twitter
+* Data can be fetched in the background improving performance
+* New XML Parser (SimpleXMLDataParser) makes it easier to parse simple XML documents
+* Add Shibboleth authentication authority (requires a shibboleth SP installed on the Kurogo Server)
+* Many other improvements and fixes
 
 ## History
 

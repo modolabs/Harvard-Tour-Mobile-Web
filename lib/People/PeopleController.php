@@ -1,10 +1,20 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
-  * @package Directory
+  * @package People
   */
   
 /**
-  * @package Directory
+  * @package People
   */
 abstract class PeopleController
 {
@@ -30,6 +40,18 @@ abstract class PeopleController
         return '';
     }
 
+    public function getUser($id) {
+        return $this->lookupUser($id);
+    }
+    
+    public function getResponseError() {
+        return $this->getError();
+    }
+
+    public function getResponseCode() {
+        return $this->getErrorNo();
+    }
+
     public function getErrorNo() {
         return $this->errorNo;
     }
@@ -42,7 +64,7 @@ abstract class PeopleController
         if (is_array($attribs)) {
             $this->attributes =$attribs;
         } elseif ($attribs) {
-            throw new Exception('Invalid attributes');
+            throw new KurogoException('Invalid attributes');
         } else {
             $this->attributes = array();
         }
@@ -59,12 +81,12 @@ abstract class PeopleController
     public function setPersonClass($className) {
     	if ($className) {
     		if (!class_exists($className)) {
-    			throw new Exception("Cannot load class $className");
+    			throw new KurogoConfigurationException("Cannot load class $className");
     		}
 
             $class = new ReflectionClass($className); 
             if (!$class->isSubclassOf('Person')) {
-                throw new Exception("$className is not a subclass of Person");
+                throw new KurogoConfigurationException("$className is not a subclass of Person");
             }
 			$this->personClass = $className;
 		}
@@ -80,32 +102,18 @@ abstract class PeopleController
     public static function factory($controllerClass, $args) {
 
         if (!class_exists($controllerClass)) {
-            throw new Exception("Controller class $controllerClass not defined");
+            throw new KurogoConfigurationException("Controller class $controllerClass not defined");
         }
         
         $controller = new $controllerClass;
         $controller->setDebugMode(Kurogo::getSiteVar('DATA_DEBUG'));
 
         if (!$controller instanceOf PeopleController) {
-            throw new Exception("$controller class is not a subclass of PeopleController");
+            throw new KurogoConfigurationException("$controller class is not a subclass of PeopleController");
         }
         
         $controller->init($args);
         
         return $controller;
-    }
-}
-
-abstract class Person implements KurogoObject
-{
-    protected $attributes = array();
-    abstract public function getId();
-    abstract public function getName();
-        
-    public function getField($field) {
-        if (array_key_exists($field, $this->attributes)) {
-          return $this->attributes[$field];
-        }
-        return NULL;
     }
 }

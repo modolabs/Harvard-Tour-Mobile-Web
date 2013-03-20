@@ -1,6 +1,8 @@
 <?php
+
 /*
- * Copyright (c) 2010 - 2011 Massachusetts Institute of Technology
+ * Copyright © 2010 - 2011 Massachusetts Institute of Technology
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +30,8 @@ abstract class DrupalCCKDataParser extends RSSDataParser
     // overide this for fields that have only one value
     protected $singletonFields = array();
 
+    protected $useDescriptionForContent = true;
+
     public function parseData($data) {
         $rssItems = parent::parseData($data);
         $items = array();
@@ -52,7 +56,7 @@ abstract class DrupalCCKDataParser extends RSSDataParser
 
     protected static function getValue($xml, $tag) {
         if(!self::hasValue($xml, $tag)) {
-            throw new Exception("$tag is missing");
+            throw new KurogoDataException("$tag is missing");
         }
         return self::getChildNode($xml, $tag)->nodeValue;
     }
@@ -169,7 +173,7 @@ abstract class DrupalCCKDataParser extends RSSDataParser
         if($reflector->hasMethod($methodName)) {
             return $this->$methodName($fieldValueNode);
         } else {
-            throw new Exception("No method found to parse field of type $fieldType");
+            throw new KurogoDataException("No method found to parse field of type $fieldType");
         }
     }
 

@@ -1,8 +1,5 @@
-{if !$ajax}
 {include file="findInclude:common/templates/header.tpl"}
-{/if}
 
-<p class="focal">This video cannot be played on this device</p>
-{if !$ajax}
+<p class="focal">{"VIDEO_UNSUPPORTED"|getLocalizedString}</p>
+
 {include file="findInclude:common/templates/footer.tpl"}
-{/if}

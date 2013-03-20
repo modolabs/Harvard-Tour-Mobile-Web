@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class KMLPlacemark extends XMLElement implements Placemark
 {
     protected $name = 'Placemark';
@@ -12,10 +21,48 @@ class KMLPlacemark extends XMLElement implements Placemark
     protected $snippet;
     protected $style;
     protected $geometry;
-    //protected $category;
-    protected $categories;
+    protected $urlParams = array();
+    protected $categories = array();
+    // aliases map for placemark searching
+    protected $aliases = array();
 
     private $fields = array();
+
+    public function setAliases($aliases) {
+        $this->aliases = $aliases;
+    }
+
+    public function filterItem($filters) {
+        foreach ($filters as $filter=>$value) {
+            switch ($filter) {
+                case 'search':
+                    $contents = array(
+                        'title' => $this->getTitle(),
+                        'subtitle' => $this->getSubTitle(),
+                        'description' => $this->getDescription(),
+                    );
+                    return stringFilter($value, $contents, $this->aliases);
+                case 'min':
+                    if (!isset($center)) {
+                        $center = $this->getGeometry()->getCenterCoordinate();
+                    }
+                    if ($center['lat'] < $value['lat'] || $center['lon'] < $value['lon']) {
+                        return false;
+                    }
+                    break;
+                case 'max':
+                    if (!isset($center)) {
+                        $center = $this->getGeometry()->getCenterCoordinate();
+                    }
+                    if ($center['lat'] > $value['lat'] || $center['lon'] > $value['lon']) {
+                        return false;
+                    }
+                    break;
+            }
+        }
+        
+        return true;     
+    }
 
     private static $elementMap = array(
         'NAME' => 'title',
@@ -47,6 +94,10 @@ class KMLPlacemark extends XMLElement implements Placemark
         return $this->snippet;
     }
     
+    public function getDescription($suppressFileds=null) {
+        return $this->description;
+    }
+    
     public function getId() {
         return $this->index;
     }
@@ -57,6 +108,21 @@ class KMLPlacemark extends XMLElement implements Placemark
 
     // Placemark interface
 
+    public function getURLParams() {
+        $result = $this->urlParams;
+        $result['featureindex'] = $this->getId();
+        $categories = $this->getCategoryIds();
+        $category = implode(MAP_CATEGORY_DELIMITER, $categories);
+        if ($category) {
+            $result['category'] = $category;
+        }
+        return $result;
+    }
+
+    public function setURLParam($name, $value) {
+        $this->urlParams[$name] = $value;
+    }
+
     public function getAddress() {
         return null;
     }
@@ -66,7 +132,9 @@ class KMLPlacemark extends XMLElement implements Placemark
     }
 
     public function addCategoryId($id) {
-        $this->categories[] = $id;
+        if ($id && !in_array($id, $this->categories)) {
+            $this->categories[] = $id;
+        }
     }
 
     public function getGeometry() {
@@ -118,11 +186,41 @@ class KMLPlacemark extends XMLElement implements Placemark
             case 'MODEL':
             case 'GX:TRACK':
             case 'GX:MULTITRACK':
-                throw new Exception("Geometry type $name not implemented yet");
+                throw new KurogoDataException("Geometry type $name not implemented yet");
                 break;
             default:
                 parent::addElement($element);
                 break;
         }
+    }
+
+    public function serialize() {
+        return serialize(
+            array(
+                'index' => $this->index,
+                'title' => $this->title,
+                'description' => $this->description,
+                'address' => $this->address,
+                'snippet' => $this->snippet,
+                'urlParams' => serialize($this->urlParams),
+                'categories' => serialize($this->categories),
+                'fields' => serialize($this->fields),
+                'style' => serialize($this->style),
+                'geometry' => serialize($this->geometry),
+            ));
+    }
+
+    public function unserialize($data) {
+        $data = unserialize($data);
+        $this->index = $data['index'];
+        $this->title = $data['title'];
+        $this->description = $data['description'];
+        $this->address = $data['address'];
+        $this->snippet = $data['snippet'];
+        $this->urlParams = unserialize($data['urlParams']);
+        $this->categories = unserialize($data['categories']);
+        $this->fields = unserialize($data['fields']);
+        $this->style = unserialize($data['style']);
+        $this->geometry = unserialize($data['geometry']);
     }
 }

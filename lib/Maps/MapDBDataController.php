@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 includePackage('Maps', 'MapDB');
 
 class MapDBDataController extends MapDataController implements MapFolder
@@ -8,6 +17,8 @@ class MapDBDataController extends MapDataController implements MapFolder
     private $hasDBData = false;
     private $dbParser;
     private $subtitle;
+
+    protected $cacheLifetime = 60;
 
     public function getCategoryId()
     {
@@ -41,10 +52,12 @@ class MapDBDataController extends MapDataController implements MapFolder
         if ($this->dbParser->isStored() && $this->dbParser->getCategory()->getListItems()) {
             // make sure this category was populated before skipping
             $this->hasDBData = true;
+            $this->useCache = false;
         }
     }
 
     public function getData() {
+        // TODO: this should be taken care of by PARSE_MODE_FILE
         if ($this->parser instanceof ShapefileDataParser) {
             return;
         }
@@ -55,6 +68,20 @@ class MapDBDataController extends MapDataController implements MapFolder
         // if data is in db, do nothing
         if (!$this->hasDBData) {
             return parent::getCacheData();
+        }
+    }
+
+    public function getParsedData(DataParser $parser=null) {
+        if (!$parser) {
+            $parser = $this->parser;
+        }
+
+        switch ($parser->getParseMode()) {
+            case DataParser::PARSE_MODE_FILE:
+                break;
+            default:
+                $data = $this->getData();
+                return $this->parseData($data, $parser);
         }
     }
 
@@ -91,6 +118,8 @@ class MapDBDataController extends MapDataController implements MapFolder
     public function selectPlacemark($featureId)
     {
         $feature = $this->dbParser->getFeatureById($featureId, $this->drillDownPath);
+        $feature->setURLParam('feed', $this->categoryId);
+        $feature->setURLParam('group', $this->feedGroup);
         if ($feature) {
             $this->setSelectedPlacemarks(array($feature));
         }
@@ -101,19 +130,27 @@ class MapDBDataController extends MapDataController implements MapFolder
     {
         $this->getListItems(); // make sure we're populated
         if ($this->hasDBData) {
-            return $this->dbParser->getCategory()->getAllPlacemarks();
+            $placemarks = $this->dbParser->getCategory()->getAllPlacemarks();
+
+        } else {
+            $placemarks = $this->parser->getAllPlacemarks();
         }
-        return $this->parser->getAllPlacemarks();
+        foreach ($placemarks as $placemark) {
+            $placemark->setURLParam('feed', $this->categoryId);
+            $placemark->setURLParam('group', $this->feedGroup);
+        }
+        return $placemarks;
     }
 
     // TODO allow config of searchable fields
     public function search($searchText)
     {
+        return array();
     }
 
-    public function searchByProximity($center, $tolerance, $maxItems)
+    public function searchByProximity($center, $tolerance, $maxItems=null)
     {
-        $mapSearch = new MapDBSearch();
+        $mapSearch = new MapDBSearch(null);
         return $mapSearch->searchByProximity($center, $tolerance, $maxItems, $this);
     }
 }

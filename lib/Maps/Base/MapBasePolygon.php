@@ -1,9 +1,18 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class MapBasePolygon extends MapBasePoint implements MapPolygon {
 
-    private $outerBoundary;
-    private $innerBoundaries = array();
+    protected $outerBoundary;
+    protected $innerBoundaries = array();
 
     public function __construct(Array $rings, $centroid=null) {
         $this->outerBoundary = new MapBasePolyline($rings[0]);
@@ -27,6 +36,22 @@ class MapBasePolygon extends MapBasePoint implements MapPolygon {
         $result = $this->innerBoundaries;
         array_unshift($result, $this->outerBoundary);
         return $result;
+    }
+
+    public function serialize() {
+        return serialize(
+            array(
+                'centroid' => serialize($this->centroid),
+                'outerBoundary' => serialize($this->outerBoundary),
+                'innerBoundaries' => serialize($this->innerBoundaries),
+            ));
+    }
+
+    public function unserialize($data) {
+        $data = unserialize($data);
+        $this->centroid = unserialize($data['centroid']);
+        $this->outerBoundary = unserialize($data['outerBoundary']);
+        $this->innerBoundaries = unserialize($data['innerBoundaries']);
     }
 }
 

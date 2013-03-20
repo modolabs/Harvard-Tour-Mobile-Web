@@ -1,0 +1,53 @@
+#tabbodies .nav, .tabbody .nav {
+	margin: 0 0 0.75em 0;
+	border: 1px solid @@@focal_border_color@@@;
+}
+.tabbody .nonfocal {
+	padding: 0;
+	margin: 0;
+}
+.tabbody .nonfocal h3 {
+	color: @@@secondary_heading_color@@@;
+}
+.tabbody h3:first-child {
+	margin-top: 0;
+}
+.tabbody .tabstrip {
+	margin: 5px 0 12px 0;
+}
+#bookmarkContainer {
+	margin-top: 0;
+}
+#category-switcher {
+    margin: 14px 12px 6px 12px;
+}
+#category-switcher form, #category-switcher table {
+    margin: 0;
+}
+#category-switcher th, #category-switcher td {
+    padding: 0;
+    padding: 0;
+}
+li.statusitem div.smallprint.icon {
+    position: relative;
+    padding-left: 20px;
+    padding-top: 5px;
+}
+img.listtype {
+	position: absolute; 
+	top: 5px;
+	left: 0px;
+	width: 16px;
+	height: 16px;
+}
+.coursetitle {
+    margin: 12px;
+}
+ 
+.gradebookListItem {
+    padding-left: 0px;
+}
+ 
+.gradebookListItem li {
+    padding-left: 0px;
+}

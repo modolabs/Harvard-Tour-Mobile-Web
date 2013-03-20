@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class APIResponse
 {
     public $id='';
@@ -7,6 +16,7 @@ class APIResponse
     public $command;
     public $version;
     public $error;
+    public $warnings;
     public $response;
     public $context;
     
@@ -46,18 +56,31 @@ class APIResponse
         $this->error = $error;
     }
     
+    public function addWarning(KurogoWarning $warning) {
+        if (!isset($this->warnings)) {
+            $this->warnings = array();
+        }
+        $this->warnings[] = $warning;
+    }
+    
     public function setResponse($response) {
         $this->response = $response;
     }
     
-    public function display() {
+    public function getJSONOutput() {
         if (is_null($this->version)) {
-            throw new Exception('APIResponse version must be set before display');
+            throw new KurogoException('APIResponse version must be set before display');
         }
     
-        $json = json_encode($this);
-        header("Content-Length: " . strlen($json));
+        return json_encode($this);
+    }
+
+    public function display() {
+        $json = $this->getJSONOutput();
+        $size = strlen($json);
+        header("Content-Type: application/json; charset=" . Kurogo::getCharset());
+        header("Content-Length: " . $size);
         echo $json;
-        exit();
+        return $json;
     }
 }

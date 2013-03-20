@@ -1,0 +1,49 @@
+#tabs {
+  display: none;
+}
+.focal .tabwrapper,
+.nonfocal .tabwrapper {
+  margin: 0 -12px;
+}
+
+#tabbodies,
+.shaded #tabbodies {
+  display: table;
+  width: 100%;
+  margin: .5em 0 0 0;
+  overflow: hidden;
+}
+.tabbody {
+  display: table-cell !important;
+  vertical-align: top;
+}
+.stops-tabbody {
+  border-left: 1px solid #bbb;
+  padding-bottom: 0;
+}
+.stops-tabbody .results {
+  border-radius: 0;
+  -webkit-border-radius: 0;
+  border-top-width: 1px;
+  border-bottom-width: 1px;
+  background-color: transparent;
+  margin-bottom: -1px;
+}
+.map-tabbody {
+  min-height: 352px;
+}
+.stops-tabbody {
+  width: 350px;
+}
+.portrait .map-tabbody #map_dynamic {
+  height: 600px;
+}
+.portrait .tabbody {
+  min-height: 612px;
+}
+.landscape .map-tabbody #map_dynamic {
+  height: 400px;
+}
+.landscape .tabbody {
+  min-height: 412px;
+}

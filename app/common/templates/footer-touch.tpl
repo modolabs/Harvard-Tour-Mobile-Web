@@ -1,12 +1,11 @@
 {extends file="findExtends:common/templates/footer.tpl"}
 
 {block name="footerNavLinks"}
-  {if $moduleID != 'home'}
+  {if $configModule != $homeModuleID}
     <div id="footerlinks">
-      <a href="#top">Back to top</a> 
-      {if $hasHelp} | <a href="help.php">Help</a>{/if}
-       | <a href="../home/">{$strings.SITE_NAME} home</a>
-      {if $session_userID} | <a href="../login">{$session_userID} logged in</a>{/if}
+      <a href="#top">{$footerBackToTop}</a> 
+      {if $hasHelp} | <a href="{$helpLink}">{$helpLinkText}</a>{/if}
+       | <a href="{$homeLink}">{$homeLinkText}</a>
     </div>
   {/if}
 {/block}
@@ -19,3 +18,5 @@
     <img src="{$pmImageURL}" width="2" height="2" alt="" />
   {/if}
 {/block}
+
+{block name="ajaxContentFooter"}{/block}

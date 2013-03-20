@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
   * PostgreSQL database abstraction
   * @package Database
@@ -13,6 +23,11 @@ class db_pgsql extends db
     public static function connection($dsn_data)
     {
         $dsn = sprintf("%s:host=%s;dbname=%s", 'pgsql', $dsn_data['DB_HOST'], $dsn_data['DB_DBNAME']);
+
+        if (isset($dsn_data['DB_PORT']) && !empty($dsn_data['DB_PORT'])) {
+            $dsn .= ';port='. $dsn_data['DB_PORT'];
+        }
+
         $connection = new PDO($dsn, $dsn_data['DB_USER'], $dsn_data['DB_PASS']);
         return $connection;
     }

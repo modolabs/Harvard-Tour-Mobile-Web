@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
  * @package Authentication
  */
@@ -35,7 +45,7 @@ abstract class AuthenticationAuthority
     protected $AuthorityImage; 
 
     /** 
-      * User Login type. One of 3 values: FORM, LINK or NONE
+      * User Login type. One of 3 values: FORM, LINK, AUTO or NONE
       * @var string
       */
     protected $userLogin;
@@ -65,6 +75,12 @@ abstract class AuthenticationAuthority
     protected $debugMode = false;
     
     /**
+      * Save user credentials. Needed for web services that require username/password. Only works with direct authorities
+      * @var $bool
+      */
+    protected $saveCredentials = false;
+    
+    /**
      * Attempts to authenticate the user using the included credentials
      * @param string $login the userid to login (this will be blank for OAUTH based authorities)
      * @param string $password password (this will be blank for OAUTH based authorities)
@@ -80,6 +96,24 @@ abstract class AuthenticationAuthority
 	 * @see User object
      */
     abstract public function getUser($login);
+    
+    public function getCurrentUser() {
+        $session = Kurogo::getSession();
+        return $session->getUser($this);
+    }
+
+    public function isLoggedIn() {
+        $session = Kurogo::getSession();
+        return $session->isLoggedIn($this);
+    }
+    
+    /**
+     * Sets the user class used to create users
+     * @param string $class the class name of the user class. Should be a subclass of User
+     */
+    protected function setUserClass($class) {
+    	$this->userClass = $class;
+    }
 
     /**
      * Retrieves a group object from this authority. Authorities which do not provide group information
@@ -123,27 +157,34 @@ abstract class AuthenticationAuthority
         }
                 
         if (!isset($args['TITLE']) || empty($args['TITLE'])) {
-            throw new Exception("Invalid authority title");
+            throw new KurogoConfigurationException("Invalid authority title");
         }
         
         if (!isset($args['INDEX']) || empty($args['INDEX'])) {
-            throw new Exception("Invalid authority index");
+            throw new KurogoConfigurationException("Invalid authority index");
         }
         
         $this->setAuthorityIndex($args['INDEX']);
         $this->setAuthorityTitle($args['TITLE']);
 
         if (!isset($args['USER_LOGIN'])) {
-            throw new Exception("USER_LOGIN value not set for " . $this->AuthorityTitle);
+            throw new KurogoConfigurationException("USER_LOGIN value not set for " . $this->AuthorityTitle);
         }
 
         if (!$this->setUserLogin($args['USER_LOGIN'])) {
-            throw new Exception("Invalid USER_LOGIN setting for " . $this->AuthorityTitle);
+            throw new KurogoConfigurationException("Invalid USER_LOGIN setting for " . $this->AuthorityTitle);
         }
         
+        if (isset($args['SAVE_CREDENTIALS'])) {
+            $this->setSaveCredentials($args['SAVE_CREDENTIALS']);
+        }
         
         if (isset($args['LOGGEDIN_IMAGE_URL']) && strlen($args['LOGGEDIN_IMAGE_URL'])) {
             $this->setAuthorityImage($args['LOGGEDIN_IMAGE_URL']);
+        }
+
+        if (isset($args['USER_CLASS']) && strlen($args['USER_CLASS'])) {
+            $this->setUserClass($args['USER_CLASS']);
         }
     }
     
@@ -154,12 +195,12 @@ abstract class AuthenticationAuthority
       */
     protected function validUserLogins()
     {
-        return array('FORM', 'LINK', 'NONE');
+        return array('FORM', 'LINK', 'AUTO', 'NONE');
     }
     
     /**
       * Sets the user login type
-      * @param string userLogin a valid userLogin type (FORM, LINK, NONE)
+      * @param string userLogin a valid userLogin type (FORM, LINK, AUTO, NONE)
       * @return boolean true if it was successful or false if it was not
       */
     public function setUserLogin($userLogin)
@@ -170,6 +211,13 @@ abstract class AuthenticationAuthority
         }
         
         return false;
+    }
+    
+    public function setSaveCredentials($bool) {
+        $this->saveCredentials = $bool ? true : false;
+        if ($this->saveCredentials && $this->userLogin != 'FORM') {
+            throw new KruogoConfigurationException("Credentials can only be saved when using USER_LOGIN=FORM");
+        }
     }
 
     /**
@@ -279,8 +327,9 @@ abstract class AuthenticationAuthority
     */
     public static function getDefaultAuthenticationAuthority()
     {
-        $authorities = self::getDefinedAuthenticationAuthorities();
-        return current($authorities);
+    	return self::getAuthenticationAuthority(
+    		self::getDefaultAuthenticationAuthorityIndex()
+    	);
     }
 
     public static function getDefaultAuthenticationAuthorityIndex()
@@ -412,7 +461,7 @@ abstract class AuthenticationAuthority
     public static function factory($authorityClass, $args)
     {
         if (!class_exists($authorityClass) || !is_subclass_of($authorityClass, 'AuthenticationAuthority')) {
-            throw new Exception("Invalid authentication class $authorityClass");
+            throw new KurogoConfigurationException("Invalid authentication class $authorityClass");
         }
         $authority = new $authorityClass;
         $authority->init($args);
@@ -453,6 +502,9 @@ abstract class AuthenticationAuthority
         $result = $this->auth($login, $password, $user);
         
         if ($result == AUTH_OK) {
+            if ($this->saveCredentials) {
+                $user->setCredentials($password);
+            }
             $session->login($user);
         }
         

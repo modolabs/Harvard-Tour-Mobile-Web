@@ -1,0 +1,48 @@
+<?php
+
+/****************************************************************
+ *
+ *  Copyright 2012 The President and Fellows of Harvard College
+ *  Copyright 2012 Modo Labs Inc.
+ *
+ *****************************************************************/
+
+/**
+ * Implements hook_field_schema().
+ */
+function navlist_field_schema($field) {
+  return array(
+    'columns' => array(
+      'url' => array(
+        'type' => 'varchar',
+        'length' => NAVLIST_URL_MAX_LENGTH,
+        'not null' => FALSE,
+        'sortable' => TRUE
+      ),
+      'title' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'sortable' => TRUE
+      ),
+      'subtitle' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'sortable' => TRUE
+      ),
+      'target' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'sortable' => TRUE
+      ),
+      'class' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'sortable' => TRUE
+      ),
+    ),
+  );
+}

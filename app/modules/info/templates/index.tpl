@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <script type="text/javascript">var _sf_startpt=(new Date()).getTime()</script>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Type" content="text/html; charset={$charset}" />
 <title>{block name="pageTitle"}{/block}</title>
 <link type="text/css" href="{$minify['css']|escape}" rel="stylesheet" />
 <link rel="shortcut icon" href="/favicon.ico" />
@@ -21,7 +21,7 @@
   <div id="content">
     {block name="content"}
       <h3>This is the default info page for desktop users to find out about your site.  Please extend this template in your theme to provide site-specific details.</h3>
-      <p>You probably want to go <a href="../home">to the home screen</a></p>
+      <p>You probably want to go <a href="../{$homeModuleID}">to the home screen</a></p>
     {/block}
   </div>
 

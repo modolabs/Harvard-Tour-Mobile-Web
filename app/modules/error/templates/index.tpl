@@ -2,10 +2,10 @@
 
 <div class="focal">
   <p>{$message}</p>
-  
-  {if isset($url)}
+
+  {if isset($url) && !$ajaxContentLoad}
     <p>
-      <a href="{$url|sanitize_url|escape}">{$linkText|default:'Click here to retry page'}</a>
+      <a href="{$url|sanitize_url|escape}">{$linkText}</a>
     </p>
   {/if}
 </div>

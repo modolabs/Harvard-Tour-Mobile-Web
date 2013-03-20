@@ -1,21 +1,51 @@
 <?php
 
-require_once(LIB_DIR . '/Calendar/DateTimeUtils.php');
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
+includePackage('DateTime');
 require_once(LIB_DIR . '/Calendar/ICalendar.php');
+
+interface CalendarInterface {
+    public function init($args);
+    public function getEvents();
+    public function getEventsInRange(TimeRange $range=null, $limit=null);
+    public function set_attribute($contentname, $value, $params=null);
+    public function add_event(CalendarEvent $event);
+}
+
+interface CalendarEvent {
+    public function init($args);
+    public function get_location_coordinates();
+    public function get_location();
+    public function get_uid();
+    public function get_start();
+    public function get_summary();
+    public function get_description();
+    public function get_end();
+    public function isAllDay();
+    public function get_attribute($field);
+}
 
 class Calendar 
 {
-    public static function getUserCalendarListController() {
+    public static function getUserCalendarListRetrievers() {
         return array(
             ''=>'-',
-            'GoogleAppsCalendarListController'=>'Google Apps'
+            'GoogleAppsCalendarListRetriever'=>'Google Apps'
         );
     }
 
-    public static function getResourceListController() {
+    public static function getResourceListRetrievers() {
         return array(
             ''=>'-',
-            'GoogleAppsCalendarListController'=>'Google Apps (Business or Education)'
+            'GoogleAppsCalendarListRetriever'=>'Google Apps (Business or Education)'
         );
     }
     

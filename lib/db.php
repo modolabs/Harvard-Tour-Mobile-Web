@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
  * @package Database
  */
@@ -11,6 +21,7 @@ define('DB_NOT_SUPPORTED', 1);
  * @package Database
  */
 class db {
+    protected $dbType;
     protected $connection;
     protected $lastError;
     const IGNORE_ERRORS=true;
@@ -24,6 +35,10 @@ class db {
     public function getLastError() {
         return $this->lastError;
     }
+    
+    public function getDBType() {
+        return $this->dbType;
+    }
   
     /*
      * Constructor
@@ -36,13 +51,14 @@ class db {
             }
     
             $config = array(
-                'DB_TYPE'=>$config->getVar('DB_TYPE'),
-                'DB_HOST'=>$config->getVar('DB_HOST'),
-                'DB_USER'=>$config->getVar('DB_USER'),
-                'DB_PASS'=>$config->getVar('DB_PASS'),
-                'DB_DBNAME'=>$config->getVar('DB_DBNAME'),   
-                'DB_FILE'=>$config->getVar('DB_FILE'),
-                'DB_CREATE'=>$config->getOptionalVar('DB_CREATE')
+                'DB_TYPE'=>$config->getVar('DB_TYPE', 'database'),
+                'DB_HOST'=>$config->getVar('DB_HOST', 'database'),
+                'DB_USER'=>$config->getVar('DB_USER', 'database'),
+                'DB_PASS'=>$config->getVar('DB_PASS', 'database'),
+                'DB_DBNAME'=>$config->getVar('DB_DBNAME', 'database'),   
+                'DB_FILE'=>$config->getVar('DB_FILE', 'database'),
+                'DB_CREATE'=>$config->getOptionalVar('DB_CREATE', 'database'),
+                'DB_PORT'=>$config->getOptionalVar('DB_PORT', 'database')
             );
         }
     
@@ -51,23 +67,21 @@ class db {
     
     protected function init($config=null) {
         $this->lastError = null;
-        $db_type = isset($config['DB_TYPE']) ? $config['DB_TYPE'] : null;
-        if (!file_exists(LIB_DIR . "/db/db_$db_type.php")) {
-            $e = new Exception("Database type $db_type not found");
+        $this->dbType = isset($config['DB_TYPE']) ? $config['DB_TYPE'] : null;
+        Kurogo::log(LOG_DEBUG, "Initializing $this->dbType", 'db');
+        if (!file_exists(LIB_DIR . "/db/db_$this->dbType.php")) {
+            $e = new KurogoConfigurationException("Database type $this->dbType not found");
             $this->lastError = KurogoError::errorFromException($e);
             throw $e;
         }
     
-        require_once(LIB_DIR . "/db/db_$db_type.php");
+        require_once(LIB_DIR . "/db/db_$this->dbType.php");
         try {
-            $this->connection = call_user_func(array("db_$db_type", 'connection'), $config);
+            $this->connection = call_user_func(array("db_$this->dbType", 'connection'), $config);
         } catch (Exception $e) {
             $this->lastError = KurogoError::errorFromException($e);
-            if (Kurogo::getSiteVar('DB_DEBUG')) {
-                throw new Exception("Error connecting to database: " . $e->getMessage(), 0);
-            } else {
-                throw new Exception("Error connecting to database");
-            }
+            Kurogo::log(LOG_ALERT, "Error connecting to $this->dbType database: " . $e->getMessage(), 'db');
+            throw new KurogoDataServerException("Error connecting to database");
         }
     }
     
@@ -81,9 +95,7 @@ class db {
      */
     public function query($sql, $parameters=array(), $ignoreErrors=false, $catchErrorCodes=array()) {
         $this->lastError = null;
-        if (Kurogo::getSiteVar('DB_DEBUG')) {
-            error_log("Query Log: $sql");
-        }
+        Kurogo::log(LOG_INFO, $this->dbType . " query log: $sql", 'db');
     
         if (!$result = $this->connection->prepare($sql)) {
             return $this->errorHandler($sql, $this->connection->errorInfo(), $ignoreErrors, $catchErrorCodes);
@@ -99,24 +111,52 @@ class db {
     }
     
   // http://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows
-  public function limitQuery($sql, $parameters=array(), $ignoreErrors=false, 
-    $catchErrorCodes=array(), $limit=1)
-  {
-    if ($this instanceof db_mysql || $this instanceof db_sqlite
-      || ($this instanceof db_pgsql && $this->pgVersion() >= 8.4)
-    ) {
-      $sql .= ' LIMIT ?';
-      $parameters[] = $limit;
+    public function limitQuery($sql, $parameters=array(), $ignoreErrors=false, 
+        $catchErrorCodes=array(), $limit=1)
+    {
+        if (intval($limit) && (
+                $this->dbType == 'sqlite' ||
+                $this->dbType == 'mysql' ||
+                $this->dbType == 'pgsql' // TODO: this doens't work for pg < v8.4
+                ))
+        {
+            $sql .= " LIMIT $limit";
+        }
+        return $this->query($sql, $parameters, $ignoreErrors, $catchErrorCodes);
     }
-    return $this->query($sql, $parameters, $ignoreErrors, $catchErrorCodes);
-  }
   
+    /*
+     * Returns an array of sources (tables) in the database. 
+     * @return array Array of tablenames in the database
+     */
+    public function getTables() {
+        $sql = '';
+        switch ($this->dbType) {
+            case 'mysql':
+                $sql = "SHOW TABLES";
+                break;
+            case 'sqlite':
+                $sql = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;";
+                break;
+            default:
+                throw new KurogoException("db->getTables() not supported for $this->dbType");
+        }
+        
+        $tables = array();
+        $result = $this->query($sql);
+        while ($row = $result->fetch()) {
+            $tables[] = current($row);
+        }
+
+        return $tables;
+    }
+    
     /*
      * Handle query error
      */
     private function errorHandler($sql, $errorInfo, $ignoreErrors, $catchErrorCodes) {
     
-        $e = new Exception (sprintf("Error with %s: %s", $sql, $errorInfo[2]), $errorInfo[1]);
+        $e = new KurogoDataException (sprintf("Error with %s: %s", $sql, $errorInfo[2]), $errorInfo[1]);
     
         if ($ignoreErrors) {
             $this->lastError = KurogoError::errorFromException($e);
@@ -130,10 +170,9 @@ class db {
             return $errorInfo;
         }
     
+        Kurogo::log(LOG_WARNING, sprintf("%s error with %s: %s", $this->dbType, $sql, $errorInfo[2]), 'db');
         if (Kurogo::getSiteVar('DB_DEBUG')) {
             throw $e;
-        } else {
-            error_log(sprintf("Error with %s: %s", $sql, $errorInfo[2]));
         }
     }
     

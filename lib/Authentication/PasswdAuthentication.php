@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
   * @package Authentication
   */
@@ -79,8 +89,8 @@ class PasswdAuthentication extends AuthenticationAuthority
         }        
 
         /* some quick validation */        
-        if (strlen($user['userID'])==0 | !preg_match("/^[a-f0-9]{32}$/", $user['md5'])) {
-            error_log("Invalid user line: $line");
+        if (strlen($user['userID'])==0 || !preg_match("/^[a-f0-9]{32}$/", $user['md5'])) {
+            Kurogo::log(LOG_WARNING,"Invalid user line: $line",'auth');
             $user = false;
         }
         
@@ -94,7 +104,7 @@ class PasswdAuthentication extends AuthenticationAuthority
         }
         
         if (!is_readable($this->groupFile)) {
-            throw new Exception("Unable to load group file $this->groupFile");
+            throw new KurogoConfigurationException("Unable to load group file $this->groupFile");
         }
         
         $data = file_get_contents($this->groupFile);
@@ -130,7 +140,7 @@ class PasswdAuthentication extends AuthenticationAuthority
         );
         
         if (strlen($group['group'])==0 || strlen($group['gid'])==0) {
-            error_log("Invalid group line: $line");
+            Kurogo::log(LOG_WARNING,"Invalid group line: $line",'auth');
             $group = false;
         }
 
@@ -246,7 +256,7 @@ class PasswdAuthentication extends AuthenticationAuthority
                         $groupMembers[] = $user;
                     }
                 } else {
-                    throw new Exception("Invalid authority $authorityIndex when parsing group information for $group");
+                    throw new KurogoConfigurationException("Invalid authority $authorityIndex when parsing group information for $group");
                 }
             }
             $group->setMembers($groupMembers);
@@ -265,7 +275,7 @@ class PasswdAuthentication extends AuthenticationAuthority
         
         if ($this->userLogin != 'NONE') {        
             if (!is_readable($this->userFile)) {
-                throw new Exception("Unable to load password file $this->userFile");
+                throw new KurogoConfigurationException("Unable to load password file $this->userFile");
             }
         }
     }

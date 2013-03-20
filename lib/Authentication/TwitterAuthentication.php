@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
   * @package Authentication
   */
@@ -53,17 +63,19 @@ class TwitterAuthentication extends OAuthAuthentication
             if ($this->cache->isFresh($cacheFilename)) {
                 $data = $this->cache->read($cacheFilename);
             } else {
-                $oauth = $this->oauth();
+                $provider = $this->getOAuthProvider();
                 //cache isn't fresh, load the data
-                if ($data = $oauth->oauthRequest('GET', $this->API_URL .'/users/show.json', array('screen_name'=>$login))) {
+                $response = $provider->oauthRequest('GET', $this->API_URL .'/users/show.json', array('screen_name'=>$login));
+                if ($data = $response->getResponse()) {
                     $this->cache->write($data, $cacheFilename);
                 }
                 
             }
         } else {
             //load the data
-            $oauth = $this->oauth();
-            $data = $oauth->oauthRequest('GET', $this->API_URL . '/users/show.json', array('screen_name'=>$login));
+            $provider = $this->getOAuthProvider();
+            $response = $provider->oauthRequest('GET', $this->API_URL . '/users/show.json', array('screen_name'=>$login));
+            $data = $response->getResponse();
         }
         
 		// make the call

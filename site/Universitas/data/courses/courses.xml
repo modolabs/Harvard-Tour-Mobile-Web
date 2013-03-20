@@ -1,0 +1,134 @@
+<?xml version='1.0' ?>
+<courses>
+<course>
+    <term>Spring Semester 2012</term>
+    <term_code>2012S</term_code>
+    <title>Intro to Psychology</title>
+    <course_number>PSYC 101</course_number>
+    <catalog_number>101</catalog_number>
+    <college>Arts and Sciences</college>
+    <college_code>AS</college_code>
+    <school>Psychology</school>
+    <school_code>PSYC</school_code>
+    <section>
+        <class_number>PSYC 101001</class_number>
+        <section_number>001</section_number>
+        <credits>3</credits>
+        <credit_level>U</credit_level>
+        <schedule>
+            <days>MWF</days>
+            <start_time>1:00pm</start_time>
+            <end_time>1:50pm</end_time>
+            <start_date>1/3/2012</start_date> 
+            <end_date>5/18/2012</end_date> 
+            <building>Jones Hall</building>
+            <room>325</room>
+        </schedule>
+        <enrollment_cap>20</enrollment_cap>
+        <enrollment_current>15</enrollment_current>
+        <instructor_name>Elizabeth Hoover</instructor_name>
+        <instructor_id>1234</instructor_id>
+    </section>
+    <section>
+        <class_number>PSYC 101002</class_number>
+        <section_number>002</section_number>
+        <credits>3</credits>
+        <credit_level>U</credit_level>
+        <schedule>
+            <days>TH</days>
+            <start_time>2:00pm</start_time>
+            <end_time>3:20pm</end_time>
+            <start_date>1/3/2012</start_date> 
+            <end_date>5/18/2012</end_date> 
+            <building>Jones Hall</building>
+            <room>300</room>
+        </schedule>
+        <enrollment_cap>30</enrollment_cap>
+        <enrollment_current>15</enrollment_current>
+        <instructor_name>Dr. Harold Samuels</instructor_name>
+        <instructor_id>4321</instructor_id>
+    </section>
+    <description>This course is a survey in modern Psychology.</description>
+    <requirements>Open Enrollment</requirements>
+</course>
+<course>
+    <term>Spring Semester 2012</term>
+    <term_code>2012S</term_code>
+    <title>Advanced Psychology</title>
+    <course_number>PSYC 201</course_number>
+    <catalog_number>201</catalog_number>
+    <college>Arts and Sciences</college>
+    <college_code>AS</college_code>
+    <school>Psychology</school>
+    <school_code>PSYC</school_code>
+    <section>
+        <class_number>PSYC 201001</class_number>
+        <section_number>001</section_number>
+        <credits>3</credits>
+        <credit_level>U</credit_level>
+        <schedule>
+            <days>MWF</days>
+            <start_time>2:00pm</start_time>
+            <end_time>2:50pm</end_time>
+            <start_date>1/3/2012</start_date> 
+            <end_date>5/18/2012</end_date> 
+            <building>Jones Hall</building>
+            <room>330</room>
+        </schedule>
+        <enrollment_cap>20</enrollment_cap>
+        <enrollment_current>10</enrollment_current>
+        <instructor_name>George Feeny</instructor_name>
+    </section>
+    <section>
+        <class_number>PSYC 201002</class_number>
+        <section_number>002</section_number>
+        <credits>3</credits>
+        <credit_level>U</credit_level>
+        <schedule>
+            <days>MW</days>
+            <start_time>2:00pm</start_time>
+            <end_time>3:20pm</end_time>
+            <start_date>1/3/2012</start_date> 
+            <end_date>5/18/2012</end_date> 
+            <building>Jones Hall</building>
+            <room>330</room>
+        </schedule>
+        <enrollment_cap>20</enrollment_cap>
+        <enrollment_current>20</enrollment_current>
+        <instructor_name>George Feeny</instructor_name>
+    </section>
+    <description>This course is an advanced course in Psychology</description>
+    <requirements>Prerequisite: PSYC 101</requirements>
+</course>
+<course>
+    <term>Spring Semester 2012</term>
+    <term_code>2012S</term_code>
+    <title>Introduction to Web Services</title>
+    <course_number>COMP 215</course_number>
+    <catalog_number>215</catalog_number>
+    <college>Engineering</college>
+    <college_code>EN</college_code>
+    <school>Computer Science</school>
+    <school_code>COMP</school_code>
+    <section>
+        <class_number>COMP 215001</class_number>
+        <section_number>001</section_number>
+        <credits>3</credits>
+        <credit_level>U</credit_level>
+        <schedule>
+            <days>MWF</days>
+            <start_time>2:00pm</start_time>
+            <end_time>2:50pm</end_time>
+            <start_date>1/3/2012</start_date> 
+            <end_date>5/18/2012</end_date> 
+            <building>Simpson Building</building>
+            <room>A113</room>
+        </schedule>
+        <enrollment_cap>20</enrollment_cap>
+        <enrollment_current>10</enrollment_current>
+        <instructor_name>Charles Babbage</instructor_name>
+        <instructor_id>5678</instructor_id>
+    </section>
+    <description>This course is an introduction to writing and consuming web services.</description>
+    <requirements>Computer Science Majors only</requirements>
+</course></courses>

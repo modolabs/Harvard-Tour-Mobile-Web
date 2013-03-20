@@ -1,14 +1,26 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
- * @package ExternalData
+ * @package DataController
  */
 
 /**
  * A generic class to handle the retrieval of external data
  * 
  * Handles retrieval, caching and parsing of data. 
- * @package ExternalData
+ * @package DataController
  */
+includePackage('DataController');
+includePackage('DataResponse');
 abstract class DataController
 {
     protected $DEFAULT_PARSER_CLASS='PassthroughDataParser';
@@ -88,7 +100,7 @@ abstract class DataController
 
     /**
      * Clears the internal cache of data. Subclasses can override this method to clean up any necessary
-     * state, if necessary. Subclasses should call parent::clearInteralCache()
+     * state, if necessary. Subclasses should call parent::clearInternalCache()
      */
     protected function clearInternalCache() {
         $this->setTotalItems(null);
@@ -244,7 +256,7 @@ abstract class DataController
 
     public function setMethod($method) {
         if (!in_array($method, array('POST','GET','DELETE','PUT'))) {
-            throw new Exception("Invalid method $method");
+            throw new KurogoConfigurationException("Invalid method $method");
         }
         
         $this->method = $method;
@@ -267,7 +279,7 @@ abstract class DataController
         
         if (isset($args['HTTPS_PROXY_URL'])) {
             $streamContextOpts['https'] = array(
-                'proxy'          => $proxyConfigs['HTTPS_PROXY_URL'], 
+                'proxy'          => $args['HTTPS_PROXY_URL'], 
                 'request_fulluri'=> TRUE
             );
         }
@@ -285,15 +297,16 @@ abstract class DataController
      */
     public static function factory($controllerClass, $args=array()) {
         $args = is_array($args) ? $args : array();
+        Kurogo::log(LOG_DEBUG, "Initializing DataController $controllerClass", "data");
 
         if (!class_exists($controllerClass)) {
-            throw new Exception("Controller class $controllerClass not defined");
+            throw new KurogoConfigurationException("Controller class $controllerClass not defined");
         }
         
         $controller = new $controllerClass;
         
         if (!$controller instanceOf DataController) {
-            throw new Exception("$controllerClass is not a subclass of DataController");
+            throw new KurogoConfigurationException("$controllerClass is not a subclass of DataController");
         }
 
         $controller->setDebugMode(Kurogo::getSiteVar('DATA_DEBUG'));
@@ -337,6 +350,15 @@ abstract class DataController
         return $parsedData;
     }
 
+    protected function parseResponse(DataResponse $response, DataParser $parser=null) {       
+        if (!$parser) {
+            $parser = $this->parser;
+        }
+        $parsedData = $parser->parseResponse($response);
+        $this->setTotalItems($parser->getTotalItems());
+        return $parsedData;
+    }
+
     /**
      * Parse a file. This method will also attempt to set the total items in a request by calling the
      * data parser's getTotalItems() method
@@ -375,8 +397,13 @@ abstract class DataController
                 $file = $this->getDataFile();
                 return $this->parseFile($file, $parser);
                 break;
+
+           case DataParser::PARSE_MODE_RESPONSE:
+                $this->getData();
+                return $this->parseResponse($this->response, $parser);
+                break;
             default:
-                throw new Exception("Unknown parse mode");
+                throw new KurogoConfigurationException("Unknown parse mode");
         }
     }
     
@@ -477,7 +504,7 @@ abstract class DataController
     public function getData() {
 
         if (!$url = $this->url()) {
-            throw new Exception("URL could not be determined");
+            throw new KurogoDataException("URL could not be determined");
         }
 
         $this->url = $url;
@@ -485,12 +512,8 @@ abstract class DataController
 
         if ($this->useCache) {
             if ($this->cacheIsFresh()) {
+                Kurogo::log(LOG_DEBUG, "Using cache for $url", 'data');
                 $data = $this->getCacheData();
-
-                if ($this->debugMode) {
-                    error_log(sprintf(__CLASS__ . " Using cache for %s", $url));
-                }
-
             } else {
                 if ($data = $this->retrieveData($url)) {
                     if ($this->response) {
@@ -498,6 +521,7 @@ abstract class DataController
                     }
                 } elseif ($this->useStaleCache) {
                     // return stale cache if the data is unavailable
+                    Kurogo::log(LOG_DEBUG, "Using stale cache for $url", 'data');
                     $data = $this->getCacheData();
                 }
             }
@@ -517,20 +541,17 @@ abstract class DataController
      * @TODO support POST requests and custom headers and perhaps proxy requests
      */
     protected function retrieveData($url) {
-        if ($this->debugMode) {
-            error_log(sprintf(__CLASS__ . " Retrieving %s", $url));
-        }
+        Kurogo::log(LOG_INFO, "Retrieving $url", 'data');
         
         $data = file_get_contents($url, false, $this->streamContext);
         $http_response_header = isset($http_response_header) ? $http_response_header : array();
 
-        $this->response = new DataResponse();
+        $this->response = DataResponse::factory('HTTPDataResponse', array());
         $this->response->setRequest($this->method, $url, $this->filters, $this->requestHeaders);
-        $this->response->setResponse($data, $http_response_header);
+        $this->response->setResponse($data);
+        $this->response->setResponseHeaders($http_response_header);
         
-        if ($this->debugMode) {
-            error_log(sprintf(__CLASS__ . " Returned status %d and %d bytes", $this->getResponseCode(), strlen($data)));
-        }
+        Kurogo::log(LOG_DEBUG, sprintf("Returned status %d and %d bytes", $this->getResponseCode(), strlen($data)), 'data');
         
         return $data;
     }
@@ -575,7 +596,7 @@ abstract class DataController
         }
         
         if (!is_array($items)) {
-            throw new Exception("Items list is not an array");
+            throw new KurogoDataException("Items list is not an array");
         }
         
         if ($start>0 || !is_null($limit)) {

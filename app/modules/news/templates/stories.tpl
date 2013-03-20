@@ -1,7 +1,7 @@
 <ul class="results">
   {if $previousURL}
     <li class="pagerlink">
-      <a href="{$previousURL}">Previous {$maxPerPage} stories...</a>
+      <a href="{$previousURL}">{"PREVIOUS_STORY_TEXT"|getLocalizedString:$maxPerPage}</a>
     </li>
   {/if}
 
@@ -13,7 +13,7 @@
         {if $story['img']}
           <img class="thumbnail" src="{$story['img']}" />
         {else}
-          <img class="thumbnail" src="/modules/{$moduleID}/images/news-placeholder{$imageExt}" />
+          <img class="thumbnail" src="/modules/{$configModule}/images/news-placeholder{$imageExt}" />
         {/if}
         {/if}
         <div class="ellipsis" id="ellipsis_{$ellipsisCount++}">
@@ -28,7 +28,7 @@
 
   {if $nextURL}
     <li class="pagerlink">
-      <a href="{$nextURL}">Next {$maxPerPage} stories...</a>
+      <a href="{$nextURL}">{"NEXT_STORY_TEXT"|getLocalizedString:$maxPerPage}</a>
     </li>
   {/if}
 </ul>

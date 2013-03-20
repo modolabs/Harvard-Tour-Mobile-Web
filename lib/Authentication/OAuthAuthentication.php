@@ -1,12 +1,20 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 Kurogo::includePackage('Authorization');
 
 abstract class OAuthAuthentication extends AuthenticationAuthority
 {
     protected $OAuthProviderClass;
-    protected $oauth;
-    protected $initArgs;
+    protected $OAuthProvider;
     abstract protected function getUserFromArray(array $array);
 
     protected function validUserLogins() { 
@@ -23,7 +31,7 @@ abstract class OAuthAuthentication extends AuthenticationAuthority
     }
 
     public function login($login, $pass, Session $session, $options) {
-        $oauth = $this->oauth();
+        $oauth = $this->getOAuthProvider();
         $result = $oauth->auth($options, $userArray);
         if ($result == AUTH_OK) {
             if ($user = $this->getUserFromArray($userArray)) {
@@ -36,23 +44,23 @@ abstract class OAuthAuthentication extends AuthenticationAuthority
         return $result;
     }
 
-    public function oauth() {
-        if (!$this->oauth) {
-            $this->oauth = OAuthProvider::factory($this->OAuthProviderClass, $this->initArgs);
+    public function getOAuthProvider() {
+        if (!$this->OAuthProvider) {
+            $this->OAuthProvider = OAuthProvider::factory($this->OAuthProviderClass, $this->initArgs);
         }
-        return $this->oauth;
+        return $this->OAuthProvider;
     }
 }
 
 class OAuthUser extends User
 {
-    protected function oauth() {
-        return $this->AuthenticationAuthority->oauth();
+    protected function getOAuthProvider() {
+        return $this->AuthenticationAuthority->getOAuthProvider();
     }
    
     public function __construct(AuthenticationAuthority $AuthenticationAuthority) {
         parent::__construct($AuthenticationAuthority);
-        $oauth = $this->oauth();
+        $oauth = $this->getOAuthProvider();
         $oauth->setTokenFromUser($this);
     }
    

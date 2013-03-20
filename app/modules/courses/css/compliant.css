@@ -1,0 +1,24 @@
+.tabbody {
+	padding: 10px;
+}
+.seeall {
+    float: right;
+    margin-right: 4px;
+}
+
+.seeall a {
+    display: block;
+    text-decoration: none;
+    font-size: 82.4%;
+    padding: 5px 21px;
+    background: url(/common/images/action-arrow.png) right no-repeat;
+}
+
+.folder-subtitle .loading {
+    margin: 0;
+    text-align: left;
+}
+.folder-subtitle .loading img {
+    width: 18px;
+    height: 14px;
+}

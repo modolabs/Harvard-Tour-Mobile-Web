@@ -1,10 +1,23 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
+includePackage('News');
 class NewsAPIModule extends APIModule {
 
     protected $id = 'news';
     protected $vmin = 1;
     protected $vmax = 1;
+    protected $legacyController = false;
+    protected static $defaultModel = 'NewsDataModel';
+    protected static $defaultController = 'RSSDataController';
     
     protected function initializeForCommand() {
         $feeds = $this->loadFeedData();
@@ -17,7 +30,13 @@ class NewsAPIModule extends APIModule {
                 $mode = $this->getArg('mode');
 
                 $feed = $this->getFeed($categoryID);
-                $items = $feed->items($start, $limit);
+                if ($this->legacyController) {
+                    $items = $feed->items($start, $limit);
+                } else {
+                    $feed->setStart($start);
+                    $feed->setLimit($limit);
+                    $items = $feed->items($start, $limit);
+                }
                 $totalItems = $feed->getTotalItems();
 
                 $stories = array();
@@ -37,7 +56,11 @@ class NewsAPIModule extends APIModule {
                 foreach ($feeds as $index => $feedData) {
                     $response[] = array('id' => strval($index),
                     					'title' => strip_tags($feedData['TITLE']),
-                    					'time' => time(),
+                                        'show_images'=>isset($feedData['SHOW_IMAGES']) ? (bool) $feedData['SHOW_IMAGES'] : true,
+                                        'show_pubdate'=>isset($feedData['SHOW_PUBDATE']) ? (bool) $feedData['SHOW_PUBDATE'] : false,
+                                        'show_author' => isset($feedData['SHOW_AUTHOR']) ? (bool) $feedData['SHOW_AUTHOR'] : false,
+                                        'show_link' => isset($feedData['SHOW_LINK']) ? (bool) $feedData['SHOW_LINK'] : false,
+                                        'show_body_thumbnail' => isset($feedData['SHOW_BODY_THUMBNAIL']) ? (bool) $feedData['SHOW_BODY_THUMBNAIL'] : true
                     					);
                 }
                 $this->setResponse($response);
@@ -49,10 +72,14 @@ class NewsAPIModule extends APIModule {
                 $categoryID = $this->getArg('categoryID');
                 $searchTerms = $this->getArg('q');
                 $feed = $this->getFeed($categoryID);
-                $feed->addFilter('search', $searchTerms);
+                if ($this->legacyController) {
+                    $feed->addFilter('search', $searchTerms);
+                    $start = 0;
+                    $items = $feed->items($start);
+                } else {
+                    $items = $feed->search($searchTerms);
+                }
 
-                $start = 0;
-                $items = $feed->items($start);
                 $stories = array();
                 foreach ($items as $story) {
                     $stories[] = $this->formatStory($story, 'full');
@@ -66,27 +93,26 @@ class NewsAPIModule extends APIModule {
                  break;
         }
     }
+    
+    protected function encodeValue($value) {
+        return trim(mb_convert_encoding($value, 'UTF-8', 'HTML-ENTITIES'));
+    }
 
     protected function formatStory($story, $mode) {
        $item = array(
             'GUID'        => $story->getGUID(),
             'link'        => $story->getLink(),
-            'title'       => strip_tags($story->getTitle()),
-            'description' => $story->getDescription(),
-            'pubDate'     => self::getPubDateUnixtime($story),
+            'title'       => $this->encodeValue(strip_tags($story->getTitle())),
+            'description' => $this->encodeValue(strip_tags($story->getDescription())),
+            'pubDate'     => $story->getPubTimestamp()
        );
 
-       // like in the web module we
-       // use the existance of GUID
-       // to determine if we have content
-       if($story->getGUID()) {
-           $item['GUID'] = $story->getGUID();
+       if($story->getContent()) {
            if($mode == 'full') {
                 $item['body'] = $story->getContent();
            }
            $item['hasBody'] = TRUE;
        } else {
-           $item['GUID'] = $story->getLink();
            $item['hasBody'] = FALSE;
        }
 
@@ -95,8 +121,8 @@ class NewsAPIModule extends APIModule {
        if($image && $image->getURL()) {
            $item['image'] = array(
                 'src'    => $image->getURL(),
-                'width'  => $image->getProperty('width'),
-                'height' => $image->getProperty('height'),
+                'width'  => $image->getWidth(),
+                'height' => $image->getHeight()
            );
        }
        $author = $story->getAuthor();
@@ -105,21 +131,28 @@ class NewsAPIModule extends APIModule {
     }
 
     // copied from NewsWebModule.php
-    public function getFeed($index) {
-        $feeds = $this->loadFeedData();
-        if(isset($feeds[$index])) {
-            $feedData = $feeds[$index];
-            if (!isset($feedData['CONTROLLER_CLASS'])) {
-                $feedData['CONTROLLER_CLASS'] = 'RSSDataController';
+  public function getFeed($index) {
+      $feeds = $this->loadFeedData();
+      if (isset($feeds[$index])) {
+        
+        $feedData = $feeds[$index];
+        try {
+            if (isset($feedData['CONTROLLER_CLASS'])) {
+                $modelClass = $feedData['CONTROLLER_CLASS'];
+            } else {
+                $modelClass = isset($feedData['MODEL_CLASS']) ? $feedData['MODEL_CLASS'] : self::$defaultModel;
             }
+            
+            $controller = NewsDataModel::factory($modelClass, $feedData);
+        } catch (KurogoException $e) { 
             $controller = DataController::factory($feedData['CONTROLLER_CLASS'], $feedData);
-            return $controller;
-        } else {
-            throw new Exception("Error getting news feed for index $index");
+            $this->legacyController = true;
         }
+		
+        return $controller;
+    } else {
+        throw new KurogoConfigurationException($this->getLocalizedString('ERROR_INVALID_FEED', $index));
     }
+  }
 
-    private static function getPubDateUnixtime($story) {
-        return strtotime($story->getPubDate());
-    }
 }

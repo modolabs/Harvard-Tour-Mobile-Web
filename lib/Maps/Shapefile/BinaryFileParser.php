@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 abstract class BinaryFileParser extends DataParser
 {
     protected $filename = null;
@@ -22,7 +31,7 @@ abstract class BinaryFileParser extends DataParser
     }
 
     public function setContents($contents) {
-        $this->contentBuffer = str_split($contents);
+        $this->contentBuffer = $contents;
     }
 
     protected function read($length) {
@@ -30,10 +39,15 @@ abstract class BinaryFileParser extends DataParser
 
         $chars = array();
         if ($readLength > 0) {
+
             if ($this->handle) {
                 $nextChars = str_split(fread($this->handle, $readLength));
-            } elseif ($readLength <= count($this->contentBuffer)) {
-                $nextChars = array_splice($this->contentBuffer, 0, $readLength);
+            } elseif ($readLength <= strlen($this->contentBuffer)) {
+                $nextString = substr($this->contentBuffer, 0, $readLength);
+                $this->contentBuffer = substr($this->contentBuffer, $readLength);
+                $nextChars = str_split($nextString);
+            } else {
+                throw new KurogoDataException("unexpected EOF");
             }
             $chars = array_merge($this->readBuffer, $nextChars);
             $this->readBuffer = array();
@@ -44,7 +58,7 @@ abstract class BinaryFileParser extends DataParser
             }
         }
         if (count($chars) != $length) {
-            throw new Exception("not able to read $length characters");
+            throw new KurogoDataException("not able to read $length characters, read ".count($chars));
         }
 
         $this->position += $length;
@@ -116,8 +130,8 @@ abstract class BinaryFileParser extends DataParser
         $this->readBuffer = array();
         if ($this->handle) {
             fread($this->handle, $length);
-        } elseif ($length <= count($this->contentBuffer)) {
-            array_splice($this->contentBuffer, 0, $length);
+        } elseif ($length <= strlen($this->contentBuffer)) {
+            $this->contentBuffer = substr($this->contentBuffer, $length);
         }
         $this->position += $length;
     }
@@ -133,9 +147,13 @@ abstract class BinaryFileParser extends DataParser
         $this->cleanup();
     }
 
-    public function parseData($data)
-    {
+    public function parseData($data) {
         $this->setContents($data);
+        $this->doParse();
+    }
+
+    public function parseFile($file) {
+        $this->setFilename($file);
         $this->doParse();
     }
 
@@ -143,7 +161,7 @@ abstract class BinaryFileParser extends DataParser
         $this->position = 0;
         if ($this->filename) {
             if (!$this->handle = fopen($this->filename, 'rb')) {
-                throw new Exception("unable to open file {$this->filename}");
+                throw new KurogoDataException("unable to open file {$this->filename}");
             }
         }
     }

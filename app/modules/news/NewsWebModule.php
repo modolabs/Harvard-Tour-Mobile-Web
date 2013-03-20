@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
   * @package Module
   * @subpackage News
@@ -8,7 +18,16 @@
   * @package Module
   * @subpackage News
   */
+
+if (!function_exists('mb_convert_encoding')) {
+    throw new KurogoException('Multibyte String PHP extension is not installed. http://www.php.net/manual/en/book.mbstring.php');
+}
+
+includePackage('News');
+includePackage('DateTime');
 class NewsWebModule extends WebModule {
+  protected static $defaultModel = 'NewsDataModel';
+  protected static $defaultController = 'RSSDataController'; // legacy
   protected $id = 'news';
   protected $feeds = array();
   protected $feedIndex = 0;
@@ -18,39 +37,44 @@ class NewsWebModule extends WebModule {
   protected $showImages = true;
   protected $showPubDate = false;
   protected $showAuthor = false;
+  protected $showLink = false;
+  protected $showBodyPubDate = true;
+  protected $showBodyAuthor = true;
+  protected $showBodyThumbnail = true;
+  protected $legacyController = false;
   
   public static function validateFeed($section, $feedData) {
         if (!self::argVal($feedData, 'TITLE')) {
-            return new KurogoError(1, 'Title not specified','Feed title cannot be blank');
+            return new KurogoError(1, $this->getLocalizedString('ERROR_NO_TITLE'),$this->getLocalizedString('ERROR_NO_TITLE_DESCRIPTION'));
         }
 
-        if (!isset($feedData['CONTROLLER_CLASS'])) {
-            $feedData['CONTROLLER_CLASS'] = 'RSSDataController';
+        if (!isset($feedData['MODEL_CLASS'])) {
+			$feedData['MODEL_CLASS'] = self::$defaultModel;
         }
-        
+
         try {
-            $controller = DataController::factory($feedData['CONTROLLER_CLASS'], $feedData);
-        } catch (Exception $e) {
+            $controller = NewsDataModel::factory($feedData['MODEL_CLASS'], $feedData);
+        } catch (KurogoConfigurationException $e) {
             return KurogoError::errorFromException($e);
         }
         
         return true;
   }
 
-  private function feedURLForFeed($feedIndex) {
+  protected function feedURLForFeed($feedIndex) {
     return isset($this->feeds[$feedIndex]) ? 
       $this->feeds[$feedIndex]['baseURL'] : null;
   }
   
-  private function getImageForStory($story) {
+  protected function getImageForStory($story) {
     if ($this->showImages) {
         $image = $story->getImage();
         
         if ($image) {
           return array(
             'src'    => $image->getURL(),
-            'width'  => $image->getProperty('width'),
-            'height' => $image->getProperty('height'),
+            'width'  => $image->getWidth(),
+            'height' => $image->getHeight()
           );
         }
     }
@@ -64,13 +88,13 @@ class NewsWebModule extends WebModule {
     return $this->buildBreadcrumbURL('story', $args, false);
   }
 
-  private function feedURL($feedIndex, $addBreadcrumb=true) {
+  protected function feedURL($feedIndex, $addBreadcrumb=true) {
     return $this->buildBreadcrumbURL('index', array(
       'section' => $feedIndex
     ), $addBreadcrumb);
   }
 
-    private function cleanContent($content) {
+    protected function cleanContent($content) {
     
         //deal with pre tags. strip out pre tags and add <br> for newlines
         $bits = preg_split( '#(<pre.*?'.'>)(.*?)(</pre>)#s', $content, -1, PREG_SPLIT_DELIM_CAPTURE);
@@ -93,34 +117,63 @@ class NewsWebModule extends WebModule {
   public function getFeed($index) {
     if (isset($this->feeds[$index])) {
         $feedData = $this->feeds[$index];
-        if (!isset($feedData['CONTROLLER_CLASS'])) {
-            $feedData['CONTROLLER_CLASS'] = 'RSSDataController';
+        
+        try {
+            if (isset($feedData['CONTROLLER_CLASS'])) {
+                $modelClass = $feedData['CONTROLLER_CLASS'];
+            } else {
+                $modelClass = isset($feedData['MODEL_CLASS']) ? $feedData['MODEL_CLASS'] : self::$defaultModel;
+            }
+            
+            $controller = NewsDataModel::factory($modelClass, $feedData);
+        } catch (KurogoException $e) { 
+            $controller = DataController::factory($feedData['CONTROLLER_CLASS'], $feedData);
+            $this->legacyController = true;
         }
-        $controller = DataController::factory($feedData['CONTROLLER_CLASS'], $feedData);
+
         return $controller;
     } else {
-        throw new Exception("Error getting news feed for index $index");
+        throw new KurogoConfigurationException($this->getLocalizedString('ERROR_INVALID_FEED', $index));
     }
   }
-    public function searchItems($searchTerms, $limit=null, $data=null) {
-    
-        $this->feed->addFilter('search', $searchTerms);
-        $items = $this->feed->items(0, $limit);
+
+    public function searchItems($searchTerms, $limit=null, $options=null) {  
         
-        return $items;
+        $start = isset($options['start']) ? $options['start'] : 0;
+        if ($this->legacyController) {
+            $this->feed->addFilter('search', $searchTerms);
+            return $this->feed->items(0, $limit);
+        } else {
+            $this->feed->setStart($start);
+            $this->feed->setLimit($limit);
+            return $this->feed->search($searchTerms);
+        }
     }
 
     public function linkForItem(KurogoObject $story, $data=null) {
         
-        $pubDate = strtotime($story->getProperty("pubDate"));
-        $date = date("M d, Y", $pubDate);
+        if ($pubDate = $story->getPubDate()) {
+            $date = DateFormatter::formatDate($pubDate, DateFormatter::MEDIUM_STYLE, DateFormatter::NO_STYLE);
+        } else {
+            $date = "";
+        }              
+
         $image = $this->showImages ? $story->getImage() : false;
+        
+        if (isset($data['federatedSearch']) && $data['federatedSearch'] && !$this->getOptionalModuleVar('SHOW_DESCRIPTION_IN_FEDERATED_SEARCH', 1)) {
+            $subtitle = '';
+        } else {
+			$subtitle = $this->htmlEncodeFeedString($story->getDescription());
+        	if ($this->getOptionalModuleVar('STRIP_TAGS_IN_DESCRIPTION', 1)) {
+        		$subtitle = Sanitizer::sanitizeHTML($subtitle, array());
+        	}
+        }
         
         $link = array(
             'title'   => $this->htmlEncodeFeedString($story->getTitle()),
             'pubDate' => $date,
             'author'  => $this->htmlEncodeFeedString($story->getAuthor()),
-            'subtitle'=> $this->htmlEncodeFeedString($story->getDescription()),
+            'subtitle'=> $subtitle,
             'img'     => $image ? $image->getURL() : ''
         );
         
@@ -144,7 +197,7 @@ class NewsWebModule extends WebModule {
               $link['url'] = $this->buildBreadcrumbURL('story', $options, $addBreadcrumb);
             }
 
-        } elseif ($url = $story->getProperty('link')) {
+        } elseif ($url = $story->getLink()) {
             $link['url'] = $url;
         }
 
@@ -162,7 +215,7 @@ class NewsWebModule extends WebModule {
         
         $this->feedIndex = $this->getArg('section', 0);
         if (!isset($this->feeds[$this->feedIndex])) {
-          $this->feedIndex = key($this->feeds);
+            $this->feedIndex = key($this->feeds);
         }
 
         $feedData = $this->feeds[$this->feedIndex];
@@ -170,6 +223,10 @@ class NewsWebModule extends WebModule {
         $this->showImages = isset($feedData['SHOW_IMAGES']) ? $feedData['SHOW_IMAGES'] : true;
         $this->showPubDate = isset($feedData['SHOW_PUBDATE']) ? $feedData['SHOW_PUBDATE'] : false;
         $this->showAuthor = isset($feedData['SHOW_AUTHOR']) ? $feedData['SHOW_AUTHOR'] : false;
+        $this->showLink = isset($feedData['SHOW_LINK']) ? $feedData['SHOW_LINK'] : false;
+        $this->showBodyPubDate = isset($feedData['SHOW_BODY_PUBDATE']) ? $feedData['SHOW_BODY_PUBDATE'] : true;
+        $this->showBodyAuthor = isset($feedData['SHOW_BODY_AUTHOR']) ? $feedData['SHOW_BODY_AUTHOR'] : true;
+        $this->showBodyThumbnail = isset($feedData['SHOW_BODY_THUMBNAIL']) ? $feedData['SHOW_BODY_THUMBNAIL'] : true;
     }    
     
     protected function htmlEncodeFeedString($string) {
@@ -178,14 +235,14 @@ class NewsWebModule extends WebModule {
     
     protected function initializeForPage() {
         if (!$this->feed) {
-            throw new Exception("News Feed not configured");
+            throw new KurogoConfigurationException($this->getLocalizedString('ERROR_NOT_CONFIGURED'));
         }
 
     switch ($this->page) {
       case 'story':
         $searchTerms = $this->getArg('filter', false);
         if ($searchTerms) {
-          $this->feed->addFilter('search', $searchTerms);
+          $this->feed->setOption('search', $searchTerms);
         }
 
         $storyID   = $this->getArg('storyID', false);
@@ -193,29 +250,36 @@ class NewsWebModule extends WebModule {
         $story     = $this->feed->getItem($storyID);
         
         if (!$story) {
-          throw new Exception("Story $storyID not found");
+          throw new KurogoUserException($this->getLocalizedString('ERROR_STORY_NOT_FOUND', $storyID));
         }
+
+        $this->setLogData($storyID, $story->getTitle());
         
-        if (!$content = $this->cleanContent($story->getProperty('content'))) {
-          if ($url = $story->getProperty('link')) {
-              header("Location: $url");
-              exit();
-          } else {
-              throw new Exception("No content or link found for story $storyID");
+        if (!$content = $this->cleanContent($story->getContent())) {
+          if ($url = $story->getLink()) {
+              Kurogo::redirectToURL($url);
+          } 
+          
+          // no content or link. Attempt to get description
+          if (!$content = $story->getDescription()) {
+              throw new KurogoDataException($this->getLocalizedString('ERROR_CONTENT_NOT_FOUND', $storyID));
           }
         }
 
         if ($this->getOptionalModuleVar('SHARING_ENABLED', 1)) {
             $body = $story->getDescription()."\n\n".$story->getLink();
             $shareEmailURL = $this->buildMailToLink("", $story->getTitle(), $body);
-            $this->assign('shareTitle','Share this story');
+            $this->assign('shareTitle', $this->getLocalizedString('SHARE_THIS_STORY'));
             $this->assign('shareEmailURL', $shareEmailURL);
             $this->assign('shareRemark',   $story->getTitle());
             $this->assign('storyURL',      $story->getLink());
         }
 
-        $pubDate = strtotime($story->getProperty("pubDate"));
-        $date = date("M d, Y", $pubDate);
+        if ($pubDate = $story->getPubDate()) {
+            $date = DateFormatter::formatDate($pubDate, DateFormatter::LONG_STYLE, DateFormatter::NO_STYLE);
+        } else {
+            $date = "";
+        }              
         
         $this->enablePager($content, $this->feed->getEncoding(), $storyPage);
         
@@ -223,7 +287,11 @@ class NewsWebModule extends WebModule {
         $this->assign('title',         $this->htmlEncodeFeedString($story->getTitle()));
         $this->assign('author',        $this->htmlEncodeFeedString($story->getAuthor()));
         $this->assign('image',         $this->getImageForStory($story));
-        $this->assign('ajax',          $this->getArg('ajax'));
+        $this->assign('link',          $story->getLink());
+        $this->assign('showLink',      $this->showLink);
+        $this->assign('showBodyThumbnail', $this->showBodyThumbnail);
+        $this->assign('showBodyPubDate', $this->showBodyPubDate);
+        $this->assign('showBodyAuthor', $this->showBodyAuthor);
         break;
         
       case 'search':
@@ -232,12 +300,17 @@ class NewsWebModule extends WebModule {
         
         if ($searchTerms) {
 
-            $this->feed->addFilter('search', $searchTerms);
-            $items = $this->feed->items($start, $this->maxPerPage);
+            $options = array(
+                'start'=>$start
+            );
+
+            $items = $this->searchItems($searchTerms, $this->maxPerPage, $options);
+            $this->setLogData($searchTerms);
             $totalItems = $this->feed->getTotalItems();
             $stories = array();
 
             $options = array(
+                'filter' => $searchTerms,
                 'section' => $this->feedIndex
             );
 
@@ -260,12 +333,16 @@ class NewsWebModule extends WebModule {
               $nextURL = $this->buildBreadcrumbURL($this->page, $args, false);
             }
           }
+          
+          $extraArgs = array(
+              'section' => $this->feedIndex
+          );
 
           $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
           $this->addOnLoad('setupNewsListing();');
 
           $this->assign('maxPerPage',  $this->maxPerPage);
-          $this->assign('extraArgs',   $options);
+          $this->assign('extraArgs',   $extraArgs);
           $this->assign('searchTerms', $searchTerms);
           $this->assign('stories',     $stories);
           $this->assign('previousURL', $previousURL);
@@ -280,31 +357,48 @@ class NewsWebModule extends WebModule {
         break;
         
       case 'pane':
-        $start = 0;
-        $items = $this->feed->items($start, $this->maxPerPane);
-        $stories = array();
-        $options = array(
-            'noBreadcrumbs'=>true,
-            'section' => $this->feedIndex
-        );
-
-        foreach ($items as $story) {
-            $stories[] = $this->linkForItem($story, $options);
+        if ($this->ajaxContentLoad) {
+            $start = 0;
+            if ($this->legacyController) {
+                $items = $this->feed->items($start, $this->maxPerPane);
+            } else {
+                $this->feed->setStart(0);
+                $this->feed->setLimit($this->maxPerPane);
+                $items = $this->feed->items();
+            }
+            $stories = array();
+            $options = array(
+                'noBreadcrumbs'=>true,
+                'section' => $this->feedIndex
+            );
+    
+            foreach ($items as $story) {
+                $stories[] = $this->linkForItem($story, $options);
+            }
+            
+            foreach ($stories as $i => $story) {
+                $stories[$i]['url'] = $this->buildURL('index').
+                    '#'.urlencode(FULL_URL_PREFIX.ltrim($story['url'], '/'));
+            }
+            
+            $this->assign('showImages', $this->showImages);
+            $this->assign('stories', $stories);
         }
-        
-        foreach ($stories as $i => $story) {
-            $stories[$i]['url'] = $this->buildURL('index').
-                '#'.urlencode(FULL_URL_PREFIX.ltrim($story['url'], '/'));
-        }
-        
-        $this->assign('stories', $stories);
+        $this->addInternalJavascript('/common/javascript/lib/ellipsizer.js');
+        $this->addInternalJavascript('/common/javascript/lib/paneStories.js');
         break;
       
       case 'index':
         $start = $this->getArg('start', 0);
-      
-        $items = $this->feed->items($start, $this->maxPerPage);
+        if ($this->legacyController) {
+            $items = $this->feed->items($start, $this->maxPerPage);
+        } else {
+            $this->feed->setStart($start);
+            $this->feed->setLimit($this->maxPerPage);
+            $items = $this->feed->items();
+        }
         $totalItems = $this->feed->getTotalItems();
+        $this->setLogData($this->feedIndex, $this->feed->getTitle());
        
         $previousURL = null;
         $nextURL = null;
@@ -351,6 +445,7 @@ class NewsWebModule extends WebModule {
         $this->assign('hiddenArgs',     $hiddenArgs);
         $this->assign('sections',       $sections);
         $this->assign('currentSection', $sections[$this->feedIndex]);
+        $this->assign('placeholder',    $this->getLocalizedString('SEARCH_MODULE', $this->getModuleName()));
         $this->assign('stories',        $stories);
         $this->assign('isHome',         true);
         $this->assign('previousURL',    $previousURL);

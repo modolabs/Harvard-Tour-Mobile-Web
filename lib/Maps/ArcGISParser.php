@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 includePackage('Maps', 'ArcGIS');
 
 class ArcGISParser extends DataParser implements MapDataParser
@@ -26,6 +35,22 @@ class ArcGISParser extends DataParser implements MapDataParser
     private $selectedLayer = null;
     private $isPopulated = false;
 
+    // forward compatibility functions
+
+    public function getId() {
+        return $this->getCategory();
+    }
+
+    public function placemarks() {
+        return $this->getAllPlacemarks();
+    }
+
+    public function categories() {
+        return $this->getChildCategories();
+    }
+
+    // 
+
     public function init($args)
     {
         parent::init($args);
@@ -39,6 +64,8 @@ class ArcGISParser extends DataParser implements MapDataParser
         if (isset($args['ID_FIELD'])) {
             $this->idField = $args['ID_FIELD'];
         }
+
+        $this->category = array(mapIdForFeedData($args));
     }
 
     public function addSearchFilter($key, $value)
@@ -61,19 +88,19 @@ class ArcGISParser extends DataParser implements MapDataParser
     {
         $data = json_decode($contents, true);
         if (!$data) {
-            error_log("Failed to get JSON response from ArcGIS server at {$this->baseURL}");
-            throw new DataServerException("The map server for this category is temporarily down.  Please try again later.");
+            Kurogo::log(LOG_WARNING, "Failed to get JSON response from ArcGIS server at {$this->baseURL}", 'maps');
+            throw new KurogoDataServerException("The map server for this category is temporarily down.  Please try again later.");
         }
         if (isset($data['error'])) {
             $error = $data['error'];
             $code = $error['code'];
             $message = $error['message'];
             $details = isset($error['details']) ? json_encode($error['details']) : '';
-            error_log("Error response from ArcGIS server at {$this->baseURL}:\n"
+            Kurogo::log(LOG_WARNING, "Error response from ArcGIS server at {$this->baseURL}:\n"
                       ."Code: $code\n"
                       ."Message: $message\n"
-                      ."Details: $details\n");
-            throw new DataServerException("The map server for this category is temporarily down.  Please try again later.");
+                      ."Details: $details\n", 'maps');
+            throw new KurogoDataServerException("The map server for this category is temporarily down.  Please try again later.");
         }
 
         $this->serviceDescription = $data['serviceDescription'];
@@ -135,10 +162,6 @@ class ArcGISParser extends DataParser implements MapDataParser
     
     public function getTitle() {
         return $this->mapName;
-    }
-
-    public function setCategory($category) {
-        $this->category = $category;
     }
 
     public function getCategory() {
@@ -251,7 +274,7 @@ class ArcGISParser extends DataParser implements MapDataParser
     }
     
     public function getSelectedLayerId() {
-        return $this->selectedLayer->getIndex();
+        return $this->selectedLayer->getId();
     }
     
     public function getSubLayerNames() {

@@ -1,15 +1,25 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
  * HTMLPage
  * @package HTML
  */
 
 if (!class_exists('DOMDocument')) {
-    die('DOMDocument Functions not available (php-xml)');
+    throw new KurogoException('DOMDocument PHP extension is not installed. http://www.php.net/manual/en/book.dom.php');
 }
 
 if (!function_exists('mb_convert_encoding')) {
-    die('Multibyte String Functions not available (mbstring)');
+    throw new KurogoException('Multibyte String PHP extension is not installed. http://www.php.net/manual/en/book.mbstring.php');
 }
 
 /**
@@ -67,7 +77,7 @@ class HTMLPager {
     libxml_clear_errors(); // clean up any errors belonging to other operations
     $dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', $encoding));
     foreach (libxml_get_errors() as $error) {
-      error_log("HTMLPager got loadHTML warning (line {$error->line}; column {$error->column}) {$error->message}");
+      Kurogo::log(LOG_WARNING,"HTMLPager got loadHTML warning (line {$error->line}; column {$error->column}) {$error->message}",'data');
     }
     libxml_clear_errors(); // free up memory associated with the errors
     libxml_use_internal_errors(false);

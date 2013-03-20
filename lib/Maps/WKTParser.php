@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /* very partial implementation of 
  * http://www.opengeospatial.org/docs/01-009.pdf, Chapter 7
  * http://portal.opengeospatial.org/files/?artifact_id=25355, end of Chapter 7
@@ -119,8 +128,8 @@ class WKTParser
                     $parts = explode(' ', $matches[2]);
                     if (count($parts) == 2) {
                         return new MapBasePoint(array(
-                            'lat' => $parts[1],
-                            'lon' => $parts[0]));
+                            'lat' => floatval($parts[1]),
+                            'lon' => floatval($parts[0])));
                     }
                     break;
 
@@ -131,8 +140,8 @@ class WKTParser
                         $pointParts = explode(' ', $point);
                         if (count($pointParts) == 2) {
                             $result[] = array(
-                                'lat' => $pointParts[1],
-                                'lon' => $pointParts[0]);
+                                'lat' => floatval($pointParts[1]),
+                                'lon' => floatval($pointParts[0]));
                         }
                     }
                     if ($result) {
@@ -151,8 +160,8 @@ class WKTParser
                                 $pointParts = explode(' ', $point);
                                 if (count($pointParts) == 2) {
                                     $ringArray[] = array(
-                                        'lat' => $pointParts[1],
-                                        'lon' => $pointParts[0]);
+                                        'lat' => floatval($pointParts[1]),
+                                        'lon' => floatval($pointParts[0]));
                                 }
                             }
                             $result[] = $ringArray;
@@ -164,11 +173,11 @@ class WKTParser
                     break;
                 
                 default:
-                    throw new Exception("geometry type $type not supported");
+                    throw new KurogoDataException("geometry type $type not supported");
                     break;
             }
         }
-        error_log("failed to handle WKT string: $string");
+        Kurogo::log(LOG_WARNING,"failed to handle WKT string: $string",'maps');
         return null;
     }
 

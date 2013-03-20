@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class KurogoError
 {
 	public $code;
@@ -74,7 +83,7 @@ class KurogoError
     }
     
     public static function errorFromException(Exception $exception) {
-        $error = new KurogoError($exception->getCode(), 'Exception', $exception->getMessage());
+        $error = new KurogoError($exception->getCode(), get_class($exception), $exception->getMessage());
         if(!Kurogo::getSiteVar('PRODUCTION_ERROR_HANDLER_ENABLED')) {
             $error->file = $exception->getFile();
             $error->line = $exception->getLine();

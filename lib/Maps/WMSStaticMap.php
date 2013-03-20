@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class WMSStaticMap extends StaticMapImageController {
 
     const LIFE_SIZE_METERS_PER_PIXEL = 0.00028; // standard definition at 1:1 scale
@@ -13,8 +22,8 @@ class WMSStaticMap extends StaticMapImageController {
     private $wmsParser;
     private $diskCache;
 
-    public function __construct($baseURL) {
-        $this->baseURL = $baseURL;
+    public function init($args) {
+        $this->baseURL = $args['BASE_URL'];
         $this->diskCache = new DiskCache(Kurogo::getSiteVar('WMS_CACHE','maps'), 86400 * 7, true);
         $this->diskCache->preserveFormat();
         $filename = md5($this->baseURL);
@@ -73,19 +82,9 @@ class WMSStaticMap extends StaticMapImageController {
         } else {
             $range = $this->getHorizontalRange();
             $zoomLevel = ceil(log(360 / $range, 2));
-            return $this->scaleForZoomLevel($zoomLevel);
+            return oldPixelScaleForZoomLevel($zoomLevel);
         }
         
-    }
-    
-    protected function zoomLevelForScale($scale)
-    {
-        // http://wiki.openstreetmap.org/wiki/MinScaleDenominator
-        return ceil(log(559082264 / $scale, 2));
-    }
-
-    protected function scaleForZoomLevel($zoomLevel) {
-        return 559082264 / pow(2, $zoomLevel);
     }
     
     // currently the map will recenter as a side effect if projection is reset
@@ -106,7 +105,7 @@ class WMSStaticMap extends StaticMapImageController {
         $bbox['ymin'] += 0.4 * $yrange;
         $bbox['ymax'] -= 0.4 * $yrange;
         $this->bbox = $bbox;
-        $this->zoomLevel = $this->zoomLevelForScale($this->getCurrentScale());
+        $this->zoomLevel = oldPixelZoomLevelForScale($this->getCurrentScale());
         $this->center = array(
             'lat' => ($this->bbox['ymin'] + $this->bbox['ymax']) / 2,
             'lon' => ($this->bbox['xmin'] + $this->bbox['xmax']) / 2,

@@ -96,7 +96,7 @@ form {
   margin: 1px;
   padding: 0;
   padding-left: 52px;
-  background: transparent url(/modules/home/images/pane-header-bg.png) repeat-x top left;
+  background: transparent url(/modules/home/images/pane-header-bg.png) repeat-x left top;
   color: white;
   font-size: 120%;
   text-align: left;
@@ -117,7 +117,7 @@ form {
   height: 36px;
   margin-top: -18px;
   background-color: transparent;
-  background-position: top left;
+  background-position: left top;
   background-repeat: none;
   background-size: 36px;
   -o-background-size: 36px;
@@ -125,35 +125,7 @@ form {
   -khtml-background-size: 36px;
   -webkit-background-size: 36px;
 }
-.video .blockheader .icon {
-  background-image: url(/common/images/title-video.png);
-}
 
-.emergency .blockheader .icon {
-  background-image: url(/common/images/title-emergency.png);
-}
-
-.news .blockheader .icon {
-  background-image: url(/common/images/title-news.png);
-}
-.about .blockheader .icon {
-  background-image: url(/common/images/title-about.png);
-}
-.calendar .blockheader .icon {
-  background-image: url(/common/images/title-calendar.png);
-}
-.courses .blockheader .icon {
-  background-image: url(/common/images/title-courses.png);
-}
-.transit .blockheader .icon {
-  background-image: url(/common/images/title-transit.png);
-}
-.dining .blockheader .icon {
-  background-image: url(/common/images/title-dining.png);
-}
-.people .blockheader .icon {
-  background-image: url(/common/images/title-people.png);
-}
 .blockheader .nextlink {
   position: absolute;
   right: 8px;
@@ -161,11 +133,20 @@ form {
   width: 18px;
   height: 18px;
   margin-top: -9px;
-  background: transparent url(/common/images/action-module.png) no-repeat top left;
+  background: transparent url(/common/images/action-module.png) no-repeat left top;
 }
 
 .blockcontent {
   overflow: hidden;
+}
+
+.blockcontent .loading {
+  background-image: url(/common/images/loading2.gif);
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
 .blockcontent .results {

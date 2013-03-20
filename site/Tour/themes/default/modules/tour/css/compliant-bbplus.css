@@ -1,0 +1,116 @@
+#navbar {
+	font-size: 100%;
+}
+#pagehead {
+	min-height: 100px;	
+  height: auto;
+}
+#pagehead.brief {
+  min-height: 40px;
+  height: auto;
+}
+#pagetitle h1 {
+	min-height: 1.5em;
+	height: auto;
+	margin: 0;
+	padding: 2px 120px 0 8px;
+	text-align: left;
+	font-size: 123.5%;
+	line-height: 38px;
+}
+#pagetitle.overview {
+  padding-right: 4.5em;
+}
+#pagetitle.overview h1 {
+  width: 100%;
+}
+#pagehead.tabbed {
+	min-height: 84px;
+  height: auto;
+}
+#pagehead #sidenav {
+	height: 40px;
+  height: auto;
+	margin-top: 2px;
+}
+#pagehead #sidenav a {
+	height: 40px;
+	width: 40px;
+	padding: 0;
+}
+#pagehead #sidenav a img {
+	width: 40px; 
+	height: 40px;
+}
+#pagehead #sidenav #previous {
+	left: auto;
+	right: 50px;
+}
+.listrow {
+	padding-left: 97px;
+}
+.listrow,
+#content .results li a .listrow {
+	font-size: 85%;
+	line-height: 1.2em;
+}
+.listrow h2 {
+	padding-bottom: 2px;
+}
+.listthumb {
+	width: 90px;
+	height: 60px;
+}
+#nextstop {
+	min-height: 54px;
+  height: auto;
+	font-size: 88.23%;
+	background: #9C8C73 url(/common/images/headback.jpg) repeat-x 0 -1px;
+}
+#nextstop #starthere {
+	font-size: 100%;
+	min-height: 60px;
+  height: auto;
+}
+#stoplink {
+	padding-top: 34px;
+}
+#zoomthumb {
+	width: 90px;
+	height: 60px;
+}
+#pagehead #viewtoggle {
+	line-height: 40px;
+	height: 36px;
+}
+#tabs {
+	height: 40px;
+}
+#tabs li a {
+	border-color: #6C614E;
+	height: 40px;
+	text-align: center;
+}
+#tabs li.active {
+	padding-top: 0;
+}
+#tabs a img {
+	padding: 1px 5px;
+}
+#tabs .tablabel {
+	font-size: 11px;
+	line-height: 12px;
+	padding: 6px 3px 2px 0;
+}
+#content, #tabbodies {
+	font-size: 100%;
+}
+.footnote {
+	font-size: 90%;
+}
+.footnote strong {
+	color: #000;
+}
+#zoomup {
+	top: 80px;
+}

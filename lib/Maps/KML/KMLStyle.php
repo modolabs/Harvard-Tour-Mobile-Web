@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 class KMLStyle extends XMLElement implements MapStyle
 {
     protected $styleID;
@@ -38,11 +47,21 @@ class KMLStyle extends XMLElement implements MapStyle
                 case MapStyle::POLYGON: $style = $this->polyStyle; break;
             }
         } else {
-            $styleRef = $this->styleContainer->getStyle($this->normalStyle);
-            switch ($type) {
-                case MapStyle::POINT: $style = $styleRef->getIconStyle(); break;
-                case MapStyle::LINE: $style = $styleRef->getLineStyle(); break;
-                case MapStyle::POLYGON: $style = $styleRef->getPolyStyle(); break;
+            $styleRef = $this->normalStyle;
+            if (is_string($styleRef) && $this->styleContainer) {
+                // recover style from parser for pairs that were parsed before
+                // the simple style was populated
+                $styleRef = $this->styleContainer->getStyle($styleRef);
+                if ($styleRef) {
+                    $this->normalStyle = $styleRef;
+                }
+            }
+            if ($styleRef instanceof KMLStyle) {
+                switch ($type) {
+                    case MapStyle::POINT: $style = $styleRef->getIconStyle(); break;
+                    case MapStyle::LINE: $style = $styleRef->getLineStyle(); break;
+                    case MapStyle::POLYGON: $style = $styleRef->getPolyStyle(); break;
+                }
             }
         }
         return $style;
@@ -55,8 +74,9 @@ class KMLStyle extends XMLElement implements MapStyle
         if (isset($style[$param])) {
             return $style[$param];
         } else if ($type == MapStyle::POLYGON
-            && $this->getStyleForTypeAndParam(MapStyle::POLYGON, MapStyle::SHOULD_OUTLINE))
-        {
+            && isset($style[MapStyle::SHOULD_OUTLINE])
+            && $style[MapStyle::SHOULD_OUTLINE]
+        ) {
             $outlineStyle = $this->getStyleForType(MapStyle::LINE);
             if (isset($outlineStyle[$param])) {
                 return $outlineStyle[$param];
@@ -82,8 +102,8 @@ class KMLStyle extends XMLElement implements MapStyle
                 $iconChild = $element->getChildElement('ICON');
                 $this->iconStyle = array(
                     MapStyle::ICON => $iconChild->getProperty('HREF'),
-                    MapStyle::WIDTH => $iconChild->getProperty('W'),
-                    MapStyle::HEIGHT => $iconChild->getProperty('H'),
+                    MapStyle::WIDTH => $element->getProperty('W'),
+                    MapStyle::HEIGHT => $element->getProperty('H'),
                     MapStyle::SCALE => $element->getProperty('SCALE'),
                     );
                 break;
@@ -117,10 +137,13 @@ class KMLStyle extends XMLElement implements MapStyle
                 break;
             case 'PAIR':
                 $state = $element->getProperty('KEY');
+                $styleRef = substr($element->getProperty('STYLEURL'), 1);
+                $style = $this->styleContainer->getStyle($styleRef);
+                // store the style URL if the parser hasn't yet loaded the associated simple style
                 if ($state == 'normal') {
-                    $this->normalStyle = substr($element->getProperty('STYLEURL'), 1);
+                    $this->normalStyle = $style ? $styleRef : $style;
                 } else if ($state == 'highlighted') {
-                    $this->highlightStyle = substr($element->getProperty('STYLEURL'), 1);
+                    $this->highlightStyle = $style ? $styleRef : $style;
                 }
                 break;
             default:
@@ -134,5 +157,31 @@ class KMLStyle extends XMLElement implements MapStyle
     {
         $this->isSimpleStyle = ($name === 'STYLE');
         $this->setAttribs($attribs);
+    }
+
+    public function serialize() {
+        return serialize(
+            array(
+                'isSimpleStyle' => $this->isSimpleStyle,
+                'iconStyle' => serialize($this->iconStyle),
+                'balloonStyle' => serialize($this->balloonStyle),
+                'lineStyle' => serialize($this->lineStyle),
+                'listStyle' => serialize($this->listStyle),
+                'polyStyle' => serialize($this->polyStyle),
+                'normalStyle' => serialize($this->normalStyle),
+                'highlightStyle' => serialize($this->highlightStyle),
+            ));
+    }
+
+    public function unserialize($data) {
+        $data = unserialize($data);
+        $this->isSimpleStyle = $data['isSimpleStyle'];
+        $this->iconStyle = unserialize($data['iconStyle']);
+        $this->balloonStyle = unserialize($data['balloonStyle']);
+        $this->lineStyle = unserialize($data['lineStyle']);
+        $this->listStyle = unserialize($data['listStyle']);
+        $this->polyStyle = unserialize($data['polyStyle']);
+        $this->normalStyle = unserialize($data['normalStyle']);
+        $this->highlightStyle = unserialize($data['highlightStyle']);
     }
 }

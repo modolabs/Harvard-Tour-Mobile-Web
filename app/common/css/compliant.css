@@ -291,7 +291,7 @@ input.formbutton {
 	background-color: transparent;
 	background-image: url(/common/images/button-sd-r.png);
 	background-repeat: no-repeat;
-	background-position: center right;
+	background-position: right center;
 	-webkit-border-radius: 0px;
 	border-radius: 0px;
 }
@@ -300,7 +300,7 @@ span.formbuttoncontainer {  /* must be span for winphone7 */
 	background-color: transparent;
 	background-image: url(/common/images/button-sd-l.png);
 	background-repeat: no-repeat;
-	background-position: center left;
+	background-position: left center;
 	padding: 0;
 	margin: 0;
 	margin-right: 7px; /* recenter */
@@ -327,7 +327,6 @@ span.formbuttoncontainer {  /* must be span for winphone7 */
 /* Top navigation/titlebar */
 
 #navbar {
-	height: 48px;
 	margin: 0 0 9px 0;
 	line-height: 44px;
 	overflow: hidden;
@@ -349,7 +348,7 @@ span.formbuttoncontainer {  /* must be span for winphone7 */
   padding: 0 18px 0 2px; 
   background-image: url(/common/images/drillup-r.png);
 	background-repeat: no-repeat;
-	background-position: top right;
+	background-position: right top;
 	text-decoration: none;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -458,6 +457,7 @@ a.module img {
 	margin: 0;
 	padding: 6px;
 	clear: both;
+	overflow: hidden;
 }
 
 .springboard div {
@@ -530,6 +530,7 @@ a.module img {
 	border: 1px solid #ccc;
 	-webkit-border-radius: 9px;	
 	border-radius: 9px;	
+	position: relative;
 }
 
 .nav li {	
@@ -547,7 +548,7 @@ a.module img {
   padding-top: 2px;
 }
 
-.nav span.nolink {
+.nav span.nolink, .results span.nolink {
 	display: block;
 	padding: 8px;
 	margin: -8px;	 
@@ -555,12 +556,16 @@ a.module img {
 	background-position: right; 
 	line-height: 1.2em;
 	text-decoration: none;
+}
+
+.nav span.nolink {
 	-webkit-border-radius: 5px;	
 	border-radius: 5px;	
 }
 
 .nav a  {
 	display: block;
+	position: relative;
 	padding: 8px 24px 10px 8px;
 	margin: -8px;	 
 	background-image: url(/common/images/action-arrow.png); 
@@ -571,10 +576,9 @@ a.module img {
 	-webkit-border-radius: 5px;	
 	border-radius: 5px;	
 }
-
 .nav li.icon {
   padding: 0 11px;
-  min-height: 54px;
+  min-height: 72px;
 }
 .nav li.icon img {
   position: absolute;
@@ -587,7 +591,10 @@ a.module img {
   position: relative;
   margin: 0 -7px 0 0;
   padding: 11px 4px 11px 57px;
-  line-height: 30px;
+  min-height: 50px;
+}
+.nav li.icon a img {
+  top: 11px;
 }
 
 .nav h2, .nav h3 {
@@ -648,12 +655,14 @@ ul.focal li:first-child {
 	margin: 10px 0; 
 	border-top: 1px solid #ccc;
 	border-bottom: 1px solid #ccc;
+	position: relative;
 }
 
 .results li {	
 	list-style-type: none;		
 	border-top: 1px solid #ccc;
 	padding: 10px;
+	position: relative;
 }
 
 .results li:first-child {
@@ -662,6 +671,7 @@ ul.focal li:first-child {
 
 .results a  {
 	display: block;
+	position: relative;
 	padding: 9px 25px 9px 7px;
 	margin: -7px;	 
 	background-image: url(/common/images/action-arrow.png); 
@@ -789,6 +799,7 @@ ul.focal li:first-child {
 	position: absolute;
 	top: 0;
 	background: transparent url(/common/images/sidenav-arrows.png) no-repeat;
+	background-size: 48px 58px;
 	height: 29px;
 	line-height: 29px;
 	padding: 0 10px;
@@ -797,12 +808,29 @@ ul.focal li:first-child {
 }
 a.sidenav-prev {
 	left: 0;
-	background-position: top left;
+	background-position: left top;
 	padding-left: 44px;
 }
+.sidenavlabel {
+	font-size: 88.3%;
+	text-align: center;
+	padding: 4px 30px;
+}
+
+span.sidenav-current {
+    font-weight: bold;
+	display: block;
+	text-align: center;
+	height: 29px;
+	line-height: 29px;
+	padding: 0 10px;
+	text-decoration: none;
+	font-size: 88.3%;
+}
+
 a.sidenav-next {
 	right: 0;
-	background-position: bottom right;
+	background-position: right bottom;
 	padding-right: 44px;
 }
 .sidenav3 {
@@ -892,23 +920,28 @@ a.sidenav-next {
 }
 
 .label {
-    display: block;
-    width: 6em;
-    position: relative;
-    font-size: 76.471%;
-    line-height: 1.3em;
-    font-weight: bold;
-    text-align: right;
+  display: block;
+  font-size: 76.471%;
+  line-height: 1.3em;
+  font-weight: bold;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .value {
     display: block;
-    margin-top: -1.2em;
-    margin-left: 5em;
     font-size: 100%;
     min-height: 1.3em;
     line-height: 1.3em;
     word-wrap: break-word;
+}
+
+.email .value {
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
+    hyphens: noen;
 }
 
 .longlabel {
@@ -1047,6 +1080,10 @@ a.noaction {
 	padding-right: 7px;
 }
 
+a.placemark {
+    background-image: url(/common/images/action-placemark.png);
+}
+
 
 
 /* Iconically coded links - e.g., Shuttle Schedule, 3DOWN, etc. */
@@ -1128,18 +1165,18 @@ h2.icon {
 #tabs {
 	list-style-type: none;
 	margin: 0;
-	padding: 0;
+	padding: 6px 0 0 0;
 }
 
 #tabs li {
 	position: relative;
 	float: left;
 	margin-bottom: -1px;
-	margin-right: 4px;
-	-webkit-border-top-right-radius: 7px;	
-	-webkit-border-top-left-radius: 7px;	
-	border-top-right-radius: 7px;	
-	border-top-left-radius: 7px;	
+	margin-right: 3px;
+	-webkit-border-top-right-radius: 6px;	
+	-webkit-border-top-left-radius: 6px;	
+	border-top-right-radius: 6px;	
+	border-top-left-radius: 6px;	
 	text-align: center;
 }
 
@@ -1162,36 +1199,28 @@ h2.icon {
 	display: block;
 	text-decoration: none;
 	min-width: 30px;
-	padding: 7px 10px 8px 10px;
+	padding: 8px 10px 10px 10px;
 }
 
 #tabs.smalltabs li {
 	font-size: 88.26%;
-	margin-right: 3px;
+	margin-right: 2px;
 }
 
 #tabs.smalltabs li a {
-	padding-right: 7px;
-	padding-left: 7px;
+	padding-right: 5px;
+	padding-left: 5px;
 }
 
-#tabs li.active {
-	margin-top: -1px;
-}
-
-#tabs li.active a {
-	padding-top: 8px;
-	padding-bottom: 9px;
+#tabscontainer {
+	padding: 0 12px;
 }
 
 #tabbodies {
 	margin: 0 -12px 0 -12px;
 	clear: both;
 	border-top: 1px solid #bbb;
-	-webkit-border-bottom-right-radius: 8px;	
-	-webkit-border-bottom-left-radius: 8px;	
-	border-bottom-right-radius: 8px;	
-	border-bottom-left-radius: 8px;	
+	border-bottom: 1px solid #bbb;
 }
 
 .shaded #tabbodies {
@@ -1200,7 +1229,7 @@ h2.icon {
 
 .tabbody {
 	position: relative;
-	min-height: 230px;
+	min-height: 280px;
 	padding: 8px;
 }
 
@@ -1217,53 +1246,60 @@ h2.icon {
 	margin-top: 2px;
 }
 
-#tabstrip {
+.tabstrip {
 	list-style-type: none;
-	height: 32px;
-	-webkit-border-radius: 10px;	
-	border-radius: 10px;	
+	height: 36px;
+	-webkit-border-radius: 7px;	
+	border-radius: 7px;	
 	margin: 0;
 	padding: 0;
 	left: 0;
 	overflow: hidden;
+	font-size: 88.24%;
 }
 
-#tabstrip li {
+.tabstrip li  {
 	float: left;
 	margin: 0;
 	text-align: center;
-	height: 33px;
+	height: 34px;
 }
 
-#tabstrip a {
+.tabstrip a, .tabstrip a:visited {
 	display: block;
-	height: 32px;
+	height: 34px;
 	line-height: 32px;
 	text-decoration: none;
-	color: #fff;
-	background: url(/common/images/tabstrip.jpg) repeat-x;
-	-webkit-background-origin: padding-box; -webkit-background-clip: content-box; 
-	border-right: 1px solid #999;
-	-webkit-border-radius: 1px;	
-	border-radius: 1px;	
+	background-color: transparent;
+	border: 1px solid #ccc;
+	border-right: none
 }	
 
-#tabstrip li.active a {
-	background-image: url(/common/images/tabstrip-active.jpg);
+.tabstrip li:last-child a {
+    border-right: 1px solid #999;;
 }
 
-#tabstrip li:first-child a {
-	-webkit-border-bottom-left-radius: 10px;	
-	-webkit-border-top-left-radius: 10px;	
-	border-bottom-left-radius: 10px;	
-	border-top-left-radius: 10px;	
+.focal .tabstrip a, .tabbody .tabstrip a {
+	color: #505050;
 }
 
-#tabstrip li:last-child a {
-	-webkit-border-bottom-right-radius: 10px;	
-	-webkit-border-top-right-radius: 10px;	
-	border-bottom-right-radius: 10px;	
-	border-top-right-radius: 10px;	
+.tabstrip li.active a {
+	background-color: #444;
+	color: #fff;
+}
+
+.tabstrip li:first-child a {
+	-webkit-border-bottom-left-radius: 6px;	
+	-webkit-border-top-left-radius: 6px;	
+	border-bottom-left-radius: 6px;	
+	border-top-left-radius: 6px;	
+}
+
+.tabstrip li:last-child a {
+	-webkit-border-bottom-right-radius: 6px;	
+	-webkit-border-top-right-radius: 6px;	
+	border-bottom-right-radius: 6px;	
+	border-top-right-radius: 6px;	
 }
 
 .twotabs li {
@@ -1428,6 +1464,7 @@ h2.icon {
     width: 44px;
     height: 38px;
     background: url(/common/images/bookmark.png) no-repeat 0 -38px;
+    background-size: 88px 76px;
 }
 #bookmark.pressed {
     background-position: 0 1px;

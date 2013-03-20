@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
   * @copyright 2010 Modo Labs Inc.
   * @package Core
@@ -21,7 +31,7 @@ class DiskCache {
 
     public function __construct($path, $timeout=NULL, $mkdir=FALSE) {
         if (empty($path)) {
-            throw new Exception("Invalid path");
+            throw new KurogoDataException("Invalid path");
         }
     
         $this->path = $path;
@@ -29,13 +39,16 @@ class DiskCache {
         if ($mkdir) {
             if (!file_exists($path)) {
                 if (!mkdir($path, 0700, true)) {
-                    throw new Exception("Could not create $path");
+                    throw new KurogoDataException("Could not create $path");
                 }
+            }
+            if (!realpath_exists($path)) {
+                throw new KurogoDataException("Path $path is not valid for cache");
             }
         }
         
         if (!is_writable($path)) {
-            throw new Exception("Path $path is not writable");
+            throw new KurogoDataException("Path $path is not writable");
         }
         
         if ($timeout !== NULL) {
@@ -75,13 +88,7 @@ class DiskCache {
     if ($filename === NULL) {
       return $this->path;
     } else {
-      // this replaces %20 with + signs
-      $filename = urlencode(urldecode($filename));
-
-      return $this->path . '/' 
-           . $this->prefix 
-           . $filename 
-           . $this->suffix;
+      return $this->path.'/'.Watchdog::safeFilename($this->prefix.$filename.$this->suffix);
     }
   }
 
@@ -126,6 +133,7 @@ class DiskCache {
 
     $path = $this->getFullPath($filename);
     $umask = umask(0077);
+    Kurogo::log(LOG_DEBUG, "Saving cache to $path", 'cache');
     $fh = fopen($path, 'w');
     if ($fh !== FALSE) {
       if ($this->serialize) {
@@ -147,7 +155,7 @@ class DiskCache {
 
     // stop doing this here after users handle error on their own
     if ($this->error)
-      error_log($this->error);
+      Kurogo::log(LOG_WARNING, $this->error, 'data');
 
     umask($umask);
     return FALSE;
@@ -170,6 +178,7 @@ class DiskCache {
   public function flush($filename=NULL) {
     $path = $this->getFullPath($filename);
     if (file_exists($path)) {
+        Kurogo::log(LOG_DEBUG, "Flushing cache $path", 'cache');
         return unlink($path);
     }
     return false;
@@ -179,6 +188,7 @@ class DiskCache {
     $path = $this->getFullPath($filename);
     if (file_exists($path)) {
       if ($contents = file_get_contents($path)) {
+        Kurogo::log(LOG_DEBUG, "Reading cache $path", 'cache');
         if ($this->serialize) {
           return unserialize($contents);
         } else {
@@ -186,7 +196,7 @@ class DiskCache {
         }
       }
       $this->error = "could not get contents of $path";
-      error_log($this->error, 0);
+      Kurogo::log(LOG_WARNING,$this->error, 'data');
     }
     return FALSE;
   }

@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 abstract class MapImageController
 {
     protected static $DEFAULT_JS_MAP_CLASS = 'GoogleJSMap';
@@ -10,8 +19,11 @@ abstract class MapImageController
     protected $bufferBox;
 
     protected $zoomLevel = 14;
-    protected $maxZoomLevel = 20;
-    protected $minZoomLevel = 0;
+    protected $minZoomLevel = 2;
+    protected $maxZoomLevel = 25;
+
+    // adjust map viewport when placemark is added
+    protected $resizeOnAddPlacemark = true;
 
     protected $imageWidth = 300;
     protected $imageHeight = 300;
@@ -25,46 +37,70 @@ abstract class MapImageController
     protected $mapProjection = GEOGRAPHIC_PROJECTION; // projection to pass to map image generator
     protected $mapProjector;
 
-    protected $mapDevice;
+    protected $initOptions;
+
+    public static function basemapClassForDevice(MapDevice $mapDevice, $params=array())
+    {
+        $isStatic = false;
+
+        if (isset($params['JS_MAP_CLASS']) && $mapDevice->pageSupportsDynamicMap()) {
+            $mapClass = $params['JS_MAP_CLASS'];
+
+        } elseif (isset($params['STATIC_MAP_CLASS'])) {
+            $mapClass = $params['STATIC_MAP_CLASS'];
+            $isStatic = true;
+
+        } elseif ($mapDevice->pageSupportsDynamicMap()) {
+            $mapClass = self::$DEFAULT_JS_MAP_CLASS;
+
+        } else {
+            $mapClass = self::$DEFAULT_STATIC_MAP_CLASS;
+            $isStatic = true;
+        }
+
+        return array($mapClass, $isStatic);
+    }
 
     public static function factory($params, MapDevice $mapDevice)
     {
         $baseURL = null;
-        $baseURLParam = 'STATIC_MAP_BASE_URL';
-
-        if (isset($params['JS_MAP_CLASS']) && $mapDevice->pageSupportsDynamicMap()) {
-            $imageClass = $params['JS_MAP_CLASS'];
-            $baseURLParam = 'DYNAMIC_MAP_BASE_URL';
-
-        } elseif (isset($params['STATIC_MAP_CLASS'])) {
-            $imageClass = $params['STATIC_MAP_CLASS'];
-
-        } elseif ($mapDevice->pageSupportsDynamicMap()) {
-            $imageClass = self::$DEFAULT_JS_MAP_CLASS;
-            $baseURLParam = 'DYNAMIC_MAP_BASE_URL';
-
-        } else {
-            $imageClass = self::$DEFAULT_STATIC_MAP_CLASS;
-        }
+        list($mapClass, $isStatic) = self::basemapClassForDevice($mapDevice, $params);
+        $baseURLParam = $isStatic ? 'STATIC_MAP_BASE_URL' : 'DYNAMIC_MAP_BASE_URL';
 
         if (isset($params[$baseURLParam])) {
-            $baseURL = $params[$baseURLParam];
+            $params['BASE_URL'] = $params[$baseURLParam];
         }
 
-        if ($baseURL !== null) {
-            $controller = new $imageClass($baseURL);
-        } else {
-            $controller = new $imageClass();
-        }
-
-        $controller->init();
-
-        return $controller;
+        $baseMap = new $mapClass();
+        $baseMap->init($params);
+        return $baseMap;
     }
 
-    public function init()
+    public function init($params)
     {
-        $this->bufferBox = array('xmin' => 90, 'ymin' => 180, 'xmax' => -90, 'ymax' => -180);
+        if (isset($params['center'])) {
+            $this->setCenter(filterLatLon($params['center']));
+        }
+
+        if (isset($params['DEFAULT_ZOOM_LEVEL'])) {
+            $this->setZoomLevel($params['DEFAULT_ZOOM_LEVEL']);
+        }
+
+        if (isset($params['resizeOnAddPlacemark'])){
+            $this->resizeOnAddPlacemark = $params['resizeOnAddPlacemark'];
+        }
+
+        if (isset($params['MINIMUM_ZOOM_LEVEL'])){
+            $this->minZoomLevel = $params['MINIMUM_ZOOM_LEVEL'];
+        }
+
+        if (isset($params['MAXIMUM_ZOOM_LEVEL']) && $params['MAXIMUM_ZOOM_LEVEL'] >= $this->minZoomLevel){
+            $this->maxZoomLevel = $params['MAXIMUM_ZOOM_LEVEL'];
+        }
+
+        $this->bufferBox = array('xmin' => 180, 'ymin' => 90, 'xmax' => -180, 'ymax' => -90);
+
+        $this->initOptions = $params;
     }
 
     // query functions
@@ -80,6 +116,18 @@ abstract class MapImageController
     public function getZoomLevel()
     {
         return $this->zoomLevel;
+    }
+
+    public function getMaximumZoomLevel() {
+        return $this->maxZoomLevel;
+    }
+
+    public function getMinimumLatSpan() {
+        return 180 / pow(2, $this->maxZoomLevel);
+    }
+
+    public function getMinimumLonSpan() {
+        return 360 / pow(2, $this->maxZoomLevel);
     }
 
     public function getAvailableLayers()
@@ -124,19 +172,25 @@ abstract class MapImageController
     protected function addPolygon(Placemark $polygon)
     {
         $rings = $polygon->getGeometry()->getRings();
-        $this->adjustBufferForPolyline($rings[0]);
+        if ($this->resizeOnAddPlacemark) {
+            $this->adjustBufferForPolyline($rings[0]);
+        }
     }
 
     protected function addPath(Placemark $polyline)
     {
         $geometry = $polyline->getGeometry();
-        $this->adjustBufferForPolyline($geometry);
+        if ($this->resizeOnAddPlacemark) {
+            $this->adjustBufferForPolyline($geometry);
+        }
     }
 
     protected function addPoint(Placemark $point)
     {
         $center = $point->getGeometry()->getCenterCoordinate();
-        $this->adjustBufferForPoint($center);
+        if ($this->resizeOnAddPlacemark) {
+            $this->adjustBufferForPoint($center);
+        }
     }
 
     protected function adjustBufferForPolyline(MapPolyline $polyline)
@@ -144,11 +198,11 @@ abstract class MapImageController
         // just pick a few sample points to calculate buffer
         $points = $polyline->getPoints();
         $count = count($points);
-        if ($count < 4) {
+        if ($count < 20) {
             $sample = $points;
         } else {
             $sample = array();
-            $interval = $count / 4;
+            $interval = $count / 20;
             for ($i = 0; $i < $count; $i += $interval) {
                 $index = intval($i);
                 $sample[] = $points[$i];
@@ -173,11 +227,26 @@ abstract class MapImageController
         if ($point['lon'] < $this->bufferBox['xmin']) {
             $this->bufferBox['xmin'] = $point['lon'];
         }
+    }
 
-        $this->setCenter(array(
-            'lat' => ($this->bufferBox['ymin'] + $this->bufferBox['ymax']) / 2,
-            'lon' => ($this->bufferBox['xmin'] + $this->bufferBox['xmax']) / 2,
-            ));
+    public function prepareForOutput()
+    {
+        $vRange = $this->bufferBox['ymax'] - $this->bufferBox['ymin'];
+        $hRange = $this->bufferBox['xmax'] - $this->bufferBox['xmin'];
+        if ($vRange >= 0 && $hRange >= 0) {
+            $this->setCenter(array(
+                'lat' => ($this->bufferBox['ymin'] + $this->bufferBox['ymax']) / 2,
+                'lon' => ($this->bufferBox['xmin'] + $this->bufferBox['xmax']) / 2,
+                ));
+            if ($vRange > 0 && $hRange > 0) {
+                $vZoom = ceil(log(180 / $vRange, 2));
+                $hZoom = ceil(log(360 / $hRange, 2));
+                $zoom = min($vZoom, $hZoom);
+                if ($zoom < $this->maxZoomLevel) {
+                    $this->setZoomLevel($zoom);
+                }
+            }
+        }
     }
 
     // overlays and annotations
@@ -266,7 +335,7 @@ abstract class MapImageController
 
     public function prepareJavascriptTemplate($filename, $repeating=false) {
         // TODO better way to search for package-specific templates
-        $path = __DIR__.'/javascript/'.$filename.'.js';
+        $path = dirname(__FILE__).'/javascript/'.$filename.'.js';
         $path = realpath_exists($path);
         if ($path) {
             return new JavascriptTemplate($path, $repeating);
@@ -320,11 +389,10 @@ class JavascriptTemplate
             foreach ($this->values as $values) {
                 $template = $this->template;
                 foreach ($values as $placeholder => $value) {
-                    $template = preg_replace('/\[?'.$placeholder.'\]?/', $value, $template);
-                }
-
-                while (preg_match('/\[___\w+___\]/', $template, $matches)) {
-                    $template = str_replace($matches[0], '', $template);
+                    if (!strlen($value)) {
+                        $value = ''; // nulls may show up as strings
+                    }
+                    $template = preg_replace('/'.$placeholder.'/', $value, $template);
                 }
 
                 $script .= $template;

@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 Kurogo::includePackage('Maps');
 
 class MapAPIModule extends APIModule
@@ -13,6 +22,52 @@ class MapAPIModule extends APIModule
     protected $feedGroups = null;
     protected $numGroups;
 
+    protected $currentFeedData;
+
+    protected $dataModel;
+    protected $mapProjector;
+
+    // reimplements a subset of MapWebModule::linkForItem
+    protected function urlForPlacemark(Placemark $placemark)
+    {
+        $urlArgs = $placemark->getURLParams();
+
+        // mimic getMergedConfigData in MapWebModule
+        if (isset($urlArgs['feed'])) {
+            $category = $urlArgs['feed'];
+        } else {
+            $categoryArg = isset($urlArgs['category']) ? $urlArgs['category'] : null;
+			$categories = explode(MAP_CATEGORY_DELIMITER, $categoryArg);
+			$category = current($categories);
+			if ($category) {
+				$urlArgs['feed'] = $category;
+			}
+        }
+
+        $configData = $this->getDataForGroup($this->feedGroup);
+
+        // allow individual feeds to override group value
+        $feedData = $this->getCurrentFeed($category);
+        if ($feedData) {
+            foreach ($feedData as $key => $value) {
+                $configData[$key] = $value;
+            }
+        }
+
+        // the device needs to be compliant to use the APIModule
+        list($class, $static) = MapImageController::basemapClassForDevice(
+            new MapDevice('compliant', 'computer'),
+            $configData);
+        
+        if ($static) {
+            $page = $this->numGroups > 1 ? 'campus' : 'index';
+        } else {
+            $page = 'detail';
+        }
+
+        return rtrim(FULL_URL_PREFIX, '/'). '/'. $this->configModule.'/'.$page.'?'.http_build_query($urlArgs);
+    }
+
     protected function shortArrayFromPlacemark(Placemark $placemark)
     {
         $result = array(
@@ -20,11 +75,15 @@ class MapAPIModule extends APIModule
             'subtitle' => $placemark->getSubtitle(),
             'id' => $placemark->getId(),
             'categories' => $placemark->getCategoryIds(),
+            'url' => $this->urlForPlacemark($placemark),
             );
 
         $geometry = $placemark->getGeometry();
         if ($geometry) {
             $center = $geometry->getCenterCoordinate();
+            if (isset($this->mapProjector)) {
+                $center = $this->mapProjector->projectPoint($center);
+            }
 
             $result['lat'] = $center['lat'];
             $result['lon'] = $center['lon'];
@@ -76,6 +135,11 @@ class MapAPIModule extends APIModule
     
     // functions duped from MapWebModule
     
+    private function getDataForGroup($group) {
+        $this->getFeedGroups();
+        return isset($this->feedGroups[$group]) ? $this->feedGroups[$group] : null;
+    }
+    
     public function getFeedGroups() {
         if (!$this->feedGroups) {
             $this->feedGroups = $this->getModuleSections('feedgroups');
@@ -92,7 +156,9 @@ class MapAPIModule extends APIModule
         $feedConfigFile = NULL;
         
         if ($this->feedGroup === NULL) {
-            if ($this->numGroups === 1) {
+            if ($feedGroup = $this->getArg(array('feedgroup', 'group'), NULL)) {
+                $this->feedGroup = $feedGroup;
+            } elseif ($this->numGroups === 1) {
                 $this->feedGroup = key($this->feedGroups);
             }
         }
@@ -123,14 +189,56 @@ class MapAPIModule extends APIModule
         return $this->feeds;
     }
 
-    private function getDataController($category=null) {
-        $controller = null;
+    private function getDataModel($feedId=null)
+    {
+        if (!$this->feeds) {
+            $this->loadFeedData();
+        }
+
+        // re-instantiate DataModel if a different feed is requested.
+        if ($this->dataModel && $feedId !== $this->dataModel->getFeedId()) {
+            $this->dataModel = null;
+        }
+
+        $categoryId = $this->getArg('references');
+
+        if ($this->dataModel === null) {
+            if ($feedId === null) {
+                $testFeedId = $this->getArg('category');
+                if (isset($this->feeds[$feedId])) {
+                    $feedId = $testFeedId;
+                } else {
+                    foreach (explode(MAP_CATEGORY_DELIMITER, $categoryId) as $testId) {
+                        if (isset($this->feeds[$testId])) {
+                            $feedId = $testId;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            $feedData = $this->getCurrentFeed($feedId);
+            $this->dataModel = mapModelFromFeedData($feedData);
+        }
+
+        if (isset($categoryId)) {
+            $category = $this->dataModel->findCategory($categoryId);
+            $categoryArg = $this->getArg('category');
+            if ($categoryArg) {
+                $this->dataModel->findCategory($categoryArg);
+            }
+        }
+
+        return $this->dataModel;
+    }
+
+    private function getCurrentFeed($category=null)
+    {
         if (!$category) {
             $category = $this->getArg('category');
         }
 
         if ($category) {
-
             $groups = array_keys($this->getFeedGroups());
             if (count($groups) <= 1) {
                 $groups = array(null);
@@ -139,37 +247,32 @@ class MapAPIModule extends APIModule
                 $this->feedGroup = $groupID;
                 $feeds = $this->loadFeedData();
                 if (isset($feeds[$category])) {
-                    $feedData = $feeds[$category];
-                    $controller = MapDataController::factory($feedData['CONTROLLER_CLASS'], $feedData);
+                    $this->currentFeedData = $feeds[$category];
                     break;
                 }
             }
         }
-
-        return $controller;
+        return $this->currentFeedData;
     }
 
     protected function getSearchClass($options=array()) {
+        $mapSearchClass = $this->getOptionalModuleVar('MAP_SEARCH_CLASS', 'MapSearch');
         if (isset($options['external']) && $options['external']) {
-            $searchConfigName = 'MAP_EXTERNAL_SEARCH_CLASS';
-            $searchConfigDefault = 'GoogleMapSearch';
-        } else { // includes federatedSearch
-            $searchConfigName = 'MAP_SEARCH_CLASS';
-            $searchConfigDefault = 'MapSearch';
+            // use the same search class by default
+            $mapSearchClass = $this->getOptionalModuleVar('MAP_EXTERNAL_SEARCH_CLASS', $mapSearchClass);
         }
-
-        $mapSearchClass = $this->getOptionalModuleVar($searchConfigName, $searchConfigDefault);
-        if (!$this->feeds)
+        if (!$this->feeds) {
             $this->feeds = $this->loadFeedData();
-        $mapSearch = new $mapSearchClass($this->feeds);
-        if ($mapSearch instanceof GoogleMapSearch && $mapSearch->isPlaces()) {
-            // TODO notify client that logo is required
         }
+        $mapSearch = new $mapSearchClass($this->feeds);
+        $mapSearch->setFeedGroup($this->feedGroup);
+        $mapSearch->init($this->getDataForGroup($this->feedGroup));
         return $mapSearch;
     }
 
     // end of functions duped from mapwebmodule
 
+    /*
     private function getCategoryReferences() {
         $path = $this->getArg('references', array());
         if ($path !== array()) {
@@ -181,8 +284,83 @@ class MapAPIModule extends APIModule
         }
         return $path;
     }
+    */
+
+    protected function getGeometryType(MapGeometry $geometry) {
+        if ($geometry instanceof MapPolygon) {
+            return 'polygon';
+        }
+        if ($geometry instanceof MapPolyline) {
+            return 'polyline';
+        }
+        return 'point';
+    }
+
+    protected function formatGeometry(MapGeometry $geometry) {
+        $result = array();
+        if ($geometry instanceof MapPolygon) {
+            foreach ($geometry->getRings() as $aRing) {
+                $result[] = $aRing->getPoints();
+            }
+
+        } elseif ($geometry instanceof MapPolyline) {
+            $result = $geometry->getPoints();
+
+        } else {
+            $result = $geometry->getCenterCoordinate();
+        }
+        return $result;
+    }
+
+    protected function displayTextFromMeters($meters)
+    {
+        $result = null;
+        $system = $this->getOptionalModuleVar('DISTANCE_MEASUREMENT_UNITS', 'Metric');
+        switch ($system) {
+            case 'Imperial':
+                $miles = $meters * MILES_PER_METER;
+                if ($miles < 0.1) {
+                    $feet = $meters * FEET_PER_METER;
+                    $result = $this->getLocalizedString(
+                        'DISTANCE_IN_FEET',
+                         number_format($feet, 0));
+
+                } elseif ($miles < 15) {
+                    $result = $this->getLocalizedString(
+                        'DISTANCE_IN_MILES',
+                         number_format($miles, 1));
+                } else {
+                    $result = $this->getLocalizedString(
+                        'DISTANCE_IN_MILES',
+                         number_format($miles, 0));
+                }
+                break;
+            case 'Metric':
+            default:
+                if ($meters < 100) {
+                    $result = $this->getLocalizedString(
+                        'DISTANCE_IN_METERS',
+                         number_format($meters, 0));
+                } elseif ($meters < 15000) {
+                    $result = $this->getLocalizedString(
+                        'DISTANCE_IN_KILOMETERS',
+                         number_format($meters / 1000, 1));
+                } else {
+                    $result = $this->getLocalizedString(
+                        'DISTANCE_IN_KILOMETERS',
+                         number_format($meters / 1000, 0));
+                }
+                break;
+        }
+        return $result;
+    }
 
     public function initializeForCommand() {
+
+        if (($projection = $this->getArg('projection'))) {
+            $this->mapProjector = new MapProjector();
+            $this->mapProjector->setDstProj($projection);
+        }
 
         switch ($this->command) {
             case 'index':
@@ -217,11 +395,11 @@ class MapAPIModule extends APIModule
             
             case 'category':
                 $this->loadFeedData();
-                $category = $this->getArg('category');
+                $categoryId = $this->getArg('category');
                 $groups = $this->getFeedGroups();
 
-                if (isset($groups[$category])) {
-                    $this->feedGroup = $category;
+                if (isset($groups[$categoryId])) {
+                    $this->feedGroup = $categoryId;
                     $groupData = $this->loadFeedData();
                     $categories = array();
                     foreach ($groupData as $id => $feed) {
@@ -242,55 +420,37 @@ class MapAPIModule extends APIModule
                     $this->setResponseVersion(1);
 
                 } else {
-                    $this->loadFeedData();
+                    $dataController = $this->getDataModel();
 
-                    $currentCategory = null;
-                    $drillPath = array();
-                    if (isset($this->feeds[$category])) {
-                        $currentCategory = $category;
+                    if ($dataController) {
+                        //if ($categoryId) {
+                        //    $category = $dataController->findCategory($categoryId);
+                        //    $placemarks = $category->placemarks();
+                        //    $categories = $category->categories();
+                        //} else {
+                            $placemarks = $dataController->placemarks();
+                            $categories = $dataController->categories();
+                        //}
+
+                        $response = array();
+                        if ($placemarks) {
+                            $response['placemarks'] = array();
+                            foreach ($placemarks as $placemark) {
+                                $response['placemarks'][] = $this->arrayFromPlacemark($placemark);
+                            }
+                        }
+                        if ($categories) {
+                            $response['categories'] = array();
+                            foreach ($categories as $aCategory) {
+                                $response['categories'][] = $this->arrayFromCategory($aCategory);
+                            }
+                        }
+
+                        $this->setResponse($response);
+                        $this->setResponseVersion(1);
                     } else {
-                        // traces the parent categories that led the user to this category id
-                        $references = $this->getCategoryReferences();
-                        foreach ($references as $reference) {
-                            if ($currentCategory) {
-                                $drillPath[] = $reference;
-                            } elseif (isset($this->feeds[$reference])) {
-                                $currentCategory = $reference;
-                            }
-                        }
-                        $drillPath[] = $category;
-                    }
-                    if ($currentCategory) {
-                        $dataController = $this->getDataController($currentCategory);
-                        if ($dataController) {
-                            if ($drillPath) {
-                                $dataController->addDisplayFilter('category', $drillPath);
-                            }
-
-                            $listItems = $dataController->getListItems();
-
-                            $placemarks = array();
-                            $categories = array();
-                            foreach ($listItems as $listItem) {
-                                if ($listItem instanceof Placemark) {
-                                    $placemarks[] = $this->shortArrayFromPlacemark($listItem);
-
-                                } else {
-                                    $categories[] = $this->arrayFromCategory($listItem);
-                                }
-                            }
-
-                            $response = array();
-                            if ($placemarks) {
-                                $response['placemarks'] = $placemarks;
-                            }
-                            if ($categories) {
-                                $response['categories'] = $categories;
-                            }
-
-                            $this->setResponse($response);
-                            $this->setResponseVersion(1);
-                        }
+                        $error = new KurogoError("Could not find data source for requested category");
+                        $this->throwError($error);
                     }
                 }
 
@@ -298,38 +458,95 @@ class MapAPIModule extends APIModule
 
             case 'detail':
 
-                $dataController = $this->getDataController();
-                $drilldownPath = $this->getDrillDownPath();
-                if ($drilldownPath) {
-                    $dataController->addDisplayFilter('category', $drilldownPath);
-                }
-                if ($this->featureIndex !== null) {
-                    $feature = $dataController->selectPlacemark($this->featureIndex);
+                $suppress = array();
+                try {
+                    $configFile = $this->getConfig('detail');
+                    $detailConfig = $configFile->getOptionalSection('details');
+                    if ($detailConfig && isset($detailConfig['suppress'])) {
+                        $suppress = $detailConfig['suppress'];
+                    }
+                } catch (KurogoConfigurationException $e) {
+                    // ignore
                 }
 
-                $response = $this->arrayFromPlacemark($feature);
+                $dataController = $this->getDataModel();
+                $placemarkId = $this->getArg('id', null);
+                if ($dataController && $placemarkId !== null) {
+                    $placemarks = $dataController->selectPlacemark($placemarkId);
+                    $placemark = current($placemarks);
 
-                $this->setResponse($response);
-                $this->setResponseVersion(1);
+                    $fields = $placemark->getFields();
+                    $geometry = $placemark->getGeometry();
+
+                    $response = array(
+                        'id'       => $placemarkId,
+                        'title'    => $placemark->getTitle(),
+                        'subtitle' => $placemark->getSubtitle(),
+                        'address'  => $placemark->getAddress(),
+                    );
+
+                    if ($this->requestedVersion >= 2) {
+                        $response['description'] = $placemark->getDescription($suppress);
+                        $responseVersion = 2;
+                    } else {
+                        $response['details'] = array('description' => $placemark->getDescription($suppress));
+                        $photoURL = $placemark->getField('PhotoURL');
+                        if ($photoURL) {
+                            $response['photoURL'] = $photoURL;
+                        }
+                        $responseVersion = 1;
+                    }
+
+                    if ($geometry) {
+                        $center = $geometry->getCenterCoordinate();
+                        $response['lat'] = $center['lat'];
+                        $response['lon'] = $center['lon'];
+                        $response['geometryType'] = $this->getGeometryType($geometry);
+                        $response['geometry'] = $this->formatGeometry($geometry);
+                    }
+
+                    $this->setResponse($response);                                                              
+                    $this->setResponseVersion($responseVersion);
+                }
 
                 break;
 
             case 'search':
                 $mapSearch = $this->getSearchClass($this->args);
 
-                $searchType = $this->getArg('type');
-                if ($searchType == 'nearby') {
-                    $lat = $this->getArg('lat', 0);
-                    $lon = $this->getArg('lon', 0);
-                    if ($lat || $lon) {
-                        $searchResults = $mapSearch->searchByProximity(
-                            array('lat' => $lat, 'lon' => $lon),
-                            1000, 10);
+                $lat = $this->getArg('lat', 0);
+                $lon = $this->getArg('lon', 0);
+                if ($lat || $lon) {
+                    // defaults values for proximity search
+                    $tolerance = 1000;
+                    $maxItems = 0;
+
+                    // check for settings in feedgroup config
+                    $configData = $this->getDataForGroup($this->feedGroup);
+                    if ($configData) {
+                        if (isset($configData['NEARBY_THRESHOLD'])) {
+                            $tolerance = $configData['NEARBY_THRESHOLD'];
+                        }
+                        if (isset($configData['NEARBY_ITEMS'])) {
+                            $maxItems = $configData['NEARBY_ITEMS'];
+                        }
                     }
 
+                    // check for override settings in feeds
+                    $configData = $this->getCurrentFeed();
+                    if (isset($configData['NEARBY_THRESHOLD'])) {
+                        $tolerance = $configData['NEARBY_THRESHOLD'];
+                    }
+                    if (isset($configData['NEARBY_ITEMS'])) {
+                        $maxItems = $configData['NEARBY_ITEMS'];
+                    }
+
+                    $searchResults = $mapSearch->searchByProximity(
+                        array('lat' => $lat, 'lon' => $lon),
+                        1000, 10);
+
                 } else {
-                    $searchTerms = $this->getArg('q');
-                    if ($searchTerms) {
+                    if ($searchTerms = $this->getArg(array('filter', 'q'))) {
                         $searchResults = $mapSearch->searchCampusMap($searchTerms);
                     }
                 }
@@ -375,14 +592,21 @@ class MapAPIModule extends APIModule
 
                 $categories = array();
 
+                $showDistances = $this->getOptionalModuleVar('SHOW_DISTANCES', true);
+
                 if ($lat || $lon) {
                     foreach ($this->getFeedGroups() as $id => $groupData) {
-                        $categories[] = array(
+                        $center = filterLatLon($groupData['center']);
+                        $distance = greatCircleDistance($lat, $lon, $center['lat'], $center['lon']);
+                        $category = array(
                             'title' => $groupData['title'],
                             'id' => $id,
                             );
-                        $center = filterLatLon($groupData['center']);
-                        $distances[] = greatCircleDistance($lat, $lon, $center['lat'], $center['lon']);
+                        if ($showDistances && ($displayText = $this->displayTextFromMeters($distance))) {
+                            $category['distance'] = $displayText;
+                        }
+                        $categories[] = $category;
+                        $distances[] = $distance;
                     }
                     array_multisort($distances, SORT_ASC, $categories);
                 }
@@ -437,6 +661,11 @@ class MapAPIModule extends APIModule
                 break;
 
             case 'geocode':
+            {
+                // TODO: this is not fully implemented. do not use this API.
+
+                includePackage('Maps', 'Geocoding');
+
                 $locationSearchTerms = $this->getArg('q');
                 
                 $geocodingDataControllerClass = $this->getOptionalModuleVar('GEOCODING_DATA_CONTROLLER_CLASS');
@@ -465,7 +694,7 @@ class MapAPIModule extends APIModule
                     $this->setResponseVersion(1);
                 }
                 break;
-                    
+            }
             default:
                 $this->invalidCommand();
                 break;

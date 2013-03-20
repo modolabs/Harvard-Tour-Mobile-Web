@@ -1,4 +1,14 @@
 <?php
+
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /**
  * Facebook Authentication
  * @package Authentication
@@ -181,8 +191,7 @@ class FacebookAuthentication extends AuthenticationAuthority
                 'display'=>$display
             ));
             
-            header("Location: $url");
-            exit();
+            Kurogo::redirectToURL($url);
         }
     }
     
@@ -212,7 +221,7 @@ class FacebookAuthentication extends AuthenticationAuthority
         $args = is_array($args) ? $args : array();
         if (!isset($args['FACEBOOK_API_KEY'], $args['FACEBOOK_API_SECRET']) ||
             strlen($args['FACEBOOK_API_KEY'])==0 || strlen($args['FACEBOOK_API_SECRET'])==0) {
-            throw new Exception("API key and secret not set");
+            throw new KurogoConfigurationException("API key and secret not set");
         }
 
         $this->api_key = $args['FACEBOOK_API_KEY'];

@@ -1,3 +1,4 @@
+{if !$webBridgeAjaxContentLoad && !$ajaxContentLoad}
   {if $moduleDebug && count($moduleDebugStrings)}
     <p class="legend nonfocal">
       {foreach $moduleDebugStrings as $string}
@@ -15,14 +16,14 @@
       </a>
     {/if}
    <br />
-   {block name="footerKurogo"}Powered by Kurogo{/block}
+   {block name="footerKurogo"}{$footerKurogo}{/block}
   {/capture}
 
   
   {block name="footerNavLinks"}
     {if !$hideFooterLinks}
       <div id="footerlinks">
-        <a href="#top">Back to top</a> | <a href="../home/">{$strings.SITE_NAME} home</a>
+        <a href="#top">{$footerBackToTop}</a> | <a href="{$homeLink}">{$homeLinkText}</a>
       </div>
     {/if}
   {/block}
@@ -31,32 +32,28 @@
     {if $showLogin}
 	<div class="loginstatus">
 		<ul class="nav secondary loginbuttons">
-        {if $session_isLoggedIn}
-        {if $session_multiple_logins}
-			<li><a href="{$session_logout_url}">Signed in with multiple identities</a></li>
-        {else}
-			<li class="{$session_authority_class}"><a href="../login">Signed in via {$session_authority_title} as {$session_fullName}{if $session_multiple_logins} (and other identities){/if}</a></li>
-		{/if}
-		{else}
-			<li class="noauth"><a href="../login">Sign in to {$strings.SITE_NAME}</a></li>
-		{/if}
+		<li{if $footerLoginClass} class="{$footerLoginClass}"{/if}><a href="{$footerLoginLink}">{$footerLoginText}</a></li>
 		</ul>
 	</div>
 	{/if}
   {/block}
 
   {block name="footer"}
-    <div id="footer">
-      {$footerHTML}
-    </div>
+    {if isset($customFooter)}
+      {$customFooter|default:''}
+    {else}
+      <div id="footer">
+        {$footerHTML}
+      </div>
+    {/if}
   {/block}
 
   {block name="deviceDetection"}
-    {if $moduleID == 'home' && $showDeviceDetection}
+    {if $configModule == $homeModuleID && $showDeviceDetection}
       <table class="devicedetection">
         <tr><th>Pagetype:</th><td>{$pagetype}</td></tr>
         <tr><th>Platform:</th><td>{$platform}</td></tr>
-        <tr><th>Certificates:</th><td>{if $supportsCerts}yes{else}no{/if}</td></tr>
+        <tr><th>Platform:</th><td>{$browser}</td></tr>
         <tr><th>User Agent:</th><td>{$smarty.server.HTTP_USER_AGENT}</td></tr>
       </table>
     {/if}
@@ -78,13 +75,6 @@
         {rdelim})();
       </script>
     {/if}
-    {if strlen($PERCENT_MOBILE_ID)}
-        <script>
-           <!--
-            percent_mobile_track('{$PERCENT_MOBILE_ID}', '{$pageTitle}');
-            -->
-        </script>
-    {/if}
   {/block}
 {block name="containerEnd"}
 </div>
@@ -95,3 +85,26 @@
 {/block}
 </body>
 </html>
+{else}
+  {block name="ajaxContentFooter"}
+    <script type="text/javascript">
+      {foreach $inlineJavascriptFooterBlocks as $script}
+        {$script}
+      {/foreach}
+      
+      {foreach $onLoadBlocks as $script}
+        {$script}
+      {/foreach}
+    
+      {if count($onOrientationChangeBlocks)}
+        addOnOrientationChangeCallback(function () {ldelim}
+          {foreach $onOrientationChangeBlocks as $script}
+            {$script}
+          {/foreach}
+        {rdelim});
+      {/if}
+      
+      onOrientationChange();
+    </script>
+  {/block}
+{/if}

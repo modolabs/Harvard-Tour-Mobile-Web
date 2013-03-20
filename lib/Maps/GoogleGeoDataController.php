@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 // if using Google Places, pages must display "powered by Google" logo.
 // if using Geocode, pages must display Google Maps.
 
@@ -24,6 +33,8 @@ class GoogleGeoDataController extends MapDataController
 
     public function init($args)
     {
+        $args['TITLE'] = '';
+
         // set BASE_URL first so parent doesn't complain
         $this->isPlaces = Kurogo::getOptionalSiteVar('USE_GOOGLE_PLACES', false, 'maps');
         if ($this->isPlaces) {

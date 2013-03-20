@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 includePackage('db');
 
 class MapDB
@@ -11,6 +20,21 @@ class MapDB
     const PLACEMARK_CATEGORY_TABLE = 'map_placemark_categories';
 
     private static $db = null;
+
+    private static $categoryIds = null;
+
+    public static function getAllCategoryIds()
+    {
+        if (self::$categoryIds === null) {
+            $sql = 'SELECT * FROM '.self::CATEGORY_TABLE
+                  .' WHERE parent_category_id IS NULL';
+            $results = self::connection()->query($sql);
+            while (($row = $results->fetch(PDO::FETCH_ASSOC))) {
+                self::$categoryIds[] = $row['category_id'];
+            }
+        }
+        return self::$categoryIds;
+    }
 
     public static function updateCategory(MapFolder $category, $items, $projection=null, $parentCategoryId=null) {
         $categoryId = $category->getId();
@@ -80,7 +104,7 @@ class MapDB
             $wkt = WKTParser::wktFromGeometry($geometry);
         } else {
             // TODO: handle this instead of throwing exception
-            throw new Exception("feature has no geometry");
+            throw new KurogoDataException("feature has no geometry");
         }
 
         $placemarkId = $feature->getId();
@@ -118,11 +142,6 @@ class MapDB
         }
 
         // categories
-        $sql = 'DELETE FROM '.self::PLACEMARK_CATEGORY_TABLE
-              .' WHERE placemark_id=? and lat =? and lon=?';
-        $params = array($placemarkId, $centroid['lat'], $centroid['lon']);
-        self::connection()->query($sql, $params);
-
         $categories = $feature->getCategoryIds();
         if (!is_array($categories)) {
             $categories = array();

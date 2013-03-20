@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Kurogo Tour feature.
+ */
+
+include_once('kurogo_tour.features.inc');

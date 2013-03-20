@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 /* 
  * Class to abstract video data
  */
@@ -31,6 +40,20 @@ class VideoObject implements KurogoObject
 
     public function getID() {
         return $this->id;
+    }
+    
+    public function filterItem($filters) {
+        foreach ($filters as $filter=>$value) {
+            switch ($filter)
+            {
+                case 'search': //case insensitive
+                    return  (stripos($this->getTitle(), $value)!==FALSE) ||
+                            (stripos($this->getDescription(), $value)!==FALSE);
+                    break;
+            }
+        }   
+        
+        return true;     
     }
     
     public function setTitle($title) {
@@ -140,5 +163,10 @@ class VideoObject implements KurogoObject
     /* subclasses should return true or false based on pagetype, platform */    
     public function canPlay(DeviceClassifier $deviceClassifier) {
         return true;
+    }
+    
+    /* subclasses should return play url based on pagetype, platform */ 
+    public function getPlayerURL() {
+        return '';
     }
 }

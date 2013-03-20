@@ -1,39 +1,60 @@
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 var containerScroller = null;
 var navScroller = null;
 
 function onDOMChange() {
   if (containerScroller) {
     setContainerWrapperHeight();
-    containerScroller.refresh();
+    setTimeout(function () {
+      containerScroller.refresh();
+    }, 0);
   }
 }
 
 // Update the nav slide indicators
 function updateNavSlider() {
-  var current = Math.abs(navScroller.x);
-  var max = Math.abs(navScroller.maxScrollX);
+    if (navScroller) {
+        var current = Math.abs(navScroller.x);
+        var max = Math.abs(navScroller.maxScrollX);
+      
+        var canScrollLeft = (current > 0);
+        var canScrollRight = (current < max-1);
+        
+        document.getElementById('slideleft').style.display  = canScrollLeft  ? 'block' : 'none';
+        document.getElementById('slideright').style.display = canScrollRight ? 'block' : 'none';
+    }
+}
 
-  var canScrollLeft = (current > 0);
-  var canScrollRight = (current < max-1);
-  
-  document.getElementById('slideleft').style.display  = canScrollLeft  ? 'block' : 'none';
-  document.getElementById('slideright').style.display = canScrollRight ? 'block' : 'none';
+function navSliderScrollLeft() {
+  if (navScroller) {
+    navScroller.scrollTo(0, navScroller.y, 500);
+  }
+}
+
+function navSliderScrollRight() {
+  if (navScroller) {
+    navScroller.scrollTo(navScroller.maxScrollX, navScroller.y, 500);
+  }
 }
 
 // Change wrapper height based on device orientation.
 function setContainerWrapperHeight() {
-  document.getElementById('container').style.height = 'auto';
-
+  var footerNav = document.getElementById('footernav');
+  
 	var navbarHeight = document.getElementById('navbar').offsetHeight;
-  var footerNavHeight = document.getElementById('footernav').offsetHeight;
+  var footerNavHeight = footerNav ? footerNav.offsetHeight : 0;
 	var wrapperHeight = window.innerHeight - navbarHeight - footerNavHeight;
 	var containerHeight = document.getElementById('container').offsetHeight;
 	
 	document.getElementById('wrapper').style.height = wrapperHeight + 'px';
-	
-	if (containerHeight < wrapperHeight) {
-	  document.getElementById('container').style.height = wrapperHeight + 'px';
-	}
 	
 	// when this exists, make it fill the screen
 	var fillscreen = document.getElementById('fillscreen');
@@ -48,56 +69,86 @@ function handleWindowResize(e) {
     }
     setContainerWrapperHeight();
   
-  setTimeout(updateNavSlider, 0);
-  
-  if (typeof moduleHandleWindowResize != 'undefined') {
-    moduleHandleWindowResize(e);
-  }
+    setTimeout(updateNavSlider, 0);
+    
+    if (typeof moduleHandleWindowResize != 'undefined') {
+        moduleHandleWindowResize(e);
+    }
+    if (navigator.userAgent.match(/(Android [34]\.\d)/)) {
+        // Android 3/4 browsers don't reliably set client and offset heights
+        // before calling orientationchange or resize handlers.
+        var self = this;
+        setTimeout(function() {
+            setContainerWrapperHeight();
+            setTimeout(updateNavSlider, 0);
+            if (typeof moduleHandleWindowResize != 'undefined') {
+                moduleHandleWindowResize(e);
+            }
+        }, 600); // approx. how long after the event before the offsetHeights are correct
+    }
 } 
 
+// form element-safe version of iScroll initialization
+function iScrollInit(id, options) {
+    options.useTransform = true;
+    options.onBeforeScrollStart = function (e) {
+        var target = e.target;
+        while (target.nodeType != 1) { target = target.parentNode; }
+        
+        var tagName = target.tagName;
+        if (target.tagName != 'SELECT' && target.tagName != 'INPUT' && target.tagName != 'TEXTAREA') {
+            e.preventDefault();
+        }
+    };
+
+    return new iScroll(id, options);
+}
+
+var moduleProvidesScrollers = false;
+
 function tabletInit() {
-   setOrientation(getOrientation());
-    if(!document.getElementById('navbar')) {
+    setOrientation(getOrientation());
+    if (!document.getElementById('navbar')) {
         // page has no footer so do not attempt
         // to use fancy tablet container
         return;
     }
 
-  setContainerWrapperHeight();
-  
-  // Adjust wrapper height on orientation change or resize
-  var resizeEvent = 'onorientationchange' in window ? 'orientationchange' : 'resize';
-  window.addEventListener(resizeEvent, function() {setTimeout(handleWindowResize,0)}, false);
-
-  document.addEventListener('touchmove', function(e) { e.preventDefault(); });
-  
-  containerScroller = new iScroll('wrapper', { 
-    checkDOMChanges: false, 
-    hScrollbar: false,
-    desktopCompatibility: true,
-    bounce: false,
-    bounceLock: true
-  });
-
-
-  navScroller = new iScroll('navsliderwrapper', { 
-    checkDOMChanges: false, 
-    hScrollbar: false,
-    vScrollbar: false,
-    desktopCompatibility: true,
-    bounce: false,
-    bounceLock: true,
-    onScrollStart: updateNavSlider,
-    onScrollEnd: updateNavSlider
-  });
-
-    handleWindowResize();
+    setContainerWrapperHeight();
+    
+    // Adjust wrapper height on orientation change or resize
+    var resizeEvent = 'onorientationchange' in window ? 'orientationchange' : 'resize';
+    window.addEventListener(resizeEvent, function() { setTimeout(handleWindowResize, 0) }, false);
+    
+    if (document.getElementById('navsliderwrapper')) {
+        navScroller = iScrollInit('navsliderwrapper', { 
+            hScrollbar: false,
+            vScrollbar: false,
+            bounce: false,
+            bounceLock: true,
+            onScrollStart: updateNavSlider,
+            onScrollEnd: updateNavSlider
+        });
+    }
+    
     updateNavSlider();
-
-  //run module init if present
-  if (typeof moduleInit != 'undefined') {
-    moduleInit();
-  }
+    
+    // run module init if present
+    // module init can change value of moduleProvidesScrollers to
+    // disable container scroller if it provides its own for a splitview
+    if (typeof moduleInit != 'undefined') {
+        moduleInit();
+    }
+  
+    if (!moduleProvidesScrollers) {
+        containerScroller = iScrollInit('wrapper', { 
+            hScrollbar: false,
+            bounce: false,
+            bounceLock: true
+        });
+    }
+    
+    handleWindowResize();
 }
 
 function scrollToTop() {
@@ -137,7 +188,10 @@ function scrollToTop() {
         this.orientation = getOrientation();
         this.list = document.getElementById(this.options.list);
         this.detail = document.getElementById(this.options.detail);
-        this.detailScroller = new iScroll(this.options.detail, {checkDOMChange: true});
+        this.detailScroller = iScrollInit(this.options.detail, {
+            hScrollbar : false,
+            hScroll : false
+        });
         
         if ('content' in this.options) {
             this.content = document.getElementById(this.options.content);
@@ -212,27 +266,57 @@ function scrollToTop() {
             }
             addClass(link,'listSelected');
             this.detailScroller.scrollTo(0,0);
-            var httpRequest = new XMLHttpRequest();
-            httpRequest.open("GET", link.href+'&ajax=1', true);
-            httpRequest.onreadystatechange = function() {
-                if (httpRequest.readyState == 4 && httpRequest.status == 200) {
-                    self.content.innerHTML = httpRequest.responseText;
-                    
+            
+            ajaxContentIntoContainer({
+                url: link.href+'&ajax=1', 
+                container: self.content, 
+                timeout: 60, 
+                success: function () {
                     var hash = '#'+encodeURIComponent(removeBreadcrumbParameter(link.href));
                     if (window.history && window.history.pushState && window.history.replaceState && // Regexs from history js plugin
                       !((/ Mobile\/([1-7][a-z]|(8([abcde]|f(1[0-8]))))/i).test(navigator.userAgent) || // disable for versions of iOS < 4.3 (8F190)
-                         (/AppleWebKit\/5([0-2]|3[0-2])/i).test(navigator.userAgent))) { // disable for the mercury iOS browser and older webkit
-                      history.pushState({}, document.title, hash);
+                         (/AppleWebKit\/5([0-2]|3[0-3])/i).test(navigator.userAgent))) { // disable for the mercury iOS browser and older webkit/uiwebview
+                      window.history.pushState({}, document.title, hash);
                     } else {
                       location.hash = hash;
                     }
                     
-                    self.detailScroller.refresh();
-                    moduleHandleWindowResize();
+                    if (typeof moduleHandleWindowResize != 'undefined') {
+                        moduleHandleWindowResize(e);
+                    }
+                    
+                    var refreshOnLoad = function () {
+                        setTimeout(function () {
+                            self.detailScroller.refresh();
+                        }, 100);
+                    };
+                    
+                    // As images load the height of the detail view will change so
+                    // refresh the scroller when each image loads:
+                    var images = self.content.getElementsByTagName("img");
+                    for (var i = 0; i < images.length; i++) {
+                        if (images[i].addEventListener) {
+                            images[i].addEventListener("load", refreshOnLoad, false);
+                        } else if (images[i].attachEvent) {
+                            images[i].attachEvent("onload", refreshOnLoad);
+                        }
+                    }
+                    // As iframes load the height of the detail view may change so
+                    // refresh the scroller when each iframe loads:
+                    var iframes = self.content.getElementsByTagName("iframe");
+                    for (var i = 0; i < iframes.length; i++) {
+                        if (iframes[i].addEventListener) {
+                            iframes[i].addEventListener("load", refreshOnLoad, false);
+                        } else if (iframes[i].attachEvent) {
+                            iframes[i].attachEvent("onload", refreshOnLoad);
+                        }
+                    }
+                    refreshOnLoad();
+                },
+                error: function (code) {
                 }
-            }
-            showLoadingMsg(this.options.content);
-            httpRequest.send(null);
+            });
+            
             e && e.preventDefault();
             return false;
         },
@@ -245,6 +329,9 @@ function scrollToTop() {
                     if (this.orientation != getOrientation()) {
                         this.orientation = getOrientation();
                         this.updateListScroller();
+                        if (typeof moduleHandleWindowResize != 'undefined') {
+                            moduleHandleWindowResize(e);
+                        }
                     }
                     break;
             }
@@ -281,10 +368,20 @@ function scrollToTop() {
                     }
                 },0);
                 return;
+            } else {
+              this.listScroller = iScrollInit(this.options.list, options);
             }
-            
-            this.listScroller = new iScroll(this.options.list, options);
-        }
+        },
+        refreshScrollers: function () {
+            setTimeout(function() {
+                if (self.detailScroller) {
+                    self.detailScroller.refresh();
+                }
+                if (self.listScroller) {
+                    self.listScroller.refresh();
+                }
+            }, 0);
+        },
     }
     
     function removeBreadcrumbParameter(url) {
@@ -300,3 +397,62 @@ function scrollToTop() {
     window.splitView = splitView;
 
 })(window)
+
+// Used by news and video modules for news article listings
+function setupSplitViewForListAndDetail(headerId, listWrapperId, detailWrapperId, detailId, options) {
+    var aSplitView = null;
+
+    moduleHandleWindowResize = function () {
+        var listWrapper = document.getElementById(listWrapperId);
+        var detailWrapper = document.getElementById(detailWrapperId);
+        if (!detailWrapper) {
+          return;  // can happen for searches with no results or when feed is down
+        }
+        detailWrapper.style.height = 'auto';
+        
+        var wrapperHeight = document.getElementById('wrapper').offsetHeight;
+        var headerHeight = document.getElementById(headerId).offsetHeight;
+        var contentHeight = wrapperHeight - headerHeight;
+        
+        switch (getOrientation()) {
+            case 'landscape':
+                listWrapper.style.height = contentHeight + 'px';
+                detailWrapper.style.height = contentHeight + 'px';
+                var list = listWrapper.getElementsByTagName('li')[0].parentNode;
+                list.style.width = '';
+                break;
+            
+            case 'portrait':
+                listWrapper.style.height = '';
+                // this is a hack because for some reason the width isn't being properly set
+                var width = 0;
+                var listItems = listWrapper.getElementsByTagName('li');
+                var list;
+                for (var i = 0; i < listItems.length; i++) {
+                    list = listItems[i].parentNode;
+                    width+=listItems[i].offsetWidth;
+                }
+                list.style.width = width+'px';
+                
+                var listWrapperHeight = listWrapper.offsetHeight;
+                detailWrapper.style.height = (contentHeight - listWrapperHeight) + 'px';
+                break;
+        }
+        
+        if (aSplitView) {
+            aSplitView.refreshScrollers();
+        }
+    }
+    
+    moduleProvidesScrollers = true;
+    document.getElementById('container').style.height = "100%";
+    
+    moduleHandleWindowResize();
+
+    options = options || {};
+    options["list"] = listWrapperId;
+    options["detail"] = detailWrapperId;
+    options["content"] = detailId;
+    
+    aSplitView = new splitView(options);
+}

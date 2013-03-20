@@ -1,5 +1,14 @@
 <?php
 
+/*
+ * Copyright © 2010 - 2012 Modo Labs Inc. All rights reserved.
+ *
+ * The license governing the contents of this file is located in the LICENSE
+ * file located at the root directory of this distribution. If the LICENSE file
+ * is missing, please contact sales@modolabs.com.
+ *
+ */
+
 // TODO reduce duplication between this class and WMSStaticMap/ArcGISJSMap
 // by moving some methods to config, utility, or superclass
 
@@ -20,8 +29,10 @@ class ArcGISStaticMap extends StaticMapImageController {
         $this->transparent = ($transparent == true);
     }
 
-    public function __construct($baseURL, $parser=null) {
-        $this->baseURL = $baseURL;
+    public function init($args) {
+        parent::init($args);
+
+        $this->baseURL = $args['BASE_URL'];
 
         // TODO find a better way to reuse JSON parsing code for ArcGIS-related data
         $url = $this->baseURL.'?'.http_build_query(array('f' => 'json'));
@@ -113,8 +124,7 @@ class ArcGISStaticMap extends StaticMapImageController {
             $range = $this->getHorizontalRange();
             return ceil(log(360 / $range, 2));
         } else {
-            // http://wiki.openstreetmap.org/wiki/MinScaleDenominator
-            return ceil(log(559082264 / $scale, 2));
+            return oldPixelZoomLevelForScale($scale);
         }
     }
 
