@@ -1,43 +1,31 @@
 /* Overall font and colors */
 
 html, body, #nonfooternav {
-	height: 100%;
-	min-height: 600px;
+  height: 100%;
 	margin: 0;
 	padding: 0;
-}
-
-body {
-	background: #F9F3E8 url(/modules/tour/images/bodyback3.jpg) repeat;	/* Background of tab content */
-	font: 17px/1.33em 'Helvetica Neue', Helvetica, Arial, sans-serif;	/* Base font size and line height */
-	color: #333;	/* Base font color */
+	min-height: 600px;
 }
 
 h1 {
-	font: 111.7%/1.1em serif;	
+	font: 111.7%/1.1em serif;
 	font-weight: normal;
 	padding: 0;
 	margin: 4px 0 10px 0;
 	color: #000;
 }
 
-h2 {
-	color: #990000;
-	font-family:Georgia, "Times New Roman", Times, serif;
-}
-
 p, dl, ul {
-	margin: 0 0 15px 0;		/* Remove some browser's normal margin-top on these block elements */
+	margin: 0 0 15px 0;
 }
-
 
 /* Nav bar at very top of page */
 
 #navbar {
 	height: 34px;
 	padding: 3px 2px 3px 4px;
-	background: #751717 url(/common/images/navback.jpg) bottom repeat-x;
-	font-family: Georgia, "Times New Roman", Times, serifserif;
+	background: #f9f9f3 url(/common/images/navback.jpg) bottom repeat-x;
+	font-family: serif;
 	font-size: 94.12%;
     margin: 0;
 }
@@ -47,12 +35,12 @@ p, dl, ul {
 	height: 34px;
 	float: left;
 	text-decoration: none;
-	color: #fff;
-	text-shadow: rgba(67,0,0,0.13) -1px -1px 1px,rgba(67,0,0,0.85) 1px 1px 1px;
+	color: #000;
+	text-shadow: rgba(0,0,0,0.13) -1px -1px 1px,rgba(255,255,255,0.85) 1px 1px 1px;
 }
 #homelink img {
 	float: left;
-	margin-right: 5px;
+	margin-right: 8px;
 	vertical-align: middle;
 }
 #helplinks {
@@ -69,22 +57,21 @@ p, dl, ul {
 }
 #helplinks a {
 	text-decoration: none;
-	color: tan;
-	text-shadow: rgba(67,0,0,0.13) -1px -1px 1px,rgba(67,0,0,0.85) 1px 1px 1px;
+	color: #4c6680;
+	text-shadow: rgba(0,0,0,0.13) -1px -1px 1px,rgba(255,255,255,0.85) 1px 1px 1px;
 	padding: 0 8px;
 }
-
 
 /* Page head including the paging arrows and page title */
 
 #pagehead {
 	position: relative;
-	height: 108px;	/* Includes page head and tabs */
-	background: #9C8C73 url(/common/images/headback.jpg) repeat-x;	/* Behind page head and tabs */
+	height: 108px;
+	background: #7c8893 url(/common/images/headback.jpg) repeat-x;
 	overflow: hidden;
 }
 #pagehead.brief {
-  height: 56px;	/* When there are no tabs */
+  height: 56px;
 }
 #pagetitle {
 	display: table;
@@ -134,19 +121,17 @@ p, dl, ul {
 	padding: 3px 2px 0 0;
 	height: 52px;
 	font: 82.4%/56px serif;
-	color:#EFDDA8;
+	color: #cbe1f3;
 }
 #pagehead #viewtoggle a, 
 #pagehead #viewtoggle a:visited,
 #pagehead #viewtoggle span {
-	color:#fff ;
+	color: #cbe1f3;
 	padding: 0 8px;
 	text-decoration: none;
-	text-shadow: rgba(89,81,61,1) 1px 2px 2px
 }
 #pagehead #viewtoggle a.active {
-	color: #EFDDA8;
-	text-shadow: rgba(89,81,61,1) 1px 2px 2px
+	color: #fff;
 }
 #pagehead #viewtoggle .spacer {
   padding: 0;
@@ -154,7 +139,6 @@ p, dl, ul {
 #pagehead #viewtoggle #doneURL {
 	margin-left: 4px;
 }
-
 #tabs {
 	position: absolute;
 	width: 100%;
@@ -183,10 +167,10 @@ p, dl, ul {
 	line-height: 1em;
 	color: #b4c0cc;
 	text-align: center;
-	background: #9C8C73 url(/common/images/tabback.jpg) repeat-x;
-	border: 1px solid rgba(101,92,73,0.2);
-	border-top-color: rgba(101,92,73,0.33);
-	border-bottom-color: rgba(101,92,73,0);
+	background: #485761 url(/common/images/tabback.jpg) repeat-x;
+	border: 1px solid rgba(0,0,0,0.2);
+	border-top-color: rgba(255,255,255,0.33);
+	border-bottom-color: rgba(255,255,255,0);
 	-webkit-box-shadow: 0px 0px 3px rgba(0,0,0,0.7);
 	-moz-box-shadow: 0px 0px 3px rgba(0,0,0,0.7);
 	box-shadow: 0px 0px 3px rgba(0,0,0,0.7);
@@ -206,11 +190,10 @@ p, dl, ul {
 #tabs .tablabel {
 	display: none;
 }
-
 #content,
 #tabbodies {
 	padding: 4px; /* this left/right padding is duplicated in tour module common.js */
-	background: url(/common/images/bodyback3.jpg) repeat-x;
+	background: url(/common/images/bodyback2.jpg) repeat-x;
 	font: 88.24%/1.333em sans-serif;
 	color: #464640;
 	min-height: 240px;
@@ -626,7 +609,6 @@ img.headphones {
   float: left;
   padding-right: .25em;
 }
-
 
 /* Footnotes */
 .footnote {
