@@ -460,9 +460,21 @@ class TourDataParser {
     protected function getURLForNodeFile($node, $nodeFile) {
         if (isset($nodeFile['fid'])) {
             $files = $this->getNodeFilesData($node['nid']);
+            
             foreach ($files as $file) {
-                if (isset($file['uri_full']) && $file['fid'] == $nodeFile['fid']) {
-                    return ImageLoader::cacheImage($file['uri_full'], array());
+                if ($file['fid'] == $nodeFile['fid']) {
+                    $url = '';
+                    
+                    if (isset($file['uri_full'])) {
+                        $url = $file['uri_full'];
+                        
+                    } else if (isset($file['uri']) && preg_match(';^public://(.+)$;', $file['uri'], $matches)) {
+                        $url = Kurogo::getSiteVar('TOUR_SERVICE_FILE_PREFIX').str_replace(' ', '%20', $matches[1]);
+                    }
+                    
+                    if (strlen($url)) {
+                        return ImageLoader::cacheImage($url, array());
+                    }
                 }
             }
         }
