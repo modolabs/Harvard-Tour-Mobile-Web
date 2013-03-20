@@ -391,6 +391,8 @@ class TourWebModule extends WebModule {
         
             case 'index':
                 $this->assign('showDownloadLink', $this->getOptionalModuleVar('SHOW_DOWNLOAD_LINK', true));
+                $this->assign('downloadLinkURL', $this->getOptionalModuleVar('DOWNLOAD_LINK_URL', ''));
+                
                 if ($this->tour->isInProgress()) {
                     if ($this->currentStopPage == 'approach') {
                         $this->assign('resumeURL', $this->buildTourURL('map', array(
@@ -549,5 +551,6 @@ class TourWebModule extends WebModule {
             )));
         }
 
+        $this->setPageTitles($this->getModuleName());
     }
 }
